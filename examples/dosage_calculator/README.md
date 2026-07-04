@@ -85,14 +85,28 @@ deliberately, with its own real CrossHair capture
    `calculate_hourly_dose(70.0, 1e308, -2.0, 10.0)` returns `10.0`
    where the directional postcondition requires `0.0` (verified by
    execution in this session; reproduce with two lines of Python).
-2. **CrossHair did not find it.** The capture shows exit code 0 and
-   `Not confirmed` for both postconditions — the bounded search missed
-   a real, reachable violation within its default bounds. This is the
-   clearest in-repo demonstration of why `BOUNDED_CHECKED` must never
-   be presented as proof, and why this repository's claims discipline
-   forbids exactly that. A "no counterexample found" result on the
-   fixed `dosage.py` is evidence of absence-within-bounds, nothing
-   stronger.
+2. **CrossHair did not find it — and not for bounds reasons.** The
+   capture shows exit code 0 and `Not confirmed` for both
+   postconditions. A `BOUNDED_CHECKED` result is incomplete in two
+   distinct ways. (1) *Search-budget incompleteness*: only part of the
+   representable input space is explored within the recorded bounds.
+   (2) *Model-fidelity incompleteness*: the symbolic model cannot
+   represent — or only rarely samples — certain machine-level
+   behaviours, so some real, reachable violations are invisible
+   regardless of bounds. The `-inf` exhibit demonstrates class (2):
+   CrossHair predominantly models Python floats as mathematical reals
+   (IEEE-faithful floating-point execution is attempted only
+   infrequently and is slow; changelog v0.0.72), and in real arithmetic
+   1e308 × −2.0 = −2e308 exactly — no overflow occurs, so no violating
+   state exists to find. Raising timeouts or iterations does not
+   reliably close class (2). CrossHair does inject nan/+inf/−inf as
+   float *arguments* (changelog v0.0.58); the exhibit's −inf is a
+   *computed intermediate* from finite inputs, which a real-valued
+   model cannot produce. Changelog:
+   https://crosshair.readthedocs.io/en/stable/changelog.html
+   A "no counterexample found" result on the fixed `dosage.py` is
+   therefore evidence of absence within the recorded bounds *and*
+   within the model's fidelity, nothing stronger.
 
 **Post-amendment evidence that the widened domain is really explored:**
 the Sample B (broken variant) capture now contains a second, negative
@@ -167,9 +181,11 @@ declared bounds are therefore the *intended* verification envelope, not
 yet the demonstrated one. Constraint noted for the pending decision:
 crosshair-tool 0.0.107's CLI can enforce only `--per_condition_timeout`;
 it has no flags for `max_iterations` or `seed`. The Phase-B
-adapter/binder should reconcile declared and effective bounds. The
-Sample C result above makes this divergence more than cosmetic: bounds
-determine what a bounded search can miss.
+adapter/binder should reconcile declared and effective bounds. Bounds
+govern class (1) search-budget incompleteness only (see the amendment
+note above): they determine how much of the representable input space
+is explored. The Sample C miss is class (2) model-fidelity
+incompleteness and is not closed by raising bounds.
 
 ## Matrix generation
 
