@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant B: flattened pseudo-requirements)",
-  "generated_utc": "2026-07-04T16:39:24.300057+00:00",
+  "generated_utc": "2026-07-04T16:41:22.774275+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -31,7 +31,7 @@
       "observed": null,
       "intent_ok": false,
       "notes": [
-        "intended method per metadata not realized; realized: BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
       ]
     },
     {
@@ -55,7 +55,7 @@
       "observed": null,
       "intent_ok": false,
       "notes": [
-        "intended method per metadata not realized; realized: BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
       ]
     },
     {

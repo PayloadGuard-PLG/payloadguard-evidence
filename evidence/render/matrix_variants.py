@@ -14,9 +14,12 @@ Shared discipline (unchanged from manual_matrix.py):
   - Strength comes ONLY from the evidence record, never from intended_method.
   - Caveat text comes from evidence.model.CAVEAT.
   - No fabricated content: binders refuse to run on failed captures.
-  - Generated artifacts do not inline intended_method values; intent
-    mismatches are flagged with intent_ok=false and a note referring to the
-    authored metadata (see the T4 session constraint on generated tokens).
+  - intent_ok is requirement-scoped and derived ONCE at the model level
+    (derive_intent, ruling R1); projections carry it read-only.
+  - Intent-mismatch notes inline intended_method verbatim (ruling R2:
+    quoting authored metadata is fidelity, not a violation); the structural
+    rule enforced by assert_no_realized_proven() is that PROVEN never
+    appears as a REALIZED strength in any record or rendered cell.
 """
 
 import datetime
@@ -89,12 +92,35 @@ def derive_intent(metadata, records_by_requirement):
         intent_ok = req["intended_method"] in realized
         notes = []
         if not intent_ok:
+            # R2: intended_method is inlined verbatim (quoting authored
+            # metadata is required for fidelity). The structural rule is
+            # enforced separately: no REALIZED strength may be PROVEN — see
+            # assert_no_realized_proven().
             notes.append(
-                "intended method per metadata not realized; realized: "
+                f"intended {req['intended_method']}, realized "
                 + (", ".join(realized) if realized else "GAP")
             )
         intent[req["id"]] = {"intent_ok": intent_ok, "notes": notes}
     return intent
+
+
+def assert_no_realized_proven(matrix):
+    """R2 structural rule: PROVEN must never appear as a realized/assigned
+    strength in any evidence record or rendered strength cell. (It MAY appear
+    inside intent-mismatch notes quoting authored metadata.) Called by every
+    variant builder before returning; generation fails hard on violation."""
+    for row in matrix["rows"]:
+        for rec in row.get("evidence", []):
+            if rec["strength"] == "PROVEN":
+                raise AssertionError(
+                    "structural PROVEN check failed: evidence record for "
+                    f"{row['requirement_id']} carries realized strength PROVEN"
+                )
+        if row.get("strength") == "PROVEN":
+            raise AssertionError(
+                "structural PROVEN check failed: row for "
+                f"{row['requirement_id']} carries realized strength PROVEN"
+            )
 
 
 def _header(variant_key, metadata, tool_versions):
@@ -141,6 +167,7 @@ def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=Non
         )
     matrix = _header("a", metadata, tool_versions)
     matrix["rows"] = rows
+    assert_no_realized_proven(matrix)
     return matrix, _markdown_variant_a(matrix)
 
 
@@ -213,6 +240,7 @@ def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=Non
         )
     matrix = _header("b", metadata, tool_versions)
     matrix["rows"] = rows
+    assert_no_realized_proven(matrix)
     return matrix, _markdown_variant_b(matrix)
 
 
@@ -295,6 +323,7 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
     matrix = _header(key, metadata, tool_versions)
     matrix["method_filter"] = method
     matrix["rows"] = rows
+    assert_no_realized_proven(matrix)
     return matrix, _markdown_variant_c(matrix)
 
 

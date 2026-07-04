@@ -70,9 +70,14 @@ facts in different shapes.
 ## Derived-field conventions common to all variants
 
 - Strength comes only from evidence records (never intended_method).
-- Generated artifacts do not inline intended_method values; mismatches
-  are flagged as `intent_ok: false` with a note referring to the
-  authored metadata (session constraint on generated tokens).
+- intent_ok is requirement-scoped, derived once at the model level
+  (ruling R1); all views carry it read-only.
+- Intent-mismatch notes inline intended_method verbatim (ruling R2:
+  quoting authored metadata is required fidelity). The enforced
+  structural rule is that PROVEN never appears as a REALIZED strength
+  in any record or rendered cell — checked at generation time by
+  `assert_no_realized_proven()` and by
+  `tests/test_structural_proven_check.py`, replacing the grep audit.
 - Caveats come from `evidence.model.CAVEAT`; every EXAMPLE_CHECKED
   record carries "Holds for the specific recorded inputs only; no claim
   of generality beyond them."
