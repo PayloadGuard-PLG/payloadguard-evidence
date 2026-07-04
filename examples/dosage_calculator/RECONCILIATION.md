@@ -31,27 +31,29 @@ facts in different shapes.
 
 ## Findings (asymmetries — reported, not silently fixed)
 
-1. **Derived `intent_ok` diverges in variant C's concrete view.**
-   The evidence facts are identical, but the derived intent flag is
-   view-scoped: A and B (parents) and C-symbolic all yield
-   REQ-GIP-1-4-12 false / REQ-GIP-1-8-1 false / REQ-DOSE-003 **true**;
-   C-concrete yields **false for all four rows**, including
-   REQ-DOSE-003, because that view compares intended_method
-   (BOUNDED_CHECKED) against the only evidence type it carries
-   (EXAMPLE_CHECKED). Variant A's whole-requirement view uses an
-   any-record-matches rule and sees the intent satisfied by the
-   symbolic record. Consequence: C's per-view intent flags cannot be
-   read in isolation; A aggregates, B pushes intent down to per-record
-   granularity (shadows declare intended EXAMPLE_CHECKED and match
-   trivially). This is a semantics fork inherent to the shapes, left
-   for reconciliation review.
-2. **Binding authorship differs.** In A and B the requirement↔evidence
-   binding is authored in the metadata file (evidence arrays / shadow
-   entries); in C the concrete binding is carried by the evidence store
-   itself (`requirement_id` in each concrete_results.json case) and the
-   metadata is byte-identical in facts to the base file. Same facts,
-   different place of authorship — affects who can introduce a binding
-   error and where a reviewer must look.
+1. **RESOLVED by ruling R1 (Phase A closeout, 2026-07-04).**
+   Originally: derived `intent_ok` diverged in variant C's concrete view
+   (REQ-DOSE-003 false there, true elsewhere) because each view
+   re-derived intent from only the records it carried. Ruling: intent_ok
+   is requirement-scoped and computed exactly once at the model level —
+   true iff ANY evidence record for the requirement realizes the
+   intended strength (`derive_intent` in
+   `evidence/render/matrix_variants.py`); all projections, including
+   C's method-filtered views, carry the value read-only, and variant
+   B's shadow rows project their parent's value. Verified after
+   regeneration: intent_ok is identical per requirement across A, B
+   parents, C-symbolic, and C-concrete
+   (REQ-GIP-1-4-12 false / REQ-GIP-1-8-1 false / REQ-DOSE-003 true),
+   and the same-facts check still holds (7 facts, set-equal).
+2. **Binding authorship differs — OPEN, deferred to Phase B.** In A and
+   B the requirement↔evidence binding is authored in the metadata file
+   (evidence arrays / shadow entries); in C the concrete binding is
+   carried by the evidence store itself (`requirement_id` in each
+   concrete_results.json case) and the metadata is byte-identical in
+   facts to the base file. Same facts, different place of authorship —
+   affects who can introduce a binding error and where a reviewer must
+   look. Per the Phase A closeout ruling this is explicitly NOT fixed
+   here; Phase B (vocabulary-agnostic binder) owns the decision.
 3. **B duplicates inputs into prose.** Shadow requirement `text` fields
    restate the case inputs/expected that also exist structurally in
    concrete_results.json (and in B's own row fields). Redundant but

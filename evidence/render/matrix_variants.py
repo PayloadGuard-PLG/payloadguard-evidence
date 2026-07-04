@@ -71,16 +71,30 @@ def concrete_record(case):
     }
 
 
-def _intent(req, realized_strengths):
-    """intent_ok plus a token-free note when intent is not realized."""
-    intent_ok = req["intended_method"] in realized_strengths
-    notes = []
-    if not intent_ok:
-        notes.append(
-            "intended method per metadata not realized; realized: "
-            + (", ".join(realized_strengths) if realized_strengths else "GAP")
-        )
-    return intent_ok, notes
+def derive_intent(metadata, records_by_requirement):
+    """R1 bind-time derivation invariant: intent_ok is requirement-scoped and
+    computed exactly ONCE here, at the model level — true iff ANY evidence
+    record bound to the requirement realizes the intended strength. Every
+    variant matrix (including method-filtered views) carries these values
+    read-only and never re-derives them. Shadow pseudo-requirements (variant
+    B) project their parent's value."""
+    intent = {}
+    for req in metadata["requirements"]:
+        if req.get("parent_requirement") is not None:
+            continue
+        realized = []
+        for rec in records_by_requirement.get(req["id"], []):
+            if rec["strength"] not in realized:
+                realized.append(rec["strength"])
+        intent_ok = req["intended_method"] in realized
+        notes = []
+        if not intent_ok:
+            notes.append(
+                "intended method per metadata not realized; realized: "
+                + (", ".join(realized) if realized else "GAP")
+            )
+        intent[req["id"]] = {"intent_ok": intent_ok, "notes": notes}
+    return intent
 
 
 def _header(variant_key, metadata, tool_versions):
@@ -97,7 +111,7 @@ def _header(variant_key, metadata, tool_versions):
 def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=None):
     cases = {c["test_id"]: c for c in concrete_store["cases"]}
     bounds = metadata["toolchain"]["crosshair_bounds"]
-    rows = []
+    records_by_req = {}
     for req in metadata["requirements"]:
         records = []
         for ev in req.get("evidence", []):
@@ -107,8 +121,12 @@ def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=Non
                 records.append(concrete_record(cases[ev["test_id"]]))
             else:
                 raise SystemExit(f"unknown evidence method: {ev['method']}")
-        realized = [r["strength"] for r in records]
-        intent_ok, notes = _intent(req, realized)
+        records_by_req[req["id"]] = records
+    intent = derive_intent(metadata, records_by_req)
+    rows = []
+    for req in metadata["requirements"]:
+        records = records_by_req[req["id"]]
+        notes = list(intent[req["id"]]["notes"])
         if not records:
             notes.insert(0, "no evidence bound for this requirement")
         rows.append(
@@ -117,7 +135,7 @@ def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=Non
                 "requirement_text": req["text"].strip(),
                 "code_location": req["implementation"],
                 "evidence": records,
-                "intent_ok": intent_ok,
+                "intent_ok": intent[req["id"]]["intent_ok"],
                 "notes": notes,
             }
         )
@@ -153,15 +171,29 @@ def _all_records_a(matrix):
 def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=None):
     cases = {c["test_id"]: c for c in concrete_store["cases"]}
     bounds = metadata["toolchain"]["crosshair_bounds"]
-    rows = []
+    bound_record = {}
+    records_by_req = {}
     for req in metadata["requirements"]:
         parent = req.get("parent_requirement")
         if parent is None:
             record = symbolic_record(manifest, bounds, req["implementation"])
+            records_by_req.setdefault(req["id"], []).append(record)
         else:
             test_id = req["implementation"].split("::")[-1]
             record = concrete_record(cases[test_id])
-        intent_ok, notes = _intent(req, [record["strength"]])
+            records_by_req.setdefault(parent, []).append(record)
+        bound_record[req["id"]] = record
+    intent = derive_intent(metadata, records_by_req)
+    rows = []
+    for req in metadata["requirements"]:
+        parent = req.get("parent_requirement")
+        record = bound_record[req["id"]]
+        # R1: rows project the requirement-scoped value read-only; shadow rows
+        # carry their parent's intent_ok, and the requirement-scoped notes are
+        # displayed on the parent row only.
+        scope = intent[parent or req["id"]]
+        intent_ok = scope["intent_ok"]
+        notes = list(scope["notes"]) if parent is None else []
         rows.append(
             {
                 "requirement_id": req["id"],
@@ -218,20 +250,31 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
     each concrete_results.json case (evidence is self-describing); symbolic
     evidence binds by implementation match, as in the base matrix."""
     bounds = metadata["toolchain"]["crosshair_bounds"]
+    # R1: the full evidence model (BOTH methods) is assembled first and intent
+    # is derived once at the model level; the method filter below only selects
+    # which records are projected into this artifact. Filtered views carry the
+    # requirement-scoped intent_ok read-only and never re-derive it.
+    records_by_req = {}
+    for req in metadata["requirements"]:
+        records_by_req[req["id"]] = [
+            symbolic_record(manifest, bounds, req["implementation"])
+        ] + [
+            concrete_record(c)
+            for c in concrete_store["cases"]
+            if c["requirement_id"] == req["id"]
+        ]
+    intent = derive_intent(metadata, records_by_req)
     rows = []
     for req in metadata["requirements"]:
         if method == "crosshair":
-            records = [symbolic_record(manifest, bounds, req["implementation"])]
+            records = [r for r in records_by_req[req["id"]] if r["method"] == "crosshair"]
         elif method == "concrete_test":
-            records = [
-                concrete_record(c)
-                for c in concrete_store["cases"]
-                if c["requirement_id"] == req["id"]
-            ]
+            records = [r for r in records_by_req[req["id"]] if r["method"] == "concrete_test"]
         else:
             raise SystemExit(f"unknown method filter: {method}")
         for record in records:
-            intent_ok, notes = _intent(req, [record["strength"]])
+            intent_ok = intent[req["id"]]["intent_ok"]
+            notes = list(intent[req["id"]]["notes"])
             rows.append(
                 {
                     "requirement_id": req["id"],
