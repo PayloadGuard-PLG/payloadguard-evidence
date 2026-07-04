@@ -90,23 +90,30 @@ deliberately, with its own real CrossHair capture
    postconditions. A `BOUNDED_CHECKED` result is incomplete in two
    distinct ways. (1) *Search-budget incompleteness*: only part of the
    representable input space is explored within the recorded bounds.
-   (2) *Model-fidelity incompleteness*: the symbolic model cannot
-   represent — or only rarely samples — certain machine-level
-   behaviours, so some real, reachable violations are invisible
-   regardless of bounds. The `-inf` exhibit demonstrates class (2):
-   CrossHair predominantly models Python floats as mathematical reals
-   (IEEE-faithful floating-point execution is attempted only
-   infrequently and is slow; changelog v0.0.72), and in real arithmetic
-   1e308 × −2.0 = −2e308 exactly — no overflow occurs, so no violating
-   state exists to find. Raising timeouts or iterations does not
-   reliably close class (2). CrossHair does inject nan/+inf/−inf as
-   float *arguments* (changelog v0.0.58); the exhibit's −inf is a
-   *computed intermediate* from finite inputs, which a real-valued
-   model cannot produce. Changelog:
+   (2) *Model-fidelity incompleteness*: the symbolic model reaches some
+   machine-level behaviours only through channels that are unreliably
+   sampled and sharply complexity-dependent, so some real, reachable
+   violations may go undetected regardless of bounds. The `-inf`
+   exhibit demonstrates class (2): CrossHair predominantly models
+   Python floats as mathematical reals, attempting IEEE-faithful
+   floating-point execution only infrequently (changelog v0.0.72) — in
+   real arithmetic 1e308 × −2.0 = −2e308 exactly, so the overflow
+   state is reached only when the IEEE-faithful channel is sampled.
+   That channel exists but is unreliably sampled and sharply
+   complexity-dependent: under identical invocation and bounds it
+   confirmed a violation on the one-operation probe yet stayed silent
+   on the four-parameter kernel — the paired measurement is pinned in
+   `exhibit_pin_overflow_probe.json` and
+   `exhibit_pin_naive_widening.json` — and nothing in the recorded
+   bounds discloses which regime a run sat in. Raising timeouts or
+   iterations does not reliably close class (2). CrossHair injects
+   nan/+inf/−inf as float *arguments* (changelog v0.0.58); a *computed
+   intermediate* overflow from finite inputs is reachable only through
+   the IEEE-faithful channel. Changelog:
    https://crosshair.readthedocs.io/en/stable/changelog.html
    A "no counterexample found" result on the fixed `dosage.py` is
    therefore evidence of absence within the recorded bounds *and*
-   within the model's fidelity, nothing stronger.
+   within the model's sampled fidelity, nothing stronger.
 
 **Post-amendment evidence that the widened domain is really explored:**
 the Sample B (broken variant) capture now contains a second, negative
