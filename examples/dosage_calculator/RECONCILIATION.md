@@ -1,0 +1,76 @@
+# Reconciliation Note — T4 Variants A / B / C
+
+All three variants are generated from the identical underlying evidence:
+the Sample A CrossHair capture (`run_manifest.json`,
+`raw_crosshair_output.txt`) and the four concrete runs of T4-0
+(`concrete_results.json`, produced from
+`tests/test_dosage_concrete.py::CASES`, pytest 4 passed). No variant has
+its own evidence source.
+
+## Evidence records per requirement per variant
+
+Fact tuples: (requirement, method, record, status). Verified identical
+across variants by programmatic extraction from the generated JSON
+artifacts (set equality over 7 facts) — not by eye.
+
+| Requirement | Evidence fact | A (evidence array) | B (shadow rows) | C (dual matrix) |
+|---|---|---|---|---|
+| REQ-GIP-1-4-12 | crosshair / no_counterexample | record 1 of row | parent row | symbolic row |
+| REQ-GIP-1-4-12 | concrete `over_max_clamps_exactly_to_max` / passed | record 2 of row | shadow `.concrete-1` | concrete row |
+| REQ-GIP-1-8-1 | crosshair / no_counterexample | record 1 of row | parent row | symbolic row |
+| REQ-GIP-1-8-1 | concrete `ordinary_negative_rate_clamps_to_zero` / passed | record 2 of row | shadow `.concrete-1` | concrete row |
+| REQ-GIP-1-8-1 | concrete `overflow_negative_rate_clamps_to_zero` / passed | record 3 of row | shadow `.concrete-2` | concrete row |
+| REQ-DOSE-003 | crosshair / no_counterexample | record 1 of row | parent row | symbolic row |
+| REQ-DOSE-003 | concrete `normal_in_range_exact_value` / passed | record 2 of row | shadow `.concrete-1` | concrete row |
+
+Row counts: A = 3 rows / 7 evidence records; B = 7 rows (3 parent + 4
+shadow); C = 3 symbolic rows + 4 concrete rows.
+
+**SAME-FACTS: confirmed.** The three views carry the same seven evidence
+facts in different shapes.
+
+## Findings (asymmetries — reported, not silently fixed)
+
+1. **Derived `intent_ok` diverges in variant C's concrete view.**
+   The evidence facts are identical, but the derived intent flag is
+   view-scoped: A and B (parents) and C-symbolic all yield
+   REQ-GIP-1-4-12 false / REQ-GIP-1-8-1 false / REQ-DOSE-003 **true**;
+   C-concrete yields **false for all four rows**, including
+   REQ-DOSE-003, because that view compares intended_method
+   (BOUNDED_CHECKED) against the only evidence type it carries
+   (EXAMPLE_CHECKED). Variant A's whole-requirement view uses an
+   any-record-matches rule and sees the intent satisfied by the
+   symbolic record. Consequence: C's per-view intent flags cannot be
+   read in isolation; A aggregates, B pushes intent down to per-record
+   granularity (shadows declare intended EXAMPLE_CHECKED and match
+   trivially). This is a semantics fork inherent to the shapes, left
+   for reconciliation review.
+2. **Binding authorship differs.** In A and B the requirement↔evidence
+   binding is authored in the metadata file (evidence arrays / shadow
+   entries); in C the concrete binding is carried by the evidence store
+   itself (`requirement_id` in each concrete_results.json case) and the
+   metadata is byte-identical in facts to the base file. Same facts,
+   different place of authorship — affects who can introduce a binding
+   error and where a reviewer must look.
+3. **B duplicates inputs into prose.** Shadow requirement `text` fields
+   restate the case inputs/expected that also exist structurally in
+   concrete_results.json (and in B's own row fields). Redundant but
+   consistent at generation time; a future edit to CASES would make the
+   authored shadow text stale unless metadata.b.yaml is regenerated.
+4. **No single-evidence-type requirement exists in this dataset.** The
+   C acceptance property "a requirement with only one evidence type
+   appears in exactly one artifact" is enforced by construction
+   (concrete rows exist only where a case names the requirement) but is
+   not exercised by the current data: all three requirements carry both
+   types. Verifiable by deleting a case and regenerating; not done this
+   session (evidence is fixed).
+
+## Derived-field conventions common to all variants
+
+- Strength comes only from evidence records (never intended_method).
+- Generated artifacts do not inline intended_method values; mismatches
+  are flagged as `intent_ok: false` with a note referring to the
+  authored metadata (session constraint on generated tokens).
+- Caveats come from `evidence.model.CAVEAT`; every EXAMPLE_CHECKED
+  record carries "Holds for the specific recorded inputs only; no claim
+  of generality beyond them."

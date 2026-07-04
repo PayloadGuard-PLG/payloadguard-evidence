@@ -1,0 +1,111 @@
+{
+  "artifact": "IEC 62304 Traceability Matrix (variant C: concrete evidence)",
+  "generated_utc": "2026-07-04T16:25:39.345246+00:00",
+  "tool_versions": {
+    "crosshair": "crosshair-tool 0.0.107"
+  },
+  "crosshair_bounds": {
+    "per_condition_timeout_s": 30,
+    "max_iterations": 100000,
+    "seed": 1
+  },
+  "method_filter": "concrete_test",
+  "rows": [
+    {
+      "requirement_id": "REQ-GIP-1-4-12",
+      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "over_max_clamps_exactly_to_max",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 500.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 10.0,
+      "observed": 10.0,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: EXAMPLE_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1",
+      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "ordinary_negative_rate_clamps_to_zero",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": -5.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: EXAMPLE_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1",
+      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "overflow_negative_rate_clamps_to_zero",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 1e+308,
+        "infusion_rate_ml_per_hr": -2.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: EXAMPLE_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-DOSE-003",
+      "requirement_text": "Calculation shall yield a finite, in-range result for all inputs meeting preconditions. DECLARED - not sourced from GIP v1.0, which does not address floating-point overflow at the implementation level.",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "normal_in_range_exact_value",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 3.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 6.0,
+      "observed": 6.0,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: EXAMPLE_CHECKED"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+# VARIANT C metadata (T4-C). Content identical to metadata.yaml (the base
+# one-record shape is preserved end-to-end); concrete evidence binds at
+# generation time via the requirement_id in concrete_results.json cases.
+# Validated by evidence/schema/metadata.schema.c.json.
+# Sourced from: Arney, Jetley, Jones, Lee, Ray, Sokolsky, Zhang (2009).
+# "Generic Infusion Pump Hazard Analysis and Safety Requirements v1.0."
+# University of Pennsylvania / FDA OSEL / Fraunhofer CESE, Feb 2009.
+# HID = Hazard ID (source Sec 2.4.1). SR = Safety Requirement (source Sec 3).
+# Dots in source numbering (e.g. "1.4.12") become hyphens in IDs below to
+# satisfy the metadata schema's ^REQ-[A-Z0-9-]+$ pattern.
+# Fields omitted below are intentional GAPs (claims discipline): absence is
+# the gap signal the binder checks for, not a placeholder string.
+
+device:
+  name: "Generic Infusion Pump - Dose-Limit Safety Kernel (POC)"
+  intended_use: >
+    Compute a safe hourly infusion dose from patient and drug parameters,
+    clamped so it never exceeds a configured maximum safe dose.
+  safety_classification: "B"
+  classification_rationale: >
+    DECLARED - not assigned by GIP v1.0, which identifies hazards and
+    requirements but does not assign IEC 62304 classes or ISO 14971
+    severity/probability scores per hazard. Provisional: failure could
+    contribute to a non-serious over- or under-dose given clinician
+    oversight. Requires a manufacturer-specific ISO 14971 risk file
+    before this can be upgraded from DECLARED to sourced.
+  # iso14971_risk_file omitted - GAP, not established in source material
+
+requirements:
+  - id: "REQ-GIP-1-4-12"
+    text: >
+      Bolus request exceeding the maximum permissible dose limit shall
+      trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement
+      1.4.12)
+    implementation: "dosage.py::calculate_hourly_dose"
+    intended_method: "PROVEN"
+
+  - id: "REQ-GIP-1-8-1"
+    text: >
+      Continuous reverse delivery shall not be possible during normal
+      use or a single-fault condition. Modelled at this kernel as a
+      fault input: a negative infusion rate (hardware reverse-flow
+      fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety
+      Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in
+      the 2026-07-04 Option A amendment)
+    implementation: "dosage.py::calculate_hourly_dose"
+    intended_method: "PROVEN"
+
+  - id: "REQ-DOSE-003"
+    text: >
+      Calculation shall yield a finite, in-range result for all inputs
+      meeting preconditions. DECLARED - not sourced from GIP v1.0, which
+      does not address floating-point overflow at the implementation
+      level.
+    implementation: "dosage.py::calculate_hourly_dose"
+    intended_method: "BOUNDED_CHECKED"
+
+threat_model:
+  - id: "THR-GIP-1-2"
+    threat: >
+      Overinfusion: dose limit exceeded due to too many bolus requests.
+      (GIP v1.0 Hazard 1.2, pump type: All)
+    asset: "Dose output value"
+    mitigation_ref: "REQ-GIP-1-4-12"
+    method: "STRIDE:Tampering"
+
+  - id: "THR-GIP-1-3"
+    threat: >
+      Overinfusion: programmed bolus volume or concentration too high.
+      (GIP v1.0 Hazard 1.3, pump type: All)
+    asset: "Dose output value"
+    mitigation_ref: "REQ-GIP-1-4-12"
+    method: "STRIDE:Tampering"
+
+  - id: "THR-GIP-1-14"
+    threat: >
+      Improper flow: bleed back / reflux within the device. (GIP v1.0
+      Hazard 1.14, pump type: FRN - a source-defined pump subtype not
+      decoded in the extracted text; applies to that subtype, not the
+      "All" category. See sources/README.md open question.)
+    asset: "Dose output value"
+    mitigation_ref: "REQ-GIP-1-8-1"
+    method: "STRIDE:Tampering"
+
+sbom:
+  primary_format: "CycloneDX"
+  generator: "syft"
+  components_source: "build"
+
+toolchain:
+  crosshair_bounds:
+    per_condition_timeout_s: 30
+    max_iterations: 100000
+    seed: 1
