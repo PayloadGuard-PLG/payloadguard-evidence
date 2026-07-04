@@ -168,7 +168,12 @@ Produced by `python3 run_verify_broken.py` (a duplicate of
 Produced by `python3 run_verify_naive_widening.py`. See the amendment
 note above for why this pair exists: it preserves the wrong-branch-order
 variant whose real violation CrossHair's bounded search did not find
-(`exit_code` 0, both postconditions `Not confirmed`).
+(`exit_code` 0, both postconditions `Not confirmed`). Machine-readable
+pinning (tool/Python/platform versions, exact invocation, mechanism
+attribution) lives in `exhibit_pin_naive_widening.json`. The miss is
+version-contingent — a future CrossHair release that samples
+floating-point theory more aggressively may confirm the violation; this
+exhibit's claim is scoped to the pinned version.
 
 ### Known bounds divergence (flagged, not smoothed over)
 

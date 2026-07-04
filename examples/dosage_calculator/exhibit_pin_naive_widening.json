@@ -1,0 +1,25 @@
+{
+  "exhibit": "dosage_naive_widening.py miss (Sample C)",
+  "pinned_artifacts": [
+    "dosage_naive_widening.py",
+    "raw_crosshair_output_naive_widening.txt",
+    "run_manifest_naive_widening.json"
+  ],
+  "crosshair_version": "crosshair-tool 0.0.107",
+  "crosshair_version_source": "pip show crosshair-tool -> 'Name: crosshair-tool' / 'Version: 0.0.107' (crosshair CLI 0.0.107 has no --version flag)",
+  "python_version": "Python 3.11.15",
+  "python_version_source": "python3 --version",
+  "platform": "Linux-6.18.5-x86_64-with-glibc2.39",
+  "platform_source": "python3 -c \"import platform; print(platform.platform())\"",
+  "invocation": [
+    "crosshair",
+    "check",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_naive_widening.py",
+    "--report_all"
+  ],
+  "invocation_source": "run_manifest_naive_widening.json 'command' field; no bounds flags passed, CrossHair defaults in effect",
+  "capture_started_utc": "2026-07-04T15:32:17.099113+00:00",
+  "pin_recorded_utc": "2026-07-04T16:15:34Z",
+  "mechanism_attribution": "Class (2) model-fidelity incompleteness, not search-budget. CrossHair 0.0.107 predominantly models Python floats as mathematical reals; IEEE-faithful floating-point execution is attempted only infrequently and is often slow (changelog v0.0.72). In real arithmetic 1e308 * -2.0 = -2e308 exactly - no overflow, no -inf - so the violating state does not exist in the dominant symbolic model at any bounds setting. CrossHair injects nan/+inf/-inf as float ARGUMENTS (changelog v0.0.58); this exhibit's -inf is a computed intermediate from finite inputs, which a real-valued model cannot produce. Changelog: https://crosshair.readthedocs.io/en/stable/changelog.html (v0.0.72, v0.0.58).",
+  "version_contingency": "The miss is version-contingent: a future CrossHair release that samples floating-point theory more aggressively may confirm the violation. This exhibit's claim is scoped to the pinned version above."
+}
