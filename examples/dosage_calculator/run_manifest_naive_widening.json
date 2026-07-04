@@ -1,0 +1,13 @@
+{
+  "tool": "crosshair",
+  "tool_version": "crosshair-tool 0.0.107",
+  "command": [
+    "crosshair",
+    "check",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_naive_widening.py",
+    "--report_all"
+  ],
+  "exit_code": 0,
+  "started_utc": "2026-07-04T15:32:17.099113+00:00",
+  "target": "dosage_naive_widening.py"
+}

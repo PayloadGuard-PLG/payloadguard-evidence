@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix",
-  "generated_utc": "2026-07-04T14:45:24.809759+00:00",
+  "generated_utc": "2026-07-04T15:33:32.526979+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -31,7 +31,7 @@
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
-      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24)",
+      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "crosshair",
       "strength": "BOUNDED_CHECKED",

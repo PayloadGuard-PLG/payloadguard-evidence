@@ -24,18 +24,21 @@ per the standing rule in `sources/README.md`.
 | Metadata ID | GIP v1.0 source | Notes |
 |---|---|---|
 | `REQ-GIP-1-4-12` | Safety Requirement 1.4.12 (bolus dose limit alarm); mitigates Hazards 1.2, 1.3 | Direct restatement |
-| `REQ-GIP-1-8-1` | Safety Requirement 1.8.1 (no continuous reverse delivery, citing IEC 601-2-24); mitigates Hazard 1.14 | Interpretive mapping — see caveat 1 below |
+| `REQ-GIP-1-8-1` | Safety Requirement 1.8.1 (no continuous reverse delivery, citing IEC 601-2-24); mitigates Hazard 1.14 | Fault-input modelling — see caveat 1 and the amendment note below |
 | `REQ-DOSE-003` | **DECLARED, no GIP source** | See caveat 2 below |
 
 ## Interpretive-call caveats
 
-Carried verbatim from the metadata extraction; do not smooth these over:
-
-1. `REQ-GIP-1-8-1` (reverse delivery) is mapped to the kernel's
-   non-negativity postcondition. This is an interpretive correspondence
-   (the source hazard is about physical backward flow; the postcondition
-   is a mathematical bound on a returned value), not a direct restatement.
-   Flag it as such.
+1. `REQ-GIP-1-8-1` (reverse delivery) is modelled as a fault input at
+   this kernel: a negative `infusion_rate_ml_per_hr` represents the
+   hardware single-fault reverse-flow condition, and the directional
+   postcondition (`infusion_rate_ml_per_hr >= 0 or __return__ == 0.0`)
+   requires that any such fault yields exactly zero delivered dose. This
+   is still an interpretive extension of the source requirement — GIP
+   v1.0 SR 1.8.1 addresses the physical pump, and mapping the fault to a
+   negative rate parameter is a modelling decision — but the clamp
+   branch is now genuinely exercised, unlike the pre-amendment contract
+   (see the amendment note below).
 2. `REQ-DOSE-003` has no GIP source at all — GIP v1.0 does not address
    floating-point overflow. It is DECLARED engineering judgement.
 3. Hazards HID 1.1, 1.4, 1.5, 1.10 and Safety Requirements 1.2.2/1.2.3
@@ -44,16 +47,58 @@ Carried verbatim from the metadata extraction; do not smooth these over:
    not a pure function, and don't fit this kernel. Note them in the
    README as a candidate second kernel, not as an oversight.
 
-## Deliberately excluded hazards — candidate second kernel
+## Amendment 2026-07-04 — Option A: reverse delivery modelled as a fault input
 
-HID 1.1 (programmed flow rate too high), 1.4 (incorrect drug
-concentration), 1.5 (programmed flow rate too low), 1.10 (flow rate does
-not match programmed rate), and Safety Requirements 1.2.2/1.2.3 (flow-rate
-deviation sustained over 15 minutes) require a stateful, time-windowed
-model of sensed versus programmed flow. They are out of scope for this
-pure-function kernel by design, not by oversight. A second kernel modelling
-windowed flow-rate deviation is the natural next example if this layer is
-extended.
+Recorded per the audit-trail discipline in `sources/README.md` (changes
+are proposed and recorded, never silent).
+
+**Finding (independent review of the original Phase A):** the original
+contract required `infusion_rate_ml_per_hr >= 0`. Under that
+precondition, `raw_dose = infusion_rate_ml_per_hr *
+concentration_mg_per_ml` is non-negative by algebra, so the
+`if raw_dose < 0.0: return 0.0` branch was dead code and the
+postcondition's lower bound held tautologically. The `REQ-GIP-1-8-1`
+binding therefore verified nothing about the reverse-delivery fault
+scenario: it was vacuously true.
+
+**Change applied:**
+- Precondition widened to `math.isfinite(infusion_rate_ml_per_hr)` — any
+  finite rate, negative rates modelling the fault.
+- Directional postcondition added:
+  `infusion_rate_ml_per_hr >= 0 or __return__ == 0.0`.
+- Branch order fixed: the negative check now runs **before** the
+  finiteness check. This matters: under the original order, a negative
+  rate whose product overflows to `-inf` is caught by
+  `not math.isfinite(raw_dose)` and returns the **maximum** safe dose —
+  the worst possible response to a reverse-flow fault.
+- `metadata.yaml` `REQ-GIP-1-8-1` text updated to state the fault
+  modelling; `intended_method: PROVEN` retained (the intent/realized
+  mismatch remains real and is still reported in the matrix).
+
+**Preserved evidence — `dosage_naive_widening.py` fixture pair:** the
+naive widening (new contract, original branch order) is committed
+deliberately, with its own real CrossHair capture
+(`raw_crosshair_output_naive_widening.txt`,
+`run_manifest_naive_widening.json`). Two facts it documents:
+
+1. The concrete violation exists and is deterministic:
+   `calculate_hourly_dose(70.0, 1e308, -2.0, 10.0)` returns `10.0`
+   where the directional postcondition requires `0.0` (verified by
+   execution in this session; reproduce with two lines of Python).
+2. **CrossHair did not find it.** The capture shows exit code 0 and
+   `Not confirmed` for both postconditions — the bounded search missed
+   a real, reachable violation within its default bounds. This is the
+   clearest in-repo demonstration of why `BOUNDED_CHECKED` must never
+   be presented as proof, and why this repository's claims discipline
+   forbids exactly that. A "no counterexample found" result on the
+   fixed `dosage.py` is evidence of absence-within-bounds, nothing
+   stronger.
+
+**Post-amendment evidence that the widened domain is really explored:**
+the Sample B (broken variant) capture now contains a second, negative
+counterexample — `calculate_hourly_dose(0.5, 0.25, -0.125, 0.125)`
+returning `-0.03125` — showing CrossHair genuinely drives negative rates
+through the contract after the widening.
 
 ## Open question — `FRN` pump-type tag: UNRESOLVED
 
@@ -71,9 +116,8 @@ this section and `sources/README.md` per the standing rule.
 
 ## Fixture formats
 
-Two fixture pairs are committed, both captured by actually running
-CrossHair (`crosshair-tool 0.0.107`, Python 3.11) — neither file is
-hand-written.
+Three fixture pairs are committed, all captured by actually running
+CrossHair (`crosshair-tool 0.0.107`, Python 3.11) — none is hand-written.
 
 ### Sample A — clean (`dosage.py`)
 
@@ -81,11 +125,12 @@ Produced by `python3 run_verify.py`.
 
 - `raw_crosshair_output.txt` — verbatim stdout+stderr of
   `crosshair check dosage.py --report_all`. Content for this capture:
-  a single `info: Not confirmed.` line for the postcondition. With
-  `--report_all`, CrossHair reports `Not confirmed` when its bounded
-  search ends without finding a counterexample and without exhausting
-  all paths — precisely the evidence class `BOUNDED_CHECKED` encodes.
-  It is not a proof.
+  two `info: Not confirmed.` lines, one per postcondition (range and
+  directional). With `--report_all`, CrossHair reports `Not confirmed`
+  when its bounded search ends without finding a counterexample and
+  without exhausting all paths — precisely the evidence class
+  `BOUNDED_CHECKED` encodes. It is not a proof (see the amendment note
+  above for a committed demonstration of why).
 - `run_manifest.json` — JSON object with keys `tool`, `tool_version`,
   `command` (argv list), `exit_code` (0 = no counterexample found),
   `started_utc` (ISO-8601 UTC), `target`.
@@ -96,24 +141,35 @@ Produced by `python3 run_verify_broken.py` (a duplicate of
 `run_verify.py` retargeted at the clamp-free variant, kept separate so
 `run_verify.py` stays identical to the reviewed original).
 
-- `raw_crosshair_output_broken.txt` — verbatim capture containing a
-  postcondition-violation line with a concrete counterexample:
-  `error: false when calling calculate_hourly_dose(1.0, 2.0, 0.5, 0.25)
-  (which returns 1.0)` — 1.0 mg/hr exceeds the 0.25 mg/hr maximum, as
-  expected once the clamp is removed.
+- `raw_crosshair_output_broken.txt` — verbatim capture containing two
+  postcondition-violation lines with concrete counterexamples:
+  `calculate_hourly_dose(1.0, 1.0, 0.5, 0.25)` returning `0.5`
+  (range postcondition: 0.5 exceeds the 0.25 maximum) and
+  `calculate_hourly_dose(0.5, 0.25, -0.125, 0.125)` returning
+  `-0.03125` (directional postcondition: negative rate must yield 0.0).
 - `run_manifest_broken.json` — same manifest shape, `exit_code` 1.
+
+### Sample C — naive widening (`dosage_naive_widening.py`), review artifact
+
+Produced by `python3 run_verify_naive_widening.py`. See the amendment
+note above for why this pair exists: it preserves the wrong-branch-order
+variant whose real violation CrossHair's bounded search did not find
+(`exit_code` 0, both postconditions `Not confirmed`).
 
 ### Known bounds divergence (flagged, not smoothed over)
 
 `metadata.yaml` declares `toolchain.crosshair_bounds`
 (`per_condition_timeout_s: 30`, `max_iterations: 100000`, `seed: 1`), and
 the traceability matrix reports those declared bounds. The capture
-command specified by this phase (`crosshair check <target> --report_all`)
+command specified by Phase A (`crosshair check <target> --report_all`)
 passes no bounds flags, so the actual runs used CrossHair's defaults. The
 declared bounds are therefore the *intended* verification envelope, not
-yet the demonstrated one. The Phase-B adapter/binder should either pass
-the declared bounds to the CrossHair invocation or record the effective
-bounds in the manifest, and reconcile the two.
+yet the demonstrated one. Constraint noted for the pending decision:
+crosshair-tool 0.0.107's CLI can enforce only `--per_condition_timeout`;
+it has no flags for `max_iterations` or `seed`. The Phase-B
+adapter/binder should reconcile declared and effective bounds. The
+Sample C result above makes this divergence more than cosmetic: bounds
+determine what a bounded search can miss.
 
 ## Matrix generation
 
