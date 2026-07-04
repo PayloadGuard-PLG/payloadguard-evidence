@@ -171,6 +171,7 @@ def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=Non
                 **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
                 "bounds": record.get("bounds"),
                 "counterexample": record.get("counterexample"),
+                "test_id": record.get("test_id"),
                 "inputs": record.get("inputs"),
                 "expected": record.get("expected"),
                 "observed": record.get("observed"),

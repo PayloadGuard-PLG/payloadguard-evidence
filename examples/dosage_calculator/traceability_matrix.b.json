@@ -1,0 +1,176 @@
+{
+  "artifact": "IEC 62304 Traceability Matrix (variant B: flattened pseudo-requirements)",
+  "generated_utc": "2026-07-04T16:25:03.256550+00:00",
+  "tool_versions": {
+    "crosshair": "crosshair-tool 0.0.107"
+  },
+  "crosshair_bounds": {
+    "per_condition_timeout_s": 30,
+    "max_iterations": 100000,
+    "seed": 1
+  },
+  "rows": [
+    {
+      "requirement_id": "REQ-GIP-1-4-12",
+      "parent_requirement": null,
+      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: BOUNDED_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1",
+      "parent_requirement": null,
+      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "intent_ok": false,
+      "notes": [
+        "intended method per metadata not realized; realized: BOUNDED_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-DOSE-003",
+      "parent_requirement": null,
+      "requirement_text": "Calculation shall yield a finite, in-range result for all inputs meeting preconditions. DECLARED - not sourced from GIP v1.0, which does not address floating-point overflow at the implementation level.",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1.concrete-1",
+      "parent_requirement": "REQ-GIP-1-8-1",
+      "requirement_text": "Concrete evidence for REQ-GIP-1-8-1: test 'ordinary_negative_rate_clamps_to_zero' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 2.0, 'infusion_rate_ml_per_hr': -5.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 0.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
+      "code_location": "tests/test_dosage_concrete.py::ordinary_negative_rate_clamps_to_zero",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "ordinary_negative_rate_clamps_to_zero",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": -5.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1.concrete-2",
+      "parent_requirement": "REQ-GIP-1-8-1",
+      "requirement_text": "Concrete evidence for REQ-GIP-1-8-1: test 'overflow_negative_rate_clamps_to_zero' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 1e+308, 'infusion_rate_ml_per_hr': -2.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 0.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
+      "code_location": "tests/test_dosage_concrete.py::overflow_negative_rate_clamps_to_zero",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "overflow_negative_rate_clamps_to_zero",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 1e+308,
+        "infusion_rate_ml_per_hr": -2.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-DOSE-003.concrete-1",
+      "parent_requirement": "REQ-DOSE-003",
+      "requirement_text": "Concrete evidence for REQ-DOSE-003: test 'normal_in_range_exact_value' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 2.0, 'infusion_rate_ml_per_hr': 3.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 6.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
+      "code_location": "tests/test_dosage_concrete.py::normal_in_range_exact_value",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "normal_in_range_exact_value",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 3.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 6.0,
+      "observed": 6.0,
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-4-12.concrete-1",
+      "parent_requirement": "REQ-GIP-1-4-12",
+      "requirement_text": "Concrete evidence for REQ-GIP-1-4-12: test 'over_max_clamps_exactly_to_max' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 2.0, 'infusion_rate_ml_per_hr': 500.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 10.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
+      "code_location": "tests/test_dosage_concrete.py::over_max_clamps_exactly_to_max",
+      "method": "concrete_test",
+      "strength": "EXAMPLE_CHECKED",
+      "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
+      "result_status": "passed",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": "over_max_clamps_exactly_to_max",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 500.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 10.0,
+      "observed": 10.0,
+      "intent_ok": true,
+      "notes": []
+    }
+  ]
+}
