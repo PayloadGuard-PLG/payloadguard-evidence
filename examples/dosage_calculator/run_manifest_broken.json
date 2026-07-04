@@ -1,0 +1,13 @@
+{
+  "tool": "crosshair",
+  "tool_version": "crosshair-tool 0.0.107",
+  "command": [
+    "crosshair",
+    "check",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_broken.py",
+    "--report_all"
+  ],
+  "exit_code": 1,
+  "started_utc": "2026-07-04T14:44:40.785312+00:00",
+  "target": "dosage_broken.py"
+}

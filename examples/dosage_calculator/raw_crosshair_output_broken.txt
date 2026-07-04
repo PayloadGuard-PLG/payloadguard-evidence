@@ -1,0 +1,1 @@
+/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_broken.py:20: error: false when calling calculate_hourly_dose(1.0, 2.0, 0.5, 0.25) (which returns 1.0)

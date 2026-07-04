@@ -1,0 +1,69 @@
+{
+  "artifact": "IEC 62304 Traceability Matrix",
+  "generated_utc": "2026-07-04T14:45:24.809759+00:00",
+  "tool_versions": {
+    "crosshair": "crosshair-tool 0.0.107"
+  },
+  "crosshair_bounds": {
+    "per_condition_timeout_s": 30,
+    "max_iterations": 100000,
+    "seed": 1
+  },
+  "rows": [
+    {
+      "requirement_id": "REQ-GIP-1-4-12",
+      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "intent_ok": false,
+      "notes": [
+        "intended PROVEN, realized BOUNDED_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1",
+      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24)",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "intent_ok": false,
+      "notes": [
+        "intended PROVEN, realized BOUNDED_CHECKED"
+      ]
+    },
+    {
+      "requirement_id": "REQ-DOSE-003",
+      "requirement_text": "Calculation shall yield a finite, in-range result for all inputs meeting preconditions. DECLARED - not sourced from GIP v1.0, which does not address floating-point overflow at the implementation level.",
+      "code_location": "dosage.py::calculate_hourly_dose",
+      "method": "crosshair",
+      "strength": "BOUNDED_CHECKED",
+      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
+      "result_status": "no_counterexample",
+      "bounds": {
+        "per_condition_timeout_s": 30,
+        "max_iterations": 100000,
+        "seed": 1
+      },
+      "counterexample": null,
+      "intent_ok": true,
+      "notes": []
+    }
+  ]
+}
