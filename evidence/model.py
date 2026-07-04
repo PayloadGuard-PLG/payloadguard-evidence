@@ -13,6 +13,7 @@ class Strength(str, Enum):
     PROVEN = "PROVEN"                    # Dafny proof / discharged Z3 VC
     BOUNDED_CHECKED = "BOUNDED_CHECKED"  # CrossHair pass within recorded bounds
     TESTED = "TESTED"                    # concrete test cases executed
+    EXAMPLE_CHECKED = "EXAMPLE_CHECKED"  # specific recorded input/output pairs executed
     DECLARED = "DECLARED"                # human assertion, no tool evidence
     GAP = "GAP"                          # nothing established; human input needed
 
@@ -20,6 +21,7 @@ CAVEAT = {
     Strength.PROVEN: "Formally proven against the stated specification.",
     Strength.BOUNDED_CHECKED: "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
     Strength.TESTED: "Exercised on the recorded test cases only.",
+    Strength.EXAMPLE_CHECKED: "Holds for the specific recorded inputs only; no claim of generality beyond them.",
     Strength.DECLARED: "Asserted by the author; not established by any tool.",
     Strength.GAP: "Not established. Human input required.",
 }

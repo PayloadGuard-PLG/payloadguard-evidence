@@ -1,0 +1,63 @@
+{
+  "source": "tests/test_dosage_concrete.py::CASES",
+  "started_utc": "2026-07-04T16:18:49.189903+00:00",
+  "pytest_exit_code": 0,
+  "cases": [
+    {
+      "test_id": "ordinary_negative_rate_clamps_to_zero",
+      "requirement_id": "REQ-GIP-1-8-1",
+      "function": "dosage.py::calculate_hourly_dose",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": -5.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "passed": true
+    },
+    {
+      "test_id": "overflow_negative_rate_clamps_to_zero",
+      "requirement_id": "REQ-GIP-1-8-1",
+      "function": "dosage.py::calculate_hourly_dose",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 1e+308,
+        "infusion_rate_ml_per_hr": -2.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 0.0,
+      "observed": 0.0,
+      "passed": true
+    },
+    {
+      "test_id": "normal_in_range_exact_value",
+      "requirement_id": "REQ-DOSE-003",
+      "function": "dosage.py::calculate_hourly_dose",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 3.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 6.0,
+      "observed": 6.0,
+      "passed": true
+    },
+    {
+      "test_id": "over_max_clamps_exactly_to_max",
+      "requirement_id": "REQ-GIP-1-4-12",
+      "function": "dosage.py::calculate_hourly_dose",
+      "inputs": {
+        "weight_kg": 70.0,
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 500.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "expected": 10.0,
+      "observed": 10.0,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "tool": "pytest",
+  "command": [
+    "/usr/local/bin/python3",
+    "-m",
+    "pytest",
+    "tests/test_dosage_concrete.py",
+    "-v"
+  ],
+  "cwd": "/home/user/payloadguard-evidence",
+  "exit_code": 0,
+  "started_utc": "2026-07-04T16:18:49.189903+00:00",
+  "python_version": "3.11.15",
+  "platform": "Linux-6.18.5-x86_64-with-glibc2.39",
+  "target": "tests/test_dosage_concrete.py"
+}
