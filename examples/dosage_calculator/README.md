@@ -175,6 +175,24 @@ version-contingent — a future CrossHair release that samples
 floating-point theory more aggressively may confirm the violation; this
 exhibit's claim is scoped to the pinned version.
 
+### Domain-free probe — `overflow_probe.py` (outcome: CONFIRMED)
+
+`overflow_probe.py` isolates the model-fidelity question from all dosage
+logic: `double_it(x)` with `pre: math.isfinite(x)` and
+`post: math.isfinite(__return__)` has a deterministic IEEE violation
+(`double_it(1e308)` → `inf`; executable fact in
+`tests/test_overflow_probe.py`). Run with the same invocation and
+defaults as the amendment runs (`python3 run_verify_overflow_probe.py`),
+CrossHair **confirmed** it: exit 1,
+`false when calling double_it(8.98846567431158e+307) (which returns
+float("inf"))`. The expected outcome was a miss; the confirmation was
+recorded as-is and not re-run — it measures the width of CrossHair's
+infrequent IEEE-faithful channel. Read together with Sample C (same
+invocation, violation NOT found on the 4-parameter kernel), the two
+exhibits bound that channel: it exists and fires on a minimal
+single-operation target, but is not dependable on more complex targets
+at default settings. Pin: `exhibit_pin_overflow_probe.json`.
+
 ### Known bounds divergence (flagged, not smoothed over)
 
 `metadata.yaml` declares `toolchain.crosshair_bounds`

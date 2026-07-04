@@ -1,0 +1,13 @@
+{
+  "tool": "crosshair",
+  "tool_version": "crosshair-tool 0.0.107",
+  "command": [
+    "crosshair",
+    "check",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/overflow_probe.py",
+    "--report_all"
+  ],
+  "exit_code": 1,
+  "started_utc": "2026-07-04T16:16:53.569501+00:00",
+  "target": "overflow_probe.py"
+}

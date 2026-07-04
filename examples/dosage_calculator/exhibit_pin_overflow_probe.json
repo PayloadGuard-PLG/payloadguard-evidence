@@ -1,0 +1,29 @@
+{
+  "exhibit": "overflow_probe.py domain-free model-fidelity probe",
+  "pinned_artifacts": [
+    "overflow_probe.py",
+    "raw_crosshair_output_overflow_probe.txt",
+    "run_manifest_overflow_probe.json",
+    "tests/test_overflow_probe.py"
+  ],
+  "outcome": "confirmed",
+  "outcome_detail": "CrossHair FOUND the postcondition violation: 'error: false when calling double_it(8.98846567431158e+307) (which returns float(\"inf\"))', exit code 1. The expected outcome was exit 0 / not confirmed; the infrequent IEEE-faithful floating-point channel fired on this minimal single-operation target. Recorded as-is per instruction: a confirmation measures the FP channel's width. Not re-run.",
+  "interpretation": "The FP channel exists and can produce computed-intermediate overflow counterexamples on a minimal target (one argument, one multiplication, one precondition). The same invocation on the 4-parameter dosage_naive_widening.py kernel did NOT fire within the same defaults (see exhibit_pin_naive_widening.json). Together the two exhibits bound the channel: present, but not dependable on more complex targets at default settings. The Sample C miss claim remains scoped to its pinned version and target.",
+  "crosshair_version": "crosshair-tool 0.0.107",
+  "crosshair_version_source": "pip show crosshair-tool -> 'Name: crosshair-tool' / 'Version: 0.0.107' (crosshair CLI 0.0.107 has no --version flag)",
+  "python_version": "Python 3.11.15",
+  "python_version_source": "python3 --version",
+  "platform": "Linux-6.18.5-x86_64-with-glibc2.39",
+  "platform_source": "python3 -c \"import platform; print(platform.platform())\"",
+  "invocation": [
+    "crosshair",
+    "check",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/overflow_probe.py",
+    "--report_all"
+  ],
+  "invocation_source": "run_manifest_overflow_probe.json 'command' field; no bounds flags passed, CrossHair defaults in effect (same invocation shape as the amendment runs)",
+  "capture_started_utc": "2026-07-04T16:16:53.569501+00:00",
+  "pin_recorded_utc": "2026-07-04T16:17:24Z",
+  "deterministic_companion": "tests/test_overflow_probe.py asserts math.isinf(double_it(1e308)) - the violation as executable fact (1 passed).",
+  "version_contingency": "Both the probe confirmation and the Sample C miss are version-contingent; claims are scoped to the pinned version above."
+}
