@@ -47,8 +47,14 @@ payloadguard-evidence/
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
 │   ├── metadata[.a|.b|.c].yaml  Authored metadata, base + variant shapes
 │   ├── generate_matrix*.py      Generators (validate → bind → check → render)
-│   ├── regenerate_all.py        Sanctioned regeneration entrypoint: all
-│   │                            variant generators + fact-equality gate
+│   ├── regenerate_all.py        Inner regeneration step: all variant
+│   │                            generators + fact-equality gate
+│   ├── generate_artifacts.py    End-to-end pipeline (Turn B4): schema
+│   │                            validation -> capture integrity ->
+│   │                            regenerate_all -> PROVEN sweep ->
+│   │                            artifact_index.json provenance
+│   ├── artifact_index.json      SHA-256 provenance: inputs -> outputs,
+│   │                            per-gate results, frozen evidence hashes
 │   ├── traceability_matrix.*    Generated artifacts (never hand-typed)
 │   ├── README.md                Audit-trail record (citations, caveats,
 │   │                            amendments, exhibits, open questions)

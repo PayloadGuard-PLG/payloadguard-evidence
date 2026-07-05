@@ -6,6 +6,31 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-05 (Turn B4) — Phase B Gate 1: end-to-end artifact generation
+
+Phase B v3 prompt + roadmap received; roadmap committed verbatim as
+`payloadguard-evidence-roadmap-phaseB-to-C.md`. Note for the record: the
+prompt's B4/B5 spec bodies arrived as placeholders; B4 scope taken from
+roadmap Gate 1 (minimal pipeline, four real variant artifacts as ground
+truth, Steven review before Gate 2).
+
+- `generate_artifacts.py`: five-stage end-to-end pipeline — (1) all four
+  metadata files schema-validated, (2) capture integrity verified without
+  re-running evidence (Sample A exit 0 + effective_bounds present, Sample
+  B exit 1, concrete store clean), (3) regeneration + fact-equality gate
+  via the B2 path (PASS, 7 facts), (4) structural PROVEN sweep over four
+  variants plus frozen base, (5) `artifact_index.json` — SHA-256
+  provenance binding 12 inputs to 8 outputs plus 10 frozen evidence files,
+  with per-gate results. Any stage failure is a Tier 1 stop.
+- `KNOWN_LIMITATIONS.md` created as the standing gate ledger: Gate 3
+  (CrossHair API bounds) deferred — not hit in B4; Gate 4 (binding
+  authorship) deferred to Gate 2's binder design; Gate 5 (single-evidence
+  fixture) deferred as a Gate 2 test prerequisite; Gate 6 (FRN) blocked on
+  a one-line definition from Steven; Phase C `verifier_completion_status`
+  schema consideration noted for the Gate 2 binder.
+- Suite: 15 passed. Gate 2 (vocabulary-agnostic binder + CONFLICT rule)
+  not started — gated on Steven's review of the four real artifacts.
+
 ## 2026-07-05 09:46 UTC — Turn 2.0: bounds reconciliation, fact-equality gate, review protocol (678a3a5, 6347645, B3: this commit)
 
 Three ratified rulings from the Q1–Q3 design review, executed in strict

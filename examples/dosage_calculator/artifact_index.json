@@ -1,0 +1,47 @@
+{
+  "artifact": "PayloadGuard evidence artifact index",
+  "generated_utc": "2026-07-05T11:58:03.053622+00:00",
+  "pipeline": "generate_artifacts.py (Turn B4)",
+  "gates": {
+    "schema_validation": "PASS",
+    "capture_integrity": "PASS",
+    "fact_equality": "PASS",
+    "structural_proven": "PASS"
+  },
+  "inputs": {
+    "dosage.py": "04656c5f7f65abaee87e15275ab5d1da84a737a7dc85260b94eec405cd55f992",
+    "metadata.yaml": "95eda0bcd0c2520fb8143ec1716b73f9a06879c00eb994549883f82e59d665cc",
+    "metadata.a.yaml": "0ea01a3f78ecaa5c27daa59f4b5c21ba841353cd81d8e5e47a0b6a4049708e7d",
+    "metadata.b.yaml": "9af9fea987aa1874d89f358e0c8e7475efc2037ff246942e0a58b1b60cfade02",
+    "metadata.c.yaml": "1e47589ca0e858587cade8d79b305617585283e4d97a3dd31563f751ff7406bc",
+    "run_manifest.json": "9688e066c7af9b8ca0877f3df0d4cda8e740e1ebd8166bc3f8e368ffdcafefb5",
+    "raw_crosshair_output.txt": "9eb34bb02fc8894326d9a5b50c0f1dad9e70c69eec96ca104cdb80d537ddeded",
+    "concrete_results.json": "2f8e39dc8645c98840a3d0eb14c9aa0e61565b7e81dd83f746778b4083335afd",
+    "evidence/schema/metadata.schema.json": "26af66e29e847a2b6af8e4f876ff9f0fae6c568c87e5e0b304ece7c9a02996ef",
+    "evidence/schema/metadata.schema.a.json": "95717cc162cbbda543785531fc2b959e7dc3b0b75499c8cc274651684d83ce86",
+    "evidence/schema/metadata.schema.b.json": "c330e89d923d9129f563a054dc8ecf36dc573fc12c651b9f2622811f5bd71ce2",
+    "evidence/schema/metadata.schema.c.json": "25078e9933193953d182baa64d6092cabd3e4c3f5f3b115cc32175d4cceaf869"
+  },
+  "outputs": {
+    "traceability_matrix.a.json": "b600254b78b7bb5647fe0f8b7796bb993fd645af1906a4ea0088047a5a38a55d",
+    "traceability_matrix.b.json": "467467b74e4dc273e16c8745ba863a4c280c8ab638af476990a314b39077f6b1",
+    "traceability_matrix.symbolic.json": "03c619b20616de987119e78f8612c64965e334e927719417e606ede0f3908600",
+    "traceability_matrix.concrete.json": "0f01d13ac9c9b2d2d9010639080f28110d44bc79e0748b3dfc09fb76e44fe47b",
+    "traceability_matrix.a.md": "02dd40bf909be4211ae2da916dca81c3229c3c4a791131016b0069aaacb05289",
+    "traceability_matrix.b.md": "00ad7b902fa60acd8ea96808c6b596052545495e3f5d79a9b7760d0413849d83",
+    "traceability_matrix.symbolic.md": "4621fa1311f14543be5dbccbbded8b688416c61acab37be7d1ff6e968bee242e",
+    "traceability_matrix.concrete.md": "fbeea5080a580818096969a5516f582061e847d182af2d61e8fa71356ee1cbe8"
+  },
+  "frozen_evidence": {
+    "traceability_matrix.json": "c465ea69d2b3373d5d2d1d01681ee1021b0e7154de3ae9e7315c4c9a9bc6afdf",
+    "traceability_matrix.md": "1eb42cae14ef856a0e715e453c8a2ebd3eb7773da45f0e3ef9f0e606a4e32239",
+    "raw_crosshair_output_broken.txt": "e206590d2737e27359cef21938ce0ad53be139e3734e690f97e63aed3cba38eb",
+    "run_manifest_broken.json": "ffb98c2621d9fce6d2590d546335c656607965dd36ed3cf3d0d7d79bbf0d7397",
+    "raw_crosshair_output_naive_widening.txt": "e667b35a92377d38f81f92edbb52c64ea38ea8e8fc1647ab10f645f5e43e8d24",
+    "run_manifest_naive_widening.json": "8753133eb758574c7e7463aa3da5081c40cce490090935a00e7f0dbd0dc7cf25",
+    "exhibit_pin_naive_widening.json": "dc9e2802de90abc127ac0578297f3c70274d01540bc3ebb603c6e6a8a884dfa2",
+    "raw_crosshair_output_overflow_probe.txt": "93edf163080216783a6faace4152a6cc008cbfb030d8eccb82e27dd103c4c5a3",
+    "run_manifest_overflow_probe.json": "e2d1f32b68bad47674afab1b4a252a568e8388bbd2452bb6b000d2e060268fc9",
+    "exhibit_pin_overflow_probe.json": "e35dc37a0585d19e687de7f0278f7e131f074e86cfb2dc021813608c660ebbd4"
+  }
+}

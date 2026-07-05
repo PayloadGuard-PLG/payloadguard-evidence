@@ -147,7 +147,12 @@ python run_verify_overflow_probe.py  # overflow probe
 python run_verify_concrete.py        # pytest capture + concrete_results.json
 
 # regenerate traceability matrices (schema-validated, structurally checked)
-python regenerate_all.py             # SANCTIONED PATH: all three variant
+python generate_artifacts.py         # END-TO-END PIPELINE (Turn B4): schema
+                                     # validation -> capture integrity ->
+                                     # regeneration + fact-equality gate ->
+                                     # structural PROVEN sweep -> provenance
+                                     # index (artifact_index.json)
+python regenerate_all.py             # inner regeneration step: variant
                                      # generators + the fact-equality gate
 python generate_matrix.py            # base matrix (frozen legacy view)
 ```
