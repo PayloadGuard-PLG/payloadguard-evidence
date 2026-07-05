@@ -156,11 +156,12 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
 
 ## Known limitations and open items
 
-- Declared CrossHair bounds in `metadata.yaml` (`per_condition_timeout_s`,
-  `max_iterations`, `seed`) are the intended envelope; the capture commands
-  run with CrossHair defaults. The divergence is flagged in the example
-  README; reconciliation is a Phase B item (the 0.0.107 CLI can enforce only
-  `--per_condition_timeout`).
+- Declared CrossHair bounds in `metadata.yaml` are the intended envelope;
+  each manifest's `effective_bounds` records what the run demonstrated
+  (Turn 2.0). The Sample A/B captures enforce `--per_condition_timeout 30`;
+  `max_iterations` and `seed` remain declared-only — the 0.0.107 CLI cannot
+  enforce them (gap open at the tool level, Phase B may close it via the
+  API). Every variant matrix carries the declared/effective block.
 - Binding authorship differs across T4 variants (metadata-authored in A/B,
   evidence-store-carried in C) — open, deferred to Phase B
   (`RECONCILIATION.md`, asymmetry 2).

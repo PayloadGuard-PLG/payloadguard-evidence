@@ -200,21 +200,25 @@ exhibits bound that channel: it exists and fires on a minimal
 single-operation target, but is not dependable on more complex targets
 at default settings. Pin: `exhibit_pin_overflow_probe.json`.
 
-### Known bounds divergence (flagged, not smoothed over)
+### Bounds: declared vs effective (resolved 2026-07-04, Turn 2.0 B1)
 
 `metadata.yaml` declares `toolchain.crosshair_bounds`
-(`per_condition_timeout_s: 30`, `max_iterations: 100000`, `seed: 1`), and
-the traceability matrix reports those declared bounds. The capture
-command specified by Phase A (`crosshair check <target> --report_all`)
-passes no bounds flags, so the actual runs used CrossHair's defaults. The
-declared bounds are therefore the *intended* verification envelope, not
-yet the demonstrated one. Constraint noted for the pending decision:
-crosshair-tool 0.0.107's CLI can enforce only `--per_condition_timeout`;
-it has no flags for `max_iterations` or `seed`. The Phase-B
-adapter/binder should reconcile declared and effective bounds. Bounds
-govern class (1) search-budget incompleteness only (see the amendment
-note above): they determine how much of the representable input space
-is explored. The Sample C miss is class (2) model-fidelity
+(`per_condition_timeout_s: 30`, `max_iterations: 100000`, `seed: 1`) as
+the *intended* verification envelope — the bounds analogue of
+`intended_method`. What a run actually *demonstrated* is recorded in its
+manifest's `effective_bounds` field, the single source of truth. Since
+Turn 2.0, the Sample A/B capture command passes
+`--per_condition_timeout 30` (the one declared bound the 0.0.107 CLI can
+enforce); `max_iterations` and `seed` remain declared-only — the CLI has
+no flags for them, an enforcement gap open at the tool level (Phase B
+may close it via the CrossHair API). Every variant matrix carries a
+model-level `bounds` block `{declared, effective, enforcement_note}`,
+derived once and projected read-only into all views. The exhibit
+captures (Sample C, overflow probe) remain pinned to their original
+no-flags invocation and were not re-run — they are frozen measurements.
+Bounds govern class (1) search-budget incompleteness only (see the
+amendment note above): they determine how much of the representable
+input space is explored. The Sample C miss is class (2) model-fidelity
 incompleteness and is not closed by raising bounds.
 
 ## Matrix generation

@@ -64,11 +64,14 @@ payloadguard-evidence/
 ```
                       AUTHORED                          CAPTURED (real runs)
         ┌─────────────────────────────┐     ┌────────────────────────────────────┐
-        │ sources/*.md  (ground truth)│     │ run_verify*.py                     │
+        │ sources/*.md  (ground truth)│     │ run_verify(.broken)*.py            │
         │        │ cite               │     │   crosshair check <target>         │
         │        ▼                    │     │   --report_all                     │
-        │ metadata[.a|.b|.c].yaml     │     │   -> raw_crosshair_output*.txt     │
-        │  device / requirements /    │     │   -> run_manifest*.json            │
+        │ metadata[.a|.b|.c].yaml     │     │   --per_condition_timeout 30       │
+        │  device / requirements /    │     │   -> raw output + manifest with    │
+        │  (declared bounds = intent) │     │      effective_bounds (Turn 2.0);  │
+        │                             │     │   exhibit runners keep the pinned  │
+        │                             │     │   no-flags invocation (frozen)     │
         │  threat_model / toolchain   │     │ run_verify_concrete.py             │
         └──────────────┬──────────────┘     │   pytest tests/test_dosage_...     │
                        │                    │   -> raw_pytest_output_concrete    │

@@ -17,7 +17,10 @@ def _version():
     return "crosshair-tool " + importlib.metadata.version("crosshair-tool")
 
 def main():
-    cmd = ["crosshair", "check", str(TARGET), "--report_all"]
+    # Turn 2.0 (B1): same reconciliation as run_verify.py — enforce the one
+    # enforceable declared bound, record effective_bounds in the manifest.
+    cmd = ["crosshair", "check", str(TARGET), "--report_all",
+           "--per_condition_timeout", "30"]
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
     proc = subprocess.run(cmd, capture_output=True, text=True)
     (HERE / "raw_crosshair_output_broken.txt").write_text(
@@ -30,6 +33,13 @@ def main():
         "exit_code": proc.returncode,
         "started_utc": started,
         "target": str(TARGET.relative_to(HERE)),
+        "effective_bounds": {
+            "per_condition_timeout_s": 30,
+            "enforcement_note": (
+                "max_iterations and seed are declared-only in metadata; "
+                "crosshair-tool 0.0.107 has no CLI flags to enforce them."
+            ),
+        },
     }
     (HERE / "run_manifest_broken.json").write_text(json.dumps(manifest, indent=2))
     print(f"captured; exit_code={proc.returncode}")

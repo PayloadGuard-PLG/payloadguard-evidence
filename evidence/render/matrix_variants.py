@@ -123,12 +123,32 @@ def assert_no_realized_proven(matrix):
             )
 
 
-def _header(variant_key, metadata, tool_versions):
+def derive_bounds_block(metadata, manifest):
+    """Turn 2.0 (B1): declared bounds are the intended envelope authored in
+    metadata; effective bounds are what the capture invocation actually
+    enforced, read from the run manifest (single source of truth). Derived
+    once at the model level; every view carries the block read-only."""
+    if "effective_bounds" not in manifest:
+        raise SystemExit(
+            "capture manifest lacks effective_bounds; re-run the Turn 2.0 "
+            "capture runners before generating matrices"
+        )
+    effective = dict(manifest["effective_bounds"])
+    note = effective.pop("enforcement_note", "")
+    return {
+        "declared": metadata["toolchain"]["crosshair_bounds"],
+        "effective": effective,
+        "enforcement_note": note,
+    }
+
+
+def _header(variant_key, metadata, tool_versions, bounds_block):
     return {
         "artifact": _ARTIFACT_TITLES[variant_key],
         "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "tool_versions": tool_versions or {},
         "crosshair_bounds": metadata["toolchain"]["crosshair_bounds"],
+        "bounds": bounds_block,
     }
 
 
@@ -165,7 +185,7 @@ def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=Non
                 "notes": notes,
             }
         )
-    matrix = _header("a", metadata, tool_versions)
+    matrix = _header("a", metadata, tool_versions, derive_bounds_block(metadata, manifest))
     matrix["rows"] = rows
     assert_no_realized_proven(matrix)
     return matrix, _markdown_variant_a(matrix)
@@ -238,7 +258,7 @@ def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=Non
                 "notes": notes,
             }
         )
-    matrix = _header("b", metadata, tool_versions)
+    matrix = _header("b", metadata, tool_versions, derive_bounds_block(metadata, manifest))
     matrix["rows"] = rows
     assert_no_realized_proven(matrix)
     return matrix, _markdown_variant_b(matrix)
@@ -320,7 +340,7 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
                 }
             )
     key = "c-symbolic" if method == "crosshair" else "c-concrete"
-    matrix = _header(key, metadata, tool_versions)
+    matrix = _header(key, metadata, tool_versions, derive_bounds_block(metadata, manifest))
     matrix["method_filter"] = method
     matrix["rows"] = rows
     assert_no_realized_proven(matrix)
@@ -355,12 +375,15 @@ def _detail(rec):
 
 
 def _md_head(matrix):
+    bounds = matrix["bounds"]
     return [
         f"# {matrix['artifact']}",
         "",
         f"Generated (UTC): {matrix['generated_utc']}",
         f"Tool versions: {matrix['tool_versions']}",
-        f"CrossHair bounds: {matrix['crosshair_bounds']}",
+        f"Declared bounds (intended envelope): {bounds['declared']}",
+        f"Effective bounds (demonstrated by capture): {bounds['effective']}",
+        f"Enforcement note: {bounds['enforcement_note']}",
         "",
     ]
 

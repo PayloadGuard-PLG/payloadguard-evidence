@@ -5,9 +5,15 @@
     "crosshair",
     "check",
     "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_broken.py",
-    "--report_all"
+    "--report_all",
+    "--per_condition_timeout",
+    "30"
   ],
   "exit_code": 1,
-  "started_utc": "2026-07-04T15:33:03.665794+00:00",
-  "target": "dosage_broken.py"
+  "started_utc": "2026-07-05T09:42:26.838347+00:00",
+  "target": "dosage_broken.py",
+  "effective_bounds": {
+    "per_condition_timeout_s": 30,
+    "enforcement_note": "max_iterations and seed are declared-only in metadata; crosshair-tool 0.0.107 has no CLI flags to enforce them."
+  }
 }

@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: symbolic evidence)",
-  "generated_utc": "2026-07-04T16:41:22.905752+00:00",
+  "generated_utc": "2026-07-05T09:43:03.831179+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -8,6 +8,17 @@
     "per_condition_timeout_s": 30,
     "max_iterations": 100000,
     "seed": 1
+  },
+  "bounds": {
+    "declared": {
+      "per_condition_timeout_s": 30,
+      "max_iterations": 100000,
+      "seed": 1
+    },
+    "effective": {
+      "per_condition_timeout_s": 30
+    },
+    "enforcement_note": "max_iterations and seed are declared-only in metadata; crosshair-tool 0.0.107 has no CLI flags to enforce them."
   },
   "method_filter": "crosshair",
   "rows": [
