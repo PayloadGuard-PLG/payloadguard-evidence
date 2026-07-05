@@ -145,11 +145,14 @@ python run_verify_overflow_probe.py  # overflow probe
 python run_verify_concrete.py        # pytest capture + concrete_results.json
 
 # regenerate traceability matrices (schema-validated, structurally checked)
-python generate_matrix.py            # base matrix
-python generate_matrix_a.py          # variant A: evidence array per requirement
-python generate_matrix_b.py          # variant B: flattened pseudo-requirements
-python generate_matrix_c.py          # variant C: dual matrix (symbolic/concrete)
+python regenerate_all.py             # SANCTIONED PATH: all three variant
+                                     # generators + the fact-equality gate
+python generate_matrix.py            # base matrix (frozen legacy view)
 ```
+
+Individual variant generators (`generate_matrix_a.py` / `_b.py` / `_c.py`)
+exist but bypass the generation-time fact-equality gate; committed
+divergence is still caught by `tests/test_fact_equality.py`.
 
 Toolchain pinned by the exhibits: crosshair-tool 0.0.107, Python 3.11,
 Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.

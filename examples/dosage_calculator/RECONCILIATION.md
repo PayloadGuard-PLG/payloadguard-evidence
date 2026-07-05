@@ -67,6 +67,24 @@ facts in different shapes.
    types. Verifiable by deleting a case and regenerating; not done this
    session (evidence is fixed).
 
+## Mechanization (Turn 2.0 B2)
+
+The same-facts check is no longer a session-time script. Normalization and
+the cross-artifact gate live in `evidence/reconcile.py` (`normalize_facts`,
+`run_gate`) and are enforced in two places:
+
+- `regenerate_all.py` — the sanctioned regeneration entrypoint: runs all
+  three variant generators, then the gate, so fact divergence fails at
+  generation time. Running a single generator alone bypasses this layer.
+- `tests/test_fact_equality.py` — the suite backstop: committed artifacts
+  that diverge in facts, requirement-scoped intent, or the bounds block
+  fail the test suite.
+
+The base Phase A matrix is frozen (ruling R2c) and participates as the
+symbolic-subset legacy view: its facts must equal the symbolic projection
+of the variants. Shape divergence remains design; fact divergence is a
+defect that stops generation — never something to document instead of fix.
+
 ## Derived-field conventions common to all variants
 
 - Strength comes only from evidence records (never intended_method).

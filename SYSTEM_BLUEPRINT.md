@@ -23,6 +23,8 @@ payloadguard-evidence/
 │   ├── model.py                 Strength enum + CAVEAT map + dataclasses
 │   │                            (VerificationResult, RequirementBinding);
 │   │                            carries the Phase-B Dafny false-zero note
+│   ├── reconcile.py             Normalized fact extraction + cross-artifact
+│   │                            fact-equality gate (Turn 2.0 B2)
 │   ├── schema/
 │   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12)
 │   │   ├── metadata.schema.a.json   T4-A: evidence[] per requirement
@@ -45,6 +47,8 @@ payloadguard-evidence/
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
 │   ├── metadata[.a|.b|.c].yaml  Authored metadata, base + variant shapes
 │   ├── generate_matrix*.py      Generators (validate → bind → check → render)
+│   ├── regenerate_all.py        Sanctioned regeneration entrypoint: all
+│   │                            variant generators + fact-equality gate
 │   ├── traceability_matrix.*    Generated artifacts (never hand-typed)
 │   ├── README.md                Audit-trail record (citations, caveats,
 │   │                            amendments, exhibits, open questions)
@@ -56,7 +60,9 @@ payloadguard-evidence/
     ├── conftest.py              Import-path plumbing
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
     ├── test_overflow_probe.py   Deterministic IEEE overflow as executable fact
-    └── test_structural_proven_check.py  R2 structural rule over real artifacts
+    ├── test_structural_proven_check.py  R2 structural rule over real artifacts
+    └── test_fact_equality.py    B2 gate: facts/intent/bounds identical across
+                                 views; base = symbolic-subset legacy view
 ```
 
 ## 3. Data flow (end to end)
