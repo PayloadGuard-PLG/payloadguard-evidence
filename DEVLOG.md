@@ -6,6 +6,39 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-05 — Deferred-gate work while Gate 1 output under review
+
+Performed the deferrable gate processes without touching Gate 1's ground
+truth (no re-capture, no artifact regeneration).
+
+- **Gate 2 / CONFLICT rule — BLOCKED, named.** Retrieved
+  PayloadGuard-Evidence-Blueprint-1 from Drive in full (committed to the
+  repo with provenance header; Drive doc remains authoritative). The term
+  CONFLICT appears nowhere in it (0 occurrences) nor in
+  SYSTEM_BLUEPRINT.md (single to-do mention, no definition). Per roadmap:
+  stopped, named, asking Steven. Closest neighbouring concept: Blueprint
+  Phase 2 acceptance (b), intent mismatch "raises a GAP/flag".
+- **Gate 3 — investigated, decision pending.** Verified against the
+  installed package: per_condition_timeout CLI-enforceable (done in B1);
+  max_iterations exposed by the Python API only
+  (AnalysisOptions.max_iterations, default sys.maxsize); seed hard-coded
+  to 42 in crosshair/statespace.py:750-751 — declared seed:1 is
+  unenforceable at any interface on 0.0.107. Two wiring options recorded
+  in KNOWN_LIMITATIONS; either requires re-capture, so the decision waits
+  until Gate 1 review completes.
+- **Gate 4 — options prepared** (metadata-authored / store-carried /
+  both-with-cross-check, recommendation noted) for slotting into the Gate
+  2 binder design. Design input recorded: the current C builder binds
+  symbolic evidence to every requirement without verifying implementation
+  against the capture target; the Gate 2 binder must bind by verified
+  code-location match.
+- **Gate 5 — resolved for the constructible half.**
+  tests/test_single_evidence_type.py: in-memory symbolic-only fixture
+  through the real variant C builder — appears in exactly one artifact;
+  schema-c-validated; committed data untouched. Concrete-only fixture
+  impossible pre-Gate-2 (see Gate 4 input). Suite: 17 passed.
+- **Gate 6 — remains blocked** on a one-line FRN definition from Steven.
+
 ## 2026-07-05 (Turn B4) — Phase B Gate 1: end-to-end artifact generation
 
 Phase B v3 prompt + roadmap received; roadmap committed verbatim as
