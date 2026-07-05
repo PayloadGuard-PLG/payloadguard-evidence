@@ -6,8 +6,14 @@ and a structured metadata file, and emits IEC 62304 / FDA §524B-oriented
 traceability artifacts in which every claim is bound to a specific,
 committed verification capture of known strength.
 
-**Status:** Phase A complete and closed out (rulings R1–R3 applied,
-2026-07-04). Phase B (adapters, vocabulary-agnostic binder, CLI) not started.
+**Status (2026-07-05):** Phase A complete and closed out (rulings R1–R3).
+Turn 2.0 shipped (declared/effective bounds reconciliation, mechanized
+fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
+(end-to-end pipeline + provenance index) with Gate 1 review remediation
+applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gate 2
+(vocabulary-agnostic binder + CONFLICT rule) not started — CONFLICT
+definition blocked on maintainer; see `KNOWN_LIMITATIONS.md` for the live
+gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
