@@ -1,6 +1,6 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-04 18:52 UTC (HEAD d23689a + this documentation pass).
+Last updated: 2026-07-05 09:46 UTC (Turn 2.0: B1 678a3a5, B2 6347645, B3).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -122,8 +122,15 @@ payloadguard-evidence/
    deterministic given the same captures (timestamps aside).
 7. Exhibit claims are version-contingent and scoped to their pins
    (crosshair-tool 0.0.107 / Python 3.11.15 / Linux x86_64).
-8. All T4 variants must carry the same evidence facts; divergences are
-   findings for RECONCILIATION.md, not things to silently fix.
+8. All T4 variants must carry the same evidence facts; enforced by the
+   fact-equality gate (`evidence/reconcile.py`) at generation time via
+   `regenerate_all.py` and in the suite via `tests/test_fact_equality.py`.
+   Shape divergence is design; fact divergence is a defect.
+9. Review is two-tier (REVIEW_PROTOCOL.md): Tier 1 machine gates
+   (fact-equality, structural PROVEN) stop defects — never resolved by
+   editing generated artifacts; Tier 2 human review is per-reason over the
+   structured findings. Declared bounds are intent; effective bounds in
+   each manifest are what a run demonstrated (Turn 2.0 B1).
 
 ## 5. Evidence inventory (current)
 

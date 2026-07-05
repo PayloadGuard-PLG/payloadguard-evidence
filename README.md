@@ -11,6 +11,8 @@ committed verification capture of known strength.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
+[`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) (two-tier review: machine gates
+stop defects, humans review per-reason),
 [`examples/dosage_calculator/README.md`](examples/dosage_calculator/README.md)
 (audit-trail record for the worked example),
 [`examples/dosage_calculator/RECONCILIATION.md`](examples/dosage_calculator/RECONCILIATION.md)

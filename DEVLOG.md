@@ -6,6 +6,39 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-05 09:46 UTC — Turn 2.0: bounds reconciliation, fact-equality gate, review protocol (678a3a5, 6347645, B3: this commit)
+
+Three ratified rulings from the Q1–Q3 design review, executed in strict
+order B1 → B2 → B3. Kernels untouched; exhibits frozen.
+
+- **B1 (678a3a5, bounds):** `run_verify.py`/`run_verify_broken.py` now pass
+  `--per_condition_timeout 30` (the one declared bound the 0.0.107 CLI can
+  enforce) and record `effective_bounds` in the manifest — the single
+  source of truth for what a run demonstrated. Samples A and B re-captured
+  for real; raw outputs byte-identical to the previous captures. Generation
+  gained a model-level `{declared, effective, enforcement_note}` bounds
+  block, derived once (`derive_bounds_block`) and verified uniform across
+  all four views. Exhibit captures/pins/runners byte-unchanged (frozen
+  measurements). Ratified: metadata's declared triple kept — declared
+  bounds are the bounds analogue of `intended_method`.
+- **B2 (6347645, gate):** same-facts check mechanized.
+  `evidence/reconcile.py` normalizes any matrix shape to fact tuples;
+  `run_gate` asserts A/B/C fact equality, base-matrix = symbolic subset
+  (frozen legacy view, ratified), intent uniformity, bounds-block
+  uniformity. Enforced at generation time by `regenerate_all.py` (the
+  sanctioned entrypoint; ratified that individual generators stay
+  unchanged — a cross-artifact property cannot live inside one generator)
+  and in the suite by `tests/test_fact_equality.py` (corruption cases
+  mutate tmp copies only). Gate on real artifacts: PASS, 7 facts. Suite:
+  15 passed.
+- **B3 (this commit, protocol):** `REVIEW_PROTOCOL.md` codifies two-tier
+  review: Tier 1 machine gates (fact-equality + structural PROVEN) stop
+  defects and are never resolved by editing generated artifacts; Tier 2
+  human review is per-reason over six structured finding classes.
+  "Review only on validator disagreement" documented as void by
+  construction. README pointer, BLUEPRINT invariants 8–9 and timestamp
+  updated.
+
 ## 2026-07-04 18:52 UTC — Documentation pass: README, SYSTEM_BLUEPRINT, DEVLOG
 
 - Root `README.md` populated (was an empty scaffold placeholder): purpose,
