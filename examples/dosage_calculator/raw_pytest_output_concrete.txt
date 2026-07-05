@@ -7,6 +7,6 @@ collecting ... collected 4 items
 tests/test_dosage_concrete.py::test_dosage_concrete[ordinary_negative_rate_clamps_to_zero] PASSED [ 25%]
 tests/test_dosage_concrete.py::test_dosage_concrete[overflow_negative_rate_clamps_to_zero] PASSED [ 50%]
 tests/test_dosage_concrete.py::test_dosage_concrete[normal_in_range_exact_value] PASSED [ 75%]
-tests/test_dosage_concrete.py::test_dosage_concrete[over_max_clamps_exactly_to_max] PASSED [100%]
+tests/test_dosage_concrete.py::test_dosage_concrete[kernel_detects_bolus_limit_exceeded] PASSED [100%]
 
 ============================== 4 passed in 0.01s ===============================

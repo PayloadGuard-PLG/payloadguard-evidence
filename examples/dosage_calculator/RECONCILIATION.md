@@ -88,6 +88,12 @@ defect that stops generation — never something to document instead of fix.
 ## Derived-field conventions common to all variants
 
 - Strength comes only from evidence records (never intended_method).
+- GAP records/rows (declared-but-unevidenced scopes, e.g.
+  REQ-GIP-1-4-12's system_scope) render in every view but are excluded
+  from `normalize_facts`: a GAP is the explicit rendering of ABSENT
+  evidence, not a fact — fact equality stays at 7. Single-evidence-type
+  views' note text is view-scoped (Gate 1 remediation, Item 2); the
+  intent_ok value itself remains requirement-scoped and derived once (R1).
 - intent_ok is requirement-scoped, derived once at the model level
   (ruling R1); all views carry it read-only.
 - Intent-mismatch notes inline intended_method verbatim (ruling R2:

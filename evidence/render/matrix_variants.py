@@ -113,6 +113,38 @@ def derive_intent(metadata, records_by_requirement):
     return intent
 
 
+def _display_text(req):
+    """Gate 1 remediation, Item 1: when a requirement declares a
+    kernel_scope, the bound evidence supports the kernel_scope claim, not
+    the bare requirement text — evidence rows reference it explicitly."""
+    if "kernel_scope" in req:
+        return "[kernel_scope] " + " ".join(req["kernel_scope"].split())
+    return req["text"].strip()
+
+
+def scope_gap_record(req):
+    """Explicit GAP for a declared-but-unevidenced scope (system_scope).
+    Rendered in every view — a named gap, never a silent omission. A GAP is
+    the absence of evidence: it is NOT a fact
+    (evidence.reconcile.normalize_facts excludes GAP strength), and it does
+    not participate in intent derivation."""
+    if "system_scope" not in req:
+        return None
+    return {
+        "method": None,
+        "strength": Strength.GAP.value,
+        "caveat": CAVEAT[Strength.GAP],
+        "scope": "system_scope",
+        "scope_text": " ".join(req["system_scope"].split()),
+        "code_location": None,
+        "result_status": None,
+        "note": (
+            "system_scope declared but not evidenced at this phase; "
+            "deferred to integration testing (explicit GAP, not omission)"
+        ),
+    }
+
+
 def _view_notes(intent_entry, method):
     """Gate 1 remediation, Item 2(a): a single-evidence-type view's notes
     describe only that evidence type's contribution. The requirement-scoped
@@ -199,10 +231,14 @@ def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=Non
         notes = list(intent[req["id"]]["notes"])
         if not records:
             notes.insert(0, "no evidence bound for this requirement")
+        gap = scope_gap_record(req)
+        if gap:
+            records = records + [gap]
+            notes.append(gap["note"])
         rows.append(
             {
                 "requirement_id": req["id"],
-                "requirement_text": req["text"].strip(),
+                "requirement_text": _display_text(req),
                 "code_location": req["implementation"],
                 "evidence": records,
                 "intent_ok": intent[req["id"]]["intent_ok"],
@@ -226,8 +262,8 @@ def _markdown_variant_a(matrix):
         for i, rec in enumerate(row["evidence"]):
             req_cell = f"**{row['requirement_id']}**" if i == 0 else "&nbsp;&nbsp;↳"
             lines.append(
-                f"| {req_cell} | {rec['method']} | {rec['strength']} "
-                f"| {rec['result_status']} | {_detail(rec)} | {notes if i == 0 else '—'} |"
+                f"| {req_cell} | {rec['method'] or '—'} | {rec['strength']} "
+                f"| {rec['result_status'] or '—'} | {_detail(rec)} | {notes if i == 0 else '—'} |"
             )
     lines += _md_caveats(_all_records_a(matrix)) + _md_notes(matrix["rows"])
     return "\n".join(lines)
@@ -265,11 +301,12 @@ def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=Non
         scope = intent[parent or req["id"]]
         intent_ok = scope["intent_ok"]
         notes = list(scope["notes"]) if parent is None else []
+        req_text = req["text"].strip() if parent else _display_text(req)
         rows.append(
             {
                 "requirement_id": req["id"],
                 "parent_requirement": parent,
-                "requirement_text": req["text"].strip(),
+                "requirement_text": req_text,
                 "code_location": req["implementation"],
                 **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
                 "bounds": record.get("bounds"),
@@ -282,6 +319,12 @@ def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=Non
                 "notes": notes,
             }
         )
+    for req in metadata["requirements"]:
+        if req.get("parent_requirement") is not None:
+            continue
+        gap = scope_gap_record(req)
+        if gap:
+            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
     matrix = _header("b", metadata, tool_versions, derive_bounds_block(metadata, manifest))
     matrix["rows"] = rows
     assert_no_realized_proven(matrix)
@@ -294,21 +337,39 @@ def _markdown_variant_b(matrix):
         "| Requirement | Parent | Method | Strength | Result | Detail | Notes |",
         "|---|---|---|---|---|---|---|",
     ]
-    parents = [r for r in matrix["rows"] if r["parent_requirement"] is None]
+    # Evidence-bearing parents anchor the groups; scope-GAP rows (same
+    # requirement_id, strength GAP) render inside their requirement's group
+    # rather than anchoring a duplicate one.
+    parents = [
+        r
+        for r in matrix["rows"]
+        if r["parent_requirement"] is None and r["strength"] != Strength.GAP.value
+    ]
     for parent in parents:
-        for row in [parent] + [
-            r for r in matrix["rows"] if r["parent_requirement"] == parent["requirement_id"]
-        ]:
+        group = (
+            [parent]
+            + [r for r in matrix["rows"] if r["parent_requirement"] == parent["requirement_id"]]
+            + [
+                r
+                for r in matrix["rows"]
+                if r["parent_requirement"] is None
+                and r["strength"] == Strength.GAP.value
+                and r["requirement_id"] == parent["requirement_id"]
+            ]
+        )
+        for row in group:
             is_shadow = row["parent_requirement"] is not None
-            req_cell = (
-                f"&nbsp;&nbsp;↳ {row['requirement_id']}"
-                if is_shadow
-                else f"**{row['requirement_id']}**"
-            )
+            is_gap = row["strength"] == Strength.GAP.value
+            if is_shadow:
+                req_cell = f"&nbsp;&nbsp;↳ {row['requirement_id']}"
+            elif is_gap:
+                req_cell = f"&nbsp;&nbsp;↳ {row['requirement_id']} [system_scope]"
+            else:
+                req_cell = f"**{row['requirement_id']}**"
             notes = "; ".join(row["notes"]) if row["notes"] else "—"
             lines.append(
-                f"| {req_cell} | {row['parent_requirement'] or '—'} | {row['method']} "
-                f"| {row['strength']} | {row['result_status']} | {_detail(row)} | {notes} |"
+                f"| {req_cell} | {row['parent_requirement'] or '—'} | {row['method'] or '—'} "
+                f"| {row['strength']} | {row['result_status'] or '—'} | {_detail(row)} | {notes} |"
             )
     lines += _md_caveats(matrix["rows"]) + _md_notes(matrix["rows"])
     return "\n".join(lines)
@@ -350,7 +411,7 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
             rows.append(
                 {
                     "requirement_id": req["id"],
-                    "requirement_text": req["text"].strip(),
+                    "requirement_text": _display_text(req),
                     "code_location": record["code_location"],
                     **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
                     "bounds": record.get("bounds"),
@@ -363,6 +424,13 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
                     "notes": notes,
                 }
             )
+    # Scope gaps are method-agnostic (they mark the ABSENCE of evidence of
+    # any type), so both filtered views carry them — a deferred scope must
+    # be visible no matter which artifact a reviewer opens.
+    for req in metadata["requirements"]:
+        gap = scope_gap_record(req)
+        if gap:
+            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
     key = "c-symbolic" if method == "crosshair" else "c-concrete"
     matrix = _header(key, metadata, tool_versions, derive_bounds_block(metadata, manifest))
     matrix["method_filter"] = method
@@ -379,9 +447,12 @@ def _markdown_variant_c(matrix):
     ]
     for row in matrix["rows"]:
         notes = "; ".join(row["notes"]) if row["notes"] else "—"
+        req_cell = row["requirement_id"]
+        if row["strength"] == Strength.GAP.value:
+            req_cell += " [system_scope]"
         lines.append(
-            f"| {row['requirement_id']} | {row['method']} | {row['strength']} "
-            f"| {row['result_status']} | {_detail(row)} | {notes} |"
+            f"| {req_cell} | {row['method'] or '—'} | {row['strength']} "
+            f"| {row['result_status'] or '—'} | {_detail(row)} | {notes} |"
         )
     lines += _md_caveats(matrix["rows"]) + _md_notes(matrix["rows"])
     return "\n".join(lines)
@@ -389,7 +460,32 @@ def _markdown_variant_c(matrix):
 
 # ---------------------------------------------------------------- shared md
 
+def _gap_row(req, gap, intent_ok):
+    """Row shape for a declared-but-unevidenced scope, shared by B and C."""
+    return {
+        "requirement_id": req["id"],
+        "parent_requirement": None,
+        "requirement_text": "[system_scope — GAP] " + gap["scope_text"],
+        "code_location": None,
+        "method": None,
+        "strength": gap["strength"],
+        "caveat": gap["caveat"],
+        "result_status": None,
+        "bounds": None,
+        "counterexample": None,
+        "test_id": None,
+        "inputs": None,
+        "expected": None,
+        "observed": None,
+        "scope": gap["scope"],
+        "intent_ok": intent_ok,
+        "notes": [gap["note"]],
+    }
+
+
 def _detail(rec):
+    if rec.get("strength") == Strength.GAP.value:
+        return f"deferred scope `{rec.get('scope')}` — no evidence at this phase"
     if rec["method"] == "crosshair":
         return f"bounds: {rec.get('bounds')}"
     return (

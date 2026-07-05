@@ -20,7 +20,28 @@ device:
 requirements:
 - id: REQ-GIP-1-4-12
   text: 'Bolus request exceeding the maximum permissible dose limit shall trigger
-    a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)
+    a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12: "If a bolus
+    request causes the bolus dose to exceed the maximum permissible limit, the
+    pump shall issue a Dose limit exceeded alarm.")
+
+    '
+  kernel_scope: '[VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8]
+    The kernel shall detect when a bolus request would cause the computed hourly
+    dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to
+    the calling layer via a clamped output value. This is the ALARM CONDITION
+    half of IEC 60601-1-8''s alarm-system definition ("parts of equipment that
+    detect alarm conditions and, as appropriate, generate alarm signals") - detection
+    only, no signal generation. The GIP source table itself treats "Alarm()" as
+    an abstract response function attached to hazards, not a mandate that every
+    hazard-adjacent component emit the physical signal.
+
+    '
+  system_scope: '[DEFERRED TO INTEGRATION PHASE - ALARM SIGNAL per IEC 60601-1-8]
+    The full infusion pump system shall generate an audible or visual Dose limit
+    exceeded alarm signal when the kernel reports the condition above. Out of
+    scope for kernel unit verification; belongs to integration testing against
+    a real device/UI layer, per IEC 60601-1-8''s alarm-system requirements (priority
+    classification, tone/pattern, usability per IEC 62366-1).
 
     '
   implementation: dosage.py::calculate_hourly_dose
@@ -69,11 +90,11 @@ requirements:
   intended_method: EXAMPLE_CHECKED
 - id: REQ-GIP-1-4-12.concrete-1
   parent_requirement: REQ-GIP-1-4-12
-  text: 'Concrete evidence for REQ-GIP-1-4-12: test ''over_max_clamps_exactly_to_max''
+  text: 'Concrete evidence for REQ-GIP-1-4-12: test ''kernel_detects_bolus_limit_exceeded''
     - inputs {''weight_kg'': 70.0, ''concentration_mg_per_ml'': 2.0, ''infusion_rate_ml_per_hr'':
     500.0, ''max_safe_dose_mg_per_hr'': 10.0} shall yield exactly 10.0. (Shadow
     pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)'
-  implementation: tests/test_dosage_concrete.py::over_max_clamps_exactly_to_max
+  implementation: tests/test_dosage_concrete.py::kernel_detects_bolus_limit_exceeded
   intended_method: EXAMPLE_CHECKED
 threat_model:
 - id: THR-GIP-1-2

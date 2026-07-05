@@ -6,6 +6,35 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-05 — Gate 1 remediation (two items from Steven's review)
+
+Gate 1 review verdict received: fact-equality doing its job; two issues to
+fix before Gate 2. Both fixed in generators/metadata — no generated file
+hand-edited.
+
+- **Item 2 (Tier 1 renderer defect):** variant C's method-filtered views
+  were leaking the cross-evidence-type intent summary into their Notes,
+  and the aggregate Notes section emitted once per table row (duplicate
+  REQ-GIP-1-8-1 line in concrete.md). Fixed: `_view_notes()` scopes note
+  text to the rendering view's evidence contribution (the intent_ok VALUE
+  stays requirement-scoped per R1, never re-derived); `_md_notes()`
+  de-duplicates by (requirement, note).
+- **Item 1 (REQ-GIP-1-4-12 alarm scope):** evidence didn't match the
+  requirement text — clamped output was verified, alarm emission never
+  was. Steven's design decision (sources/req-gip-1-4-12-alarm-scope-
+  decision.md, IEC 60601-1-8 ALARM CONDITION vs ALARM SIGNAL) implemented:
+  metadata.yaml gains kernel_scope/system_scope on 1-4-12 (all four
+  schemas extended with the optional fields; positive+negative
+  revalidated for every variant); concrete test renamed
+  over_max_clamps_exactly_to_max → kernel_detects_bolus_limit_exceeded
+  and re-captured for real (4 passed); variant metadata re-derived;
+  evidence rows for 1-4-12 reference the kernel_scope text; system_scope
+  renders as an explicit named GAP in every view. GAPs are excluded from
+  normalize_facts by rule (absence is not a fact) — fact-equality gate
+  still PASS at 7 facts. Suite: 17 passed.
+- Gates 2/3/4/6 untouched per the remediation prompt's "still open" list;
+  the CONFLICT-vs-scope-GAP test question recorded in KNOWN_LIMITATIONS.
+
 ## 2026-07-05 — Deferred-gate work while Gate 1 output under review
 
 Performed the deferrable gate processes without touching Gate 1's ground

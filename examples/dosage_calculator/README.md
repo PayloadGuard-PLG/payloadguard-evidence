@@ -23,7 +23,7 @@ per the standing rule in `sources/README.md`.
 
 | Metadata ID | GIP v1.0 source | Notes |
 |---|---|---|
-| `REQ-GIP-1-4-12` | Safety Requirement 1.4.12 (bolus dose limit alarm); mitigates Hazards 1.2, 1.3 | Direct restatement |
+| `REQ-GIP-1-4-12` | Safety Requirement 1.4.12 (bolus dose limit alarm); mitigates Hazards 1.2, 1.3 | Dual-scope split (2026-07-05): kernel_scope = ALARM CONDITION detection (evidenced); system_scope = ALARM SIGNAL emission (explicit GAP, deferred to integration) — see `sources/req-gip-1-4-12-alarm-scope-decision.md` |
 | `REQ-GIP-1-8-1` | Safety Requirement 1.8.1 (no continuous reverse delivery, citing IEC 601-2-24); mitigates Hazard 1.14 | Fault-input modelling — see caveat 1 and the amendment note below |
 | `REQ-DOSE-003` | **DECLARED, no GIP source** | See caveat 2 below |
 
@@ -120,6 +120,27 @@ the Sample B (broken variant) capture now contains a second, negative
 counterexample — `calculate_hourly_dose(0.5, 0.25, -0.125, 0.125)`
 returning `-0.03125` — showing CrossHair genuinely drives negative rates
 through the contract after the widening.
+
+## Amendment 2026-07-05 — REQ-GIP-1-4-12 alarm scope split (Gate 1 review)
+
+Recorded per the audit-trail discipline in `sources/README.md`.
+
+**Finding:** the requirement text ("shall trigger a Dose limit exceeded
+alarm") was backed only by a concrete test verifying clamped output —
+evidence and text did not match. **Decision** (full reasoning in
+`sources/req-gip-1-4-12-alarm-scope-decision.md`): split per
+IEC 60601-1-8's ALARM CONDITION / ALARM SIGNAL separation into
+`kernel_scope` (condition detection via clamped output — what the
+evidence actually verifies) and `system_scope` (signal emission —
+deferred to integration testing, rendered as an explicit named GAP in
+every matrix view, never a silent omission). **Changes:** the concrete
+test was renamed `over_max_clamps_exactly_to_max` →
+`kernel_detects_bolus_limit_exceeded` and re-captured; evidence rows for
+this requirement reference the kernel_scope text; the GAP is excluded
+from fact-equality by rule (a GAP is the rendering of absent evidence,
+not a fact) — the gate still holds at 7 facts. When integration testing
+exists, system_scope becomes a new binding target with its own evidence
+chain, not folded into the kernel's.
 
 ## Open question — `FRN` pump-type tag: UNRESOLVED
 

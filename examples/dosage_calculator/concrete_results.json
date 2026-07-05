@@ -1,6 +1,6 @@
 {
   "source": "tests/test_dosage_concrete.py::CASES",
-  "started_utc": "2026-07-04T16:18:49.189903+00:00",
+  "started_utc": "2026-07-05T15:38:45.558373+00:00",
   "pytest_exit_code": 0,
   "cases": [
     {
@@ -46,7 +46,7 @@
       "passed": true
     },
     {
-      "test_id": "over_max_clamps_exactly_to_max",
+      "test_id": "kernel_detects_bolus_limit_exceeded",
       "requirement_id": "REQ-GIP-1-4-12",
       "function": "dosage.py::calculate_hourly_dose",
       "inputs": {

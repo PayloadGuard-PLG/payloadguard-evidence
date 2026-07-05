@@ -20,7 +20,28 @@ device:
 requirements:
 - id: REQ-GIP-1-4-12
   text: 'Bolus request exceeding the maximum permissible dose limit shall trigger
-    a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)
+    a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12: "If a bolus
+    request causes the bolus dose to exceed the maximum permissible limit, the
+    pump shall issue a Dose limit exceeded alarm.")
+
+    '
+  kernel_scope: '[VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8]
+    The kernel shall detect when a bolus request would cause the computed hourly
+    dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to
+    the calling layer via a clamped output value. This is the ALARM CONDITION
+    half of IEC 60601-1-8''s alarm-system definition ("parts of equipment that
+    detect alarm conditions and, as appropriate, generate alarm signals") - detection
+    only, no signal generation. The GIP source table itself treats "Alarm()" as
+    an abstract response function attached to hazards, not a mandate that every
+    hazard-adjacent component emit the physical signal.
+
+    '
+  system_scope: '[DEFERRED TO INTEGRATION PHASE - ALARM SIGNAL per IEC 60601-1-8]
+    The full infusion pump system shall generate an audible or visual Dose limit
+    exceeded alarm signal when the kernel reports the condition above. Out of
+    scope for kernel unit verification; belongs to integration testing against
+    a real device/UI layer, per IEC 60601-1-8''s alarm-system requirements (priority
+    classification, tone/pattern, usability per IEC 62366-1).
 
     '
   implementation: dosage.py::calculate_hourly_dose
@@ -28,7 +49,7 @@ requirements:
   evidence:
   - method: crosshair
   - method: concrete_test
-    test_id: over_max_clamps_exactly_to_max
+    test_id: kernel_detects_bolus_limit_exceeded
 - id: REQ-GIP-1-8-1
   text: 'Continuous reverse delivery shall not be possible during normal use or
     a single-fault condition. Modelled at this kernel as a fault input: a negative

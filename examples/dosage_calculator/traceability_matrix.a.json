@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
-  "generated_utc": "2026-07-05T12:37:26.596471+00:00",
+  "generated_utc": "2026-07-05T15:41:36.177006+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -23,7 +23,7 @@
   "rows": [
     {
       "requirement_id": "REQ-GIP-1-4-12",
-      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "requirement_text": "[kernel_scope] [VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8] The kernel shall detect when a bolus request would cause the computed hourly dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to the calling layer via a clamped output value. This is the ALARM CONDITION half of IEC 60601-1-8's alarm-system definition (\"parts of equipment that detect alarm conditions and, as appropriate, generate alarm signals\") - detection only, no signal generation. The GIP source table itself treats \"Alarm()\" as an abstract response function attached to hazards, not a mandate that every hazard-adjacent component emit the physical signal.",
       "code_location": "dosage.py::calculate_hourly_dose",
       "evidence": [
         {
@@ -45,7 +45,7 @@
           "strength": "EXAMPLE_CHECKED",
           "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
           "code_location": "dosage.py::calculate_hourly_dose",
-          "test_id": "over_max_clamps_exactly_to_max",
+          "test_id": "kernel_detects_bolus_limit_exceeded",
           "result_status": "passed",
           "inputs": {
             "weight_kg": 70.0,
@@ -55,11 +55,22 @@
           },
           "expected": 10.0,
           "observed": 10.0
+        },
+        {
+          "method": null,
+          "strength": "GAP",
+          "caveat": "Not established. Human input required.",
+          "scope": "system_scope",
+          "scope_text": "[DEFERRED TO INTEGRATION PHASE - ALARM SIGNAL per IEC 60601-1-8] The full infusion pump system shall generate an audible or visual Dose limit exceeded alarm signal when the kernel reports the condition above. Out of scope for kernel unit verification; belongs to integration testing against a real device/UI layer, per IEC 60601-1-8's alarm-system requirements (priority classification, tone/pattern, usability per IEC 62366-1).",
+          "code_location": null,
+          "result_status": null,
+          "note": "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
         }
       ],
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED",
+        "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
       ]
     },
     {

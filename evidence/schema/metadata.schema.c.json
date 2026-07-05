@@ -4,49 +4,115 @@
   "description": "T4-C fork of metadata.schema.json: the metadata shape is UNCHANGED from the base (one-record-per-binding preserved end-to-end). Evidence partitioning happens at generation time: symbolic evidence binds by implementation match (as in the base matrix); concrete evidence is self-describing and binds by the requirement_id carried in each concrete_results.json case. Two independent artifacts are rendered (traceability_matrix.symbolic.* / traceability_matrix.concrete.*) by one renderer parametrised by method filter. intended_method enum gains EXAMPLE_CHECKED. Gaps are signalled by field absence, never by placeholder strings.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["device", "requirements", "toolchain"],
+  "required": [
+    "device",
+    "requirements",
+    "toolchain"
+  ],
   "properties": {
     "device": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "safety_classification", "classification_rationale"],
+      "required": [
+        "name",
+        "safety_classification",
+        "classification_rationale"
+      ],
       "properties": {
-        "name": {"type": "string"},
-        "intended_use": {"type": "string"},
-        "safety_classification": {"enum": ["A", "B", "C"]},
-        "classification_rationale": {"type": "string"},
-        "iso14971_risk_file": {"type": "string"}
+        "name": {
+          "type": "string"
+        },
+        "intended_use": {
+          "type": "string"
+        },
+        "safety_classification": {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ]
+        },
+        "classification_rationale": {
+          "type": "string"
+        },
+        "iso14971_risk_file": {
+          "type": "string"
+        }
       }
     },
-    "qms": {"type": "object"},
+    "qms": {
+      "type": "object"
+    },
     "requirements": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "text", "implementation", "intended_method"],
+        "required": [
+          "id",
+          "text",
+          "implementation",
+          "intended_method"
+        ],
         "properties": {
-          "id": {"type": "string", "pattern": "^REQ-[A-Z0-9-]+$"},
-          "text": {"type": "string"},
-          "implementation": {"type": "string"},
-          "intended_method": {"enum": ["PROVEN", "BOUNDED_CHECKED", "TESTED", "EXAMPLE_CHECKED", "DECLARED"]}
+          "id": {
+            "type": "string",
+            "pattern": "^REQ-[A-Z0-9-]+$"
+          },
+          "text": {
+            "type": "string"
+          },
+          "implementation": {
+            "type": "string"
+          },
+          "intended_method": {
+            "enum": [
+              "PROVEN",
+              "BOUNDED_CHECKED",
+              "TESTED",
+              "EXAMPLE_CHECKED",
+              "DECLARED"
+            ]
+          },
+          "kernel_scope": {
+            "type": "string"
+          },
+          "system_scope": {
+            "type": "string"
+          }
         }
       }
     },
-    "threat_model": {"type": "array"},
-    "sbom": {"type": "object"},
+    "threat_model": {
+      "type": "array"
+    },
+    "sbom": {
+      "type": "object"
+    },
     "toolchain": {
       "type": "object",
-      "required": ["crosshair_bounds"],
+      "required": [
+        "crosshair_bounds"
+      ],
       "properties": {
         "crosshair_bounds": {
           "type": "object",
-          "required": ["per_condition_timeout_s", "max_iterations", "seed"],
+          "required": [
+            "per_condition_timeout_s",
+            "max_iterations",
+            "seed"
+          ],
           "properties": {
-            "per_condition_timeout_s": {"type": "number"},
-            "max_iterations": {"type": "integer"},
-            "seed": {"type": "integer"}
+            "per_condition_timeout_s": {
+              "type": "number"
+            },
+            "max_iterations": {
+              "type": "integer"
+            },
+            "seed": {
+              "type": "integer"
+            }
           }
         }
       }

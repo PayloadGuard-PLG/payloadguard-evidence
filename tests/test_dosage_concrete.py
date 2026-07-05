@@ -6,7 +6,8 @@ produce concrete_results.json. Requirement IDs are taken from
 examples/dosage_calculator/metadata.yaml:
   - reverse-flow cases -> REQ-GIP-1-8-1
   - finite in-range result for valid inputs -> REQ-DOSE-003
-  - over-limit dose clamped to the configured maximum -> REQ-GIP-1-4-12
+  - kernel-level bolus-limit ALARM CONDITION detection (clamped output) ->
+    REQ-GIP-1-4-12 kernel_scope
 """
 
 import pytest
@@ -54,8 +55,12 @@ CASES = [
         "expected": 6.0,
     },
     {
-        # requirement: REQ-GIP-1-4-12 (dose above limit clamps exactly to the maximum)
-        "test_id": "over_max_clamps_exactly_to_max",
+        # requirement: REQ-GIP-1-4-12, kernel_scope — the kernel detects the
+        # ALARM CONDITION (bolus would exceed the limit) and reports it via
+        # the clamped return value. This verifies condition DETECTION, not
+        # ALARM SIGNAL emission (system_scope, deferred to integration) —
+        # see sources/req-gip-1-4-12-alarm-scope-decision.md.
+        "test_id": "kernel_detects_bolus_limit_exceeded",
         "requirement_id": "REQ-GIP-1-4-12",
         "function": "dosage.py::calculate_hourly_dose",
         "inputs": {

@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant B: flattened pseudo-requirements)",
-  "generated_utc": "2026-07-05T12:37:26.720511+00:00",
+  "generated_utc": "2026-07-05T15:41:36.317064+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -24,7 +24,7 @@
     {
       "requirement_id": "REQ-GIP-1-4-12",
       "parent_requirement": null,
-      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "requirement_text": "[kernel_scope] [VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8] The kernel shall detect when a bolus request would cause the computed hourly dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to the calling layer via a clamped output value. This is the ALARM CONDITION half of IEC 60601-1-8's alarm-system definition (\"parts of equipment that detect alarm conditions and, as appropriate, generate alarm signals\") - detection only, no signal generation. The GIP source table itself treats \"Alarm()\" as an abstract response function attached to hazards, not a mandate that every hazard-adjacent component emit the physical signal.",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "crosshair",
       "strength": "BOUNDED_CHECKED",
@@ -163,15 +163,15 @@
     {
       "requirement_id": "REQ-GIP-1-4-12.concrete-1",
       "parent_requirement": "REQ-GIP-1-4-12",
-      "requirement_text": "Concrete evidence for REQ-GIP-1-4-12: test 'over_max_clamps_exactly_to_max' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 2.0, 'infusion_rate_ml_per_hr': 500.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 10.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
-      "code_location": "tests/test_dosage_concrete.py::over_max_clamps_exactly_to_max",
+      "requirement_text": "Concrete evidence for REQ-GIP-1-4-12: test 'kernel_detects_bolus_limit_exceeded' - inputs {'weight_kg': 70.0, 'concentration_mg_per_ml': 2.0, 'infusion_rate_ml_per_hr': 500.0, 'max_safe_dose_mg_per_hr': 10.0} shall yield exactly 10.0. (Shadow pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)",
+      "code_location": "tests/test_dosage_concrete.py::kernel_detects_bolus_limit_exceeded",
       "method": "concrete_test",
       "strength": "EXAMPLE_CHECKED",
       "caveat": "Holds for the specific recorded inputs only; no claim of generality beyond them.",
       "result_status": "passed",
       "bounds": null,
       "counterexample": null,
-      "test_id": "over_max_clamps_exactly_to_max",
+      "test_id": "kernel_detects_bolus_limit_exceeded",
       "inputs": {
         "weight_kg": 70.0,
         "concentration_mg_per_ml": 2.0,
@@ -182,6 +182,27 @@
       "observed": 10.0,
       "intent_ok": false,
       "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-4-12",
+      "parent_requirement": null,
+      "requirement_text": "[system_scope \u2014 GAP] [DEFERRED TO INTEGRATION PHASE - ALARM SIGNAL per IEC 60601-1-8] The full infusion pump system shall generate an audible or visual Dose limit exceeded alarm signal when the kernel reports the condition above. Out of scope for kernel unit verification; belongs to integration testing against a real device/UI layer, per IEC 60601-1-8's alarm-system requirements (priority classification, tone/pattern, usability per IEC 62366-1).",
+      "code_location": null,
+      "method": null,
+      "strength": "GAP",
+      "caveat": "Not established. Human input required.",
+      "result_status": null,
+      "bounds": null,
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "scope": "system_scope",
+      "intent_ok": false,
+      "notes": [
+        "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
+      ]
     }
   ]
 }

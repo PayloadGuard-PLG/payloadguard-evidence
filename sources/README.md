@@ -23,6 +23,14 @@ requirements documents, standards excerpts) that ground the claims in
   Safety Requirements v1.0," University of Pennsylvania / FDA OSEL /
   Fraunhofer CESE. Audit-trail record behind
   `examples/dosage_calculator/metadata.yaml`.
+- `req-gip-1-4-12-alarm-scope-decision.md` — added 2026-07-05 (Gate 1
+  review). Per rule 2 above: this document **extends** the existing
+  REQ-GIP-1-4-12 entry (dual-scope split per IEC 60601-1-8's ALARM
+  CONDITION / ALARM SIGNAL separation) and **corrects** its prior
+  single-claim framing — the concrete evidence verified condition
+  detection, not signal emission. It does not confirm, correct, or
+  extend any other requirement, threat, or citation, and it does not
+  resolve the FRN open question below.
 
 ## Open questions
 

@@ -42,13 +42,20 @@ def _fact(requirement_id, record):
 def normalize_facts(matrix):
     """Reduce any matrix shape (base, A, B, C views) to its fact set.
     Variant A rows carry an evidence list; all other shapes are
-    one-record-per-row. Variant B shadow rows normalize to their parent."""
+    one-record-per-row. Variant B shadow rows normalize to their parent.
+    GAP records are excluded: a GAP is the explicit rendering of ABSENT
+    evidence (claims discipline: gap = absence), so it is not a fact and
+    must not count toward fact equality."""
     facts = set()
     for row in matrix["rows"]:
         if "evidence" in row:
             for rec in row["evidence"]:
+                if rec["strength"] == "GAP":
+                    continue
                 facts.add(_fact(row["requirement_id"], rec))
         else:
+            if row["strength"] == "GAP":
+                continue
             requirement = row.get("parent_requirement") or row["requirement_id"]
             facts.add(_fact(requirement, row))
     return facts
