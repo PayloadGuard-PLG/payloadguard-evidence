@@ -86,9 +86,13 @@ def derive_intent(metadata, records_by_requirement):
         if req.get("parent_requirement") is not None:
             continue
         realized = []
+        by_method = {}
         for rec in records_by_requirement.get(req["id"], []):
             if rec["strength"] not in realized:
                 realized.append(rec["strength"])
+            per = by_method.setdefault(rec["method"], [])
+            if rec["strength"] not in per:
+                per.append(rec["strength"])
         intent_ok = req["intended_method"] in realized
         notes = []
         if not intent_ok:
@@ -100,8 +104,28 @@ def derive_intent(metadata, records_by_requirement):
                 f"intended {req['intended_method']}, realized "
                 + (", ".join(realized) if realized else "GAP")
             )
-        intent[req["id"]] = {"intent_ok": intent_ok, "notes": notes}
+        intent[req["id"]] = {
+            "intent_ok": intent_ok,
+            "notes": notes,
+            "intended": req["intended_method"],
+            "by_method": by_method,
+        }
     return intent
+
+
+def _view_notes(intent_entry, method):
+    """Gate 1 remediation, Item 2(a): a single-evidence-type view's notes
+    describe only that evidence type's contribution. The requirement-scoped
+    intent_ok VALUE is never re-derived (R1) — only the note text is scoped
+    to the rendering view."""
+    if intent_entry["intent_ok"]:
+        return []
+    here = intent_entry["by_method"].get(method, [])
+    return [
+        f"intended {intent_entry['intended']}; realized in this view: "
+        + (", ".join(here) if here else "none")
+        + " (requirement-scoped intent evaluated across all evidence per R1)"
+    ]
 
 
 def assert_no_realized_proven(matrix):
@@ -322,7 +346,7 @@ def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_vers
             raise SystemExit(f"unknown method filter: {method}")
         for record in records:
             intent_ok = intent[req["id"]]["intent_ok"]
-            notes = list(intent[req["id"]]["notes"])
+            notes = _view_notes(intent[req["id"]], method)
             rows.append(
                 {
                     "requirement_id": req["id"],
@@ -399,13 +423,18 @@ def _md_caveats(records):
 
 
 def _md_notes(rows):
+    # Gate 1 remediation, Item 2(b): the aggregate section de-duplicates by
+    # (requirement, note) — one line per unique requirement-level note, not
+    # one per table row.
     lines = ["", "## Notes", ""]
-    noted = False
+    seen = []
     for row in rows:
         for note in row["notes"]:
-            noted = True
-            lines.append(f"- {row['requirement_id']}: {note}")
-    if not noted:
+            key = (row["requirement_id"], note)
+            if key not in seen:
+                seen.append(key)
+                lines.append(f"- {row['requirement_id']}: {note}")
+    if not seen:
         lines.append("- none")
     lines.append("")
     return lines

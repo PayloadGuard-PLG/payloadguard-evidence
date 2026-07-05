@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: concrete evidence)",
-  "generated_utc": "2026-07-05T11:58:03.026438+00:00",
+  "generated_utc": "2026-07-05T12:37:26.842228+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -43,7 +43,7 @@
       "observed": 10.0,
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN; realized in this view: EXAMPLE_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
       ]
     },
     {
@@ -67,7 +67,7 @@
       "observed": 0.0,
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN; realized in this view: EXAMPLE_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
       ]
     },
     {
@@ -91,7 +91,7 @@
       "observed": 0.0,
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN; realized in this view: EXAMPLE_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
       ]
     },
     {

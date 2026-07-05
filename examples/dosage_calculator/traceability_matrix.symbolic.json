@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: symbolic evidence)",
-  "generated_utc": "2026-07-05T11:58:03.025604+00:00",
+  "generated_utc": "2026-07-05T12:37:26.841526+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -42,7 +42,7 @@
       "observed": null,
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
       ]
     },
     {
@@ -65,7 +65,7 @@
       "observed": null,
       "intent_ok": false,
       "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
+        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
       ]
     },
     {

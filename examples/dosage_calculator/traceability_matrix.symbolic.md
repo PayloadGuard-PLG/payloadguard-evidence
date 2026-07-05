@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant C: symbolic evidence)
 
-Generated (UTC): 2026-07-05T11:58:03.025604+00:00
+Generated (UTC): 2026-07-05T12:37:26.841526+00:00
 Tool versions: {'crosshair': 'crosshair-tool 0.0.107'}
 Declared bounds (intended envelope): {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1}
 Effective bounds (demonstrated by capture): {'per_condition_timeout_s': 30}
@@ -8,8 +8,8 @@ Enforcement note: max_iterations and seed are declared-only in metadata; crossha
 
 | Requirement | Method | Strength | Result | Detail | Notes |
 |---|---|---|---|---|---|
-| REQ-GIP-1-4-12 | crosshair | BOUNDED_CHECKED | no_counterexample | bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1} | intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED |
-| REQ-GIP-1-8-1 | crosshair | BOUNDED_CHECKED | no_counterexample | bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1} | intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED |
+| REQ-GIP-1-4-12 | crosshair | BOUNDED_CHECKED | no_counterexample | bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1} | intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1) |
+| REQ-GIP-1-8-1 | crosshair | BOUNDED_CHECKED | no_counterexample | bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1} | intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1) |
 | REQ-DOSE-003 | crosshair | BOUNDED_CHECKED | no_counterexample | bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1} | — |
 
 ## Caveats
@@ -18,5 +18,5 @@ Enforcement note: max_iterations and seed are declared-only in metadata; crossha
 
 ## Notes
 
-- REQ-GIP-1-4-12: intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED
-- REQ-GIP-1-8-1: intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED
+- REQ-GIP-1-4-12: intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)
+- REQ-GIP-1-8-1: intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)
