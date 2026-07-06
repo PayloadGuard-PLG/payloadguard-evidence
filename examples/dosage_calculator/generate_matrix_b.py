@@ -2,12 +2,7 @@
 # binds the shared evidence (Sample A CrossHair capture for base
 # requirements; concrete_results cases for shadow pseudo-requirements), and
 # renders traceability_matrix.b.json/.md via Gate 2's vocabulary-agnostic
-# build_matrix() (cut over 2026-07-06, proven byte-identical to
-# build_matrix_variant_b by tests/test_binder_equivalence.py).
-# build_matrix_variant_b still exists in evidence/render/matrix_variants.py
-# as a fallback - swap the import and call below back if a problem ever
-# surfaces - and is deleted only in a later, separate cleanup step once
-# this cutover has proven stable.
+# build_matrix() (evidence/render/matrix_variants.py).
 import json
 import pathlib
 import sys

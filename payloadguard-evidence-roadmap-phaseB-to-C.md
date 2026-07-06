@@ -16,10 +16,12 @@ concrete instead of aspirational.
   REQ-GIP-1-4-12's evidence not matching its "shall trigger an alarm"
   text.
 - Gate 5 (single-evidence-type fixture) — resolved for the constructible
-  half; concrete-only fixture blocked on Gate 2's binder existing.
+  half; concrete-only fixture still blocked (needs the binding-authorship
+  decision to actually change how variant C binds, not just how it's
+  cross-checked — see Gate 4).
 - Gate 6 (FRN) — resolved, see below.
-- Gate 2 (CONFLICT rule) — defined and ratified 2026-07-06, see below.
-  Not yet built.
+- Gate 2 (CONFLICT rule + vocabulary-agnostic binder + CLI) — COMPLETE,
+  see below.
 
 ## Guiding principle (unchanged)
 
@@ -30,7 +32,7 @@ and why.
 
 ---
 
-## Gate 2 — CONFLICT rule: DEFINED (ratified 2026-07-06), not yet built
+## Gate 2 — CONFLICT rule + binder + CLI: COMPLETE
 
 Was not defined anywhere in the Blueprint or SYSTEM_BLUEPRINT.md beyond a
 to-do mention — correctly left unresolved rather than inferred, until
@@ -67,7 +69,7 @@ the real committed dataset). Variant C's declared-binding asymmetry
 actual binding stays evidence-store-carried, confirmed unchanged by a
 byte-identical regeneration diff (timestamp aside).
 
-**Vocabulary-agnostic binder — Steps 1 through 3 done, plus the CLI.**
+**Vocabulary-agnostic binder — COMPLETE (Steps 1 through 4, plus the CLI).**
 `evidence/render/matrix_variants.py` gained `build_matrix()`: a literal
 extraction of all three existing variants' binding/rendering logic into
 named, reusable functions, dispatched through one declarative table
@@ -108,9 +110,25 @@ explicitly says to). `tests/test_cli.py` (10 tests) drives the CLI via
 subprocess for all four variants and proves byte-identical output to
 the committed artifacts, plus both error paths. Suite: 44 passed.
 
-Still open: deleting the Step 2 fallback functions once the cutover has
-proven stable (Step 4) — the only remaining piece of Gate 2's binder
-work.
+**Step 4 — done.** Requested last, deliberately after the CLI landed:
+`build_matrix_variant_a/b/c` deleted from `matrix_variants.py` (their
+shared markdown renderers stayed — `build_matrix()` already used those);
+`tests/test_binder_equivalence.py` deleted too, since its entire purpose
+(proving old-function output equals `build_matrix()` output) is moot
+once the old functions don't exist. `tests/test_single_evidence_type.py`
+(Gate 5's fixture test) was the one other place calling
+`build_matrix_variant_c` directly — migrated to `build_matrix()`.
+Verified after deletion, not just before it: full suite (39 passed — 44
+minus the 5 deleted equivalence tests), full pipeline re-run (every
+regenerated artifact still differs only by timestamp), and the CLI
+re-checked independently against a committed artifact. Git history
+holds the deleted functions and test if a fallback is ever needed again
+— that was the entire point of the Step 2→3→CLI→4 ordering rather than
+deleting immediately after the cutover.
+
+**Gate 2 is now structurally complete.** Nothing remains in its binder
+work; the only item anywhere in Gate 2's scope was the CONFLICT rule's
+own definition, already ratified.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 
@@ -146,14 +164,15 @@ whenever it's useful.
 
 **Status: closed.**
 
-## Gate 4 — Binding authorship: DECIDED (option 3), mechanism recorded, building deferred to Gate 2
+## Gate 4 — Binding authorship: DECIDED (option 3), mechanism BUILT via Gate 2
 
 **Decision:** option 3 — both models, cross-checked, Tier-1 failure on
 disagreement. Matches the cross-validation philosophy already built into
 the four-variant design.
 
-**Mechanism (recorded, not yet built):** dual-authorship cross-checking
-via verified code-location match —
+**Mechanism, built as Gate 2's CONFLICT Type 1** (`evidence/conflict.py`,
+folded into `build_matrix()`): dual-authorship cross-checking via
+verified code-location match —
 - **Top-down contract:** the system/QA-authored master traceability
   config states "REQ-X is verified by the proof/test at file F, method
   M."
@@ -163,12 +182,15 @@ via verified code-location match —
 - **Intersection check:** at generation time, extract both, and flag
   non-compliant if the physical file/method/hash doesn't match between
   them. This is exactly what Fable's bonus finding from Gate 5 flagged as
-  missing — the current C builder binds evidence without verifying it
-  against the capture's actual target.
+  missing — variant C's builder didn't verify evidence against the
+  capture's actual target; the concrete-side check now runs (via
+  `evidence/conflict.py`), though C's actual *binding* still stays
+  evidence-store-carried by design (Gate 5's constructibility note still
+  holds).
 
-**Status:** decision and mechanism locked. Building this is Gate 2's
-binder work, not a separate task — the intersection check above is also
-Gate 2's clearest concrete CONFLICT trigger (see below).
+**Status:** decision, mechanism, and build all done. `evidence/conflict.py`'s
+`concrete_binding_conflicts` / `symbolic_binding_conflicts` implement the
+intersection check for real, run inside `build_matrix()` on every call.
 
 ## Gate 6 — FRN: RESOLVED
 
@@ -270,11 +292,15 @@ the mechanisms above — not to relax the guarantee generally.
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a
 stated reason. Gate 3 is closed — tested empirically, not assumed. Gate 4
-is decided (option 3) with its mechanism recorded; building it is Gate 2's
-binder work. Gate 2's CONFLICT rule is now defined and ratified — two
-sub-types (identity mismatch, outcome mismatch), tested against three
-cases (two positive, one negative) — with only the build (the
-vocabulary-agnostic binder, plus the Type 2 cross-manifest comparison
-mechanism) still open. Gate 6 (FRN) is resolved and written into four
-files. Phase C now has four concrete mechanisms to implement rather than
-two open design questions.
+is decided (option 3) and its mechanism is built via Gate 2. Gate 2
+itself is complete: the CONFLICT rule (two sub-types, tested against
+three cases), the vocabulary-agnostic binder (`build_matrix()`, sole
+implementation across all four variants, original per-variant functions
+deleted), and the CLI (`evidence/cli.py`) are all built and verified.
+Gate 6 (FRN) is resolved and written into four files. Gate 5 stays
+resolved for the constructible half only — variant C's binder still
+binds a symbolic record to every requirement unconditionally (that
+binding behavior wasn't changed by Gate 2's refactor, only where the
+code lives), so a concrete-only fixture remains not constructible; not
+claimed otherwise. Phase C now has four concrete mechanisms to implement
+rather than two open design questions.

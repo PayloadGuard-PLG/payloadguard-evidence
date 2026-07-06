@@ -1,12 +1,7 @@
 # T4-A generator: validates metadata.a.yaml against metadata.schema.a.json,
 # binds the shared evidence (Sample A CrossHair capture + concrete_results
 # from T4-0), and renders traceability_matrix.a.json/.md via Gate 2's
-# vocabulary-agnostic build_matrix() (cut over 2026-07-06, proven
-# byte-identical to build_matrix_variant_a by
-# tests/test_binder_equivalence.py). build_matrix_variant_a still exists in
-# evidence/render/matrix_variants.py as a fallback - swap the import and
-# call below back if a problem ever surfaces - and is deleted only in a
-# later, separate cleanup step once this cutover has proven stable.
+# vocabulary-agnostic build_matrix() (evidence/render/matrix_variants.py).
 import json
 import pathlib
 import sys

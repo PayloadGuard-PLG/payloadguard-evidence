@@ -13,19 +13,16 @@ fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
 + mechanism recorded, implemented for all three metadata shapes), and 6
-(FRN, resolved) closed. Gate 2's CONFLICT rule (both Type 1 and Type 2)
-is built. The vocabulary-agnostic binder (`build_matrix()`, proven
-byte-identical to the three original per-variant functions) is built
-and cut over — all three generator scripts call it, with the originals
-kept in place, unused, as an explicit fallback — and Type 1 now runs
-folded into `build_matrix()` itself rather than as a separate pipeline
-stage; Type 2 stays standalone by design (a whole-dataset check with no
-per-variant home). The Gate 2 CLI (`python -m evidence.cli build`,
-`evidence/cli.py`) is now built too — a vocabulary-agnostic wrapper
-around `build_matrix()` taking metadata/manifest/concrete-store paths as
-arguments rather than the worked-example paths the generator scripts
-hardcode. Only deleting the binder's Step 2 fallback remains for Gate 2.
-See `KNOWN_LIMITATIONS.md` for the live gate ledger.
+(FRN, resolved) closed. **Gate 2 is now complete.** Its CONFLICT rule
+(both Type 1 and Type 2) is built; `build_matrix()` is the sole
+implementation across all four variants — all three generator scripts
+and the CLI (`python -m evidence.cli build`, `evidence/cli.py`) call
+it — with Type 1 folded in, running on every call, and Type 2 staying a
+standalone stage by design (a whole-dataset check with no per-variant
+home). The original per-variant functions and the equivalence test that
+checked `build_matrix()` against them are deleted, per explicit
+direction to build the CLI first — git history holds them if ever
+needed again. See `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -220,19 +217,17 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   `sources/README.md` and `KNOWN_LIMITATIONS.md` (Gate 6) for the
   citation trail and the one open caveat (not yet independently
   re-verified against the raw source text).
-- Dafny/Z3 adapters and the CLI are Phase B; nothing in this repository
-  currently claims `PROVEN` as a realized strength. **Gate 2's CONFLICT
-  rule is fully built** — both Type 1 (identity mismatch) and Type 2
-  (outcome mismatch) (`evidence/conflict.py`, 12 tests in
-  `tests/test_conflict_check.py`), implementing Gate 4's cross-check
+- Dafny/Z3 adapters are Phase C; nothing in this repository currently
+  claims `PROVEN` as a realized strength. **Gate 2 is complete** — both
+  CONFLICT sub-types, Type 1 (identity mismatch) and Type 2 (outcome
+  mismatch) (`evidence/conflict.py`, 12 tests in
+  `tests/test_conflict_check.py`), implement Gate 4's cross-check
   mechanism for all three metadata shapes, including variant C (whose
-  declared-binding asymmetry is closed). The vocabulary-agnostic binder —
-  `build_matrix()`, a declarative dispatch proven byte-identical to the
-  three original per-variant functions
-  (`tests/test_binder_equivalence.py`) — is built, cut over (all three
-  generator scripts call it; the originals are kept, unused, as a
-  fallback), and now runs Type 1 internally on every call instead of as
-  a separate pipeline stage. Type 2 stays a standalone
-  `generate_artifacts.py` stage by design — it compares raw manifests
-  across the whole dataset, with no single variant to fold into. The
-  CLI is still unstarted (`KNOWN_LIMITATIONS.md`).
+  declared-binding asymmetry is closed). `build_matrix()` is the sole
+  implementation across all four variants — all three generator scripts
+  and the CLI (`python -m evidence.cli build`, `evidence/cli.py`) call
+  it — running Type 1 internally on every call. Type 2 stays a
+  standalone `generate_artifacts.py` stage by design — it compares raw
+  manifests across the whole dataset, with no single variant to fold
+  into. The original per-variant functions and the equivalence test that
+  checked `build_matrix()` against them are deleted (`KNOWN_LIMITATIONS.md`).

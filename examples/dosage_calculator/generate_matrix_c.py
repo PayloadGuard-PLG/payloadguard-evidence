@@ -1,14 +1,8 @@
 # T4-C generator: validates metadata.c.yaml against metadata.schema.c.json,
 # then renders TWO independent artifacts from the identical evidence via
-# Gate 2's vocabulary-agnostic build_matrix() (cut over 2026-07-06, proven
-# byte-identical to build_matrix_variant_c by
-# tests/test_binder_equivalence.py):
+# Gate 2's vocabulary-agnostic build_matrix() (evidence/render/matrix_variants.py):
 #   traceability_matrix.symbolic.json/.md  (variant key: c-symbolic)
 #   traceability_matrix.concrete.json/.md  (variant key: c-concrete)
-# build_matrix_variant_c still exists in evidence/render/matrix_variants.py
-# as a fallback - swap the import and call below back if a problem ever
-# surfaces - and is deleted only in a later, separate cleanup step once
-# this cutover has proven stable.
 import json
 import pathlib
 import sys

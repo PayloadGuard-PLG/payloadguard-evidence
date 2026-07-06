@@ -22,7 +22,7 @@ import jsonschema
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from evidence.render.matrix_variants import build_matrix_variant_c  # noqa: E402
+from evidence.render.matrix_variants import build_matrix  # noqa: E402
 
 ART_DIR = REPO_ROOT / "examples" / "dosage_calculator"
 
@@ -64,10 +64,8 @@ def test_single_evidence_type_requirement_appears_in_exactly_one_artifact():
     manifest = json.loads((ART_DIR / "run_manifest.json").read_text())
     empty_store = {"cases": []}
 
-    symbolic, _ = build_matrix_variant_c(metadata, manifest, empty_store, "crosshair")
-    concrete, _ = build_matrix_variant_c(
-        metadata, manifest, empty_store, "concrete_test"
-    )
+    symbolic, _ = build_matrix("c-symbolic", metadata, manifest, empty_store)
+    concrete, _ = build_matrix("c-concrete", metadata, manifest, empty_store)
 
     sym_ids = [r["requirement_id"] for r in symbolic["rows"]]
     con_ids = [r["requirement_id"] for r in concrete["rows"]]

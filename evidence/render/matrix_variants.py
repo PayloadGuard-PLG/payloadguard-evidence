@@ -211,47 +211,6 @@ def _header(variant_key, metadata, tool_versions, bounds_block):
 
 # ---------------------------------------------------------------- variant A
 
-def build_matrix_variant_a(metadata, manifest, concrete_store, tool_versions=None):
-    cases = {c["test_id"]: c for c in concrete_store["cases"]}
-    bounds = metadata["toolchain"]["crosshair_bounds"]
-    records_by_req = {}
-    for req in metadata["requirements"]:
-        records = []
-        for ev in req.get("evidence", []):
-            if ev["method"] == "crosshair":
-                records.append(symbolic_record(manifest, bounds, req["implementation"]))
-            elif ev["method"] == "concrete_test":
-                records.append(concrete_record(cases[ev["test_id"]]))
-            else:
-                raise SystemExit(f"unknown evidence method: {ev['method']}")
-        records_by_req[req["id"]] = records
-    intent = derive_intent(metadata, records_by_req)
-    rows = []
-    for req in metadata["requirements"]:
-        records = records_by_req[req["id"]]
-        notes = list(intent[req["id"]]["notes"])
-        if not records:
-            notes.insert(0, "no evidence bound for this requirement")
-        gap = scope_gap_record(req)
-        if gap:
-            records = records + [gap]
-            notes.append(gap["note"])
-        rows.append(
-            {
-                "requirement_id": req["id"],
-                "requirement_text": _display_text(req),
-                "code_location": req["implementation"],
-                "evidence": records,
-                "intent_ok": intent[req["id"]]["intent_ok"],
-                "notes": notes,
-            }
-        )
-    matrix = _header("a", metadata, tool_versions, derive_bounds_block(metadata, manifest))
-    matrix["rows"] = rows
-    assert_no_realized_proven(matrix)
-    return matrix, _markdown_variant_a(matrix)
-
-
 def _markdown_variant_a(matrix):
     lines = _md_head(matrix)
     lines += [
@@ -275,62 +234,6 @@ def _all_records_a(matrix):
 
 
 # ---------------------------------------------------------------- variant B
-
-def build_matrix_variant_b(metadata, manifest, concrete_store, tool_versions=None):
-    cases = {c["test_id"]: c for c in concrete_store["cases"]}
-    bounds = metadata["toolchain"]["crosshair_bounds"]
-    bound_record = {}
-    records_by_req = {}
-    for req in metadata["requirements"]:
-        parent = req.get("parent_requirement")
-        if parent is None:
-            record = symbolic_record(manifest, bounds, req["implementation"])
-            records_by_req.setdefault(req["id"], []).append(record)
-        else:
-            test_id = req["implementation"].split("::")[-1]
-            record = concrete_record(cases[test_id])
-            records_by_req.setdefault(parent, []).append(record)
-        bound_record[req["id"]] = record
-    intent = derive_intent(metadata, records_by_req)
-    rows = []
-    for req in metadata["requirements"]:
-        parent = req.get("parent_requirement")
-        record = bound_record[req["id"]]
-        # R1: rows project the requirement-scoped value read-only; shadow rows
-        # carry their parent's intent_ok, and the requirement-scoped notes are
-        # displayed on the parent row only.
-        scope = intent[parent or req["id"]]
-        intent_ok = scope["intent_ok"]
-        notes = list(scope["notes"]) if parent is None else []
-        req_text = req["text"].strip() if parent else _display_text(req)
-        rows.append(
-            {
-                "requirement_id": req["id"],
-                "parent_requirement": parent,
-                "requirement_text": req_text,
-                "code_location": req["implementation"],
-                **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
-                "bounds": record.get("bounds"),
-                "counterexample": record.get("counterexample"),
-                "test_id": record.get("test_id"),
-                "inputs": record.get("inputs"),
-                "expected": record.get("expected"),
-                "observed": record.get("observed"),
-                "intent_ok": intent_ok,
-                "notes": notes,
-            }
-        )
-    for req in metadata["requirements"]:
-        if req.get("parent_requirement") is not None:
-            continue
-        gap = scope_gap_record(req)
-        if gap:
-            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
-    matrix = _header("b", metadata, tool_versions, derive_bounds_block(metadata, manifest))
-    matrix["rows"] = rows
-    assert_no_realized_proven(matrix)
-    return matrix, _markdown_variant_b(matrix)
-
 
 def _markdown_variant_b(matrix):
     lines = _md_head(matrix)
@@ -377,68 +280,6 @@ def _markdown_variant_b(matrix):
 
 
 # ---------------------------------------------------------------- variant C
-
-def build_matrix_variant_c(metadata, manifest, concrete_store, method, tool_versions=None):
-    """Single renderer parametrised by method filter: 'crosshair' or
-    'concrete_test'. Concrete evidence binds by the requirement_id carried in
-    each concrete_results.json case (evidence is self-describing); symbolic
-    evidence binds by implementation match, as in the base matrix."""
-    bounds = metadata["toolchain"]["crosshair_bounds"]
-    # R1: the full evidence model (BOTH methods) is assembled first and intent
-    # is derived once at the model level; the method filter below only selects
-    # which records are projected into this artifact. Filtered views carry the
-    # requirement-scoped intent_ok read-only and never re-derive it.
-    records_by_req = {}
-    for req in metadata["requirements"]:
-        records_by_req[req["id"]] = [
-            symbolic_record(manifest, bounds, req["implementation"])
-        ] + [
-            concrete_record(c)
-            for c in concrete_store["cases"]
-            if c["requirement_id"] == req["id"]
-        ]
-    intent = derive_intent(metadata, records_by_req)
-    rows = []
-    for req in metadata["requirements"]:
-        if method == "crosshair":
-            records = [r for r in records_by_req[req["id"]] if r["method"] == "crosshair"]
-        elif method == "concrete_test":
-            records = [r for r in records_by_req[req["id"]] if r["method"] == "concrete_test"]
-        else:
-            raise SystemExit(f"unknown method filter: {method}")
-        for record in records:
-            intent_ok = intent[req["id"]]["intent_ok"]
-            notes = _view_notes(intent[req["id"]], method)
-            rows.append(
-                {
-                    "requirement_id": req["id"],
-                    "requirement_text": _display_text(req),
-                    "code_location": record["code_location"],
-                    **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
-                    "bounds": record.get("bounds"),
-                    "counterexample": record.get("counterexample"),
-                    "test_id": record.get("test_id"),
-                    "inputs": record.get("inputs"),
-                    "expected": record.get("expected"),
-                    "observed": record.get("observed"),
-                    "intent_ok": intent_ok,
-                    "notes": notes,
-                }
-            )
-    # Scope gaps are method-agnostic (they mark the ABSENCE of evidence of
-    # any type), so both filtered views carry them — a deferred scope must
-    # be visible no matter which artifact a reviewer opens.
-    for req in metadata["requirements"]:
-        gap = scope_gap_record(req)
-        if gap:
-            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
-    key = "c-symbolic" if method == "crosshair" else "c-concrete"
-    matrix = _header(key, metadata, tool_versions, derive_bounds_block(metadata, manifest))
-    matrix["method_filter"] = method
-    matrix["rows"] = rows
-    assert_no_realized_proven(matrix)
-    return matrix, _markdown_variant_c(matrix)
-
 
 def _markdown_variant_c(matrix):
     lines = _md_head(matrix)
@@ -540,38 +381,33 @@ def _md_notes(rows):
 # =============================================================================
 # Gate 2: vocabulary-agnostic binder
 #
-# build_matrix() below is now the AUTHORITATIVE entry point: as of
-# 2026-07-06, generate_matrix_a.py / _b.py / _c.py all call it instead of
-# build_matrix_variant_a/b/c directly. Those three functions are literal
-# extractions into named, reusable pieces ("binder" = record-assembly,
-# "shape" = row-rendering), dispatched through one declarative table
-# (_VARIANT_SPECS) and one entry point instead of three separate top-level
-# functions.
+# build_matrix() below is THE entry point: generate_matrix_a.py / _b.py /
+# _c.py and evidence/cli.py all call it. It replaced three separate
+# top-level functions (build_matrix_variant_a/b/c, one per variant) with a
+# declarative binder+shape dispatch (_VARIANT_SPECS): "binder" = record-
+# assembly (_bind_declared for A, _bind_shadow for B, _bind_self_describing
+# for C), "shape" = row-rendering (_shape_evidence_array,
+# _shape_flattened_shadow, _shape_method_partitioned).
 #
 # Binding strategy (how records_by_req gets populated) and row shape (how
 # records_by_req renders into matrix rows) are the two real axes of variation
 # across A/B/C; this split is what lets a future fifth shape reuse an
 # existing strategy or shape instead of requiring a fourth whole function.
 #
-# Correctness discipline: this was a refactor of already-reviewed logic, not
-# new logic. tests/test_binder_equivalence.py proves build_matrix() produces
-# BYTE-IDENTICAL output (generated_utc aside) to build_matrix_variant_a/b/c
-# for all four variant keys, over the real committed inputs - that proof
-# held before the cutover above and continues to be enforced by the suite.
-# NOTE (Step 3, 2026-07-06): build_matrix() now does strictly MORE than the
-# original three functions - it also runs the Gate 2 CONFLICT Type 1 check
-# (run_conflict_gate) before assembling any record, folded in below. On the
-# real committed data (zero conflicts) this changes nothing observable, so
-# the equivalence proof still holds; tests/test_conflict_check.py proves
-# the added check actually fires when it should.
-#
-# build_matrix_variant_a/b/c (above this section) are INTENTIONALLY KEPT,
-# unused by any generator now, as a fallback: if a problem with build_matrix
-# ever surfaces, each generator script's import + call can be reverted to
-# the corresponding build_matrix_variant_* function in one line, or this
-# cutover commit can be git-reverted outright. They are deleted only in a
-# later, separate cleanup step once this cutover has proven stable - not in
-# the same step as the cutover itself.
+# History (2026-07-06, in order - kept here rather than only in DEVLOG.md
+# since it explains why the code looks the way it does): build_matrix()
+# was built as a literal extraction of the three original functions'
+# logic (Step 1), proven byte-identical to them via
+# tests/test_binder_equivalence.py; the three generator scripts were cut
+# over to call it, with the three originals deliberately kept in place,
+# unused, as an explicit fallback (Step 2); Gate 2 CONFLICT Type 1
+# (run_conflict_gate) was folded in as build_matrix()'s first step,
+# running on every call rather than only inside the full pipeline
+# (Step 3); the CLI was added (evidence/cli.py); and once all of that had
+# proven stable, the three original functions and the equivalence test
+# that existed solely to check against them were deleted (Step 4) - this
+# is that end state. Git history holds the fallback if it's ever needed
+# again.
 # =============================================================================
 
 

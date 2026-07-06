@@ -1,9 +1,8 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 2 CLI built: evidence/cli.py, a
-vocabulary-agnostic `python -m evidence.cli build` wrapping
-build_matrix() for any metadata/manifest/concrete-store path, not just
-the worked example — see KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-06 (Gate 2 binder work COMPLETE: Step 4 deleted the
+fallback functions build_matrix_variant_a/b/c and the equivalence test
+that existed to check against them — see KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -46,16 +45,17 @@ payloadguard-evidence/
 │   └── render/
 │       ├── manual_matrix.py     Base binder/renderer (Phase A, hand-reviewed)
 │       └── matrix_variants.py   build_matrix() - Gate 2's vocabulary-
-│                                agnostic dispatch, AUTHORITATIVE as of
-│                                2026-07-06 (all three generators call it);
-│                                folds in CONFLICT Type 1 (Step 3) as its
-│                                first step, before assembling any record;
-│                                derive_intent (R1);
-│                                assert_no_realized_proven (R2);
-│                                build_matrix_variant_a/b/c kept in place,
-│                                unused, as an explicit fallback (NOT
-│                                Type-1-checked) - deleted only in a later
-│                                cleanup step
+│                                agnostic dispatch, the SOLE
+│                                implementation across all four variants
+│                                (all three generators + the CLI call
+│                                it); folds in CONFLICT Type 1 as its
+│                                first step, before assembling any
+│                                record; derive_intent (R1);
+│                                assert_no_realized_proven (R2). The
+│                                original per-variant functions and the
+│                                test that checked build_matrix() against
+│                                them are deleted (Step 4) - git history
+│                                holds them if ever needed again
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -106,9 +106,6 @@ payloadguard-evidence/
     │                            test cases over real data (all three
     │                            metadata shapes) + in-memory fixtures,
     │                            plus a fold-in proof driving build_matrix()
-    ├── test_binder_equivalence.py  Gate 2 binder Step 1: build_matrix()
-    │                            proven byte-identical (dict + JSON string)
-    │                            to build_matrix_variant_a/b/c
     └── test_cli.py              Gate 2 CLI: subprocess-driven, all four
                                  variants match committed artifacts;
                                  Tier-1 error paths; stdout/file modes
@@ -205,21 +202,21 @@ complete with remediation applied. Gates 3 (bounds enforcement — decided
 stay-CLI by real behavioral test), 4 (binding authorship — option 3
 decided, mechanism specified), 5 (single-evidence-type fixture —
 resolved for the constructible half), and 6 (FRN — resolved) closed or
-decided. Gate 2's CONFLICT rule — both Type 1 (identity mismatch) and
-Type 2 (outcome mismatch) — is built (`evidence/conflict.py`); Gate 4's
-cross-check mechanism is now implemented for all three metadata shapes,
-including variant C, whose declared-binding asymmetry is closed. The
-vocabulary-agnostic binder is built and cut over (Steps 1–2), Type 1 is
-folded into `build_matrix()` itself as of Step 3 (runs on every call, not
-just inside the full pipeline), and the CLI (`evidence/cli.py`,
-`python -m evidence.cli build`) is built, wrapping `build_matrix()` for
-any metadata/manifest/concrete-store path rather than the hardcoded
-worked-example paths the generator scripts use. Type 2 stays a
-standalone `generate_artifacts.py` stage by design (a whole-manifest-set
-check with no per-variant home, like fact-equality). Only Step 4
-(deleting the Step 2 fallback functions once the cutover has proven
-stable — deliberately held back until the CLI landed) remains for Gate 2
-as a whole. See `KNOWN_LIMITATIONS.md` for the live gate ledger and
+decided. **Gate 2 is now complete.** Its CONFLICT rule — both Type 1
+(identity mismatch) and Type 2 (outcome mismatch) — is built
+(`evidence/conflict.py`); Gate 4's cross-check mechanism is implemented
+for all three metadata shapes, including variant C, whose declared-
+binding asymmetry is closed. `build_matrix()` is the sole
+implementation across all four variants (the original per-variant
+functions and the equivalence test that checked build_matrix() against
+them are deleted, per Steven's direction to build the CLI first); Type 1
+is folded into it, running on every call. Type 2 stays a standalone
+`generate_artifacts.py` stage by design (a whole-manifest-set check with
+no per-variant home, like fact-equality). The CLI (`evidence/cli.py`,
+`python -m evidence.cli build`) wraps `build_matrix()` for any metadata/
+manifest/concrete-store path rather than the hardcoded worked-example
+paths the generator scripts use. See `KNOWN_LIMITATIONS.md` for the live
+gate ledger and
 `payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
 mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
 literal substring "0 errors" plus the three further checks in the

@@ -6,6 +6,51 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 7: Step 4 (delete the fallback) — Gate 2 COMPLETE
+
+Requested explicitly, now that the CLI had landed and the cutover had
+run stable through multiple independent verification passes.
+
+- **Deleted:** `build_matrix_variant_a`, `build_matrix_variant_b`,
+  `build_matrix_variant_c` from `evidence/render/matrix_variants.py`.
+  Their shared markdown renderers (`_markdown_variant_a/b/c`) and other
+  helpers stayed - `build_matrix()` already used those, not the deleted
+  top-level functions.
+- **Deleted:** `tests/test_binder_equivalence.py`. Its entire purpose
+  was proving the old functions' output equals `build_matrix()`'s
+  output - moot once the old functions don't exist.
+- **Migrated, not deleted:** `tests/test_single_evidence_type.py` (Gate
+  5's fixture test) was the one other place in the suite calling
+  `build_matrix_variant_c` directly - updated to call
+  `build_matrix("c-symbolic"/"c-concrete", ...)` instead. Confirmed
+  still passing (2/2) before moving on.
+- **Comments updated, not left stale:** the module-level banner in
+  `matrix_variants.py` and the header comments in `generate_matrix_a/b/c.py`
+  that described the now-gone fallback were rewritten to stop
+  referencing it, rather than left describing something that no longer
+  exists.
+- **Verified after deletion, not just before it:** full suite (39
+  passed - 44 minus the 5 deleted equivalence tests), full pipeline
+  re-run (every regenerated artifact still differs only by
+  `generated_utc`), and the CLI independently re-checked against a
+  committed artifact post-deletion.
+- **Corrected an overclaim while updating the roadmap doc:** a first
+  draft of the "what's done" summary said Gate 5's concrete-only-fixture
+  limitation was now closed by Gate 2's completion. Checked before
+  committing: `build_matrix()`'s `_bind_self_describing` strategy for
+  variant C is a literal extraction of the original C builder's
+  logic - it still binds a symbolic record to every requirement
+  unconditionally, unchanged by the refactor. Gate 5 stays resolved for
+  the constructible half only; fixed before it went in the doc.
+- Documentation updated: `KNOWN_LIMITATIONS.md` (Gate 2 marked
+  COMPLETE), `SYSTEM_BLUEPRINT.md`, `README.md`, roadmap doc (Gate 2's
+  heading, Gate 4's status, the closing summary).
+- **Gate 2 is now structurally complete** - CONFLICT rule (both types),
+  the vocabulary-agnostic binder, and the CLI are all built, verified,
+  and documented. The only open item in Gate 2's scope was ever its own
+  definition, and that's ratified. Git history holds the deleted
+  fallback and test if ever needed again.
+
 ## 2026-07-06 — Gate 2 build, Phase 6: CLI (built ahead of Step 4, at Steven's direction)
 
 Steven asked to hold off deleting the Step 2 fallback functions and get
