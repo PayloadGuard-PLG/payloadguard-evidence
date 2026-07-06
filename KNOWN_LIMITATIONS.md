@@ -4,13 +4,13 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 1:
-build_matrix() added, proven byte-identical to all three existing
-per-variant functions; nothing cut over yet).
+Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 2:
+generate_matrix_a/b/c.py cut over to build_matrix(); old functions kept
+in place, unused, as an explicit fallback).
 
 | Gate | Status | Summary |
 |---|---|---|
-| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; vocabulary-agnostic binder Step 1 done (proven, not cut over); CLI still open** | `evidence/conflict.py` implements both CONFLICT sub-types for real, over real committed data (11 tests). `evidence/render/matrix_variants.py` gained `build_matrix()`, a declarative binder+shape dispatch proven byte-identical to `build_matrix_variant_a/b/c` (`tests/test_binder_equivalence.py`, 5 tests) — additive only, generators still call the original functions. Details below. |
+| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; vocabulary-agnostic binder cut over (Step 2 done); CLI + CONFLICT-folding still open** | `evidence/conflict.py` implements both CONFLICT sub-types for real, over real committed data (11 tests). All three generator scripts now call `build_matrix()`; the original `build_matrix_variant_a/b/c` are kept in place, unused, as a fallback. Full-pipeline regeneration confirmed byte-identical to pre-cutover artifacts (timestamps aside). Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
@@ -130,7 +130,7 @@ in-memory fixture when the committed dataset can't exercise a property.
 `tests/test_conflict_check.py` now has 11 tests total, covering all
 three ratified test cases across all three metadata shapes plus Type 2.
 
-### Vocabulary-agnostic binder — Step 1 done (2026-07-06): built, proven equivalent, not cut over
+### Vocabulary-agnostic binder — Step 2 done (2026-07-06): cut over, with an explicit fallback
 
 The remaining piece of Gate 2 — one implementation driving all four
 schema-variant shapes, replacing `generate_matrix_a.py` / `_b.py` /
@@ -161,17 +161,30 @@ catches key-insertion-order drift that dict `==` alone would miss, which
 matters for a future generator cutover producing byte-identical files,
 not just equivalent-content ones). All pass.
 
-**Status: additive only, nothing cut over.** `generate_matrix_a.py` /
-`_b.py` / `_c.py` and `regenerate_all.py` are untouched and still call
-the original `build_matrix_variant_a/b/c` functions; `build_matrix()` is
-not called from anywhere in the generation path yet. The full pipeline
-was re-run end to end after this change and every regenerated artifact
-differs only by `generated_utc` — proving this step introduced zero
-observable change. This is deliberately the stopping point before the
-higher-risk step (retiring the three old functions and the separate
-generator scripts, and folding Types 1/2 into the binder as internal
-steps instead of standalone pipeline stages) — see "What's left for Gate
-2" below.
+**Step 2 (2026-07-06): cut over.** Steven approved proceeding with an
+explicit request to keep a fallback available. `generate_matrix_a.py` /
+`_b.py` / `_c.py` now import and call `build_matrix("a"/"b"/"c-symbolic"/
+"c-concrete", ...)` instead of the original per-variant functions.
+**Fallback, by design, not an afterthought:** `build_matrix_variant_a/b/c`
+are deliberately left in `evidence/render/matrix_variants.py`, fully
+intact and unused — if a problem with `build_matrix()` ever surfaces,
+each generator's import + call can be reverted to the corresponding
+original function in one line, or this cutover commit can be
+`git revert`ed outright. They are deleted only in a later, separate
+cleanup step once the cutover has proven stable — not bundled into the
+cutover itself.
+
+**Verification, not assumption:** the full pipeline was re-run end to
+end post-cutover, and every regenerated artifact was diffed against the
+pre-cutover committed versions — differs only by `generated_utc`, exactly
+as the Step 1 equivalence proof predicted. Full suite: 33 passed
+(unchanged from Step 1 — this step changed which function each generator
+calls, not any logic).
+
+**Still open:** folding CONFLICT Types 1/2 into the binder as internal
+steps (they currently run as standalone `generate_artifacts.py` pipeline
+stages, unaffected by this cutover) and the CLI — see "What's left for
+Gate 2" below.
 
 ## Gate 3 — DECIDED 2026-07-06: stay-CLI (crosshair-tool 0.0.107)
 
@@ -313,15 +326,18 @@ recorded in `sources/README.md` and
   data).
 - Binding authorship (Gate 4): decided (option 3) and now implemented
   for all three metadata shapes — variant C's asymmetry is closed.
-- Vocabulary-agnostic binder: **Step 1 done** — `build_matrix()` built
-  and proven byte-identical to the three existing per-variant functions
-  (`tests/test_binder_equivalence.py`). **Step 2 (not started):** cut
-  `generate_matrix_a.py` / `_b.py` / `_c.py` over to call `build_matrix()`
-  instead of the original functions, then retire the originals; fold
-  Types 1/2 into the binder as internal steps instead of standalone
-  pipeline stages once the cutover is proven stable.
+- Vocabulary-agnostic binder: **Steps 1 and 2 done.** `build_matrix()`
+  built, proven byte-identical to the three existing per-variant
+  functions (`tests/test_binder_equivalence.py`), and all three
+  generator scripts now call it. `build_matrix_variant_a/b/c` are kept
+  in place, unused, as an explicit fallback — not yet deleted.
+  **Step 3 (not started):** fold CONFLICT Types 1/2 into the binder as
+  internal steps instead of standalone `generate_artifacts.py` pipeline
+  stages, once the cutover has run stable for a while. **Step 4 (not
+  started):** delete `build_matrix_variant_a/b/c` once Step 3 is done and
+  the fallback is no longer needed.
 - CLI: not started — planned as a thin wrapper once the binder itself is
-  stable post-cutover.
+  fully consolidated (post Step 3/4).
 
 ## Session-scope note (2026-07-05, Turn B4)
 

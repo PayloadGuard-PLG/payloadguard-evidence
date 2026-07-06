@@ -15,9 +15,10 @@ applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 + mechanism recorded, implemented for all three metadata shapes), and 6
 (FRN, resolved) closed. Gate 2's CONFLICT rule (both Type 1 and Type 2)
 is built and running as real Tier-1 pipeline stages. The vocabulary-
-agnostic binder's Step 1 (a single `build_matrix()` proven byte-identical
-to the three existing per-variant functions) is done; cutting the
-generators over to it is the next step. See `KNOWN_LIMITATIONS.md` for
+agnostic binder (`build_matrix()`, proven byte-identical to the three
+original per-variant functions) is now built and cut over — all three
+generator scripts call it; the originals are kept in place, unused, as
+an explicit fallback. See `KNOWN_LIMITATIONS.md` for
 the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
@@ -210,8 +211,9 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   `tests/test_conflict_check.py`), implementing Gate 4's cross-check
   mechanism for all three metadata shapes, including variant C (whose
   declared-binding asymmetry is now closed). The vocabulary-agnostic
-  binder's Step 1 — `build_matrix()`, a declarative dispatch proven
-  byte-identical to the three existing per-variant functions
-  (`tests/test_binder_equivalence.py`) — is done but not yet cut over;
-  the generator scripts and the CLI are still unstarted
-  (`KNOWN_LIMITATIONS.md`).
+  binder — `build_matrix()`, a declarative dispatch proven byte-identical
+  to the three original per-variant functions
+  (`tests/test_binder_equivalence.py`) — is built and all three generator
+  scripts now call it; the originals are kept, unused, as a fallback.
+  Folding CONFLICT Types 1/2 into the binder itself and the CLI are still
+  unstarted (`KNOWN_LIMITATIONS.md`).

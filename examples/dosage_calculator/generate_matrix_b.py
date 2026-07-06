@@ -1,7 +1,13 @@
 # T4-B generator: validates metadata.b.yaml against metadata.schema.b.json,
 # binds the shared evidence (Sample A CrossHair capture for base
 # requirements; concrete_results cases for shadow pseudo-requirements), and
-# renders traceability_matrix.b.json/.md via the variant B builder.
+# renders traceability_matrix.b.json/.md via Gate 2's vocabulary-agnostic
+# build_matrix() (cut over 2026-07-06, proven byte-identical to
+# build_matrix_variant_b by tests/test_binder_equivalence.py).
+# build_matrix_variant_b still exists in evidence/render/matrix_variants.py
+# as a fallback - swap the import and call below back if a problem ever
+# surfaces - and is deleted only in a later, separate cleanup step once
+# this cutover has proven stable.
 import json
 import pathlib
 import sys
@@ -13,7 +19,7 @@ HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from evidence.render.matrix_variants import build_matrix_variant_b  # noqa: E402
+from evidence.render.matrix_variants import build_matrix  # noqa: E402
 
 
 def main():
@@ -24,7 +30,8 @@ def main():
     manifest = json.loads((HERE / "run_manifest.json").read_text())
     concrete_store = json.loads((HERE / "concrete_results.json").read_text())
 
-    matrix, markdown = build_matrix_variant_b(
+    matrix, markdown = build_matrix(
+        "b",
         metadata,
         manifest,
         concrete_store,

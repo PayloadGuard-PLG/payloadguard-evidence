@@ -67,20 +67,26 @@ the real committed dataset). Variant C's declared-binding asymmetry
 actual binding stays evidence-store-carried, confirmed unchanged by a
 byte-identical regeneration diff (timestamp aside).
 
-**Vocabulary-agnostic binder — Step 1 done, Step 2 pending.**
+**Vocabulary-agnostic binder — Steps 1 and 2 done.**
 `evidence/render/matrix_variants.py` gained `build_matrix()`: a literal
 extraction of all three existing variants' binding/rendering logic into
 named, reusable functions, dispatched through one declarative table
 instead of three top-level functions. Proven byte-identical (dict AND
 JSON-string equality) to the original `build_matrix_variant_a/b/c` over
-real committed data (`tests/test_binder_equivalence.py`, 5 tests).
-Additive only — `generate_matrix_a.py` / `_b.py` / `_c.py` are untouched
-and still authoritative; the pipeline was re-run end to end and every
-regenerated artifact differs only by timestamp. Step 2 (retiring the
-three old functions and generator scripts in favor of `build_matrix()`,
-and folding Types 1/2 into the binder) is the deliberate next stopping
-point, not yet started. The CLI remains unstarted, planned as a thin
-wrapper once the binder itself is stable post-cutover.
+real committed data (`tests/test_binder_equivalence.py`, 5 tests). Step
+2: `generate_matrix_a.py` / `_b.py` / `_c.py` now call `build_matrix()`
+instead of the original functions — Steven approved with an explicit
+request to keep a fallback available, so `build_matrix_variant_a/b/c`
+are deliberately kept in place, unused, rather than deleted in the same
+step (one-line revert per generator, or a plain `git revert`, if a
+problem ever surfaces). Verified, not assumed: the full pipeline was
+re-run end to end post-cutover and every regenerated artifact diffed
+against the pre-cutover committed versions — differs only by timestamp.
+Still open: folding CONFLICT Types 1/2 into the binder itself (they
+currently run as standalone `generate_artifacts.py` stages, unaffected
+by the cutover), deleting the fallback functions once the cutover has
+proven stable, and the CLI, planned as a thin wrapper once the binder is
+fully consolidated.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 

@@ -537,26 +537,34 @@ def _md_notes(rows):
 
 
 # =============================================================================
-# Gate 2: vocabulary-agnostic binder (Step 1 of the phased build)
+# Gate 2: vocabulary-agnostic binder
 #
-# ADDITIVE ONLY. Nothing above this line is modified, and build_matrix_a/b/c
-# are untouched and still used by every generator script. The functions below
-# are literal extractions of each variant's existing record-assembly
-# ("binder") and row-rendering ("shape") logic into named, reusable pieces,
-# dispatched through one declarative table (_VARIANT_SPECS) and one entry
-# point (build_matrix) instead of three separate top-level functions.
+# build_matrix() below is now the AUTHORITATIVE entry point: as of
+# 2026-07-06, generate_matrix_a.py / _b.py / _c.py all call it instead of
+# build_matrix_variant_a/b/c directly. Those three functions are literal
+# extractions into named, reusable pieces ("binder" = record-assembly,
+# "shape" = row-rendering), dispatched through one declarative table
+# (_VARIANT_SPECS) and one entry point instead of three separate top-level
+# functions.
 #
 # Binding strategy (how records_by_req gets populated) and row shape (how
 # records_by_req renders into matrix rows) are the two real axes of variation
 # across A/B/C; this split is what lets a future fifth shape reuse an
 # existing strategy or shape instead of requiring a fourth whole function.
 #
-# Correctness discipline: this is a refactor of already-reviewed logic, not
+# Correctness discipline: this was a refactor of already-reviewed logic, not
 # new logic. tests/test_binder_equivalence.py proves build_matrix() produces
 # BYTE-IDENTICAL output (generated_utc aside) to build_matrix_variant_a/b/c
-# for all four variant keys, over the real committed inputs. Cutting the
-# generator scripts over to build_matrix() is a later, separate step,
-# gated on that equivalence proof holding.
+# for all four variant keys, over the real committed inputs - that proof
+# held before the cutover above and continues to be enforced by the suite.
+#
+# build_matrix_variant_a/b/c (above this section) are INTENTIONALLY KEPT,
+# unused by any generator now, as a fallback: if a problem with build_matrix
+# ever surfaces, each generator script's import + call can be reverted to
+# the corresponding build_matrix_variant_* function in one line, or this
+# cutover commit can be git-reverted outright. They are deleted only in a
+# later, separate cleanup step once this cutover has proven stable - not in
+# the same step as the cutover itself.
 # =============================================================================
 
 

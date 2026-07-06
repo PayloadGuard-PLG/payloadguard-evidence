@@ -1,9 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 1:
-build_matrix() added to evidence/render/matrix_variants.py, proven
-byte-identical to the three existing per-variant functions; nothing
-cut over yet — see KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 2:
+generate_matrix_a/b/c.py cut over to build_matrix(); the three original
+per-variant functions kept in place, unused, as an explicit fallback —
+see KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -40,12 +40,14 @@ payloadguard-evidence/
 │   │   └── metadata.schema.c.json   T4-C: base shape, dual-matrix notes
 │   └── render/
 │       ├── manual_matrix.py     Base binder/renderer (Phase A, hand-reviewed)
-│       └── matrix_variants.py   T4 variant builders (build_matrix_a/b/c,
-│                                still authoritative); derive_intent (R1);
-│                                assert_no_realized_proven (R2); plus
-│                                build_matrix() - Gate 2's vocabulary-
-│                                agnostic dispatch, additive, proven
-│                                equivalent, not yet called by generators
+│       └── matrix_variants.py   build_matrix() - Gate 2's vocabulary-
+│                                agnostic dispatch, AUTHORITATIVE as of
+│                                2026-07-06 (all three generators call it);
+│                                derive_intent (R1);
+│                                assert_no_realized_proven (R2);
+│                                build_matrix_variant_a/b/c kept in place,
+│                                unused, as an explicit fallback - deleted
+│                                only in a later cleanup step
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -63,7 +65,10 @@ payloadguard-evidence/
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
 │   ├── metadata[.a|.b|.c].yaml  Authored metadata, base + variant shapes
-│   ├── generate_matrix*.py      Generators (validate → bind → check → render)
+│   ├── generate_matrix*.py      Generators (validate → bind → check →
+│   │                            render); each now calls
+│   │                            evidence.render.matrix_variants.build_matrix()
+│   │                            (2026-07-06 cutover)
 │   ├── regenerate_all.py        Inner regeneration step: all variant
 │   │                            generators + fact-equality gate
 │   ├── generate_artifacts.py    End-to-end pipeline (Turn B4): schema

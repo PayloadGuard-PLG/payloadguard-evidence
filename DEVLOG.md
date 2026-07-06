@@ -6,6 +6,37 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 4: vocabulary-agnostic binder, Step 2 (cutover)
+
+Steven approved proceeding with an explicit request to keep a fallback
+available ("ensure we can fallback if necessary"). Cutover done with
+that constraint built in, not bolted on afterward.
+
+- **Cut over:** `generate_matrix_a.py` / `_b.py` / `_c.py` now import
+  and call `build_matrix("a"/"b"/"c-symbolic"/"c-concrete", ...)` from
+  `evidence/render/matrix_variants.py` instead of the original
+  `build_matrix_variant_a/b/c` functions directly.
+- **Fallback, by design:** the three original functions are deliberately
+  left in place, fully intact and unused. If a problem with
+  `build_matrix()` ever surfaces, each generator's import + call can be
+  reverted to the corresponding original function in one line, or this
+  commit can be `git revert`ed outright. Deleting them is scoped as its
+  own later cleanup step (Step 4), gated on the cutover proving stable —
+  not bundled into the cutover itself.
+- **Verified, not assumed:** ran the full `generate_artifacts.py`
+  pipeline post-cutover (all 7 stages clean) and diffed every
+  regenerated artifact against the pre-cutover committed versions -
+  differs only by `generated_utc`, exactly as the Step 1 equivalence
+  proof predicted. Full suite: 33 passed, unchanged from Step 1 (this
+  step changed which function each generator calls, not any logic).
+- Updated the module-level comment in `matrix_variants.py` to mark
+  `build_matrix()` as authoritative and the three original functions as
+  an explicit, intentional fallback rather than dead code.
+- Documentation updated: `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+  `README.md`, roadmap doc - Gate 2's binder work now tracked as Steps
+  1-2 done, Step 3 (fold CONFLICT Types 1/2 into the binder) and Step 4
+  (delete the fallback functions once stable) still open, plus the CLI.
+
 ## 2026-07-06 — Gate 2 build, Phase 3: vocabulary-agnostic binder, Step 1
 
 Steven confirmed the phased plan and set the working principle for the
