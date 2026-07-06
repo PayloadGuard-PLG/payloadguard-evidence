@@ -4,20 +4,20 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 2 CONFLICT rule Type 1 built and wired
-into the pipeline as a real Tier-1 stage; Type 2 and the vocabulary-
-agnostic binder remain open).
+Last updated: 2026-07-06 (Gate 2 CONFLICT rule Types 1 AND 2 built and
+wired into the pipeline as real Tier-1 stages; variant C's binding
+asymmetry closed; only the vocabulary-agnostic binder + CLI remain).
 
 | Gate | Status | Summary |
 |---|---|---|
-| Gate 2 — CONFLICT rule | **Type 1 BUILT (2026-07-06); Type 2 and the binder itself still open** | `evidence/conflict.py` implements the identity-mismatch check for real, over the real committed data — no fixture stands in. Wired into `generate_artifacts.py` as stage 3. `tests/test_conflict_check.py`: 7 tests, all three ratified cases covered. Details below. |
+| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT (2026-07-06); vocabulary-agnostic binder + CLI still open** | `evidence/conflict.py` implements both sub-types for real, over real committed data. Wired into `generate_artifacts.py` as stages 3–4. `tests/test_conflict_check.py`: 11 tests, all three ratified cases covered plus variant C. Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
-| Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); mechanism specified; build deferred to Gate 2** | Decision and mechanism below. |
+| Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **NOTED for Gate 2** | The Gate 2 binder/schema must reserve room for this field (Blueprint false-zero trap) and keep strength-assignment adapter-scoped so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements even after the Dafny adapter exists. Phase C now has four concrete mechanisms (STPs, mutation testing, sharpened false-zero parsing, NL-dialogue confirmation) — see `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
 
-## Gate 2 — CONFLICT rule: Type 1 BUILT (2026-07-06)
+## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
 Blocked since Turn B4: the term appears nowhere in
 PayloadGuard-Evidence-Blueprint-1 (0 case-insensitive occurrences,
@@ -95,28 +95,47 @@ shadow-pseudo-requirement `implementation`-suffix form) against
 `run_conflict_gate()` combines both and raises on any mismatch — Tier 1,
 matching the fact-equality and structural-PROVEN gates' behavior. Wired
 into `generate_artifacts.py` as stage 3 (runs after capture integrity,
-before regeneration), checked against all four metadata files (20
+before regeneration), checked against all four metadata files (24
 bindings checked on the current committed dataset, 0 conflicts).
-`tests/test_conflict_check.py` (7 tests) covers all three ratified test
-cases: the real committed data passes clean for both variant A and B
-(cases 1 and the negative case), and two in-memory fixtures reproduce
-Type 1 failures in both the variant-A and variant-B binding shapes (case
-1's positive form). Variant C is untouched: it declares no top-down
-concrete binding to cross-check (Gate 4's known asymmetry), so Type 1
-has nothing to compare there yet — that gap closes when Gate 4's
-cross-check mechanism is generalized into the vocabulary-agnostic
-binder.
 
-**Not yet built:** Type 2 (outcome mismatch) needs a comparison across
-independently-captured manifests for the same target, which doesn't
-exist as a mechanism yet — there is exactly one manifest per target in
-this repository today, so there's nothing to compare against until a
-second, independent capture of an identical target exists. The
-vocabulary-agnostic binder itself (one implementation driving all four
-schema variants, replacing the separate generator scripts) and the CLI
-are also still open — Type 1's check today runs as a separate pipeline
-stage alongside the existing per-variant generators, not inside a
-unified binder.
+**Variant C's asymmetry closed (2026-07-06).** Gate 4 had flagged that C
+declared no top-down concrete binding at all, so Type 1 had nothing to
+compare there. Per Gate 4 option 3, `metadata.schema.c.json` gained an
+optional `evidence` property (identical shape to variant A's) and
+`metadata.c.yaml` now declares it on all three requirements, matching the
+real bindings already in `concrete_results.json`. This is
+cross-checking-only: `build_matrix_variant_c` still never reads
+`evidence` — C's actual binding stays evidence-store-carried, unchanged
+(confirmed: regenerating C's artifacts after this change produced a
+byte-identical diff except `generated_utc`). C now contributes 7 checked
+bindings (4 concrete + 3 symbolic) instead of 0.
+
+**Type 2 — built (2026-07-06).** `evidence/conflict.py`:
+`outcome_conflicts()` groups manifests by identity (tool, target,
+enforced `per_condition_timeout_s` — deliberately excluding the raw
+argv, which embeds an environment-specific absolute path, and
+`started_utc`, which never matches); any group reporting more than one
+distinct `exit_code` is a conflict. `run_outcome_gate()` raises on any
+mismatch. Wired into `generate_artifacts.py` as stage 4, run against all
+four committed manifests (Sample A, Sample B, the naive-widening exhibit,
+the overflow probe): 4 manifests, 4 distinct verification acts, 0
+conflicts — a real, honest zero, since each committed manifest targets a
+genuinely different file and none collide. `tests/test_conflict_check.py`
+covers the real-data clean pass plus two synthetic cases (a positive
+mismatch, and a same-outcome-different-target case confirming Type 2
+doesn't over-fire on unrelated targets) — matching the established
+convention (`test_single_evidence_type.py`) of driving real code with an
+in-memory fixture when the committed dataset can't exercise a property.
+
+`tests/test_conflict_check.py` now has 11 tests total, covering all
+three ratified test cases across all three metadata shapes plus Type 2.
+
+**Not yet built:** the vocabulary-agnostic binder itself (one
+implementation driving all four schema variants, replacing the separate
+generator scripts) and the CLI. Both CONFLICT types run today as
+standalone pipeline stages alongside the existing per-variant
+generators, not inside a unified binder — see "What's left for Gate 2"
+below.
 
 ## Gate 3 — DECIDED 2026-07-06: stay-CLI (crosshair-tool 0.0.107)
 
@@ -251,17 +270,18 @@ recorded in `sources/README.md` and
 ## What's left for Gate 2
 
 - CONFLICT rule Type 1: **built** (`evidence/conflict.py`, wired into
-  `generate_artifacts.py` stage 3, tested).
-- CONFLICT rule Type 2 (outcome mismatch): needs a cross-manifest
-  comparison mechanism that doesn't exist yet — new machinery, not a
-  reuse of Type 1's intersection check.
-- Binding authorship (Gate 4): decided (option 3); Type 1's check today
-  implements the comparison half of that decision, but variant C still
-  declares no top-down binding to compare against — closing that is
-  still open.
-- Vocabulary-agnostic binder itself and the CLI: not started. Type 1
-  currently runs as a standalone pipeline stage, not as part of a
-  unified binder that replaces the separate per-variant generators.
+  `generate_artifacts.py` stage 3, tested across all three metadata
+  shapes including variant C).
+- CONFLICT rule Type 2: **built** (`evidence/conflict.py`, wired into
+  `generate_artifacts.py` stage 4, tested against real + synthetic
+  data).
+- Binding authorship (Gate 4): decided (option 3) and now implemented
+  for all three metadata shapes — variant C's asymmetry is closed.
+- Vocabulary-agnostic binder itself and the CLI: not started. Both
+  CONFLICT types currently run as standalone pipeline stages, not as
+  part of a unified binder that replaces the separate per-variant
+  generators (`generate_matrix_a.py` / `_b.py` / `_c.py`). This is the
+  one remaining piece of Gate 2.
 
 ## Session-scope note (2026-07-05, Turn B4)
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PayloadGuard evidence metadata - variant C (dual matrix)",
-  "description": "T4-C fork of metadata.schema.json: the metadata shape is UNCHANGED from the base (one-record-per-binding preserved end-to-end). Evidence partitioning happens at generation time: symbolic evidence binds by implementation match (as in the base matrix); concrete evidence is self-describing and binds by the requirement_id carried in each concrete_results.json case. Two independent artifacts are rendered (traceability_matrix.symbolic.* / traceability_matrix.concrete.*) by one renderer parametrised by method filter. intended_method enum gains EXAMPLE_CHECKED. Gaps are signalled by field absence, never by placeholder strings.",
+  "description": "T4-C fork of metadata.schema.json: the metadata shape is UNCHANGED from the base (one-record-per-binding preserved end-to-end). Evidence partitioning happens at generation time: symbolic evidence binds by implementation match (as in the base matrix); concrete evidence is self-describing and binds by the requirement_id carried in each concrete_results.json case. Two independent artifacts are rendered (traceability_matrix.symbolic.* / traceability_matrix.concrete.*) by one renderer parametrised by method filter. intended_method enum gains EXAMPLE_CHECKED. Gaps are signalled by field absence, never by placeholder strings. The optional `evidence` field (2026-07-06, Gate 4 option 3) declares a top-down binding for CROSS-CHECKING ONLY - C's actual binding stays evidence-store-carried and unchanged; a mismatch between this declaration and the evidence store's self-declared requirement_id is a Type 1 CONFLICT (evidence/conflict.py).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -80,6 +80,40 @@
           },
           "system_scope": {
             "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "method"
+              ],
+              "properties": {
+                "method": {
+                  "enum": [
+                    "crosshair",
+                    "concrete_test"
+                  ]
+                },
+                "test_id": {
+                  "type": "string"
+                }
+              },
+              "if": {
+                "properties": {
+                  "method": {
+                    "const": "concrete_test"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "test_id"
+                ]
+              }
+            }
           }
         }
       }

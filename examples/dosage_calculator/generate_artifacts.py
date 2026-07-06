@@ -8,11 +8,14 @@
 #   stage 3  Gate 2 CONFLICT gate, Type 1 (identity mismatch) - top-down
 #            metadata bindings vs. bottom-up evidence-store claims must
 #            agree on target identity (evidence/conflict.py)
-#   stage 4  regenerate the three variant matrices + fact-equality gate
+#   stage 4  Gate 2 CONFLICT gate, Type 2 (outcome mismatch) - manifests
+#            claiming the identical verification act must agree on
+#            outcome (evidence/conflict.py)
+#   stage 5  regenerate the three variant matrices + fact-equality gate
 #            (delegates to regenerate_all.py, the B2-sanctioned path; the
 #            base matrix stays frozen per ruling R2c)
-#   stage 5  final structural PROVEN sweep over every artifact incl. base
-#   stage 6  write artifact_index.json - SHA-256 provenance binding inputs
+#   stage 6  final structural PROVEN sweep over every artifact incl. base
+#   stage 7  write artifact_index.json - SHA-256 provenance binding inputs
 #            to outputs, with per-gate results
 #
 # Any stage failure stops the pipeline (Tier 1, REVIEW_PROTOCOL.md): fix at
@@ -31,7 +34,7 @@ HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from evidence.conflict import run_conflict_gate  # noqa: E402
+from evidence.conflict import run_conflict_gate, run_outcome_gate  # noqa: E402
 from evidence.reconcile import BASE_ARTIFACT, VARIANT_ARTIFACTS  # noqa: E402
 from evidence.render.matrix_variants import assert_no_realized_proven  # noqa: E402
 
@@ -120,17 +123,36 @@ def stage_conflict_check():
     )
 
 
+MANIFESTS = (
+    "run_manifest.json",
+    "run_manifest_broken.json",
+    "run_manifest_naive_widening.json",
+    "run_manifest_overflow_probe.json",
+)
+
+
+def stage_outcome_check():
+    manifests = {name: json.loads((HERE / name).read_text()) for name in MANIFESTS}
+    result = run_outcome_gate(manifests)
+    print(
+        "stage 4 CONFLICT gate (Type 2, outcome mismatch): PASS "
+        f"({result['manifests_checked']} manifests, "
+        f"{result['distinct_identities']} distinct verification acts, "
+        "0 conflicts)"
+    )
+
+
 def stage_generate():
     subprocess.run(
         [sys.executable, str(HERE / "regenerate_all.py")], check=True, cwd=HERE
     )
-    print("stage 4 regeneration + fact-equality gate: PASS")
+    print("stage 5 regeneration + fact-equality gate: PASS")
 
 
 def stage_proven_sweep():
     for name in tuple(VARIANT_ARTIFACTS) + (BASE_ARTIFACT,):
         assert_no_realized_proven(json.loads((HERE / name).read_text()))
-    print("stage 5 structural PROVEN sweep: PASS (4 variants + frozen base)")
+    print("stage 6 structural PROVEN sweep: PASS (4 variants + frozen base)")
 
 
 def stage_index():
@@ -142,6 +164,7 @@ def stage_index():
             "schema_validation": "PASS",
             "capture_integrity": "PASS",
             "conflict_check_type1": "PASS",
+            "conflict_check_type2": "PASS",
             "fact_equality": "PASS",
             "structural_proven": "PASS",
         },
@@ -153,13 +176,14 @@ def stage_index():
         "frozen_evidence": {name: _sha256(HERE / name) for name in FROZEN},
     }
     (HERE / "artifact_index.json").write_text(json.dumps(index, indent=2) + "\n")
-    print("stage 6 provenance index: wrote artifact_index.json")
+    print("stage 7 provenance index: wrote artifact_index.json")
 
 
 def main():
     stage_validate()
     stage_capture_integrity()
     stage_conflict_check()
+    stage_outcome_check()
     stage_generate()
     stage_proven_sweep()
     stage_index()

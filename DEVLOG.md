@@ -6,6 +6,50 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 2: Type 2, variant C asymmetry closed
+
+Continuation of the phased Gate 2 build, addressing the two remaining
+well-scoped gaps flagged at the end of Phase 1 (Type 2, variant C's
+binding asymmetry). The third — the vocabulary-agnostic binder + CLI
+unification — is deliberately left for its own phase: it's a real
+architectural refactor (consolidating four separate generator scripts),
+not an extension of the existing Type 1 pattern, and carries meaningfully
+more regression risk.
+
+- **Variant C asymmetry closed (Gate 4).** `metadata.schema.c.json`
+  gained an optional `evidence` property (identical shape to variant
+  A's); `metadata.c.yaml` now declares it on all three requirements,
+  matching the real bindings already in `concrete_results.json`
+  (`kernel_detects_bolus_limit_exceeded` -> REQ-GIP-1-4-12, etc.). This
+  is cross-checking-only: `build_matrix_variant_c` never reads
+  `evidence` — C's binding stays evidence-store-carried, unchanged.
+  Confirmed by regenerating: C's artifacts diff only by `generated_utc`.
+  Bindings checked by the Type 1 gate rose from 20 to 24 (C now
+  contributes 7 instead of 0).
+- **Type 2 (outcome mismatch) built.** `evidence/conflict.py` gained
+  `outcome_conflicts()` / `run_outcome_gate()`: manifests are grouped by
+  identity (tool, target, enforced `per_condition_timeout_s` —
+  deliberately excluding the raw argv's environment-specific absolute
+  path and `started_utc`); a group with more than one distinct
+  `exit_code` is a conflict. Wired into `generate_artifacts.py` as stage
+  4, run against all four committed manifests: 4 manifests, 4 distinct
+  identities, 0 conflicts — real, honest, and currently vacuous, since no
+  two committed manifests share a target. Tested with two synthetic
+  cases (positive mismatch; same-outcome-different-target confirming no
+  over-firing).
+- `tests/test_conflict_check.py`: 11 tests total (up from 7) — added
+  variant C's clean-pass case and three Type 2 cases.
+- Full pipeline re-run end to end (7 stages now); regenerated artifacts
+  confirmed byte-identical except timestamps. Suite: 28 passed (24 prior
+  + 4 new).
+- Documentation updated: `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+  `README.md`, roadmap doc.
+- **Still open, its own phase:** the vocabulary-agnostic binder (one
+  implementation driving all four schema variants, replacing
+  `generate_matrix_a/b/c.py`) and the CLI. Both CONFLICT types run today
+  as standalone pipeline stages alongside the existing separate
+  generators.
+
 ## 2026-07-06 — Gate 2 build, Phase 1: CONFLICT rule Type 1 (identity mismatch)
 
 First build increment against the roadmap, taken in a small, self-

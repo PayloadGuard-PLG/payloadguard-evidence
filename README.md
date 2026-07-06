@@ -12,10 +12,11 @@ fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 (end-to-end pipeline + provenance index) with Gate 1 review remediation
 applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
-+ mechanism recorded), and 6 (FRN, resolved) closed. Gate 2's CONFLICT
-rule Type 1 (identity mismatch) is built and running as a real Tier-1
-pipeline stage; Type 2 and the vocabulary-agnostic binder + CLI remain
-unstarted; see `KNOWN_LIMITATIONS.md` for the live gate ledger.
++ mechanism recorded, implemented for all three metadata shapes), and 6
+(FRN, resolved) closed. Gate 2's CONFLICT rule (both Type 1 and Type 2)
+is built and running as real Tier-1 pipeline stages; only the
+vocabulary-agnostic binder + CLI remain; see `KNOWN_LIMITATIONS.md` for
+the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -201,10 +202,10 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   re-verified against the raw source text).
 - Dafny/Z3 adapters and the vocabulary-agnostic binder are Phase B;
   nothing in this repository currently claims `PROVEN` as a realized
-  strength. **Gate 2's CONFLICT rule Type 1 (identity mismatch) is now
-  built** (`evidence/conflict.py`, wired into `generate_artifacts.py` as
-  a real Tier-1 stage, 7 tests in `tests/test_conflict_check.py`) — the
-  first working piece of Gate 4's cross-check mechanism. Type 2 (outcome
-  mismatch) needs a cross-manifest comparison mechanism that doesn't
-  exist yet, and the vocabulary-agnostic binder itself is still unstarted
-  (`KNOWN_LIMITATIONS.md`).
+  strength. **Gate 2's CONFLICT rule is now fully built** — both Type 1
+  (identity mismatch) and Type 2 (outcome mismatch) run as real Tier-1
+  stages in `generate_artifacts.py` (`evidence/conflict.py`, 11 tests in
+  `tests/test_conflict_check.py`), implementing Gate 4's cross-check
+  mechanism for all three metadata shapes, including variant C (whose
+  declared-binding asymmetry is now closed). The vocabulary-agnostic
+  binder itself and the CLI are still unstarted (`KNOWN_LIMITATIONS.md`).

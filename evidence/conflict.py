@@ -23,10 +23,16 @@ cross-check on that side; that gap is exactly what Gate 4's option 3
 (cross-checked dual-authorship) is meant to close once C also carries a
 declared binding.
 
-Type 2 (outcome mismatch — two claims agreeing on identity but
-disagreeing on result) is NOT implemented here: it needs a
-cross-manifest comparison mechanism that doesn't exist yet (see
-KNOWN_LIMITATIONS.md, "What's left before Gate 2 can start building").
+Type 2 (outcome mismatch) is implemented below: two manifests that claim
+the identical verification act (same tool, same target, same
+per_condition_timeout) but report different outcomes (exit_code). No
+committed manifest in this repository currently shares an identity with
+another — each targets a distinct file (Sample A, Sample B, the naive-
+widening exhibit, the overflow probe) — so this check is real but has
+nothing to compare against in today's honest data; see
+tests/test_conflict_check.py for a synthetic positive case, and Gate 3's
+documented CrossHair model-fidelity non-determinism for why this check
+exists at all (the same invocation really can land differently).
 """
 
 
@@ -97,6 +103,63 @@ def symbolic_binding_conflicts(metadata, manifest):
                 }
             )
     return conflicts
+
+
+def _manifest_identity(manifest):
+    """Identity key for Type 2: two manifests are claims about the SAME
+    verification act iff they agree on tool, target, and the enforced
+    timeout bound. Deliberately excludes the raw command list (which
+    embeds an environment-specific absolute path) and started_utc (which
+    is never expected to match)."""
+    bounds = manifest.get("effective_bounds", {})
+    return (
+        manifest.get("tool"),
+        manifest.get("target"),
+        bounds.get("per_condition_timeout_s"),
+    )
+
+
+def _manifest_outcome(manifest):
+    """The reported result of a verification act, for Type 2 comparison."""
+    return manifest.get("exit_code")
+
+
+def outcome_conflicts(manifests):
+    """Type 2 CONFLICT check: group manifests by identity; any group
+    reporting more than one distinct outcome is a conflict. `manifests` is
+    a dict of {name: manifest_dict} so conflicts can name their source."""
+    by_identity = {}
+    for name, manifest in manifests.items():
+        by_identity.setdefault(_manifest_identity(manifest), []).append(name)
+    conflicts = []
+    for identity, names in by_identity.items():
+        outcomes = {name: _manifest_outcome(manifests[name]) for name in names}
+        if len(set(outcomes.values())) > 1:
+            conflicts.append(
+                {
+                    "type": "outcome_mismatch",
+                    "class": "evidence_outcome",
+                    "identity": identity,
+                    "outcomes": outcomes,
+                }
+            )
+    return conflicts
+
+
+def run_outcome_gate(manifests):
+    """Type 2 CONFLICT gate. Raises AssertionError on any outcome
+    mismatch; returns a small summary dict on success."""
+    conflicts = outcome_conflicts(manifests)
+    if conflicts:
+        raise AssertionError(
+            f"CONFLICT gate failed (Type 2, outcome mismatch): {conflicts}"
+        )
+    distinct = {_manifest_identity(m) for m in manifests.values()}
+    return {
+        "manifests_checked": len(manifests),
+        "distinct_identities": len(distinct),
+        "conflicts": 0,
+    }
 
 
 def run_conflict_gate(metadata, concrete_store, manifest):

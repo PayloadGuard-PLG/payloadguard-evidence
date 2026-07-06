@@ -57,15 +57,18 @@ REQ-GIP-1-4-12's kernel_scope vs. system_scope split (one evidenced, one
 an explicit GAP) remains the negative case — not a conflict, a documented
 absence, because there's no second claim to disagree with.
 
-**Status:** definition ratified by Steven; **Type 1 built 2026-07-06**
-(`evidence/conflict.py`, wired into `generate_artifacts.py` as stage 3,
-`tests/test_conflict_check.py` — 7 tests, all three ratified cases
-covered, 0 conflicts on the real committed dataset across all four
-metadata files). Type 2 still needs a new cross-manifest comparison
-mechanism that doesn't exist yet. The vocabulary-agnostic binder itself
-(one implementation driving all four schema variants) and the CLI remain
-unstarted — Type 1 runs today as a standalone pipeline stage, not inside
-a unified binder.
+**Status:** definition ratified by Steven; **both types built
+2026-07-06** (`evidence/conflict.py`, wired into `generate_artifacts.py`
+as stages 3–4, `tests/test_conflict_check.py` — 11 tests, all three
+ratified cases covered across all three metadata shapes, 0 conflicts on
+the real committed dataset). Variant C's declared-binding asymmetry
+(Gate 4) is closed: `metadata.c.yaml` now carries the same top-down
+`evidence` declarations as variant A, for cross-checking only — C's
+actual binding stays evidence-store-carried, confirmed unchanged by a
+byte-identical regeneration diff (timestamp aside). The vocabulary-
+agnostic binder itself (one implementation driving all four schema
+variants) and the CLI remain unstarted — both CONFLICT types run today
+as standalone pipeline stages, not inside a unified binder.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 
