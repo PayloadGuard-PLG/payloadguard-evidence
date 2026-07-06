@@ -6,6 +6,47 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 6: CLI (built ahead of Step 4, at Steven's direction)
+
+Steven asked to hold off deleting the Step 2 fallback functions and get
+the CLI done first - so the fallback stays available while new
+capability is still landing, rather than being removed before anything
+else changes.
+
+- **Built:** `evidence/cli.py` - `python -m evidence.cli build --variant
+  {a|b|c-symbolic|c-concrete} --metadata PATH --manifest PATH --concrete
+  PATH [--schema PATH] [--out-json PATH] [--out-md PATH]`. Wraps
+  `build_matrix()` with every input as an argument instead of the
+  hardcoded `examples/dosage_calculator` paths the generator scripts use
+  - the genuinely vocabulary-agnostic surface Gate 2 was named for: this
+  can build a matrix for a different device's evidence set matching one
+  of the four schema shapes, not just the worked example.
+  `tool_versions` is now keyed by the manifest's own declared `tool`
+  field rather than a hardcoded `"crosshair"` string, so a future
+  Dafny/Z3 manifest won't need this CLI changed.
+- **Two real bugs caught and fixed while building it, not left in:**
+  1. An uncaught `jsonschema.ValidationError` printed via `str(e)` dumps
+     the *entire schema* on every validation failure - useless noise for
+     a CLI user. Fixed to use `ValidationError.message`, the short
+     human-readable line.
+  2. Omitting both `--out-json` and `--out-md` printed the JSON *and*
+     the markdown concatenated to stdout, producing invalid combined
+     output (caught by `test_cli_prints_to_stdout_when_no_output_path_given`
+     failing with a `JSONDecodeError`). Fixed: markdown only ever goes
+     where `--out-md` explicitly says to, never to stdout.
+- **Proven, not assumed:** `tests/test_cli.py` (10 tests) drives the CLI
+  via subprocess (the way a real user would invoke it) for all four
+  variants and asserts byte-identical output (timestamp aside) to the
+  corresponding committed artifact, plus both Tier-1 error paths (schema
+  validation, CONFLICT Type 1 - confirmed to fire through the CLI path
+  too) and both output modes (file, stdout). Full pipeline independently
+  re-run to confirm the CLI's addition changed nothing about the
+  existing generator scripts. Suite: 44 passed (34 prior + 10 new).
+- Documentation updated: `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+  `README.md` (including a new CLI usage example in "Running it"),
+  roadmap doc. Only Step 4 (delete the Step 2 fallback once stable)
+  remains for Gate 2's binder work.
+
 ## 2026-07-06 — Gate 2 build, Phase 5: vocabulary-agnostic binder, Step 3 (fold in Type 1; confirm Type 2 stays standalone)
 
 Continuing the phased binder build. Re-examined the plan before

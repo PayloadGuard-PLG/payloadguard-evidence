@@ -1,9 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 3:
-CONFLICT Type 1 folded into build_matrix() itself; Type 2 confirmed to
-have no per-variant home and stays a standalone pipeline stage — see
-KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-06 (Gate 2 CLI built: evidence/cli.py, a
+vocabulary-agnostic `python -m evidence.cli build` wrapping
+build_matrix() for any metadata/manifest/concrete-store path, not just
+the worked example — see KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -33,6 +33,11 @@ payloadguard-evidence/
 │   │                            top-down metadata vs. bottom-up
 │   │                            evidence-store) and Type 2 (outcome
 │   │                            mismatch across manifests); Tier 1
+│   ├── cli.py                   Gate 2 CLI (`python -m evidence.cli
+│   │                            build`): vocabulary-agnostic wrapper
+│   │                            around build_matrix() - takes metadata/
+│   │                            manifest/concrete/schema as arguments,
+│   │                            not hardcoded to examples/dosage_calculator
 │   ├── schema/
 │   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12)
 │   │   ├── metadata.schema.a.json   T4-A: evidence[] per requirement
@@ -101,9 +106,12 @@ payloadguard-evidence/
     │                            test cases over real data (all three
     │                            metadata shapes) + in-memory fixtures,
     │                            plus a fold-in proof driving build_matrix()
-    └── test_binder_equivalence.py  Gate 2 binder Step 1: build_matrix()
-                                 proven byte-identical (dict + JSON string)
-                                 to build_matrix_variant_a/b/c
+    ├── test_binder_equivalence.py  Gate 2 binder Step 1: build_matrix()
+    │                            proven byte-identical (dict + JSON string)
+    │                            to build_matrix_variant_a/b/c
+    └── test_cli.py              Gate 2 CLI: subprocess-driven, all four
+                                 variants match committed artifacts;
+                                 Tier-1 error paths; stdout/file modes
 ```
 
 ## 3. Data flow (end to end)
@@ -201,13 +209,17 @@ decided. Gate 2's CONFLICT rule — both Type 1 (identity mismatch) and
 Type 2 (outcome mismatch) — is built (`evidence/conflict.py`); Gate 4's
 cross-check mechanism is now implemented for all three metadata shapes,
 including variant C, whose declared-binding asymmetry is closed. The
-vocabulary-agnostic binder is built and cut over (Steps 1–2), and Type 1
-is folded into `build_matrix()` itself as of Step 3 — it runs on every
-call, not just inside the full pipeline. Type 2 stays a standalone
-`generate_artifacts.py` stage by design (a whole-manifest-set check with
-no per-variant home, like fact-equality). Still open: deleting the
-Step 2 fallback functions once the cutover has proven stable (Step 4),
-and the CLI. See `KNOWN_LIMITATIONS.md` for the live gate ledger and
+vocabulary-agnostic binder is built and cut over (Steps 1–2), Type 1 is
+folded into `build_matrix()` itself as of Step 3 (runs on every call, not
+just inside the full pipeline), and the CLI (`evidence/cli.py`,
+`python -m evidence.cli build`) is built, wrapping `build_matrix()` for
+any metadata/manifest/concrete-store path rather than the hardcoded
+worked-example paths the generator scripts use. Type 2 stays a
+standalone `generate_artifacts.py` stage by design (a whole-manifest-set
+check with no per-variant home, like fact-equality). Only Step 4
+(deleting the Step 2 fallback functions once the cutover has proven
+stable — deliberately held back until the CLI landed) remains for Gate 2
+as a whole. See `KNOWN_LIMITATIONS.md` for the live gate ledger and
 `payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
 mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
 literal substring "0 errors" plus the three further checks in the

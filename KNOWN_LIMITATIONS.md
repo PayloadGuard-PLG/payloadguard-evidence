@@ -4,13 +4,13 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 3:
-CONFLICT Type 1 folded into build_matrix() itself; Type 2 confirmed to
-have no per-variant home and stays a standalone stage).
+Last updated: 2026-07-06 (Gate 2 CLI built — `evidence/cli.py`, a
+vocabulary-agnostic `python -m evidence.cli build` wrapping
+`build_matrix()`; only Step 4, deleting the Step 2 fallback, remains).
 
 | Gate | Status | Summary |
 |---|---|---|
-| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; binder cut over + Type 1 folded in (Steps 1–3 done); Step 4 (delete fallback) + CLI still open** | `evidence/conflict.py` implements both CONFLICT sub-types (12 tests). All three generator scripts call `build_matrix()`, which now runs Type 1 internally on every call — no longer a separate pipeline stage for a/b/c. Type 2 stays standalone (whole-manifest-set check, not per-variant). Full-pipeline regeneration still byte-identical (timestamps aside). Details below. |
+| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; binder cut over + Type 1 folded in (Steps 1–3 done); CLI built; only Step 4 (delete fallback) open** | `evidence/conflict.py` implements both CONFLICT sub-types (12 tests). All three generator scripts call `build_matrix()`, which runs Type 1 internally on every call. Type 2 stays standalone (whole-manifest-set check, not per-variant). `evidence/cli.py` (`python -m evidence.cli build`) wraps `build_matrix()` for any metadata/manifest/concrete-store path, not just the worked example — proven to reproduce every committed artifact byte-for-byte (`tests/test_cli.py`, 10 tests). Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
@@ -224,8 +224,50 @@ temporarily lost along with it; that's an accepted, documented tradeoff
 of restoring known-good behavior quickly, not a silent regression.
 
 **Still open:** deleting the fallback functions once the cutover has
-proven stable (Step 4), and the CLI — see "What's left for Gate 2"
-below.
+proven stable (Step 4) — see "What's left for Gate 2" below.
+
+### CLI — built (2026-07-06)
+
+Requested explicitly before Step 4 (deleting the Step 2 fallback), so
+the fallback stays available while new capability lands rather than
+being removed first.
+
+`evidence/cli.py`: `python -m evidence.cli build --variant {a|b|
+c-symbolic|c-concrete} --metadata PATH --manifest PATH --concrete PATH
+[--schema PATH] [--out-json PATH] [--out-md PATH]`. This is the
+"vocabulary-agnostic" half of Gate 2 made reachable from outside a
+Python script: unlike `generate_matrix_a/b/c.py`, which hardcode paths
+to `examples/dosage_calculator`, the CLI takes every input as an
+argument, so it can build a matrix for a different device's evidence set
+matching one of the four schema shapes, not just the worked example.
+
+- Schema validation runs first (`--schema` defaults to
+  `evidence/schema/metadata.schema.<a|b|c>.json` for the given
+  `--variant`, overridable for a schema that lives elsewhere).
+- `tool_versions` is now keyed by the manifest's own declared `tool`
+  field (`manifest["tool"]`) rather than a hardcoded `"crosshair"`
+  string — a small genuine generalization, since a future Dafny/Z3
+  manifest won't need this CLI changed.
+- Tier-1 failures (schema validation, CONFLICT Type 1 — folded into
+  `build_matrix()` since Step 3) exit non-zero with a short message on
+  stderr, not a raw traceback or (for schema errors) jsonschema's full
+  schema dump — an actual bug caught and fixed during this build: the
+  first version printed the entire JSON Schema on every validation
+  failure; fixed to use `ValidationError.message` instead of `str(e)`.
+- JSON prints to stdout when `--out-json` is omitted (composes with
+  other tools, e.g. `| jq`); markdown is only ever written where
+  `--out-md` explicitly says to, never to stdout — an early version
+  printed both JSON and markdown to stdout when no output paths were
+  given, producing invalid combined output; caught by
+  `tests/test_cli.py` and fixed before commit.
+
+**Proven, not assumed:** `tests/test_cli.py` (10 tests) drives the CLI
+via subprocess (the way a real user would invoke it) for all four
+variants and asserts the output is byte-identical (timestamp aside) to
+the corresponding committed artifact, plus covers both clean-exit error
+paths and the stdout/file output modes. Full pipeline re-run
+independently confirms the CLI's addition changed nothing about the
+existing generator scripts. Suite: 44 passed (34 prior + 10 new).
 
 ## Gate 3 — DECIDED 2026-07-06: stay-CLI (crosshair-tool 0.0.107)
 
@@ -380,8 +422,14 @@ recorded in `sources/README.md` and
   the fallback is ever needed). **Step 4 (not started):** delete
   `build_matrix_variant_a/b/c` once the cutover has run stable for a
   while and the fallback is no longer needed.
-- CLI: not started — planned as a thin wrapper once the binder itself is
-  fully consolidated (post Step 4).
+- CLI: **built** (`evidence/cli.py`, `python -m evidence.cli build`) —
+  proven byte-identical to committed artifacts across all four variants,
+  plus Tier-1 error-path coverage (`tests/test_cli.py`, 10 tests).
+- **Only Step 4 remains for Gate 2 as a whole:** delete
+  `build_matrix_variant_a/b/c` once the cutover has run stable for a
+  while. Deliberately held back at Steven's direction until the CLI
+  landed, so the fallback stayed available while new capability was
+  still being added.
 
 ## Session-scope note (2026-07-05, Turn B4)
 

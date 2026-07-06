@@ -20,7 +20,12 @@ and cut over — all three generator scripts call it, with the originals
 kept in place, unused, as an explicit fallback — and Type 1 now runs
 folded into `build_matrix()` itself rather than as a separate pipeline
 stage; Type 2 stays standalone by design (a whole-dataset check with no
-per-variant home). See `KNOWN_LIMITATIONS.md` for the live gate ledger.
+per-variant home). The Gate 2 CLI (`python -m evidence.cli build`,
+`evidence/cli.py`) is now built too — a vocabulary-agnostic wrapper
+around `build_matrix()` taking metadata/manifest/concrete-store paths as
+arguments rather than the worked-example paths the generator scripts
+hardcode. Only deleting the binder's Step 2 fallback remains for Gate 2.
+See `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -168,11 +173,22 @@ python generate_artifacts.py         # END-TO-END PIPELINE (Turn B4): schema
 python regenerate_all.py             # inner regeneration step: variant
                                      # generators + the fact-equality gate
 python generate_matrix.py            # base matrix (frozen legacy view)
+
+# Gate 2 CLI: vocabulary-agnostic - takes any metadata/manifest/
+# concrete-store path, not just this worked example (run from repo root)
+python -m evidence.cli build --variant a \
+    --metadata examples/dosage_calculator/metadata.a.yaml \
+    --manifest examples/dosage_calculator/run_manifest.json \
+    --concrete examples/dosage_calculator/concrete_results.json \
+    --out-json /tmp/out.json --out-md /tmp/out.md
 ```
 
-Individual variant generators (`generate_matrix_a.py` / `_b.py` / `_c.py`)
-exist but bypass the generation-time fact-equality gate; committed
-divergence is still caught by `tests/test_fact_equality.py`.
+Individual variant generators (`generate_matrix_a.py` / `_b.py` / `_c.py`,
+and the CLI above) bypass the generation-time fact-equality gate, which is
+a property of the whole four-artifact set and can only run after all four
+exist; committed divergence is still caught by `tests/test_fact_equality.py`.
+They do NOT bypass the Gate 2 CONFLICT Type 1 check — that runs inside
+`build_matrix()` itself now, on every call, however it's invoked.
 
 Toolchain pinned by the exhibits: crosshair-tool 0.0.107, Python 3.11,
 Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.

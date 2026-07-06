@@ -67,7 +67,7 @@ the real committed dataset). Variant C's declared-binding asymmetry
 actual binding stays evidence-store-carried, confirmed unchanged by a
 byte-identical regeneration diff (timestamp aside).
 
-**Vocabulary-agnostic binder — Steps 1 through 3 done.**
+**Vocabulary-agnostic binder — Steps 1 through 3 done, plus the CLI.**
 `evidence/render/matrix_variants.py` gained `build_matrix()`: a literal
 extraction of all three existing variants' binding/rendering logic into
 named, reusable functions, dispatched through one declarative table
@@ -90,9 +90,27 @@ base matrix (never calling `build_matrix()`) keeps its own narrower
 explicit check. Verified at every step, not assumed: the full pipeline
 was re-run end to end after each change and every regenerated artifact
 diffed against the pre-cutover committed versions — differs only by
-timestamp throughout. Still open: deleting the Step 2 fallback functions
-once the cutover has proven stable (Step 4), and the CLI, planned as a
-thin wrapper once the binder is fully consolidated.
+timestamp throughout.
+
+**CLI — built ahead of Step 4, at Steven's explicit direction** ("get
+the CLI done first" before deleting the Step 2 fallback). `evidence/cli.py`
+(`python -m evidence.cli build`) wraps `build_matrix()` with metadata/
+manifest/concrete/schema paths as arguments instead of hardcoding
+`examples/dosage_calculator` — the genuinely vocabulary-agnostic
+surface Gate 2 was named for. tool_versions is now keyed by the
+manifest's own declared tool name rather than a hardcoded `"crosshair"`
+string. Two real bugs were caught and fixed while building it: an
+uncaught `jsonschema.ValidationError` dumped the entire schema on a
+validation failure (fixed to use `.message`), and omitting both output
+paths printed JSON and markdown concatenated to stdout as invalid
+combined output (fixed so markdown only ever goes where `--out-md`
+explicitly says to). `tests/test_cli.py` (10 tests) drives the CLI via
+subprocess for all four variants and proves byte-identical output to
+the committed artifacts, plus both error paths. Suite: 44 passed.
+
+Still open: deleting the Step 2 fallback functions once the cutover has
+proven stable (Step 4) — the only remaining piece of Gate 2's binder
+work.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 
