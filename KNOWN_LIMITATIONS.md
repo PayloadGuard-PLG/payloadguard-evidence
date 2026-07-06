@@ -4,13 +4,13 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 2:
-generate_matrix_a/b/c.py cut over to build_matrix(); old functions kept
-in place, unused, as an explicit fallback).
+Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 3:
+CONFLICT Type 1 folded into build_matrix() itself; Type 2 confirmed to
+have no per-variant home and stays a standalone stage).
 
 | Gate | Status | Summary |
 |---|---|---|
-| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; vocabulary-agnostic binder cut over (Step 2 done); CLI + CONFLICT-folding still open** | `evidence/conflict.py` implements both CONFLICT sub-types for real, over real committed data (11 tests). All three generator scripts now call `build_matrix()`; the original `build_matrix_variant_a/b/c` are kept in place, unused, as a fallback. Full-pipeline regeneration confirmed byte-identical to pre-cutover artifacts (timestamps aside). Details below. |
+| Gate 2 — CONFLICT rule | **Types 1 and 2 BUILT; binder cut over + Type 1 folded in (Steps 1–3 done); Step 4 (delete fallback) + CLI still open** | `evidence/conflict.py` implements both CONFLICT sub-types (12 tests). All three generator scripts call `build_matrix()`, which now runs Type 1 internally on every call — no longer a separate pipeline stage for a/b/c. Type 2 stays standalone (whole-manifest-set check, not per-variant). Full-pipeline regeneration still byte-identical (timestamps aside). Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
@@ -181,10 +181,51 @@ as the Step 1 equivalence proof predicted. Full suite: 33 passed
 (unchanged from Step 1 — this step changed which function each generator
 calls, not any logic).
 
-**Still open:** folding CONFLICT Types 1/2 into the binder as internal
-steps (they currently run as standalone `generate_artifacts.py` pipeline
-stages, unaffected by this cutover) and the CLI — see "What's left for
-Gate 2" below.
+**Step 3 (2026-07-06): fold CONFLICT Type 1 into build_matrix() itself —
+and confirm Type 2 has no per-variant home.** Re-examined the plan
+before implementing: Type 1 is inherently per-variant (it's about one
+metadata file's declared bindings vs. the evidence store), so it fits
+naturally inside `build_matrix()`. Type 2 is NOT per-variant — it
+compares raw manifests across the whole dataset regardless of which
+variant is being built, so folding it into `build_matrix()` would mean
+re-running the identical whole-dataset check on every one of the four
+variant calls for no reason. It stays a standalone stage, the same way
+the fact-equality gate does (both are properties of the artifact/input
+*set*, not of any single generation call).
+
+`build_matrix()` now calls `run_conflict_gate(metadata, concrete_store,
+manifest)` as its first step, before assembling any record — Tier 1,
+and it runs no matter how `build_matrix()` is invoked (full pipeline, a
+single generator script run alone, or a test), closing a real gap: Type
+1 previously only ran inside the `generate_artifacts.py` pipeline stage,
+so running e.g. `generate_matrix_a.py` alone would have bypassed it
+entirely (the individual generators are documented to bypass the
+fact-equality gate the same way — Type 1 had the identical exposure
+until now).
+
+The frozen base matrix (`metadata.yaml`, via `manual_matrix.py`, ruling
+R2c) never calls `build_matrix()`, so it keeps its own explicit check:
+`generate_artifacts.py::stage_base_conflict_check` (renamed from the
+old, broader `stage_conflict_check`, now scoped to just the base file —
+3 symbolic bindings, since base declares no concrete evidence at all).
+
+**Proven, not assumed:** `tests/test_conflict_check.py` gained
+`test_build_matrix_folds_in_type1_check`, which drives `build_matrix()`
+directly with a conflicting in-memory fixture and confirms it raises
+before assembling a single record — proof of the fold-in itself, not
+just of the underlying check function. Full pipeline re-run end to end;
+every regenerated artifact still differs only by `generated_utc`. Suite:
+34 passed (33 prior + 1 new).
+
+**Note on the fallback:** `build_matrix_variant_a/b/c` (Step 2's
+fallback) do NOT have Type 1 folded in — only `build_matrix()` does. If
+the fallback is ever used in an emergency, Type 1's per-call check is
+temporarily lost along with it; that's an accepted, documented tradeoff
+of restoring known-good behavior quickly, not a silent regression.
+
+**Still open:** deleting the fallback functions once the cutover has
+proven stable (Step 4), and the CLI — see "What's left for Gate 2"
+below.
 
 ## Gate 3 — DECIDED 2026-07-06: stay-CLI (crosshair-tool 0.0.107)
 
@@ -318,26 +359,29 @@ recorded in `sources/README.md` and
 
 ## What's left for Gate 2
 
-- CONFLICT rule Type 1: **built** (`evidence/conflict.py`, wired into
-  `generate_artifacts.py` stage 3, tested across all three metadata
-  shapes including variant C).
-- CONFLICT rule Type 2: **built** (`evidence/conflict.py`, wired into
-  `generate_artifacts.py` stage 4, tested against real + synthetic
-  data).
+- CONFLICT rule Type 1: **built AND folded into `build_matrix()`**
+  (`evidence/conflict.py`; runs on every `build_matrix()` call, tested
+  across all three metadata shapes including variant C, plus a dedicated
+  fold-in proof). The frozen base matrix keeps its own explicit check
+  (`generate_artifacts.py::stage_base_conflict_check`, since it never
+  calls `build_matrix()`).
+- CONFLICT rule Type 2: **built**, standalone stage
+  (`generate_artifacts.py`, `evidence/conflict.py`) — confirmed to have
+  no per-variant home (it's a whole-manifest-set check, like
+  fact-equality), so it correctly stays outside `build_matrix()`.
 - Binding authorship (Gate 4): decided (option 3) and now implemented
   for all three metadata shapes — variant C's asymmetry is closed.
-- Vocabulary-agnostic binder: **Steps 1 and 2 done.** `build_matrix()`
-  built, proven byte-identical to the three existing per-variant
-  functions (`tests/test_binder_equivalence.py`), and all three
-  generator scripts now call it. `build_matrix_variant_a/b/c` are kept
-  in place, unused, as an explicit fallback — not yet deleted.
-  **Step 3 (not started):** fold CONFLICT Types 1/2 into the binder as
-  internal steps instead of standalone `generate_artifacts.py` pipeline
-  stages, once the cutover has run stable for a while. **Step 4 (not
-  started):** delete `build_matrix_variant_a/b/c` once Step 3 is done and
-  the fallback is no longer needed.
+- Vocabulary-agnostic binder: **Steps 1–3 done.** `build_matrix()` built,
+  proven byte-identical to the three existing per-variant functions
+  (`tests/test_binder_equivalence.py`), all three generator scripts call
+  it, and it now runs CONFLICT Type 1 internally.
+  `build_matrix_variant_a/b/c` are kept in place, unused, as an explicit
+  fallback (they do NOT have Type 1 folded in — an accepted tradeoff if
+  the fallback is ever needed). **Step 4 (not started):** delete
+  `build_matrix_variant_a/b/c` once the cutover has run stable for a
+  while and the fallback is no longer needed.
 - CLI: not started — planned as a thin wrapper once the binder itself is
-  fully consolidated (post Step 3/4).
+  fully consolidated (post Step 4).
 
 ## Session-scope note (2026-07-05, Turn B4)
 

@@ -6,6 +6,55 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 5: vocabulary-agnostic binder, Step 3 (fold in Type 1; confirm Type 2 stays standalone)
+
+Continuing the phased binder build. Re-examined the plan before
+implementing rather than mechanically following the earlier wording
+("fold Types 1/2 into the binder") - Type 2 doesn't actually fit inside
+a per-variant builder call, and forcing it in would have been worse
+design, not better.
+
+- **Analysis:** Type 1 (identity mismatch) is inherently per-variant -
+  it checks one metadata file's declared bindings against the evidence
+  store - so it belongs inside `build_matrix()`. Type 2 (outcome
+  mismatch) compares raw manifests across the WHOLE dataset regardless
+  of which variant is being built; folding it into `build_matrix()`
+  would mean re-running the identical whole-dataset check redundantly on
+  every one of the four variant calls, for no benefit. It stays a
+  standalone `generate_artifacts.py` stage, the same way the
+  fact-equality gate does (both are properties of the artifact/input
+  set, not of a single generation call).
+- **Folded in:** `build_matrix()` now calls `run_conflict_gate(metadata,
+  concrete_store, manifest)` as its first step, before assembling any
+  record - Tier 1. This closes a real gap: Type 1 previously only ran
+  inside the `generate_artifacts.py` pipeline stage, so running e.g.
+  `generate_matrix_a.py` alone would have bypassed it entirely (the
+  individual generators are documented to bypass fact-equality the same
+  way - Type 1 had identical exposure until now).
+- **Base matrix's check narrowed, not removed:** `metadata.yaml` never
+  calls `build_matrix()` (frozen `manual_matrix.py` path, ruling R2c), so
+  it keeps its own explicit check. Renamed `stage_conflict_check` to
+  `stage_base_conflict_check`, scoped to just the base file (3 symbolic
+  bindings - base declares no concrete evidence at all). Stage 5's
+  comment updated to note a/b/c-symbolic/c-concrete are now
+  self-checking via `build_matrix()`.
+- **Proven, not assumed:** added
+  `test_build_matrix_folds_in_type1_check` to
+  `tests/test_conflict_check.py` - drives `build_matrix()` directly with
+  a conflicting in-memory fixture and confirms it raises before
+  assembling a single record, proving the fold-in itself rather than
+  just the underlying check function. Full pipeline re-run end to end;
+  every regenerated artifact still differs only by `generated_utc`.
+  Suite: 34 passed (33 prior + 1 new).
+- **Documented tradeoff:** `build_matrix_variant_a/b/c` (the Step 2
+  fallback) do NOT have Type 1 folded in. If the fallback is ever used
+  in an emergency, Type 1's per-call check is temporarily lost along
+  with it - an accepted tradeoff of restoring known-good behavior
+  quickly, recorded rather than silently true.
+- Documentation updated: `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+  `README.md`, roadmap doc. Gate 2's binder work is now Steps 1-3 done;
+  Step 4 (delete the fallback once stable) and the CLI remain.
+
 ## 2026-07-06 — Gate 2 build, Phase 4: vocabulary-agnostic binder, Step 2 (cutover)
 
 Steven approved proceeding with an explicit request to keep a fallback

@@ -24,6 +24,7 @@ Shared discipline (unchanged from manual_matrix.py):
 
 import datetime
 
+from evidence.conflict import run_conflict_gate
 from evidence.model import CAVEAT, Strength
 
 _ARTIFACT_TITLES = {
@@ -557,6 +558,12 @@ def _md_notes(rows):
 # BYTE-IDENTICAL output (generated_utc aside) to build_matrix_variant_a/b/c
 # for all four variant keys, over the real committed inputs - that proof
 # held before the cutover above and continues to be enforced by the suite.
+# NOTE (Step 3, 2026-07-06): build_matrix() now does strictly MORE than the
+# original three functions - it also runs the Gate 2 CONFLICT Type 1 check
+# (run_conflict_gate) before assembling any record, folded in below. On the
+# real committed data (zero conflicts) this changes nothing observable, so
+# the equivalence proof still holds; tests/test_conflict_check.py proves
+# the added check actually fires when it should.
 #
 # build_matrix_variant_a/b/c (above this section) are INTENTIONALLY KEPT,
 # unused by any generator now, as a fallback: if a problem with build_matrix
@@ -747,7 +754,21 @@ def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=
     """Vocabulary-agnostic entry point: one implementation driving all four
     schema-variant shapes via a declarative binder+shape dispatch, instead of
     a separate top-level function per variant. See the module-level note
-    above this section for the correctness discipline this was built under."""
+    above this section for the correctness discipline this was built under.
+
+    Gate 2 CONFLICT Type 1 (identity mismatch) is folded in here (2026-07-06,
+    Step 3): every call validates ITS OWN metadata's declared bindings
+    against the evidence store before assembling any record, Tier 1 - this
+    runs no matter how build_matrix() is invoked (the full pipeline, a
+    single generator script run alone, or a test), unlike the prior
+    standalone pipeline stage which only ran inside generate_artifacts.py.
+    The frozen base matrix (metadata.yaml via manual_matrix.py) never calls
+    build_matrix() and is checked separately - see
+    generate_artifacts.py::stage_base_conflict_check. Type 2 (outcome
+    mismatch) has no per-variant home - it compares raw manifests across
+    the whole dataset, not one variant's binding - so it stays a standalone
+    stage, the same way the fact-equality gate does."""
+    run_conflict_gate(metadata, concrete_store, manifest)
     spec = _VARIANT_SPECS[variant_key]
     bounds = metadata["toolchain"]["crosshair_bounds"]
 

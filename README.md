@@ -14,12 +14,13 @@ applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
 + mechanism recorded, implemented for all three metadata shapes), and 6
 (FRN, resolved) closed. Gate 2's CONFLICT rule (both Type 1 and Type 2)
-is built and running as real Tier-1 pipeline stages. The vocabulary-
-agnostic binder (`build_matrix()`, proven byte-identical to the three
-original per-variant functions) is now built and cut over — all three
-generator scripts call it; the originals are kept in place, unused, as
-an explicit fallback. See `KNOWN_LIMITATIONS.md` for
-the live gate ledger.
+is built. The vocabulary-agnostic binder (`build_matrix()`, proven
+byte-identical to the three original per-variant functions) is built
+and cut over — all three generator scripts call it, with the originals
+kept in place, unused, as an explicit fallback — and Type 1 now runs
+folded into `build_matrix()` itself rather than as a separate pipeline
+stage; Type 2 stays standalone by design (a whole-dataset check with no
+per-variant home). See `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -203,17 +204,19 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   `sources/README.md` and `KNOWN_LIMITATIONS.md` (Gate 6) for the
   citation trail and the one open caveat (not yet independently
   re-verified against the raw source text).
-- Dafny/Z3 adapters and the vocabulary-agnostic binder are Phase B;
-  nothing in this repository currently claims `PROVEN` as a realized
-  strength. **Gate 2's CONFLICT rule is now fully built** — both Type 1
-  (identity mismatch) and Type 2 (outcome mismatch) run as real Tier-1
-  stages in `generate_artifacts.py` (`evidence/conflict.py`, 11 tests in
+- Dafny/Z3 adapters and the CLI are Phase B; nothing in this repository
+  currently claims `PROVEN` as a realized strength. **Gate 2's CONFLICT
+  rule is fully built** — both Type 1 (identity mismatch) and Type 2
+  (outcome mismatch) (`evidence/conflict.py`, 12 tests in
   `tests/test_conflict_check.py`), implementing Gate 4's cross-check
   mechanism for all three metadata shapes, including variant C (whose
-  declared-binding asymmetry is now closed). The vocabulary-agnostic
-  binder — `build_matrix()`, a declarative dispatch proven byte-identical
-  to the three original per-variant functions
-  (`tests/test_binder_equivalence.py`) — is built and all three generator
-  scripts now call it; the originals are kept, unused, as a fallback.
-  Folding CONFLICT Types 1/2 into the binder itself and the CLI are still
-  unstarted (`KNOWN_LIMITATIONS.md`).
+  declared-binding asymmetry is closed). The vocabulary-agnostic binder —
+  `build_matrix()`, a declarative dispatch proven byte-identical to the
+  three original per-variant functions
+  (`tests/test_binder_equivalence.py`) — is built, cut over (all three
+  generator scripts call it; the originals are kept, unused, as a
+  fallback), and now runs Type 1 internally on every call instead of as
+  a separate pipeline stage. Type 2 stays a standalone
+  `generate_artifacts.py` stage by design — it compares raw manifests
+  across the whole dataset, with no single variant to fold into. The
+  CLI is still unstarted (`KNOWN_LIMITATIONS.md`).

@@ -5,15 +5,20 @@
 #   stage 2  verify capture integrity (captures are committed evidence and
 #            are NEVER re-run here - re-running evidence inside a generation
 #            pipeline would be re-rolling)
-#   stage 3  Gate 2 CONFLICT gate, Type 1 (identity mismatch) - top-down
-#            metadata bindings vs. bottom-up evidence-store claims must
-#            agree on target identity (evidence/conflict.py)
+#   stage 3  Gate 2 CONFLICT gate, Type 1, frozen base only - metadata.yaml
+#            never calls build_matrix() (it uses the frozen manual_matrix.py
+#            path, ruling R2c), so it's checked here explicitly. Variants
+#            a/b/c-symbolic/c-concrete are checked automatically INSIDE
+#            build_matrix() itself now (2026-07-06, Step 3) - not here.
 #   stage 4  Gate 2 CONFLICT gate, Type 2 (outcome mismatch) - manifests
 #            claiming the identical verification act must agree on
-#            outcome (evidence/conflict.py)
+#            outcome; a whole-dataset check with no per-variant home, so
+#            it stays a standalone stage (evidence/conflict.py)
 #   stage 5  regenerate the three variant matrices + fact-equality gate
 #            (delegates to regenerate_all.py, the B2-sanctioned path; the
-#            base matrix stays frozen per ruling R2c)
+#            base matrix stays frozen per ruling R2c; each variant
+#            generator's build_matrix() call re-validates Type 1 for its
+#            own metadata as part of stage 5, not as a separate stage)
 #   stage 6  final structural PROVEN sweep over every artifact incl. base
 #   stage 7  write artifact_index.json - SHA-256 provenance binding inputs
 #            to outputs, with per-gate results
@@ -109,17 +114,20 @@ def stage_capture_integrity():
     print("stage 2 capture integrity: PASS (Sample A, Sample B, concrete store)")
 
 
-def stage_conflict_check():
+def stage_base_conflict_check():
+    """Type 1 for the frozen base matrix only. metadata.yaml never calls
+    build_matrix() (it uses the frozen manual_matrix.py path, ruling R2c),
+    so unlike a/b/c-symbolic/c-concrete it has no automatic per-variant
+    check - this stage is the only place it gets one. Base declares no
+    concrete evidence bindings, so this only exercises the symbolic-side
+    check (implementation file vs. manifest target)."""
     concrete_store = json.loads((HERE / "concrete_results.json").read_text())
     manifest = json.loads((HERE / "run_manifest.json").read_text())
-    checked = 0
-    for meta_name in ("metadata.yaml", "metadata.a.yaml", "metadata.b.yaml", "metadata.c.yaml"):
-        metadata = yaml.safe_load((HERE / meta_name).read_text())
-        result = run_conflict_gate(metadata, concrete_store, manifest)
-        checked += result["bindings_checked"]
+    metadata = yaml.safe_load((HERE / "metadata.yaml").read_text())
+    result = run_conflict_gate(metadata, concrete_store, manifest)
     print(
-        "stage 3 CONFLICT gate (Type 1, identity mismatch): PASS "
-        f"({checked} bindings checked across 4 metadata files)"
+        "stage 3 CONFLICT gate (Type 1, identity mismatch, frozen base): "
+        f"PASS ({result['bindings_checked']} bindings checked)"
     )
 
 
@@ -143,6 +151,9 @@ def stage_outcome_check():
 
 
 def stage_generate():
+    # Each variant generator's build_matrix() call re-validates Type 1 for
+    # its own metadata as an internal step (Step 3, 2026-07-06) - not a
+    # separate stage here.
     subprocess.run(
         [sys.executable, str(HERE / "regenerate_all.py")], check=True, cwd=HERE
     )
@@ -182,7 +193,7 @@ def stage_index():
 def main():
     stage_validate()
     stage_capture_integrity()
-    stage_conflict_check()
+    stage_base_conflict_check()
     stage_outcome_check()
     stage_generate()
     stage_proven_sweep()

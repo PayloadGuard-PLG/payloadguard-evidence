@@ -22,6 +22,7 @@ from evidence.conflict import (  # noqa: E402
     run_outcome_gate,
     symbolic_binding_conflicts,
 )
+from evidence.render.matrix_variants import build_matrix  # noqa: E402
 
 ART_DIR = REPO_ROOT / "examples" / "dosage_calculator"
 
@@ -146,6 +147,26 @@ def test_positive_type1_symbolic_file_mismatch():
             "manifest_target_file": "dosage.py",
         }
     ]
+
+
+def test_build_matrix_folds_in_type1_check():
+    """Step 3 (2026-07-06): the fold-in itself, proven by driving the real
+    entry point rather than the underlying check function directly. A
+    conflict must be rejected before build_matrix() assembles a single
+    record - this is what makes Type 1 run no matter how build_matrix()
+    is invoked, not just inside the full generate_artifacts.py pipeline."""
+    metadata = {
+        "requirements": [
+            {
+                "id": "REQ-X",
+                "evidence": [{"method": "concrete_test", "test_id": "some_case"}],
+            }
+        ]
+    }
+    concrete_store = {"cases": [{"test_id": "some_case", "requirement_id": "REQ-Y-NOT-X"}]}
+    manifest = {"target": "irrelevant.py"}
+    with pytest.raises(AssertionError, match="Type 1, identity mismatch"):
+        build_matrix("a", metadata, manifest, concrete_store)
 
 
 def test_missing_declared_test_id_is_a_hard_error_not_a_silent_pass():
