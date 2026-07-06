@@ -6,14 +6,16 @@ and a structured metadata file, and emits IEC 62304 / FDA §524B-oriented
 traceability artifacts in which every claim is bound to a specific,
 committed verification capture of known strength.
 
-**Status (2026-07-05):** Phase A complete and closed out (rulings R1–R3).
+**Status (2026-07-06):** Phase A complete and closed out (rulings R1–R3).
 Turn 2.0 shipped (declared/effective bounds reconciliation, mechanized
 fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 (end-to-end pipeline + provenance index) with Gate 1 review remediation
-applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gate 2
+applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
+(bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
++ mechanism recorded), and 6 (FRN, resolved) closed. Gate 2
 (vocabulary-agnostic binder + CONFLICT rule) not started — CONFLICT
-definition blocked on maintainer; see `KNOWN_LIMITATIONS.md` for the live
-gate ledger.
+definition blocked on maintainer, now with two candidate test cases; see
+`KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -175,14 +177,30 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
 - Declared CrossHair bounds in `metadata.yaml` are the intended envelope;
   each manifest's `effective_bounds` records what the run demonstrated
   (Turn 2.0). The Sample A/B captures enforce `--per_condition_timeout 30`;
-  `max_iterations` and `seed` remain declared-only — the 0.0.107 CLI cannot
-  enforce them (gap open at the tool level, Phase B may close it via the
-  API). Every variant matrix carries the declared/effective block.
+  `max_iterations` and `seed` remain declared-only. **Gate 3 decided
+  2026-07-06 (stay-CLI):** a corrected seed-override patch
+  (`crosshair.statespace.make_default_solver`) was actually run twice per
+  target with different seeds — both the clean and broken dosage kernels
+  produced byte-identical results regardless of seed, so the patch is
+  documented as having no observed effect and the CLI capture stays as
+  the evidence path; `seed` remains a hard tool-version limitation
+  (tool-fixed at 42) and `max_iterations` remains enforceable only via the
+  API, not the CLI. Verification script and full findings:
+  `examples/dosage_calculator/gate3_seed_patch_test.py`,
+  `KNOWN_LIMITATIONS.md`. Every variant matrix carries the
+  declared/effective block.
 - Binding authorship differs across T4 variants (metadata-authored in A/B,
-  evidence-store-carried in C) — open, deferred to Phase B
-  (`RECONCILIATION.md`, asymmetry 2).
-- The `FRN` pump-type tag in the GIP v1.0 source is undefined in the
-  extracted text and remains an explicitly unresolved open question.
+  evidence-store-carried in C). **Gate 4 decision recorded:** both models,
+  cross-checked, with a Tier-1 failure on disagreement (dual-authorship
+  code-location matching) — building it is Gate 2's binder work, not yet
+  started (`RECONCILIATION.md` asymmetry 2, `KNOWN_LIMITATIONS.md`).
+- The `FRN` pump-type tag in the GIP v1.0 source is now resolved (FDA
+  Product Code for "Infusion Pump," 21 CFR 880.5725) — see
+  `sources/README.md` and `KNOWN_LIMITATIONS.md` (Gate 6) for the
+  citation trail and the one open caveat (not yet independently
+  re-verified against the raw source text).
 - Dafny/Z3 adapters, the CONFLICT rule, and the vocabulary-agnostic binder
   are Phase B; nothing in this repository currently claims `PROVEN` as a
-  realized strength.
+  realized strength. Gate 2's CONFLICT rule remains blocked on a
+  definition, now with two candidate test cases on file
+  (`KNOWN_LIMITATIONS.md`).

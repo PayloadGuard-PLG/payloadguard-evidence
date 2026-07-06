@@ -6,6 +6,86 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 3 closed by real test; Gate 6 (FRN) resolved; Gate 4 decision recorded; roadmap v2
+
+Verification-first session, per the standing discipline: claims were
+checked against actual repo/tool state before being written down,
+including claims in the prompts supplied this session.
+
+- **Pre-check on Defects 1/2 (mechanical-fixes prompt):** the prompt
+  assumed these were possibly unpushed local commits. Checked for real:
+  `5564fdf`/`1d9a260` exist on `main` locally and on `origin/main`
+  (fetched and compared — identical, no divergence); DEVLOG already
+  documented both under the 2026-07-05 "Gate 1 remediation" entry below.
+  Rendered output verified directly (not just commit messages): all four
+  variants show the scoped Notes fix and the REQ-GIP-1-4-12 kernel/system
+  scope split correctly; suite 17 passed. No remediation needed — the
+  prompt's premise didn't hold, and the mismatch was reported before
+  proceeding rather than silently skipped or silently actioned.
+- **Same-pattern discrepancy found in the roadmap-v2 prompt:** its "read
+  first" section claimed FRN was "now closed." It was not — every
+  in-repo reference (`KNOWN_LIMITATIONS.md`, `sources/README.md`,
+  top-level `README.md`, `examples/dosage_calculator/README.md`) still
+  read UNRESOLVED/BLOCKED. Flagged to Steven before proceeding; the
+  roadmap v2 document (supplied afterward) carried the actual resolution
+  to apply.
+- **Gate 6 (FRN) — resolved and written up.** `FRN` = FDA Product Code
+  for "Infusion Pump" (21 CFR 880.5725); within GIP's taxonomy, general-
+  purpose volumetric infusion pumps (peristaltic, cassette-based),
+  distinct from `All`. Source: NotebookLM extraction of the full source
+  PDF, cross-checked against independent FDA-registry research. Caveat
+  carried forward, not dropped: not yet independently re-verified against
+  the raw Sec 2.4.1 text. Updated `sources/README.md` (open question →
+  resolved question), `examples/dosage_calculator/README.md`,
+  top-level `README.md`, `KNOWN_LIMITATIONS.md`.
+- **Gate 3 — decided stay-CLI, by actually running the supplied
+  verification script, not by trusting its writeup.** The roadmap's
+  corrected seed-override technique (patch `make_default_solver`,
+  hyphenated Z3 params) still had three bugs that only running it
+  surfaced: (1) the roadmap's own claimed constructor,
+  `AnalysisOptions(max_iterations=..., per_condition_timeout=...)`,
+  raises `TypeError` on the installed 0.0.107 — `analyze_function` takes
+  `AnalysisOptionSet`, not `AnalysisOptions`; (2) `crosshair.core` alone
+  raises `CrossHairInternal("Opcode patches haven't been loaded yet.")`
+  on `.analyze()` — must import from `crosshair.core_and_libs`; (3)
+  `analyze_function` only returns parsed `Checkable`s, it doesn't run the
+  solver — `.analyze()` must be called on each to get a real result. The
+  uncorrected script "completed" in under a second and would have looked
+  like a clean pass without ever invoking CrossHair's solver. After all
+  three fixes, ran it for real, twice per target, seed 1 vs seed 2:
+  `dosage.py::calculate_hourly_dose` gave byte-identical "Not confirmed"
+  results both times; `dosage_broken.py::calculate_hourly_dose` (a
+  stronger discriminator — it has real counterexamples) gave the exact
+  same two counterexamples both times, matching the values already on
+  file in `raw_crosshair_output_broken.txt`. No observed effect from the
+  patch on either target tested. Decision: stay-CLI; `seed` documented as
+  a tool-version limitation (tool-fixed at 42, hard-coded in
+  `make_default_solver()`, not `StateSpace.__init__`, with hyphenated
+  param names); `max_iterations` confirmed enforceable via
+  `AnalysisOptionSet` independent of the seed question. Verification
+  script committed at
+  `examples/dosage_calculator/gate3_seed_patch_test.py`; nothing
+  re-captured, Gate 1's committed evidence is untouched. Also closed as a
+  non-issue: installed/pinned crosshair-tool is 0.0.107 in this
+  environment (`pip show` confirmed), consistent with the toolchain pin;
+  GitHub's latest *tag* trailing at 0.0.106 doesn't indicate a real
+  discrepancy here.
+- **Gate 4 — decision recorded (not built).** Option 3 (both binding-
+  authorship models, cross-checked, Tier-1 failure on disagreement) is
+  now the decision on record, with the dual-authorship top-down/bottom-up
+  code-location-match mechanism specified. Building it is Gate 2's binder
+  work.
+- **Gate 2 — still blocked**, now with two candidate test cases on file
+  for whatever CONFLICT definition eventually lands: a positive case
+  (top-down/bottom-up binding disagreement under Gate 4's mechanism) and
+  a negative case (REQ-GIP-1-4-12's kernel/system scope split, which is a
+  documented absence, not a conflict).
+- `payloadguard-evidence-roadmap-phaseB-to-C.md` replaced in place with
+  the roadmap-v2 content (supersedes the 2026-07-05 morning version per
+  its own text) plus the real Gate 3 result folded in.
+- Suite: 17 passed (unchanged — no capture or generator touched this
+  session).
+
 ## 2026-07-05 — Gate 1 remediation (two items from Steven's review)
 
 Gate 1 review verdict received: fact-equality doing its job; two issues to

@@ -32,9 +32,26 @@ requirements documents, standards excerpts) that ground the claims in
   extend any other requirement, threat, or citation, and it does not
   resolve the FRN open question below.
 
-## Open questions
+## Resolved questions
 
-- **`FRN` pump-type tag:** the GIP v1.0 source tags several hazards with
-  pump type `FRN` without defining the abbreviation in the extracted
-  text. See `examples/dosage_calculator/README.md` for the current
-  status of this question.
+- **`FRN` pump-type tag (resolved 2026-07-05):** the GIP v1.0 source tags
+  several hazards with pump type `FRN` without defining the abbreviation
+  in the extracted text. `FRN` = FDA Product Code for "Infusion Pump"
+  (21 CFR 880.5725); within the GIP taxonomy specifically, denotes
+  general-purpose volumetric infusion pumps (peristaltic mechanism,
+  cassette-based administration set), distinct from the `All` tag used
+  elsewhere in the source's hazard tables. Resolved via NotebookLM's
+  extraction of the full source PDF, cross-checked against independent
+  FDA-registry research landing on the same product code. Per rule 4
+  above: this resolves the previously-flagged open term. Caveat carried
+  forward, not silently dropped: well-supported, but **not yet
+  independently re-verified against the raw Sec 2.4.1 text** of the
+  source document itself — no new primary-source file was added to this
+  folder for this resolution (the extraction is a research finding about
+  an existing archived source, not a new document). See
+  `examples/dosage_calculator/README.md` and `KNOWN_LIMITATIONS.md` for
+  the full status.
+  Prior failed resolution attempts (web search for GIP project pages;
+  direct retrieval of `rtg.cis.upenn.edu/gip-UPenn/` and the UPenn
+  `cis_reports/893` tech-report page — host unreachable / HTTP 403 from
+  this environment) are preserved in the dev log for the record.

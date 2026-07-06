@@ -1,6 +1,7 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-05 09:46 UTC (Turn 2.0: B1 678a3a5, B2 6347645, B3).
+Last updated: 2026-07-06 (Gate 3 decided by real behavioral test; Gate 3
+verification script added).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -42,6 +43,11 @@ payloadguard-evidence/
 │   │                            order; documents why ordering is load-bearing)
 │   ├── overflow_probe.py        Domain-free model-fidelity probe
 │   ├── run_verify*.py           Capture runners (one per target + concrete)
+│   ├── gate3_seed_patch_test.py Gate 3 investigation script (not part of
+│   │                            the evidence-capture path): behaviorally
+│   │                            tests a make_default_solver seed-override
+│   │                            patch; result documented in
+│   │                            KNOWN_LIMITATIONS.md, no capture changed
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
@@ -157,7 +163,16 @@ PROVEN → realized weaker (intent_ok false, honest); DOSE-003 intent met.
 
 Phase A (complete): schema + model + hand-reviewed renderer, real captures,
 worked example, T4 three-variant fork, closeout rulings R1–R3.
-Phase B (not started): Dafny/Z3 adapters (parser must assert the literal
-substring "0 errors" — false-zero bug note in `evidence/model.py`),
-vocabulary-agnostic binder, CLI, CONFLICT rule, bounds reconciliation,
-binding-authorship decision, single-evidence-type fixture for variant C.
+Phase B (in progress): Gate 1 (end-to-end pipeline + provenance index)
+complete with remediation applied. Gates 3 (bounds enforcement — decided
+stay-CLI by real behavioral test), 4 (binding authorship — option 3
+decided, mechanism specified), 5 (single-evidence-type fixture —
+resolved for the constructible half), and 6 (FRN — resolved) closed or
+decided. Gate 2 (vocabulary-agnostic binder, CLI, CONFLICT rule) not
+started — CONFLICT definition blocked on the maintainer, now with two
+candidate test cases; Gate 4's cross-check mechanism is Gate 2's binder
+work to build. See `KNOWN_LIMITATIONS.md` for the live gate ledger and
+`payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
+mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
+literal substring "0 errors" plus the three further checks in the
+roadmap — false-zero bug note in `evidence/model.py`).

@@ -142,19 +142,31 @@ not a fact) — the gate still holds at 7 facts. When integration testing
 exists, system_scope becomes a new binding target with its own evidence
 chain, not folded into the kernel's.
 
-## Open question — `FRN` pump-type tag: UNRESOLVED
+## `FRN` pump-type tag: RESOLVED (2026-07-05)
 
 The GIP v1.0 hazard tables tag many hazards with pump type `FRN` (e.g.
 Hazard 1.14, referenced by `THR-GIP-1-14`) without defining the
-abbreviation in the extracted text. Resolution was attempted during this
-session (web search for the GIP project pages and companion documents;
-direct retrieval of `rtg.cis.upenn.edu/gip-UPenn/` and the UPenn
-`cis_reports/893` tech-report page failed — host unreachable / HTTP 403
-from this environment). No companion document defining `FRN` was found.
-The meaning is therefore **not inferred**: `THR-GIP-1-14` records only
-that the tag denotes a source-defined pump subtype distinct from the
-"All" category. If a future source added to `sources/` defines it, update
-this section and `sources/README.md` per the standing rule.
+abbreviation in the extracted text. Resolution was attempted earlier in
+this project (web search for the GIP project pages and companion
+documents; direct retrieval of `rtg.cis.upenn.edu/gip-UPenn/` and the
+UPenn `cis_reports/893` tech-report page failed — host unreachable / HTTP
+403 from this environment); no companion document defining `FRN` was
+found at that time.
+
+**Resolution:** `FRN` = FDA Product Code for "Infusion Pump"
+(21 CFR 880.5725). Within the GIP taxonomy specifically, denotes
+general-purpose volumetric infusion pumps (peristaltic mechanism,
+cassette-based administration set), distinct from the `All` tag used
+elsewhere in the source's hazard tables. Resolved via NotebookLM's
+extraction of the full source PDF, cross-checked against independent
+FDA-registry research landing on the same product code.
+
+**Confidence caveat, carried forward rather than dropped:** well-supported,
+but not yet independently re-verified against the raw Sec 2.4.1 text of
+the source document itself. `THR-GIP-1-14` and any other `FRN`-tagged
+hazard should be read with that caveat until re-verified. See
+`sources/README.md` and `KNOWN_LIMITATIONS.md` (Gate 6) for the same
+record.
 
 ## Fixture formats
 
