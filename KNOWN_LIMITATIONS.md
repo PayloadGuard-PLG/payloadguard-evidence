@@ -550,6 +550,23 @@ directory). Gate C1's actual build — a `run_verify_dafny.py`-equivalent
 capture runner, real Dafny contracts for the dosage kernel, and a
 committed capture — is the next step, not done here.
 
+**Made reproducible for future sessions (2026-07-06):** the toolchain
+research above only holds for this session's container — a fresh
+session starts from a clean clone with none of it installed. Added
+`.claude/hooks/session-start.sh` (registered via `.claude/settings.json`)
+to install it automatically: Python deps (`crosshair-tool`, `jsonschema`,
+`pyyaml`, `pytest`), the .NET 8 SDK via apt, and **Dafny pinned to
+4.11.0** via `dotnet tool install --global dafny --version 4.11.0` —
+pinned explicitly, matching the `crosshair-tool 0.0.107` discipline, so
+a future session doesn't silently pick up a different Dafny version
+with different output conventions than the ones verified above. The
+hook is idempotent (checked installed versions before reinstalling) and
+runs synchronously (session start waits for it, trading startup latency
+for guaranteeing the toolchain is ready before any command runs).
+Validated by running it directly in this session (exit 0, ~1.4s on the
+already-provisioned path) and confirming `dafny --version` and the full
+test suite (41 passed) both work immediately after.
+
 ## What's left for Gate 2
 
 - CONFLICT rule Type 1: **built AND folded into `build_matrix()`**

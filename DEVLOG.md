@@ -6,6 +6,44 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — SessionStart hook: make the Dafny/Python toolchain reproducible
+
+The toolchain research below only held for this session's container.
+Requested directly: set it up so a future session doesn't have to redo
+it from scratch.
+
+- Added `.claude/hooks/session-start.sh` (registered in
+  `.claude/settings.json`, synchronous mode): installs the Python deps
+  (`crosshair-tool`, `jsonschema`, `pyyaml`, `pytest` - per README's
+  "Running it") and the .NET/Dafny toolchain (`dotnet-sdk-8.0` via apt,
+  then `dotnet tool install --global dafny --version 4.11.0` via NuGet).
+- **Dafny is pinned explicitly to 4.11.0**, not "latest" - the exact
+  version this session verified the false-zero note, exit-code
+  behavior, and the vacuous-precondition risk against. An unpinned
+  install could silently pick up a different Dafny version with
+  different output conventions in a future session, undermining
+  everything just verified. Matches the `crosshair-tool 0.0.107`
+  pinning discipline already established for CrossHair.
+- Idempotent: checks `command -v dotnet` / the installed Dafny version
+  before doing any apt or dotnet work, so a warm container (already
+  provisioned) skips straight through.
+- **Validated, not assumed:** ran the hook directly
+  (`CLAUDE_CODE_REMOTE=true ./.claude/hooks/session-start.sh`) - exit 0,
+  ~1.4s on the already-provisioned path (this session), correctly
+  skipped reinstalling. Confirmed `dafny --version` resolves to
+  `4.11.0` via the hook's `$CLAUDE_ENV_FILE` PATH export, then ran the
+  full test suite (41 passed) and one targeted test file individually,
+  both immediately after sourcing that same env file - the same PATH a
+  fresh session would inherit.
+- No linter is configured in this repository (no `.flake8` / `ruff.toml`
+  / CI workflow found) - that validation step from the skill's workflow
+  doesn't apply here; noted rather than skipped silently.
+- Not yet re-validated from a genuinely cold container (this session
+  already had dotnet/Dafny installed from the prior research) - the
+  from-scratch apt+dotnet-tool install path was exercised manually
+  earlier this session and confirmed to work; the hook runs the
+  identical commands.
+
 ## 2026-07-06 — Phase C Gate C1: Dafny toolchain blocker resolved (modern Dafny obtained)
 
 Requested directly: research whether a modern Dafny is obtainable rather
