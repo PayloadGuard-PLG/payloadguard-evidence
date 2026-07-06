@@ -1,8 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 2 CONFLICT rule Types 1 and 2 built and
-wired into the pipeline as real Tier-1 stages; variant C's binding
-asymmetry closed).
+Last updated: 2026-07-06 (Gate 2 vocabulary-agnostic binder, Step 1:
+build_matrix() added to evidence/render/matrix_variants.py, proven
+byte-identical to the three existing per-variant functions; nothing
+cut over yet — see KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -39,8 +40,12 @@ payloadguard-evidence/
 │   │   └── metadata.schema.c.json   T4-C: base shape, dual-matrix notes
 │   └── render/
 │       ├── manual_matrix.py     Base binder/renderer (Phase A, hand-reviewed)
-│       └── matrix_variants.py   T4 variant builders; derive_intent (R1);
-│                                assert_no_realized_proven (R2)
+│       └── matrix_variants.py   T4 variant builders (build_matrix_a/b/c,
+│                                still authoritative); derive_intent (R1);
+│                                assert_no_realized_proven (R2); plus
+│                                build_matrix() - Gate 2's vocabulary-
+│                                agnostic dispatch, additive, proven
+│                                equivalent, not yet called by generators
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -82,9 +87,12 @@ payloadguard-evidence/
     ├── test_structural_proven_check.py  R2 structural rule over real artifacts
     ├── test_fact_equality.py    B2 gate: facts/intent/bounds identical across
     │                            views; base = symbolic-subset legacy view
-    └── test_conflict_check.py  Gate 2 CONFLICT Types 1+2: three ratified
-                                 test cases over real data (all three
-                                 metadata shapes) + in-memory fixtures
+    ├── test_conflict_check.py  Gate 2 CONFLICT Types 1+2: three ratified
+    │                            test cases over real data (all three
+    │                            metadata shapes) + in-memory fixtures
+    └── test_binder_equivalence.py  Gate 2 binder Step 1: build_matrix()
+                                 proven byte-identical (dict + JSON string)
+                                 to build_matrix_variant_a/b/c
 ```
 
 ## 3. Data flow (end to end)
@@ -183,9 +191,11 @@ Type 2 (outcome mismatch) — is built and wired into
 `generate_artifacts.py` as real Tier-1 stages (`evidence/conflict.py`);
 Gate 4's cross-check mechanism is now implemented for all three metadata
 shapes, including variant C, whose declared-binding asymmetry is closed.
-Still open: the vocabulary-agnostic binder + CLI themselves (both
-CONFLICT types today run as standalone stages alongside the separate
-per-variant generators, not inside a unified binder). See
+Still open: the vocabulary-agnostic binder + CLI (both CONFLICT types
+today run as standalone stages alongside the separate per-variant
+generators, not inside a unified binder). Step 1 of the binder is
+done — `build_matrix()` proven byte-identical to the three existing
+functions — but nothing has been cut over yet; that's Step 2. See
 `KNOWN_LIMITATIONS.md` for the live gate ledger and
 `payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
 mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the

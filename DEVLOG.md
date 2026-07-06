@@ -6,6 +6,43 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 3: vocabulary-agnostic binder, Step 1
+
+Steven confirmed the phased plan and set the working principle for the
+rest of Phase B->C: correctness over speed, one step at a time, always
+with the end of Phase C in view. This step is scoped narrowly on
+purpose - it is a genuine architectural refactor (unlike Types 1/2,
+which extended an existing pattern), so it gets its own proof before
+anything currently authoritative is touched.
+
+- **Built:** `build_matrix(variant_key, metadata, manifest,
+  concrete_store, tool_versions=None)` in
+  `evidence/render/matrix_variants.py` - one entry point replacing
+  `build_matrix_variant_a/b/c`. Literal extraction, not new logic: each
+  variant's record-assembly ("binder": `_bind_declared`, `_bind_shadow`,
+  `_bind_self_describing`) and row-rendering ("shape":
+  `_shape_evidence_array`, `_shape_flattened_shadow`,
+  `_shape_method_partitioned`) lifted verbatim into named functions,
+  dispatched through a declarative table (`_VARIANT_SPECS`) instead of
+  three separate top-level functions. Binding strategy and row shape
+  split as the two real axes of variation, so a future fifth shape can
+  reuse an existing piece instead of requiring a whole new function.
+- **Correctness proof:** `tests/test_binder_equivalence.py` (5 tests)
+  runs the old function and `build_matrix()` against identical real
+  committed inputs for all four variant keys and asserts equality two
+  ways - dict equality and `json.dumps()` string equality (the second
+  catches key-order drift dict equality alone would miss). All pass.
+- **Nothing cut over.** `generate_matrix_a.py` / `_b.py` / `_c.py` and
+  `regenerate_all.py` still call the original functions, untouched.
+  Pipeline re-run end to end; every regenerated artifact differs only by
+  `generated_utc` - zero observable change from this step. Suite: 33
+  passed (28 prior + 5 new).
+- Documentation updated to record Step 1 as done and Step 2 (the actual
+  cutover - retiring the three old functions and generator scripts,
+  folding Types 1/2 into the binder) as the next, deliberately separate,
+  higher-risk step: `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+  `README.md`, roadmap doc.
+
 ## 2026-07-06 — Gate 2 build, Phase 2: Type 2, variant C asymmetry closed
 
 Continuation of the phased Gate 2 build, addressing the two remaining

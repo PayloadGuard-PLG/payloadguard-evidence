@@ -65,10 +65,22 @@ the real committed dataset). Variant C's declared-binding asymmetry
 (Gate 4) is closed: `metadata.c.yaml` now carries the same top-down
 `evidence` declarations as variant A, for cross-checking only — C's
 actual binding stays evidence-store-carried, confirmed unchanged by a
-byte-identical regeneration diff (timestamp aside). The vocabulary-
-agnostic binder itself (one implementation driving all four schema
-variants) and the CLI remain unstarted — both CONFLICT types run today
-as standalone pipeline stages, not inside a unified binder.
+byte-identical regeneration diff (timestamp aside).
+
+**Vocabulary-agnostic binder — Step 1 done, Step 2 pending.**
+`evidence/render/matrix_variants.py` gained `build_matrix()`: a literal
+extraction of all three existing variants' binding/rendering logic into
+named, reusable functions, dispatched through one declarative table
+instead of three top-level functions. Proven byte-identical (dict AND
+JSON-string equality) to the original `build_matrix_variant_a/b/c` over
+real committed data (`tests/test_binder_equivalence.py`, 5 tests).
+Additive only — `generate_matrix_a.py` / `_b.py` / `_c.py` are untouched
+and still authoritative; the pipeline was re-run end to end and every
+regenerated artifact differs only by timestamp. Step 2 (retiring the
+three old functions and generator scripts in favor of `build_matrix()`,
+and folding Types 1/2 into the binder) is the deliberate next stopping
+point, not yet started. The CLI remains unstarted, planned as a thin
+wrapper once the binder itself is stable post-cutover.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 

@@ -534,3 +534,233 @@ def _md_notes(rows):
         lines.append("- none")
     lines.append("")
     return lines
+
+
+# =============================================================================
+# Gate 2: vocabulary-agnostic binder (Step 1 of the phased build)
+#
+# ADDITIVE ONLY. Nothing above this line is modified, and build_matrix_a/b/c
+# are untouched and still used by every generator script. The functions below
+# are literal extractions of each variant's existing record-assembly
+# ("binder") and row-rendering ("shape") logic into named, reusable pieces,
+# dispatched through one declarative table (_VARIANT_SPECS) and one entry
+# point (build_matrix) instead of three separate top-level functions.
+#
+# Binding strategy (how records_by_req gets populated) and row shape (how
+# records_by_req renders into matrix rows) are the two real axes of variation
+# across A/B/C; this split is what lets a future fifth shape reuse an
+# existing strategy or shape instead of requiring a fourth whole function.
+#
+# Correctness discipline: this is a refactor of already-reviewed logic, not
+# new logic. tests/test_binder_equivalence.py proves build_matrix() produces
+# BYTE-IDENTICAL output (generated_utc aside) to build_matrix_variant_a/b/c
+# for all four variant keys, over the real committed inputs. Cutting the
+# generator scripts over to build_matrix() is a later, separate step,
+# gated on that equivalence proof holding.
+# =============================================================================
+
+
+def _bind_declared(metadata, manifest, concrete_store, bounds):
+    """Variant A's binding strategy: metadata's per-requirement `evidence`
+    list is authoritative and drives which records get assembled."""
+    cases = {c["test_id"]: c for c in concrete_store["cases"]}
+    records_by_req = {}
+    for req in metadata["requirements"]:
+        records = []
+        for ev in req.get("evidence", []):
+            if ev["method"] == "crosshair":
+                records.append(symbolic_record(manifest, bounds, req["implementation"]))
+            elif ev["method"] == "concrete_test":
+                records.append(concrete_record(cases[ev["test_id"]]))
+            else:
+                raise SystemExit(f"unknown evidence method: {ev['method']}")
+        records_by_req[req["id"]] = records
+    return records_by_req
+
+
+def _shape_evidence_array(metadata, records_by_req, intent):
+    """Variant A's row shape: one row per requirement, evidence as a list."""
+    rows = []
+    for req in metadata["requirements"]:
+        records = records_by_req[req["id"]]
+        notes = list(intent[req["id"]]["notes"])
+        if not records:
+            notes.insert(0, "no evidence bound for this requirement")
+        gap = scope_gap_record(req)
+        if gap:
+            records = records + [gap]
+            notes.append(gap["note"])
+        rows.append(
+            {
+                "requirement_id": req["id"],
+                "requirement_text": _display_text(req),
+                "code_location": req["implementation"],
+                "evidence": records,
+                "intent_ok": intent[req["id"]]["intent_ok"],
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def _bind_shadow(metadata, manifest, concrete_store, bounds):
+    """Variant B's binding strategy: non-shadow requirements get an implicit
+    crosshair record; shadow pseudo-requirements (parent_requirement set)
+    get a concrete record via a test_id embedded as the implementation
+    suffix, attributed to the parent. Returns (records_by_req, bound_record)
+    - bound_record carries one record per METADATA entry (shadow or not),
+    needed by the flattened-shadow shape to render one row per entry."""
+    cases = {c["test_id"]: c for c in concrete_store["cases"]}
+    bound_record = {}
+    records_by_req = {}
+    for req in metadata["requirements"]:
+        parent = req.get("parent_requirement")
+        if parent is None:
+            record = symbolic_record(manifest, bounds, req["implementation"])
+            records_by_req.setdefault(req["id"], []).append(record)
+        else:
+            test_id = req["implementation"].split("::")[-1]
+            record = concrete_record(cases[test_id])
+            records_by_req.setdefault(parent, []).append(record)
+        bound_record[req["id"]] = record
+    return records_by_req, bound_record
+
+
+def _shape_flattened_shadow(metadata, bound_record, intent):
+    """Variant B's row shape: one row per metadata entry; shadow rows carry
+    parent_requirement and project their parent's intent_ok read-only (R1)."""
+    rows = []
+    for req in metadata["requirements"]:
+        parent = req.get("parent_requirement")
+        record = bound_record[req["id"]]
+        scope = intent[parent or req["id"]]
+        intent_ok = scope["intent_ok"]
+        notes = list(scope["notes"]) if parent is None else []
+        req_text = req["text"].strip() if parent else _display_text(req)
+        rows.append(
+            {
+                "requirement_id": req["id"],
+                "parent_requirement": parent,
+                "requirement_text": req_text,
+                "code_location": req["implementation"],
+                **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
+                "bounds": record.get("bounds"),
+                "counterexample": record.get("counterexample"),
+                "test_id": record.get("test_id"),
+                "inputs": record.get("inputs"),
+                "expected": record.get("expected"),
+                "observed": record.get("observed"),
+                "intent_ok": intent_ok,
+                "notes": notes,
+            }
+        )
+    for req in metadata["requirements"]:
+        if req.get("parent_requirement") is not None:
+            continue
+        gap = scope_gap_record(req)
+        if gap:
+            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
+    return rows
+
+
+def _bind_self_describing(metadata, manifest, concrete_store, bounds):
+    """Variant C's binding strategy: every requirement gets an implicit
+    crosshair record unconditionally, plus every concrete_results.json case
+    whose own requirement_id names it (evidence-store-carried, self
+    describing - Gate 4's known asymmetry: no metadata declaration drives
+    this binding, even though metadata.c.yaml now ALSO carries an `evidence`
+    list for Type 1 cross-checking only, per Gate 4 option 3)."""
+    records_by_req = {}
+    for req in metadata["requirements"]:
+        records_by_req[req["id"]] = [
+            symbolic_record(manifest, bounds, req["implementation"])
+        ] + [
+            concrete_record(c)
+            for c in concrete_store["cases"]
+            if c["requirement_id"] == req["id"]
+        ]
+    return records_by_req
+
+
+def _shape_method_partitioned(metadata, records_by_req, intent, method):
+    """Variant C's row shape: one row per record, filtered by method into
+    one of two independent artifacts; scope-GAP rows are method-agnostic
+    and appear in both."""
+    rows = []
+    for req in metadata["requirements"]:
+        if method == "crosshair":
+            records = [r for r in records_by_req[req["id"]] if r["method"] == "crosshair"]
+        elif method == "concrete_test":
+            records = [r for r in records_by_req[req["id"]] if r["method"] == "concrete_test"]
+        else:
+            raise SystemExit(f"unknown method filter: {method}")
+        for record in records:
+            intent_ok = intent[req["id"]]["intent_ok"]
+            notes = _view_notes(intent[req["id"]], method)
+            rows.append(
+                {
+                    "requirement_id": req["id"],
+                    "requirement_text": _display_text(req),
+                    "code_location": record["code_location"],
+                    **{k: record[k] for k in ("method", "strength", "caveat", "result_status")},
+                    "bounds": record.get("bounds"),
+                    "counterexample": record.get("counterexample"),
+                    "test_id": record.get("test_id"),
+                    "inputs": record.get("inputs"),
+                    "expected": record.get("expected"),
+                    "observed": record.get("observed"),
+                    "intent_ok": intent_ok,
+                    "notes": notes,
+                }
+            )
+    for req in metadata["requirements"]:
+        gap = scope_gap_record(req)
+        if gap:
+            rows.append(_gap_row(req, gap, intent[req["id"]]["intent_ok"]))
+    return rows
+
+
+_VARIANT_SPECS = {
+    "a": {"binder": "declared", "shape": "evidence_array"},
+    "b": {"binder": "shadow", "shape": "flattened_shadow"},
+    "c-symbolic": {"binder": "self_describing", "shape": "method_partitioned", "method": "crosshair"},
+    "c-concrete": {"binder": "self_describing", "shape": "method_partitioned", "method": "concrete_test"},
+}
+
+_MARKDOWN_RENDERERS = {
+    "a": _markdown_variant_a,
+    "b": _markdown_variant_b,
+    "c-symbolic": _markdown_variant_c,
+    "c-concrete": _markdown_variant_c,
+}
+
+
+def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=None):
+    """Vocabulary-agnostic entry point: one implementation driving all four
+    schema-variant shapes via a declarative binder+shape dispatch, instead of
+    a separate top-level function per variant. See the module-level note
+    above this section for the correctness discipline this was built under."""
+    spec = _VARIANT_SPECS[variant_key]
+    bounds = metadata["toolchain"]["crosshair_bounds"]
+
+    if spec["binder"] == "declared":
+        records_by_req = _bind_declared(metadata, manifest, concrete_store, bounds)
+        intent = derive_intent(metadata, records_by_req)
+        rows = _shape_evidence_array(metadata, records_by_req, intent)
+    elif spec["binder"] == "shadow":
+        records_by_req, bound_record = _bind_shadow(metadata, manifest, concrete_store, bounds)
+        intent = derive_intent(metadata, records_by_req)
+        rows = _shape_flattened_shadow(metadata, bound_record, intent)
+    elif spec["binder"] == "self_describing":
+        records_by_req = _bind_self_describing(metadata, manifest, concrete_store, bounds)
+        intent = derive_intent(metadata, records_by_req)
+        rows = _shape_method_partitioned(metadata, records_by_req, intent, spec["method"])
+    else:
+        raise SystemExit(f"unknown binder strategy: {spec['binder']}")
+
+    matrix = _header(variant_key, metadata, tool_versions, derive_bounds_block(metadata, manifest))
+    if "method" in spec:
+        matrix["method_filter"] = spec["method"]
+    matrix["rows"] = rows
+    assert_no_realized_proven(matrix)
+    return matrix, _MARKDOWN_RENDERERS[variant_key](matrix)
