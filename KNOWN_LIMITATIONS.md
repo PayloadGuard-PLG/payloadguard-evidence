@@ -4,10 +4,10 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 5 fully resolved: variant C's binder no
-longer binds symbolic evidence unconditionally, so a concrete-only
-fixture is now constructible — the last remaining limitation from the
-original six-gate ledger is closed).
+Last updated: 2026-07-06 (Phase B's gate ledger fully closed; Phase C
+planning started — see `payloadguard-evidence-roadmap-phaseB-to-C.md`
+for the full gate-sequenced plan (Gates C1–C6). One live blocker named
+below: Phase C's Dafny toolchain decision).
 
 | Gate | Status | Summary |
 |---|---|---|
@@ -16,6 +16,8 @@ original six-gate ledger is closed).
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **FULLY RESOLVED (2026-07-06)** | `tests/test_single_evidence_type.py`: both symbolic-only AND concrete-only in-memory fixtures now appear in exactly one variant-C artifact each. The concrete-only case was impossible until today: `_bind_self_describing` bound a symbolic record to every requirement unconditionally, regardless of what it declared. Details below. |
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
+| Phase C Gate C1 — Dafny toolchain decision | **BLOCKED on Steven** | Environment checked 2026-07-06: Z3 4.16.0 present (CLI + Python bindings). Dafny is NOT installed; the only apt package (`dafny 2.3.0+dfsg-0.1`) is a ~2015-era Ubuntu-universe release depending on Mono, not the modern 4.x Dafny the false-zero note in `evidence/model.py` is written against. `dotnet` isn't installed; a direct GitHub release download 403'd through the environment's proxy. Needs a decision — install the old apt package and scope Gate C1 honestly around its quirks (matching the `crosshair-tool 0.0.107` pinning precedent), or pursue a modern Dafny some other way — before any Phase C capture work can start. Full plan: `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
+| Phase C Gate C3 — specification-stripping vector | **BLOCKED, named** | The fourth Dafny output-parsing vulnerability (of four) referenced an LLM-self-healing-loop scenario but the source material was cut off before detail was captured. Needs a follow-up read of the original document before this vector can be scoped at all — not inferred from the name. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **NOTED for Gate 2** | The Gate 2 binder/schema must reserve room for this field (Blueprint false-zero trap) and keep strength-assignment adapter-scoped so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements even after the Dafny adapter exists. Phase C now has four concrete mechanisms (STPs, mutation testing, sharpened false-zero parsing, NL-dialogue confirmation) — see `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)

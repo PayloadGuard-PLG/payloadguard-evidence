@@ -24,7 +24,16 @@ standalone stage by design (a whole-dataset check with no per-variant
 home). The original per-variant functions and the equivalence test that
 checked `build_matrix()` against them are deleted, per explicit
 direction to build the CLI first — git history holds them if ever
-needed again. See `KNOWN_LIMITATIONS.md` for the live gate ledger.
+needed again. **Phase B's gate ledger is now fully closed.**
+
+Phase C planning has started: restructured from a two-mechanism sketch
+into a gate-sequenced plan (Gates C1–C6) in
+`payloadguard-evidence-roadmap-phaseB-to-C.md`, following a real
+environment check (Z3 4.16.0 present; Dafny not installed, apt's only
+package a ~2015-era release predating modern Dafny) done before any
+Phase C code. Nothing in Phase C is built yet — a Dafny toolchain
+decision is blocked on Steven before Gate C1 can start. See
+`KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

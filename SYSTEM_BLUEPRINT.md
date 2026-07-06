@@ -1,8 +1,8 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 5 fully resolved: variant C's binder no
-longer binds symbolic evidence unconditionally, so a concrete-only
-fixture is constructible — see KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-06 (Phase B's gate ledger fully closed; Phase C
+restructured into a gate-sequenced plan — see
+payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -200,7 +200,7 @@ PROVEN → realized weaker (intent_ok false, honest); DOSE-003 intent met.
 
 Phase A (complete): schema + model + hand-reviewed renderer, real captures,
 worked example, T4 three-variant fork, closeout rulings R1–R3.
-Phase B (in progress): Gate 1 (end-to-end pipeline + provenance index)
+Phase B (COMPLETE — gate ledger fully closed): Gate 1 (end-to-end pipeline + provenance index)
 complete with remediation applied. Gates 3 (bounds enforcement — decided
 stay-CLI by real behavioral test), 4 (binding authorship — option 3
 decided, mechanism specified), 5 (single-evidence-type fixture for
@@ -220,8 +220,16 @@ no per-variant home, like fact-equality). The CLI (`evidence/cli.py`,
 `python -m evidence.cli build`) wraps `build_matrix()` for any metadata/
 manifest/concrete-store path rather than the hardcoded worked-example
 paths the generator scripts use. See `KNOWN_LIMITATIONS.md` for the live
-gate ledger and
-`payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
-mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
-literal substring "0 errors" plus the three further checks in the
-roadmap — false-zero bug note in `evidence/model.py`).
+gate ledger.
+
+Phase C (planning): restructured 2026-07-06 from a two-mechanism sketch
+into a gate-sequenced plan (Gates C1–C6, build order specified) in
+`payloadguard-evidence-roadmap-phaseB-to-C.md`. A real environment check
+was done before any Phase C code: Z3 4.16.0 is present (CLI + Python
+bindings); Dafny is NOT installed, and the only apt package
+(`dafny 2.3.0+dfsg-0.1`) is a ~2015-era release depending on Mono, not
+modern Dafny — a real toolchain-version decision is blocked on Steven
+before Gate C1 can start (`KNOWN_LIMITATIONS.md`). Nothing in Phase C is
+built yet; the parser must still assert the literal substring "0 errors"
+plus the further checks in the roadmap once building starts — false-zero
+bug note in `evidence/model.py`.

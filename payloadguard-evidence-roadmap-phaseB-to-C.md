@@ -1,11 +1,12 @@
 # PayloadGuard Evidence Layer — Roadmap: Phase B → Phase C
 
-Updated 2026-07-05 with verified external research (IronSpec/MutDafny
-academic prior art, a CrossHair seed-override technique, a dual-authorship
-traceability mechanism) and this session's own findings (Gate 1 review,
-REQ-GIP-1-4-12 alarm scope, FRN resolution). Superseding the 2026-07-05
-morning version — Gates 3, 4, and 6 have moved; Phase C section is now
-concrete instead of aspirational.
+Updated 2026-07-06: Phase B's gate ledger is now fully closed (Gates
+1–6 all resolved, decided, or complete — see below), and Phase C is
+restructured from a two-mechanism sketch into a gate-sequenced plan
+(Gates C1–C6) mirroring how Phase B was actually run, including a
+real environment check (Z3 present, Dafny not installed, apt's only
+offering badly out of date) done before any Phase C code. Nothing in
+Phase C is built yet — this document is the plan.
 
 ## Where we are
 
@@ -227,28 +228,119 @@ raw Sec 2.4.1 text. Full trail in `sources/README.md`.
 
 ---
 
-## Phase C — now concrete, not just an interface contract
+## Phase C — gate-sequenced plan (2026-07-06)
 
-Previously this section only flagged two things to design for (the
-false-zero trap, PROVEN's exclusivity). External research (IronSpec,
-MutDafny) gives Phase C actual mechanisms rather than open design
-questions.
+Restructured from a two-mechanism sketch into gates, mirroring how Phase
+B was actually run: each gate has a scope, a dependency, and (where one
+exists) a decision that has to land before building starts. Nothing
+below is built yet — this is the plan, produced before any Phase C code,
+per the same discipline Phase B used (design review before implementation,
+verify against the real environment before assuming a tool works a
+certain way).
 
-### 1. Spec-Testing Proofs (STPs) — validate specs against intent before proving code
+### Environment check (done 2026-07-06, before any Gate C work)
+
+- **Z3 4.16.0 is present** — both the `z3` CLI and the `z3` Python
+  bindings import cleanly (`import z3` succeeds). Usable directly for
+  satisfiability-style checks (Gate C3).
+- **Dafny is NOT installed.** `apt-cache show dafny` finds a package,
+  but it's `2.3.0+dfsg-0.1` — an Ubuntu-universe package from roughly
+  2015, depending on Mono (`mono-mcs`, `mono-runtime`), not modern
+  .NET. Current Dafny is in the 4.x series. `dotnet` itself isn't
+  installed either, and a direct GitHub release download returned 403
+  through the environment's proxy (unconfirmed whether that's
+  resolvable — see the proxy README).
+- **This is a real toolchain-version decision, not a formality** — the
+  same kind of decision Phase B made explicitly for `crosshair-tool
+  0.0.107` (Gate 3). The false-zero note in `evidence/model.py` and the
+  parsing checks below are written against modern Dafny's output
+  conventions; whether they hold for 2.3.0 is unverified and might not.
+  **Decision needed from Steven before Gate C1 starts:** install apt's
+  2.3.0 for a fast, honestly-scoped prototype (documenting its age and
+  any quirks found, same discipline as the CrossHair pin), or pursue a
+  modern Dafny some other way first. Nothing past this point can be
+  verified against a real tool until this is settled.
+
+### Gate C1 — Dafny adapter: capture + minimal false-zero guard (build first)
+
+- A capture runner mirroring `run_verify.py`'s discipline: invoke Dafny
+  as a subprocess, commit verbatim stdout+stderr, the exact command
+  argv, exit code, and ISO-8601 UTC timestamp — no re-running evidence
+  inside the generation pipeline, same as every existing capture.
+- **Target decision:** reuse `dosage.py`'s existing contracts, translated
+  to Dafny, rather than fork a second worked example — keeps one
+  through-line for the REQ-GIP-* citations rather than forking a second
+  audit trail. (Flagging as a recommendation, not assuming it's settled.)
+- Parser asserts the literal substring `"0 errors"` — the minimum bar
+  already named in `evidence/model.py`'s false-zero note. Gate C3
+  hardens this further; C1 is the floor, not the ceiling.
+- `verifier_completion_status` added to `VerificationResult` (already
+  reserved for this in `KNOWN_LIMITATIONS.md` — the field exists in the
+  schema/model now, capturing whether the verifier actually completed
+  vs. timed out or aborted, feeding both C1's and C3's checks).
+
+### Gate C2 — PROVEN's exclusivity migration (do this right after C1, before any real spec)
+
+The highest-consequence change in Phase C — sequenced early, before a
+real Dafny spec exists, so the structural guarantee is in place from the
+first real capture rather than retrofitted onto existing data.
+
+- Today, R2 (`assert_no_realized_proven`) hard-fails if ANY record
+  anywhere claims PROVEN, full stop. Phase C's job is to earn the right
+  to lift that ONLY for Dafny-sourced records — CrossHair/pytest-backed
+  requirements must remain permanently excluded even after this lands.
+- New structural rule (a ruling in the R1/R2/R2c lineage — call it R3
+  when ratified): PROVEN may appear as a realized strength only when a
+  record's `method` names the Dafny adapter AND that record passed Gate
+  C1/C3's completion and false-zero checks.
+- Needs two tests, not one: a positive case (a real Dafny PROVEN record
+  is accepted) and a negative case (a CrossHair or concrete_test record
+  can *never* carry PROVEN, checked explicitly, not just by omission).
+  Recommend this gets the same review weight R1/R2 originally got — a
+  ratified design decision, not just a code change — given what's at
+  stake if it's wrong.
+
+### Gate C3 — Dafny output-parsing hardening (sharpens the false-zero trap; 3 of 4 vectors scoped)
+
+Four distinct failure modes, each with its own signature — "0 errors" in
+the output is necessary but not sufficient:
+
+- **Vacuous proofs from contradictory preconditions** — a `requires`
+  clause that's unsatisfiable (e.g. `x > 0 && x < 0`) makes the empty
+  logical state vacuously satisfy any postcondition. Checkable: extract
+  the precondition and hand it to Z3 (available) for a satisfiability
+  check, rather than trusting Dafny's own report.
+- **Weak postconditions** — a one-way implication (`==>`) where a
+  bi-implication (`<==>`) was needed lets a broken implementation (e.g.
+  one that always returns empty) still satisfy the spec. Checkable as a
+  pattern/heuristic on safety-critical postconditions — not a full
+  proof, named as best-effort.
+- **Timeout/resource-limit masking** — capture the real exit code and
+  any intermediate timeout warnings (via `verifier_completion_status`
+  from C1), not just "0 errors" appearing somewhere in output that may
+  have been truncated by a timeout partway through.
+- **Specification stripping** — **BLOCKED, named rather than dropped:**
+  the source material describing this fourth vector was cut off before
+  this session had it in full (an LLM-self-healing-loop scenario was
+  referenced but not detailed). Needs a follow-up read of the original
+  document before this vector can be scoped at all — per the standing
+  discipline, not inferred from the name.
+
+### Gate C4 — Spec-Testing Proofs (STPs)
 
 IronSpec's methodology: prove that specific, manually chosen input/output
 pairs are correctly accepted or rejected *by the specification itself*,
-independent of whether the implementation satisfies it. This is a direct,
+independent of whether the implementation satisfies it. Direct,
 mechanized fix for the exact class of bug Gate 1 found by hand
 (REQ-GIP-1-4-12's spec/evidence not matching its text) — an STP would
 have caught that the "alarm" spec only encoded clamping before any proof
 was attempted.
 
-**Action:** every Dafny spec written for Phase C gets a small STP suite
+**Scope:** every Dafny spec written for Phase C gets a small STP suite
 alongside it, authored by whoever writes the spec, checked in as part of
-the evidence chain.
+the evidence chain — starting with whatever Gate C1's first real spec is.
 
-### 2. Mutation testing (MutDafny operators) — catch weak/vacuous specs
+### Gate C5 — Mutation testing (MutDafny-style) — largest single piece, its own sub-plan
 
 Six operators with specific, testable purposes: Relational (ROR) and
 Arithmetic (AOR) Operator Replacement test whether numeric bounds are
@@ -260,41 +352,15 @@ constrains the state space. IronSpec's three-pass framework (discard
 logically-weaker mutants, discard vacuity-inducing mutants, re-verify
 survivors) is the filtering logic to reuse rather than reinvent.
 
-**Action:** run this against `dosage.py`'s eventual Dafny spec before
+**Scope:** run this against `dosage.py`'s eventual Dafny spec before
 trusting any PROVEN claim. A mutation that survives (proof still passes)
-on the max-dose boundary means that boundary isn't actually proven.
+on the max-dose boundary means that boundary isn't actually proven. This
+is effectively building a mutation-testing harness for Dafny specs from
+nothing — recommend treating it as its own multi-step sub-plan once
+Gates C1–C2 are stable, not attempted in one pass the way Gate 2's
+CONFLICT rule build was.
 
-### 3. Four specific Dafny output-parsing vulnerabilities (sharpens the false-zero trap)
-
-The original false-zero note said "assert the literal substring '0
-errors'." That's necessary but not sufficient. Four distinct failure
-modes need guarding against, each with a different signature:
-
-- **Vacuous proofs from contradictory preconditions** — a `requires`
-  clause that's unsatisfiable (e.g. `x > 0 && x < 0`) makes the empty
-  logical state vacuously satisfy any postcondition. "0 errors" with an
-  unreachable precondition is not a proof of anything.
-- **Weak postconditions** — a one-way implication (`==>`) where a
-  bi-implication (`<==>`) was needed lets a broken implementation (e.g.
-  a function that always returns empty) still satisfy the spec.
-- **Timeout/resource-limit masking** — if the CI wrapper doesn't capture
-  the verifier's actual exit code and intermediate timeout warnings, a
-  run that aborted partway can still report success for the sections that
-  did complete, silently leaving complex paths unverified.
-- **Specification stripping** (flagged, detail cut off in source — needs
-  a follow-up read of the full document if the fourth vector matters for
-  the LLM-self-healing-loop scenario it was describing).
-
-**Action:** the Dafny adapter's parser needs explicit checks for the
-first three at minimum — not just string-matching the output, but
-verifying precondition satisfiability, checking for bi-implication
-patterns on safety-critical postconditions, and capturing real exit
-codes/timeout signals. Static coverage analysis (also from IronSpec-
-adjacent research) gives a fourth check: flag implementation branches
-that could be swapped for arbitrary logic without failing verification —
-directly would have caught REQ-GIP-1-4-12's clamp/alarm gap mechanically.
-
-### 4. NL-dialogue confirmation as a process control
+### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early)
 
 Before the proof search runs: generate a plain-English summary of what
 the formal spec actually asserts, get explicit human sign-off that the
@@ -302,12 +368,33 @@ summary matches intent. This is the process fix that prevents Gate 1's
 finding from recurring — catch the intent/spec mismatch at authoring
 time, not at review time.
 
-### PROVEN's exclusivity (unchanged from prior version)
+This is a workflow practice more than software — the summary-and-sign-off
+step itself could be a small script, but the actual artifact is a
+recorded decision (mirroring `sources/req-gip-1-4-12-alarm-scope-decision.md`'s
+pattern), not a database entry. **No technical dependency on any other
+Gate C item** — recommend adopting it as a habit starting with the very
+first real Dafny spec, not deferring it behind C1–C5.
+
+### Suggested build order
+
+1. **Environment decision** (which Dafny) — blocks C1 and everything
+   downstream of it.
+2. **Gate C6** (process habit) — costs nothing to start now, no
+   technical blocker.
+3. **Gate C1** (capture + minimal false-zero guard) — foundation.
+4. **Gate C2** (PROVEN exclusivity migration) — immediately after C1,
+   before any real spec exists.
+5. **Gate C4** (STPs) — alongside the first real spec.
+6. **Gate C3** (parser hardening, 3 of 4 vectors; 4th named-blocked) —
+   before trusting any PROVEN claim in earnest.
+7. **Gate C5** (mutation testing) — largest, last, its own sub-plan.
+
+### PROVEN's exclusivity today (unchanged until Gate C2 lands)
 
 R2 (`assert_no_realized_proven`) still guarantees PROVEN never appears as
-a realized strength anywhere in Phase B. Phase C's job is narrowly to earn
-the right to lift that guarantee for Dafny-backed requirements only, via
-the mechanisms above — not to relax the guarantee generally.
+a realized strength anywhere in this repository right now. Nothing in
+this plan relaxes that guarantee by itself — Gate C2 is the only gate
+that touches it, and only for Dafny-sourced records, never generally.
 
 ---
 
@@ -323,5 +410,14 @@ deleted), and the CLI (`evidence/cli.py`) are all built and verified.
 Gate 6 (FRN) is resolved and written into four files. Gate 5 is now
 fully resolved: variant C's binder no longer binds symbolic evidence
 unconditionally, so a concrete-only fixture is constructible — the last
-open item from the original six-gate ledger. Phase C now has four
-concrete mechanisms to implement rather than two open design questions.
+open item from the original six-gate ledger. **Phase B's gate ledger is
+fully closed.**
+
+Phase C is now a gate-sequenced plan (Gates C1–C6, suggested build order
+above), not a two-mechanism sketch — produced with the same discipline
+Phase B used: real environment check before assuming a tool works a
+certain way (Z3 present; Dafny not installed, apt's only offering
+2.3.0+dfsg from roughly 2015), one blocking decision named explicitly
+(which Dafny to target) rather than assumed, and one gate (C3's fourth
+vector, specification stripping) named as blocked on incomplete source
+material rather than guessed at. Nothing in Phase C is built yet.

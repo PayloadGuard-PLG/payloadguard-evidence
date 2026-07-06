@@ -6,6 +6,54 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Phase C planning: gate-sequenced plan, real environment check
+
+Requested directly ("Move on to Phase C planning") right after Phase
+B's gate ledger closed. Planning only - no Phase C code written.
+
+- **Environment check done first**, same discipline as every prior
+  toolchain decision in this repo: `z3 --version` -> 4.16.0, and
+  `python3 -c "import z3"` succeeds - usable directly. `dafny` is not on
+  PATH. `apt-cache show dafny` finds a package, but it's
+  `2.3.0+dfsg-0.1` - Ubuntu universe, roughly 2015-era, depending on
+  Mono (`mono-mcs`, `mono-runtime`), not the modern .NET-based Dafny
+  (4.x) the false-zero note in `evidence/model.py` is written against.
+  `dotnet` isn't installed; a direct GitHub release fetch 403'd through
+  the environment's proxy. Recorded as a real, named blocker
+  (`KNOWN_LIMITATIONS.md`) rather than assumed away or silently deferred
+  - mirrors the `crosshair-tool 0.0.107` pinning precedent from Gate 3.
+- **Restructured** `payloadguard-evidence-roadmap-phaseB-to-C.md`'s
+  Phase C section from a flat two-mechanism sketch into six sequenced
+  gates (C1-C6), each with scope, dependencies, and a suggested build
+  order:
+  - C1: Dafny adapter capture + minimal false-zero guard (foundation).
+  - C2: PROVEN's exclusivity migration - sequenced immediately after C1,
+    before any real spec exists, since this is the highest-consequence
+    change in Phase C (a bug here would let PROVEN leak onto un-proven
+    evidence). Recommended it get ratified-ruling-level review, like
+    R1/R2 did.
+  - C3: output-parsing hardening - three of four vulnerability vectors
+    scoped (vacuous preconditions via Z3 satisfiability check, weak
+    postconditions as a best-effort pattern check, timeout/resource
+    masking via `verifier_completion_status`); the fourth
+    (specification stripping) named BLOCKED - the source material
+    describing it was cut off before this session had it in full, so
+    it's recorded as needing a follow-up read, not guessed at.
+  - C4: Spec-Testing Proofs, alongside whichever spec C1 produces first.
+  - C5: mutation testing (MutDafny-style, six operators) - flagged as
+    the largest single piece, recommended as its own sub-plan once C1-C2
+    are stable rather than attempted in one pass.
+  - C6: NL-dialogue confirmation - a process control with no technical
+    dependency on the others, recommended adopted immediately rather
+    than deferred.
+- **Also recorded in `KNOWN_LIMITATIONS.md`** as two new blocked/named
+  rows (Dafny toolchain decision; C3's fourth vector) so the live gate
+  ledger surfaces them, not just the roadmap doc.
+- `SYSTEM_BLUEPRINT.md` and `README.md` updated: Phase B marked
+  COMPLETE (gate ledger fully closed); Phase C marked "planning," with
+  the environment findings summarized.
+- No code changes this session - planning only, as requested.
+
 ## 2026-07-06 — Gate 5 fully resolved: concrete-only fixture now constructible
 
 Closed the last open item from the original six-gate ledger. Requested
