@@ -18,10 +18,6 @@ concrete instead of aspirational.
 - Gate 5 (single-evidence-type fixture) — resolved for the constructible
   half; concrete-only fixture blocked on Gate 2's binder existing.
 - Gate 6 (FRN) — resolved, see below.
-- Gate 3 (bounds enforcement) — decided 2026-07-06 by an actual executed
-  behavioral test (not just the corrected-technique writeup below): the
-  seed-override patch produced no observable effect on two real targets.
-  Stay-CLI. See `KNOWN_LIMITATIONS.md` for the full result.
 
 ## Guiding principle (unchanged)
 
@@ -54,79 +50,48 @@ definition.
 building it, so the definition earns its keep rather than being invented
 in the abstract.
 
-## Gate 3 — Bounds enforcement via CrossHair API (DECIDED 2026-07-06: stay-CLI)
+## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 
-**max_iterations — real, confirmed against the installed package
-(0.0.107), with one correction to the roadmap's own claim.** The roadmap
-version of this section claimed `AnalysisOptions(max_iterations=...,
-per_condition_timeout=...)` was "a real, documented constructor" usable
-directly. Running it against the actually-installed 0.0.107 raised
-`TypeError: missing 9 required positional arguments` — `AnalysisOptions`
-has no defaults and was never the type `analyze_function` accepts.
-`analyze_function`'s real second parameter is `AnalysisOptionSet`, the
-partially-specified/defaultable sibling type — confirmed by reading the
-installed package's source (`crosshair/options.py`,
-`crosshair/core.py::analyze_function`). `AnalysisOptionSet(max_iterations=100000,
-per_condition_timeout=30)` works and is threaded through into the
-resolved `AnalysisOptions` correctly. This matches what the Gate 3
-investigation already on file before this roadmap had found.
+**Result:** seed override tested for real, not just read. The verification
+script itself had three bugs that only surfaced by actually running it —
+worth recording, since it's the same lesson this whole gate has been
+teaching, now caught in my own "corrected" output:
 
-**seed — patched without error, but a real two-target behavioral test
-found zero observable effect.** The corrected technique (patch
-`crosshair.statespace.make_default_solver`, hyphenated Z3 param names
-`random-seed` / `smt.random-seed`) was executed for real via
-`examples/dosage_calculator/gate3_seed_patch_test.py`
-(`CROSSHAIR_SOLVER_SEED=1` vs `=2`), after fixing two further problems
-found only by running it:
-1. `analyze_function` imported from bare `crosshair.core` raises
-   `CrossHairInternal("Opcode patches haven't been loaded yet.")` when
-   `.analyze()` is called on its returned `Checkable`s — the opcode-level
-   tracing patches are only installed as a side effect of importing
-   `crosshair.core_and_libs`. Fixed by importing `analyze_function` from
-   `crosshair.core_and_libs` instead.
-2. `analyze_function` alone only parses source into `Checkable` objects
-   (one per postcondition) — it does not run the solver. Each `Checkable`
-   needs `.analyze()` called on it to actually execute the symbolic
-   search and produce real `AnalysisMessage`s.
+1. The documented constructor `AnalysisOptions(max_iterations=...,
+   per_condition_timeout=...)` throws `TypeError` on the installed
+   0.0.107 — `analyze_function` actually wants `AnalysisOptionSet`.
+2. Importing from bare `crosshair.core` raises
+   `CrossHairInternal("Opcode patches haven't been loaded yet.")` —
+   needs `crosshair.core_and_libs`.
+3. The critical one: `analyze_function` only parses conditions into
+   `Checkable` objects — it never runs the solver unless `.analyze()` is
+   called on each one. The uncorrected script "passed" in under a second
+   without ever actually invoking CrossHair. A script that runs without
+   error is not the same as a script that tested anything.
 
-With both fixes applied, two real runs were executed per seed value:
-- `dosage.py::calculate_hourly_dose` (Sample A target, no counterexample
-  either way): seed 1 and seed 2 both returned two
-  `MessageType.CANNOT_CONFIRM` / "Not confirmed." messages at the same
-  two lines — identical.
-- `dosage_broken.py::calculate_hourly_dose` (has real counterexamples):
-  seed 1 and seed 2 both returned the exact same two counterexamples —
-  `calculate_hourly_dose(1.0, 1.0, 0.5, 0.25)` → `0.5` and
-  `calculate_hourly_dose(0.5, 0.25, -0.125, 0.125)` → `-0.03125` — the
-  same values already on file in `raw_crosshair_output_broken.txt`,
-  captured under the CLI's own hard-coded seed 42.
+**After fixing all three:** ran twice per seed, on two targets — the
+clean kernel (no counterexample either way) and the broken variant
+(which has real counterexamples). **Both seeds produced byte-identical
+results, including identical counterexamples on the broken variant.**
+The patch applies without error. It has no observed effect.
 
-**Decision:** stay-CLI. The patch installs without error, but produces no
-measurable behavioral difference on either target tested. Documented as
-a tool-version limitation, not an interface one: `seed` cannot be
-demonstrated to work via this technique on 0.0.107, so the declared
-`seed: 1` in `metadata.yaml` remains unenforceable and unenforced.
-`max_iterations` is confirmed enforceable via the API
-(`AnalysisOptionSet`) should a future decision revisit wiring the harness
-through the API instead of the CLI — but that's a separate cost/benefit
-call from the seed question, since CLI capture fidelity was the
-counterweight in the original options list.
+**Decision:** stay on CLI capture. `seed` is a confirmed hard
+tool-version limitation — not "probably unfixable," empirically tested
+and found to have no effect on solver behavior at 0.0.107.
+`max_iterations` remains confirmed enforceable via the API, independent
+of the seed question — that part of Gate 3 is solved and can be wired in
+whenever it's useful.
 
-**Also flagged:** the CrossHair repo's latest *tagged* release is
-v0.0.106 on GitHub at last check, while both this project's toolchain pin
-and the actually-installed package are 0.0.107 (`pip show crosshair-tool`
-confirmed) — consistent with each other. No discrepancy in practice; a
-PyPI release can exist ahead of its corresponding git tag. Not an open
-item.
+**Status: closed.**
 
-## Gate 4 — Binding authorship (option 3 confirmed, now with a mechanism)
+## Gate 4 — Binding authorship: DECIDED (option 3), mechanism recorded, building deferred to Gate 2
 
-**Decision on record:** option 3 — both models, cross-checked, Tier-1
-failure on disagreement. Matches the cross-validation philosophy already
-built into the four-variant design.
+**Decision:** option 3 — both models, cross-checked, Tier-1 failure on
+disagreement. Matches the cross-validation philosophy already built into
+the four-variant design.
 
-**Mechanism from external research:** dual-authorship cross-checking via
-verified code-location match —
+**Mechanism (recorded, not yet built):** dual-authorship cross-checking
+via verified code-location match —
 - **Top-down contract:** the system/QA-authored master traceability
   config states "REQ-X is verified by the proof/test at file F, method
   M."
@@ -139,9 +104,9 @@ verified code-location match —
   missing — the current C builder binds evidence without verifying it
   against the capture's actual target.
 
-**Action:** build Gate 2's generalized binder to perform this
-intersection check as a Tier-1 gate, not just a convention. This also
-gives Gate 2's CONFLICT rule its clearest concrete trigger (see above).
+**Status:** decision and mechanism locked. Building this is Gate 2's
+binder work, not a separate task — the intersection check above is also
+Gate 2's clearest concrete CONFLICT trigger (see below).
 
 ## Gate 6 — FRN: RESOLVED
 
@@ -242,8 +207,10 @@ the mechanisms above — not to relax the guarantee generally.
 ## What "done" looks like for this roadmap
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a
-stated reason. Gate 3 is now closed (stay-CLI, decided 2026-07-06 by real
-test). Gate 2 needs a definition tested against the two candidate cases
-above. Gate 4's mechanism is specified; building it is Gate 2's binder
-work. Phase C now has four concrete mechanisms to implement rather than
-two open design questions.
+stated reason. Gate 3 is closed — tested empirically, not assumed. Gate 4
+is decided (option 3) with its mechanism recorded; building it is Gate 2's
+binder work. Gate 2 has two candidate CONFLICT test cases on file (the
+dual-authorship code-location mismatch, and REQ-GIP-1-4-12's kernel_scope
+vs. system_scope split) and stays blocked until tested against them. Gate
+6 (FRN) is resolved and written into four files. Phase C now has four
+concrete mechanisms to implement rather than two open design questions.
