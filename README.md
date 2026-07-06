@@ -13,9 +13,9 @@ fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
 + mechanism recorded), and 6 (FRN, resolved) closed. Gate 2's CONFLICT
-rule is now defined and ratified (two sub-types, tested against three
-cases); the vocabulary-agnostic binder and CLI that would implement it
-are not started; see `KNOWN_LIMITATIONS.md` for the live gate ledger.
+rule Type 1 (identity mismatch) is built and running as a real Tier-1
+pipeline stage; Type 2 and the vocabulary-agnostic binder + CLI remain
+unstarted; see `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -201,8 +201,10 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   re-verified against the raw source text).
 - Dafny/Z3 adapters and the vocabulary-agnostic binder are Phase B;
   nothing in this repository currently claims `PROVEN` as a realized
-  strength. **Gate 2's CONFLICT rule is now defined and ratified**
-  (2026-07-06): two sub-types — identity mismatch (Type 1, Gate 4's
-  cross-check trigger) and outcome mismatch (Type 2, for two claims that
-  agree on target but disagree on result) — tested against three cases.
-  Building the check into the binder is unstarted (`KNOWN_LIMITATIONS.md`).
+  strength. **Gate 2's CONFLICT rule Type 1 (identity mismatch) is now
+  built** (`evidence/conflict.py`, wired into `generate_artifacts.py` as
+  a real Tier-1 stage, 7 tests in `tests/test_conflict_check.py`) — the
+  first working piece of Gate 4's cross-check mechanism. Type 2 (outcome
+  mismatch) needs a cross-manifest comparison mechanism that doesn't
+  exist yet, and the vocabulary-agnostic binder itself is still unstarted
+  (`KNOWN_LIMITATIONS.md`).

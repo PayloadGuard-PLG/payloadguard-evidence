@@ -6,6 +6,47 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 build, Phase 1: CONFLICT rule Type 1 (identity mismatch)
+
+First build increment against the roadmap, taken in a small, self-
+contained phase per Steven's direction (small phases, stop for input or
+new issues). Scoped to what was already fully specified and ratified —
+no new decisions required.
+
+- **`evidence/conflict.py`:** implements Type 1 for real, over real data.
+  `concrete_binding_conflicts()` cross-checks metadata's top-down
+  concrete bindings (variant A's `evidence` list; variant B's shadow
+  `parent_requirement` + implementation-suffix form) against
+  `concrete_results.json`'s self-declared `requirement_id`.
+  `symbolic_binding_conflicts()` cross-checks each requirement's declared
+  `implementation` file against the crosshair manifest's actual
+  `target`. `run_conflict_gate()` combines both, Tier 1 (raises on any
+  mismatch, matching fact-equality/structural-PROVEN's behavior).
+- **Wired into `generate_artifacts.py`** as stage 3 (after capture
+  integrity, before regeneration) — checked against all four metadata
+  files: 20 bindings checked, 0 conflicts. Pipeline re-run end to end;
+  regenerated artifacts differ only by `generated_utc` timestamp
+  (deterministic regeneration confirmed).
+- **`tests/test_conflict_check.py`** (7 tests): both ratified positive
+  cases (variant A's `evidence` shape and variant B's shadow shape) as
+  in-memory mutated fixtures reproducing the failure; the ratified
+  negative case (REQ-GIP-1-4-12's kernel_scope/system_scope split) run
+  against the real committed data, confirmed clean; a symbolic-file
+  mismatch case; and a distinct-failure-mode check (a declared test_id
+  that doesn't exist in the evidence store at all is a hard error, not a
+  silently-passing conflict check, since there's no second claim to
+  compare against).
+- Variant C is untouched — it declares no top-down concrete binding, so
+  Type 1 has nothing to compare there yet (Gate 4's known asymmetry,
+  unchanged by this phase).
+- Suite: 24 passed (17 prior + 7 new).
+- Documentation updated to reflect BUILT status:
+  `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md` (component map + Phase
+  boundary), `README.md`, roadmap doc.
+- **Not done this phase, staying open per the small-phases plan:** Type
+  2 (outcome mismatch — needs a cross-manifest comparison mechanism that
+  doesn't exist yet), the vocabulary-agnostic binder itself, and the CLI.
+
 ## 2026-07-06 — Gate 2 CONFLICT rule defined and ratified
 
 Working session with Steven to define CONFLICT against the two candidate

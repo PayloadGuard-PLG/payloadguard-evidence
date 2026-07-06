@@ -57,10 +57,15 @@ REQ-GIP-1-4-12's kernel_scope vs. system_scope split (one evidenced, one
 an explicit GAP) remains the negative case — not a conflict, a documented
 absence, because there's no second claim to disagree with.
 
-**Status:** definition ratified by Steven. Building the check into Gate
-2's generalized binder is unstarted — Type 1 reuses Gate 4's intersection
-check directly; Type 2 needs a new cross-manifest comparison mechanism
-that doesn't exist yet.
+**Status:** definition ratified by Steven; **Type 1 built 2026-07-06**
+(`evidence/conflict.py`, wired into `generate_artifacts.py` as stage 3,
+`tests/test_conflict_check.py` — 7 tests, all three ratified cases
+covered, 0 conflicts on the real committed dataset across all four
+metadata files). Type 2 still needs a new cross-manifest comparison
+mechanism that doesn't exist yet. The vocabulary-agnostic binder itself
+(one implementation driving all four schema variants) and the CLI remain
+unstarted — Type 1 runs today as a standalone pipeline stage, not inside
+a unified binder.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 

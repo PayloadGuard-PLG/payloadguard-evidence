@@ -1,7 +1,7 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 3 decided by real behavioral test; Gate 3
-verification script added).
+Last updated: 2026-07-06 (Gate 2 CONFLICT rule Type 1 built and wired
+into the pipeline as a real Tier-1 stage).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -26,6 +26,9 @@ payloadguard-evidence/
 │   │                            carries the Phase-B Dafny false-zero note
 │   ├── reconcile.py             Normalized fact extraction + cross-artifact
 │   │                            fact-equality gate (Turn 2.0 B2)
+│   ├── conflict.py              Gate 2 CONFLICT rule, Type 1 (identity
+│   │                            mismatch): top-down metadata bindings vs.
+│   │                            bottom-up evidence-store claims; Tier 1
 │   ├── schema/
 │   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12)
 │   │   ├── metadata.schema.a.json   T4-A: evidence[] per requirement
@@ -57,8 +60,8 @@ payloadguard-evidence/
 │   │                            generators + fact-equality gate
 │   ├── generate_artifacts.py    End-to-end pipeline (Turn B4): schema
 │   │                            validation -> capture integrity ->
-│   │                            regenerate_all -> PROVEN sweep ->
-│   │                            artifact_index.json provenance
+│   │                            CONFLICT gate (Type 1) -> regenerate_all
+│   │                            -> PROVEN sweep -> artifact_index.json
 │   ├── artifact_index.json      SHA-256 provenance: inputs -> outputs,
 │   │                            per-gate results, frozen evidence hashes
 │   ├── traceability_matrix.*    Generated artifacts (never hand-typed)
@@ -73,8 +76,10 @@ payloadguard-evidence/
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
     ├── test_overflow_probe.py   Deterministic IEEE overflow as executable fact
     ├── test_structural_proven_check.py  R2 structural rule over real artifacts
-    └── test_fact_equality.py    B2 gate: facts/intent/bounds identical across
-                                 views; base = symbolic-subset legacy view
+    ├── test_fact_equality.py    B2 gate: facts/intent/bounds identical across
+    │                            views; base = symbolic-subset legacy view
+    └── test_conflict_check.py  Gate 2 CONFLICT Type 1: three ratified test
+                                 cases over real data + in-memory fixtures
 ```
 
 ## 3. Data flow (end to end)
@@ -168,10 +173,14 @@ complete with remediation applied. Gates 3 (bounds enforcement — decided
 stay-CLI by real behavioral test), 4 (binding authorship — option 3
 decided, mechanism specified), 5 (single-evidence-type fixture —
 resolved for the constructible half), and 6 (FRN — resolved) closed or
-decided. Gate 2 (vocabulary-agnostic binder, CLI, CONFLICT rule) not
-started as a build, but CONFLICT is now defined and ratified (two
-sub-types — identity mismatch, outcome mismatch — tested against three
-cases); Gate 4's cross-check mechanism directly implements Type 1. See
+decided. Gate 2's CONFLICT rule Type 1 (identity mismatch) is built and
+wired into `generate_artifacts.py` as a real Tier-1 stage
+(`evidence/conflict.py`) — this is the first piece of Gate 4's
+cross-check mechanism actually running, not just specified. Still open:
+Type 2 (outcome mismatch, needs a cross-manifest comparison mechanism
+that doesn't exist yet) and the vocabulary-agnostic binder + CLI
+themselves (Type 1 today runs as a standalone stage alongside the
+separate per-variant generators, not inside a unified binder). See
 `KNOWN_LIMITATIONS.md` for the live gate ledger and
 `payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
 mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
