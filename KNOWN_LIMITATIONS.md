@@ -4,17 +4,94 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 3 closed by real behavioral test; Gate 6
-resolved; Gate 4 decision recorded; Gate 2 candidate test cases added).
+Last updated: 2026-07-06 (Gate 2 CONFLICT rule defined and ratified by
+Steven — two sub-types, three test cases; full rewrite of this file to
+reflect the current state of all six gates).
 
 | Gate | Status | Summary |
 |---|---|---|
-| Gate 2 — CONFLICT rule definition | **BLOCKED on Steven** | Searched both authorized sources in full. The term does not appear in PayloadGuard-Evidence-Blueprint-1 (Drive doc id 154iVHHPkCbrNN6XQ_B07jS0LJG7VYKxtSPT8TEwmMwY; 0 case-insensitive occurrences; committed copy in-repo) nor in SYSTEM_BLUEPRINT.md (single occurrence is a to-do mention, line 162 — not a definition). Per the roadmap: stop, name it, ask. Closest neighbouring concept found: Blueprint Phase 2 acceptance (b) — intent-vs-reality mismatch "raises a GAP/flag". Semantics will not be inferred from the name. Two candidate test cases now on file (2026-07-05 roadmap v2): positive — a top-down ALM contract claiming "REQ-X verified at file F, method M" disagreeing with a bottom-up source-embedded assertion of a different file/method/hash; negative — REQ-GIP-1-4-12's kernel_scope/system_scope split (one evidenced, one an explicit GAP), which is a documented absence, not a conflict. Still open, not decided. |
+| Gate 2 — CONFLICT rule definition | **DEFINED (ratified 2026-07-06); not yet built** | Two-type definition (identity mismatch / outcome mismatch), tested against three cases (two positive, one negative). Building the check into Gate 2's generalized binder is still open. Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); mechanism specified; build deferred to Gate 2** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **NOTED for Gate 2** | The Gate 2 binder/schema must reserve room for this field (Blueprint false-zero trap) and keep strength-assignment adapter-scoped so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements even after the Dafny adapter exists. Phase C now has four concrete mechanisms (STPs, mutation testing, sharpened false-zero parsing, NL-dialogue confirmation) — see `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
+
+## Gate 2 — CONFLICT rule: DEFINED (ratified 2026-07-06)
+
+Blocked since Turn B4: the term appears nowhere in
+PayloadGuard-Evidence-Blueprint-1 (0 case-insensitive occurrences,
+committed copy in-repo) nor in SYSTEM_BLUEPRINT.md (a single to-do
+mention, not a definition). Per standing rule, semantics were not
+inferred from the name — the definition below was drafted against two
+candidate test cases from the 2026-07-05 roadmap, refined in discussion
+to add a third, and explicitly ratified by Steven before being recorded
+here as decided (not just proposed).
+
+### Definition
+
+**Precondition (shared by both sub-types):** CONFLICT is only checked
+between two claims that purport to describe **the same thing** — the
+same `(requirement_id, scope)` *and* the same underlying verification
+act (same tool, same target, same invocation). Two independent evidence
+types legitimately bound to one requirement — e.g. REQ-GIP-1-4-12's
+`kernel_scope` carrying both a CrossHair capture *and* a concrete test —
+are not comparable under this rule; they corroborate, they don't
+compete. That shape is normal and stays normal (it's exactly how variant
+A's `evidence[]` array is meant to work).
+
+- **Type 1 — Binding-identity conflict (dual-authorship).** Two claims
+  about the *same declared binding* disagree on what physical target it
+  points to: a top-down, metadata-authored contract says `(file F,
+  method M)`; a bottom-up, evidence-store-carried assertion says `(file
+  F', method M')`, and F≠F' or M≠M'. This is Gate 4's exact
+  cross-check trigger.
+- **Type 2 — Evidence-outcome conflict (result inconsistency).** Two
+  claims agree on target identity — same tool, same file/method, same
+  invocation/bounds — but disagree on what that identical verification
+  act produced (one manifest reports exit 0/no counterexample, another
+  manifest for the same run reports exit 1/counterexample).
+
+Both types are Tier-1 hard generation failures per Gate 4's decision —
+they differ only in which half of the `(identity, outcome)` pair
+disagrees. Neither type is triggered by `intent_ok` mismatches
+(declared `intended_method` vs. realized strength): that's one binding
+compared against its own stated aspiration, not two independent claims
+about the same fact, and already has its own mechanism (R1). CONFLICT
+must not be reinterpreted to cover it.
+
+### Test cases
+
+1. **Positive, Type 1 (identity mismatch).** Metadata declares REQ-X
+   bound to `dosage.py::calculate_hourly_dose`; the evidence-store
+   entry for that same binding actually targets
+   `dosage_broken.py::calculate_hourly_dose`. Target identity differs →
+   **CONFLICT**. This is the original Gate 4/roadmap trigger case.
+2. **Negative (GAP, not CONFLICT).** REQ-GIP-1-4-12's `system_scope` has
+   zero claims — no evidence exists, rendered as an explicit named GAP.
+   The precondition (two claims about the same thing) is never met, for
+   either type. **Not a CONFLICT** — this is a documented absence, and
+   must keep rendering as a GAP.
+3. **Positive, Type 2 (outcome mismatch) — the subfinding this
+   refinement was added to cover.** Not a hypothetical abstraction: this
+   repository already documents that CrossHair's model-fidelity channel
+   is "unreliably sampled and sharply complexity-dependent" (the Sample
+   C / overflow-probe honesty exhibits prove the *same* invocation can
+   land differently depending on internal solver state). If a future
+   re-capture of the identical target/tool/bounds as an already-committed
+   manifest ever produced a different exit code — one manifest says
+   no-counterexample, a second manifest for the same target says
+   counterexample-found — that's Type 2, and nothing catches it today.
+
+### Status
+
+Definition ratified. **Not yet built:** the Gate 2 generalized binder
+needs to implement this as an actual generation-time check (the
+Type-1 half is the same intersection check Gate 4 already specified;
+Type 2 needs a comparison across independently-captured manifests for
+the same target, which doesn't exist as a mechanism yet). Building it is
+Gate 2's binder work, alongside the vocabulary-agnostic binder itself and
+the CLI.
 
 ## Gate 3 — DECIDED 2026-07-06: stay-CLI (crosshair-tool 0.0.107)
 
@@ -81,7 +158,8 @@ shallow constraint structure; Z3's random-seed parameter mainly affects
 tie-breaking in larger search spaces, so "no observed difference" here is
 real but not a proof that the parameter can never matter on any target —
 only that it didn't move the needle on the two targets this repository
-actually uses. Documented as-is, not oversold.
+actually uses. Documented as-is, not oversold. (This same non-determinism
+concern is what motivates Gate 2's Type 2 CONFLICT test case above.)
 
 Also flagged and closed as a non-issue: CrossHair's latest *tagged*
 GitHub release is v0.0.106, while both the toolchain pin and the actually
@@ -107,9 +185,9 @@ Three options were on file; option 3 is now the decision on record:
    declarations are authoritative where present; store-carried ids are
    validated against them, and a disagreement is a hard generation
    failure (Tier 1). Keeps A/B's review surface and C's portability while
-   turning the asymmetry into a consistency check. Needs Gate 2's
-   CONFLICT rule semantics if "disagreement" is ever to be rendered
-   rather than fatal.
+   turning the asymmetry into a consistency check. This is now backed by
+   Gate 2's Type 1 CONFLICT definition, so "disagreement" has a concrete,
+   ratified meaning rather than an open semantic question.
 
 **Mechanism (dual-authorship cross-check via verified code-location
 match), from 2026-07-05 external research:**
@@ -121,11 +199,7 @@ match), from 2026-07-05 external research:**
   states "this method verifies REQ-X."
 - **Intersection check:** at generation time, extract both, and flag
   non-compliant if the physical file/method/hash doesn't match between
-  them.
-
-This mechanism also gives Gate 2's CONFLICT rule its clearest concrete
-positive trigger (see Gate 2 above): a top-down/bottom-up disagreement
-under this exact check.
+  them — this is Gate 2's Type 1 CONFLICT, exactly.
 
 Design input from Gate 5 work (still applies): the current C builder
 binds a symbolic record to every requirement by construction and does not
@@ -148,6 +222,16 @@ itself; that re-verification is named here rather than silently assumed
 done. Full trail, citations, and the prior failed resolution attempts are
 recorded in `sources/README.md` and
 `examples/dosage_calculator/README.md`.
+
+## What's left before Gate 2 can start building
+
+- CONFLICT rule: defined (this file), ready to implement.
+- Binding authorship: decided (option 3), mechanism specified.
+- Vocabulary-agnostic binder itself and the CLI: not started.
+- Type 2 CONFLICT (outcome mismatch) needs a cross-manifest comparison
+  mechanism that doesn't exist yet — narrower in scope than the
+  vocabulary-agnostic binder, but new machinery, not a reuse of Type 1's
+  intersection check.
 
 ## Session-scope note (2026-07-05, Turn B4)
 

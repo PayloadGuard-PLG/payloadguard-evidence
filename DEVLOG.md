@@ -6,6 +6,41 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 2 CONFLICT rule defined and ratified
+
+Working session with Steven to define CONFLICT against the two candidate
+test cases already on file, refine the definition, and lock it in.
+
+- **Definition drafted:** CONFLICT requires two claims about the *same*
+  `(requirement, scope)` and the same underlying verification act — never
+  triggered by two legitimately different evidence types bound to one
+  requirement, and never triggered by an `intent_ok` mismatch (that's a
+  binding compared to its own stated intent, not two competing claims;
+  already has its own mechanism, R1). Two sub-types identified:
+  - Type 1 (identity mismatch): top-down and bottom-up claims about one
+    binding disagree on target file/method — Gate 4's exact trigger.
+  - Type 2 (outcome mismatch), added during review: two claims agree on
+    target identity but disagree on what that identical run produced.
+    Not hypothetical — motivated directly by this repo's own documented
+    CrossHair model-fidelity non-determinism (Sample C / overflow-probe
+    exhibits, Gate 3's caveat) that a same-invocation result can vary.
+- **Tested against three cases:** positive Type 1 (dual-authorship
+  file/method mismatch), negative (REQ-GIP-1-4-12 kernel_scope/
+  system_scope split — a GAP, not a conflict, since there's no second
+  claim to disagree with), positive Type 2 (a future duplicate manifest
+  for an identical target reporting a different exit code).
+- **Ratified by Steven** ("yep agree. lock in") — status moves from
+  BLOCKED to DEFINED. Not yet built: Type 1 reuses Gate 4's intersection
+  check directly; Type 2 needs a new cross-manifest comparison mechanism
+  that doesn't exist yet. Building either into Gate 2's generalized
+  binder is still open.
+- `KNOWN_LIMITATIONS.md` rewritten fresh to reflect the current state of
+  all six gates in one pass, rather than accumulating further patches.
+  `payloadguard-evidence-roadmap-phaseB-to-C.md`, `SYSTEM_BLUEPRINT.md`,
+  and `README.md` updated to match.
+- Suite: 17 passed (unchanged — documentation only, no capture or
+  generator touched).
+
 ## 2026-07-06 — Gate 3 closed by real test; Gate 6 (FRN) resolved; Gate 4 decision recorded; roadmap v2
 
 Verification-first session, per the standing discipline: claims were

@@ -12,10 +12,10 @@ fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 (end-to-end pipeline + provenance index) with Gate 1 review remediation
 applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
-+ mechanism recorded), and 6 (FRN, resolved) closed. Gate 2
-(vocabulary-agnostic binder + CONFLICT rule) not started — CONFLICT
-definition blocked on maintainer, now with two candidate test cases; see
-`KNOWN_LIMITATIONS.md` for the live gate ledger.
++ mechanism recorded), and 6 (FRN, resolved) closed. Gate 2's CONFLICT
+rule is now defined and ratified (two sub-types, tested against three
+cases); the vocabulary-agnostic binder and CLI that would implement it
+are not started; see `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
@@ -199,8 +199,10 @@ Linux x86_64. Exhibit claims are version-contingent and scoped to their pins.
   `sources/README.md` and `KNOWN_LIMITATIONS.md` (Gate 6) for the
   citation trail and the one open caveat (not yet independently
   re-verified against the raw source text).
-- Dafny/Z3 adapters, the CONFLICT rule, and the vocabulary-agnostic binder
-  are Phase B; nothing in this repository currently claims `PROVEN` as a
-  realized strength. Gate 2's CONFLICT rule remains blocked on a
-  definition, now with two candidate test cases on file
-  (`KNOWN_LIMITATIONS.md`).
+- Dafny/Z3 adapters and the vocabulary-agnostic binder are Phase B;
+  nothing in this repository currently claims `PROVEN` as a realized
+  strength. **Gate 2's CONFLICT rule is now defined and ratified**
+  (2026-07-06): two sub-types — identity mismatch (Type 1, Gate 4's
+  cross-check trigger) and outcome mismatch (Type 2, for two claims that
+  agree on target but disagree on result) — tested against three cases.
+  Building the check into the binder is unstarted (`KNOWN_LIMITATIONS.md`).

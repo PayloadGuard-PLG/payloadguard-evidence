@@ -18,6 +18,8 @@ concrete instead of aspirational.
 - Gate 5 (single-evidence-type fixture) — resolved for the constructible
   half; concrete-only fixture blocked on Gate 2's binder existing.
 - Gate 6 (FRN) — resolved, see below.
+- Gate 2 (CONFLICT rule) — defined and ratified 2026-07-06, see below.
+  Not yet built.
 
 ## Guiding principle (unchanged)
 
@@ -28,27 +30,37 @@ and why.
 
 ---
 
-## Gate 2 — CONFLICT rule (still blocked, now with a candidate test case)
+## Gate 2 — CONFLICT rule: DEFINED (ratified 2026-07-06), not yet built
 
-Still not defined anywhere in the Blueprint or SYSTEM_BLUEPRINT.md beyond
-a to-do mention — correctly left unresolved rather than inferred.
+Was not defined anywhere in the Blueprint or SYSTEM_BLUEPRINT.md beyond a
+to-do mention — correctly left unresolved rather than inferred, until
+tested against concrete cases and ratified.
 
-**New input toward a definition:** the dual-authorship traceability
-pattern (below, from external research) gives a concrete trigger
-condition to test any proposed CONFLICT definition against: if a
-top-down ALM-authored contract claims "REQ-X is verified at file F,
-method M" and the bottom-up source-embedded assertion says the verified
-method is actually at a different file/method/hash, that mismatch is a
-strong CONFLICT candidate — evidence exists on both sides, but they
-disagree about what was actually checked. REQ-GIP-1-4-12's kernel_scope
-vs. system_scope split (one evidenced, one an explicit GAP) is a
-different case — that's not a conflict, it's a documented absence. Useful
-to have both a positive and negative test case before locking a
-definition.
+**Definition, two sub-types sharing one precondition** (full text and
+worked test cases in `KNOWN_LIMITATIONS.md`): CONFLICT only applies
+between two claims about the *same* `(requirement, scope)` **and** the
+same underlying verification act — never between two legitimately
+different evidence types bound to one requirement.
+- **Type 1 (identity mismatch):** a top-down ALM-authored contract claims
+  "REQ-X is verified at file F, method M" and the bottom-up
+  source-embedded assertion says a different file/method/hash. This is
+  Gate 4's exact cross-check trigger.
+- **Type 2 (outcome mismatch):** two claims agree on target identity but
+  disagree on what that identical run produced — added after the
+  original single-test-case draft, because CrossHair's own documented
+  model-fidelity non-determinism (see Gate 3, and the Sample C /
+  overflow-probe exhibits) means the same invocation really can produce
+  different results, and the original definition had no way to catch
+  that if it ever happened twice for the same target.
 
-**Action:** define CONFLICT against these two contrasting cases before
-building it, so the definition earns its keep rather than being invented
-in the abstract.
+REQ-GIP-1-4-12's kernel_scope vs. system_scope split (one evidenced, one
+an explicit GAP) remains the negative case — not a conflict, a documented
+absence, because there's no second claim to disagree with.
+
+**Status:** definition ratified by Steven. Building the check into Gate
+2's generalized binder is unstarted — Type 1 reuses Gate 4's intersection
+check directly; Type 2 needs a new cross-manifest comparison mechanism
+that doesn't exist yet.
 
 ## Gate 3 — Bounds enforcement via CrossHair API: DECIDED, stay-CLI (empirically tested, 2026-07-05)
 
@@ -209,8 +221,10 @@ the mechanisms above — not to relax the guarantee generally.
 Every gate resolved, blocked-and-named, or explicitly deferred with a
 stated reason. Gate 3 is closed — tested empirically, not assumed. Gate 4
 is decided (option 3) with its mechanism recorded; building it is Gate 2's
-binder work. Gate 2 has two candidate CONFLICT test cases on file (the
-dual-authorship code-location mismatch, and REQ-GIP-1-4-12's kernel_scope
-vs. system_scope split) and stays blocked until tested against them. Gate
-6 (FRN) is resolved and written into four files. Phase C now has four
-concrete mechanisms to implement rather than two open design questions.
+binder work. Gate 2's CONFLICT rule is now defined and ratified — two
+sub-types (identity mismatch, outcome mismatch), tested against three
+cases (two positive, one negative) — with only the build (the
+vocabulary-agnostic binder, plus the Type 2 cross-manifest comparison
+mechanism) still open. Gate 6 (FRN) is resolved and written into four
+files. Phase C now has four concrete mechanisms to implement rather than
+two open design questions.

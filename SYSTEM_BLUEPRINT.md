@@ -169,9 +169,10 @@ stay-CLI by real behavioral test), 4 (binding authorship — option 3
 decided, mechanism specified), 5 (single-evidence-type fixture —
 resolved for the constructible half), and 6 (FRN — resolved) closed or
 decided. Gate 2 (vocabulary-agnostic binder, CLI, CONFLICT rule) not
-started — CONFLICT definition blocked on the maintainer, now with two
-candidate test cases; Gate 4's cross-check mechanism is Gate 2's binder
-work to build. See `KNOWN_LIMITATIONS.md` for the live gate ledger and
+started as a build, but CONFLICT is now defined and ratified (two
+sub-types — identity mismatch, outcome mismatch — tested against three
+cases); Gate 4's cross-check mechanism directly implements Type 1. See
+`KNOWN_LIMITATIONS.md` for the live gate ledger and
 `payloadguard-evidence-roadmap-phaseB-to-C.md` for Phase C's now-concrete
 mechanisms (Dafny/Z3 adapters remain unbuilt; parser must assert the
 literal substring "0 errors" plus the three further checks in the
