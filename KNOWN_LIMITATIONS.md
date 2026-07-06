@@ -4,18 +4,17 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-06 (Gate 2 binder work COMPLETE — Step 4: fallback
-functions and the equivalence test that existed to check against them
-deleted. Gate 2's only remaining open item is the CONFLICT rule
-definition itself, which is already ratified — nothing structural is
-left).
+Last updated: 2026-07-06 (Gate 5 fully resolved: variant C's binder no
+longer binds symbolic evidence unconditionally, so a concrete-only
+fixture is now constructible — the last remaining limitation from the
+original six-gate ledger is closed).
 
 | Gate | Status | Summary |
 |---|---|---|
 | Gate 2 — CONFLICT rule + binder | **COMPLETE** | `evidence/conflict.py` implements both CONFLICT sub-types (12 tests). `build_matrix()` (`evidence/render/matrix_variants.py`) is the sole implementation across all four variants, running Type 1 internally on every call; Type 2 stays standalone (whole-manifest-set check, not per-variant). `evidence/cli.py` wraps it for any metadata/manifest/concrete-store path. The Step 2 fallback functions (`build_matrix_variant_a/b/c`) and `tests/test_binder_equivalence.py` (which existed solely to check against them) are deleted — git history holds them if ever needed again. Details below. |
 | Gate 3 — bounds enforcement via CrossHair API | **DECIDED 2026-07-06: stay-CLI** | Real behavioral test executed (not just a technique writeup) — findings below. |
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
-| Gate 5 — single-evidence-type fixture for variant C | **RESOLVED (symbolic-only); concrete-only impossible pre-Gate-2, named** | `tests/test_single_evidence_type.py`: in-memory fixture requirement with symbolic evidence only, driven through the real variant C builder — appears in exactly one artifact (symbolic 1 row, concrete 0 rows), intent projected per R1. Committed data untouched. A concrete-only fixture cannot exist yet: the current C builder binds a symbolic record to every requirement unconditionally (see Gate 4 note 3). |
+| Gate 5 — single-evidence-type fixture for variant C | **FULLY RESOLVED (2026-07-06)** | `tests/test_single_evidence_type.py`: both symbolic-only AND concrete-only in-memory fixtures now appear in exactly one variant-C artifact each. The concrete-only case was impossible until today: `_bind_self_describing` bound a symbolic record to every requirement unconditionally, regardless of what it declared. Details below. |
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **NOTED for Gate 2** | The Gate 2 binder/schema must reserve room for this field (Blueprint false-zero trap) and keep strength-assignment adapter-scoped so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements even after the Dafny adapter exists. Phase C now has four concrete mechanisms (STPs, mutation testing, sharpened false-zero parsing, NL-dialogue confirmation) — see `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
 
@@ -408,12 +407,48 @@ match), from 2026-07-05 external research:**
   non-compliant if the physical file/method/hash doesn't match between
   them — this is Gate 2's Type 1 CONFLICT, exactly.
 
-Design input from Gate 5 work (still applies): the current C builder
-binds a symbolic record to every requirement by construction and does not
-verify the requirement's `implementation` against the capture manifest's
-`target` — the Gate 2 binder must bind symbolic evidence by verified
-code-location match per this mechanism. **Status: decision and mechanism
-recorded; building it is Gate 2's binder work, not yet started.**
+Design input from Gate 5 work: the original C builder bound a symbolic
+record to every requirement by construction and didn't verify the
+requirement's `implementation` against the capture manifest's `target`.
+**Status: decision, mechanism, and build all done.** The verification
+half (Type 1) is built in `evidence/conflict.py`, folded into
+`build_matrix()`. The binding half (whether symbolic evidence binds at
+all) was fixed as part of closing Gate 5 (below) — `_bind_self_describing`
+now consults the same `evidence` declaration Type 1 checks against.
+
+## Gate 5 — single-evidence-type fixture for variant C: FULLY RESOLVED (2026-07-06)
+
+Originally resolved only for the constructible half: a symbolic-only
+fixture requirement (no `evidence` list declared) correctly appeared in
+exactly one of variant C's two artifacts. A concrete-only fixture was
+named as impossible: `_bind_self_describing` bound a symbolic record to
+*every* requirement regardless of what it declared, so nothing could
+ever be concrete-only.
+
+**Fix:** `_bind_self_describing` (`evidence/render/matrix_variants.py`)
+now checks each requirement's declared `evidence` list before binding
+symbolic evidence — a requirement declaring only `concrete_test` entries
+(no `crosshair` entry) gets no symbolic record. When `evidence` is
+absent entirely, the original unconditional behavior is preserved
+(backward-compatible with metadata that doesn't use the declaration
+style — including the existing symbolic-only fixture, which relies on
+exactly this fallback). Concrete binding is untouched either way — it
+stays fully self-describing via `concrete_results.json`'s own
+`requirement_id` field, per Gate 4's decision for variant C.
+
+**No effect on committed data:** every real requirement in
+`metadata.c.yaml` declares a `crosshair` entry (added when Gate 4's
+asymmetry was closed), so this changes nothing observable — confirmed
+by regenerating and diffing (differs only by `generated_utc`).
+
+**Proven, not assumed:** `tests/test_single_evidence_type.py` now has
+two fixtures instead of one: the existing symbolic-only case (unchanged
+behavior, still passes) and a new concrete-only case (a requirement
+declaring `evidence: [{method: concrete_test, test_id: ...}]`, no
+`crosshair` entry) — confirmed to appear in exactly the concrete
+artifact and not at all in the symbolic one, the property that was
+previously impossible. 4 tests total (2 fixtures × validation + binding
+behavior). Suite: 41 passed.
 
 ## Gate 6 — FRN pump-type tag: RESOLVED (2026-07-05)
 

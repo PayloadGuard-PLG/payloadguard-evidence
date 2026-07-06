@@ -15,10 +15,9 @@ concrete instead of aspirational.
   fixed: the Notes-column cross-evidence-type leak/duplication, and
   REQ-GIP-1-4-12's evidence not matching its "shall trigger an alarm"
   text.
-- Gate 5 (single-evidence-type fixture) — resolved for the constructible
-  half; concrete-only fixture still blocked (needs the binding-authorship
-  decision to actually change how variant C binds, not just how it's
-  cross-checked — see Gate 4).
+- Gate 5 (single-evidence-type fixture) — fully resolved 2026-07-06: the
+  concrete-only case that was blocked (variant C bound symbolic evidence
+  unconditionally) is now constructible, see below.
 - Gate 6 (FRN) — resolved, see below.
 - Gate 2 (CONFLICT rule + vocabulary-agnostic binder + CLI) — COMPLETE,
   see below.
@@ -184,13 +183,37 @@ verified code-location match —
   them. This is exactly what Fable's bonus finding from Gate 5 flagged as
   missing — variant C's builder didn't verify evidence against the
   capture's actual target; the concrete-side check now runs (via
-  `evidence/conflict.py`), though C's actual *binding* still stays
-  evidence-store-carried by design (Gate 5's constructibility note still
-  holds).
+  `evidence/conflict.py`). C's concrete evidence *binding* stays
+  evidence-store-carried by design (unchanged); the SYMBOLIC binding is
+  no longer unconditional — see Gate 5.
 
 **Status:** decision, mechanism, and build all done. `evidence/conflict.py`'s
 `concrete_binding_conflicts` / `symbolic_binding_conflicts` implement the
 intersection check for real, run inside `build_matrix()` on every call.
+
+## Gate 5 — single-evidence-type fixture for variant C: FULLY RESOLVED (2026-07-06)
+
+Originally resolved for the constructible half only: a symbolic-only
+fixture (no `evidence` list declared) correctly appeared in exactly one
+of variant C's two artifacts. Concrete-only was named as impossible —
+`_bind_self_describing` bound a symbolic record to every requirement
+unconditionally, regardless of what it declared, so nothing could ever
+be concrete-only.
+
+**Fix:** `_bind_self_describing` now checks each requirement's declared
+`evidence` list before binding symbolic evidence — a requirement
+declaring only `concrete_test` entries gets no symbolic record. When
+`evidence` is absent entirely, the original unconditional behavior is
+preserved (the existing symbolic-only fixture relies on exactly this
+fallback, and still passes unchanged). Concrete binding is untouched —
+still fully self-describing via `concrete_results.json`'s own
+`requirement_id`, per Gate 4's decision for C.
+
+No effect on committed data: every real requirement in `metadata.c.yaml`
+declares `crosshair`, so nothing changed observably — confirmed by
+regenerating and diffing (timestamp aside). `tests/test_single_evidence_type.py`
+now proves both directions: symbolic-only and (new) concrete-only each
+appear in exactly one artifact. Suite: 41 passed.
 
 ## Gate 6 — FRN: RESOLVED
 
@@ -297,10 +320,8 @@ itself is complete: the CONFLICT rule (two sub-types, tested against
 three cases), the vocabulary-agnostic binder (`build_matrix()`, sole
 implementation across all four variants, original per-variant functions
 deleted), and the CLI (`evidence/cli.py`) are all built and verified.
-Gate 6 (FRN) is resolved and written into four files. Gate 5 stays
-resolved for the constructible half only — variant C's binder still
-binds a symbolic record to every requirement unconditionally (that
-binding behavior wasn't changed by Gate 2's refactor, only where the
-code lives), so a concrete-only fixture remains not constructible; not
-claimed otherwise. Phase C now has four concrete mechanisms to implement
-rather than two open design questions.
+Gate 6 (FRN) is resolved and written into four files. Gate 5 is now
+fully resolved: variant C's binder no longer binds symbolic evidence
+unconditionally, so a concrete-only fixture is constructible — the last
+open item from the original six-gate ledger. Phase C now has four
+concrete mechanisms to implement rather than two open design questions.

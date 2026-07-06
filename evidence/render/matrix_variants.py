@@ -515,21 +515,36 @@ def _shape_flattened_shadow(metadata, bound_record, intent):
 
 
 def _bind_self_describing(metadata, manifest, concrete_store, bounds):
-    """Variant C's binding strategy: every requirement gets an implicit
-    crosshair record unconditionally, plus every concrete_results.json case
-    whose own requirement_id names it (evidence-store-carried, self
-    describing - Gate 4's known asymmetry: no metadata declaration drives
-    this binding, even though metadata.c.yaml now ALSO carries an `evidence`
-    list for Type 1 cross-checking only, per Gate 4 option 3)."""
+    """Variant C's binding strategy: concrete evidence stays fully
+    self-describing (every concrete_results.json case whose own
+    requirement_id names a requirement is bound to it, regardless of
+    metadata). Symbolic evidence is bound unconditionally ONLY when a
+    requirement declares no `evidence` list at all - preserving the
+    original pre-Gate-5-fix behavior for metadata that doesn't use the
+    declaration style. When a requirement DOES declare an `evidence`
+    list (added for Type 1 cross-checking, Gate 4 option 3), that
+    declaration now also decides whether symbolic evidence binds: a
+    requirement declaring only `concrete_test` entries, no `crosshair`
+    entry, gets no symbolic record - making a concrete-only requirement
+    constructible for the first time (Gate 5). Every real requirement in
+    the committed metadata.c.yaml declares `crosshair`, so this changes
+    nothing observable for the committed dataset - verified by
+    regenerating and diffing."""
     records_by_req = {}
     for req in metadata["requirements"]:
-        records_by_req[req["id"]] = [
-            symbolic_record(manifest, bounds, req["implementation"])
-        ] + [
+        evidence = req.get("evidence")
+        wants_symbolic = evidence is None or any(
+            ev.get("method") == "crosshair" for ev in evidence
+        )
+        records = []
+        if wants_symbolic:
+            records.append(symbolic_record(manifest, bounds, req["implementation"]))
+        records += [
             concrete_record(c)
             for c in concrete_store["cases"]
             if c["requirement_id"] == req["id"]
         ]
+        records_by_req[req["id"]] = records
     return records_by_req
 
 

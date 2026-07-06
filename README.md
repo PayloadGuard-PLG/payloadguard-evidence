@@ -12,8 +12,10 @@ fact-equality gate, two-tier review protocol). Phase B Gate 1 complete
 (end-to-end pipeline + provenance index) with Gate 1 review remediation
 applied (REQ-GIP-1-4-12 alarm-scope split, renderer notes fixes). Gates 3
 (bounds enforcement, decided: stay-CLI), 4 (binding authorship, decision
-+ mechanism recorded, implemented for all three metadata shapes), and 6
-(FRN, resolved) closed. **Gate 2 is now complete.** Its CONFLICT rule
++ mechanism recorded, implemented for all three metadata shapes), 5
+(single-evidence-type fixture for variant C, fully resolved — both
+symbolic-only and concrete-only now constructible), and 6 (FRN,
+resolved) closed. **Gate 2 is now complete.** Its CONFLICT rule
 (both Type 1 and Type 2) is built; `build_matrix()` is the sole
 implementation across all four variants — all three generator scripts
 and the CLI (`python -m evidence.cli build`, `evidence/cli.py`) call

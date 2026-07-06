@@ -6,6 +6,47 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Gate 5 fully resolved: concrete-only fixture now constructible
+
+Closed the last open item from the original six-gate ledger. Requested
+directly ("concrete fix gate 5") right after Gate 2 completed.
+
+- **Root cause:** `_bind_self_describing` (variant C's binding strategy,
+  `evidence/render/matrix_variants.py`) bound a symbolic record to
+  *every* requirement unconditionally, regardless of what it declared -
+  a leftover from before metadata.c.yaml carried `evidence` declarations
+  at all. This made a concrete-only requirement structurally impossible:
+  it would always show up in the symbolic artifact too.
+- **Fix:** `_bind_self_describing` now checks each requirement's
+  declared `evidence` list before binding symbolic evidence - a
+  requirement declaring only `concrete_test` entries (no `crosshair`
+  entry) gets no symbolic record. When `evidence` is absent entirely,
+  the original unconditional behavior is preserved for backward
+  compatibility - the existing symbolic-only fixture relies on exactly
+  this fallback path and needed no changes. Concrete binding is
+  untouched either way - stays fully self-describing via
+  `concrete_results.json`'s own `requirement_id`, per Gate 4's decision.
+- **No effect on committed data:** every real requirement in
+  `metadata.c.yaml` declares `crosshair` (added when Gate 4's asymmetry
+  was closed), so this changes nothing observable - confirmed by
+  regenerating and diffing (differs only by `generated_utc`).
+- **Proven, not assumed:** `tests/test_single_evidence_type.py` gained a
+  concrete-only fixture (a requirement declaring
+  `evidence: [{method: concrete_test, test_id: ...}]`, no `crosshair`
+  entry) alongside the existing symbolic-only one - confirmed to appear
+  in exactly the concrete artifact and not at all in the symbolic one,
+  the property that was previously impossible. 4 tests total (2
+  fixtures × schema validation + binding behavior). Full suite: 41
+  passed (39 prior + 2 new). Full pipeline re-run independently.
+- Documentation updated: `KNOWN_LIMITATIONS.md` (new dedicated Gate 5
+  section, ledger table updated to FULLY RESOLVED), `SYSTEM_BLUEPRINT.md`,
+  `README.md`, roadmap doc (new Gate 5 section, Gate 4's stale
+  "constructibility note still holds" corrected, closing summary fixed).
+- **Gate 5 is now fully resolved.** Combined with Gate 2's completion,
+  every gate in the original ledger is closed, decided, or resolved -
+  nothing structural remains open in Phase B's gate work; only Phase C
+  (Dafny/Z3 adapters) is ahead.
+
 ## 2026-07-06 — Gate 2 build, Phase 7: Step 4 (delete the fallback) — Gate 2 COMPLETE
 
 Requested explicitly, now that the CLI had landed and the cutover had

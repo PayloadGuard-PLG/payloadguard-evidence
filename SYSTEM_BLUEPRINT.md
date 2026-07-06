@@ -1,8 +1,8 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Gate 2 binder work COMPLETE: Step 4 deleted the
-fallback functions build_matrix_variant_a/b/c and the equivalence test
-that existed to check against them — see KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-06 (Gate 5 fully resolved: variant C's binder no
+longer binds symbolic evidence unconditionally, so a concrete-only
+fixture is constructible — see KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -106,6 +106,9 @@ payloadguard-evidence/
     │                            test cases over real data (all three
     │                            metadata shapes) + in-memory fixtures,
     │                            plus a fold-in proof driving build_matrix()
+    ├── test_single_evidence_type.py  Gate 5: symbolic-only AND
+    │                            concrete-only in-memory fixtures each
+    │                            appear in exactly one variant-C artifact
     └── test_cli.py              Gate 2 CLI: subprocess-driven, all four
                                  variants match committed artifacts;
                                  Tier-1 error paths; stdout/file modes
@@ -200,9 +203,10 @@ worked example, T4 three-variant fork, closeout rulings R1–R3.
 Phase B (in progress): Gate 1 (end-to-end pipeline + provenance index)
 complete with remediation applied. Gates 3 (bounds enforcement — decided
 stay-CLI by real behavioral test), 4 (binding authorship — option 3
-decided, mechanism specified), 5 (single-evidence-type fixture —
-resolved for the constructible half), and 6 (FRN — resolved) closed or
-decided. **Gate 2 is now complete.** Its CONFLICT rule — both Type 1
+decided, mechanism specified), 5 (single-evidence-type fixture for
+variant C — fully resolved, both symbolic-only and concrete-only now
+constructible), and 6 (FRN — resolved) closed or decided. **Gate 2 is
+now complete.** Its CONFLICT rule — both Type 1
 (identity mismatch) and Type 2 (outcome mismatch) — is built
 (`evidence/conflict.py`); Gate 4's cross-check mechanism is implemented
 for all three metadata shapes, including variant C, whose declared-
