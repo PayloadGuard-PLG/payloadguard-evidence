@@ -6,6 +6,59 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-06 — Phase C Gate C1: Dafny toolchain blocker resolved (modern Dafny obtained)
+
+Requested directly: research whether a modern Dafny is obtainable rather
+than settling for the ancient apt package or asking for an
+under-informed decision.
+
+- **GitHub confirmed genuinely blocked, not assumed.** The proxy's own
+  status endpoint (`curl $HTTPS_PROXY/__agentproxy/status`) and its
+  README are explicit: 403/407 is an organization egress-policy denial -
+  "do not retry or route around it." No workaround attempted.
+- **Two already-permitted channels turned out to be enough.**
+  `api.nuget.org` -> 200. `dot.net` / `dotnet.microsoft.com` -> normal
+  redirects. apt has `dotnet-sdk-8.0` directly (Ubuntu's own package,
+  not a Microsoft add-on repo) - installed cleanly as 8.0.128 after
+  `apt-get update` refreshed a stale index (it had been pointing at a
+  version no longer on the mirror).
+- **`dotnet tool install --global dafny`** pulled from NuGet - zero
+  GitHub involvement anywhere in the chain. Result: **Dafny 4.11.0**
+  (full version `4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2`), a
+  real current release, not the `2.3.0+dfsg-0.1` Mono-based package apt
+  offers directly.
+- **Verified against the running binary, three real checks, not
+  documentation:**
+  1. Clean pass on a valid clamping method: `Dafny program verifier
+     finished with 1 verified, 0 errors`, exit 0 - exact match to the
+     false-zero note already in `evidence/model.py`.
+  2. Broken method: per-line error blocks + `0 verified, 2 errors`,
+     **exit code 4** - new finding, Dafny's exit codes aren't a simple
+     0/1 pair the way CrossHair's are.
+  3. An unsatisfiable precondition (`x > 0 && x < 0`) against an
+     obviously-false postcondition verified clean - confirms Gate C3's
+     vacuous-precondition vulnerability is real and reproducible on this
+     binary, not speculative.
+- **Checked whether `dafny audit` (new in 4.x) makes the Z3-based
+  mitigation unnecessary - it doesn't.** Ran it against the vacuous
+  case: `0 findings`. Its actual scope (per its own help text) is
+  un-annotated assumes/axioms/non-determinism/unverified externs, not
+  general precondition satisfiability. Confirmed the originally-planned
+  mitigation is still necessary and technically feasible:
+  `z3.Solver()` correctly returns `unsat` for the contradictory
+  precondition and `sat` for a real one.
+- **Net effect: no alteration to the Gate C1-C3 plan.** If anything it's
+  on firmer ground than when written. One concrete addition carried
+  into Gate C1: capture the exit code as-is, don't assume a specific
+  nonzero value on failure.
+- **Not done:** no capture runner, no real Dafny spec for `dosage.py`,
+  nothing committed to the repository - this was toolchain research
+  only, per what was asked. The probe `.dfy` files live only in the
+  scratch directory.
+- Documentation updated: `KNOWN_LIMITATIONS.md` (Gate C1 row + full
+  detail section), roadmap doc (environment-check section + closing
+  summary), `SYSTEM_BLUEPRINT.md`, `README.md`.
+
 ## 2026-07-06 — Phase C planning: gate-sequenced plan, real environment check
 
 Requested directly ("Move on to Phase C planning") right after Phase

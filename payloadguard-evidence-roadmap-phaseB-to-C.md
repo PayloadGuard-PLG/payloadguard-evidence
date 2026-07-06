@@ -3,10 +3,12 @@
 Updated 2026-07-06: Phase B's gate ledger is now fully closed (Gates
 1–6 all resolved, decided, or complete — see below), and Phase C is
 restructured from a two-mechanism sketch into a gate-sequenced plan
-(Gates C1–C6) mirroring how Phase B was actually run, including a
-real environment check (Z3 present, Dafny not installed, apt's only
-offering badly out of date) done before any Phase C code. Nothing in
-Phase C is built yet — this document is the plan.
+(Gates C1–C6) mirroring how Phase B was actually run. Gate C1's Dafny
+toolchain blocker — resolved same day: modern Dafny 4.11.0 obtained via
+NuGet (`dotnet tool install --global dafny`), no GitHub involvement,
+verified against the real binary. Nothing else in Phase C is built yet
+— capture runner, real spec, and PROVEN-exclusivity migration are all
+still ahead.
 
 ## Where we are
 
@@ -238,28 +240,48 @@ per the same discipline Phase B used (design review before implementation,
 verify against the real environment before assuming a tool works a
 certain way).
 
-### Environment check (done 2026-07-06, before any Gate C work)
+### Environment check (done 2026-07-06; RESOLVED same day — modern Dafny obtained)
 
 - **Z3 4.16.0 is present** — both the `z3` CLI and the `z3` Python
   bindings import cleanly (`import z3` succeeds). Usable directly for
-  satisfiability-style checks (Gate C3).
-- **Dafny is NOT installed.** `apt-cache show dafny` finds a package,
-  but it's `2.3.0+dfsg-0.1` — an Ubuntu-universe package from roughly
-  2015, depending on Mono (`mono-mcs`, `mono-runtime`), not modern
-  .NET. Current Dafny is in the 4.x series. `dotnet` itself isn't
-  installed either, and a direct GitHub release download returned 403
-  through the environment's proxy (unconfirmed whether that's
-  resolvable — see the proxy README).
-- **This is a real toolchain-version decision, not a formality** — the
-  same kind of decision Phase B made explicitly for `crosshair-tool
-  0.0.107` (Gate 3). The false-zero note in `evidence/model.py` and the
-  parsing checks below are written against modern Dafny's output
-  conventions; whether they hold for 2.3.0 is unverified and might not.
-  **Decision needed from Steven before Gate C1 starts:** install apt's
-  2.3.0 for a fast, honestly-scoped prototype (documenting its age and
-  any quirks found, same discipline as the CrossHair pin), or pursue a
-  modern Dafny some other way first. Nothing past this point can be
-  verified against a real tool until this is settled.
+  satisfiability-style checks (Gate C3) — confirmed working (see below).
+- **Dafny was not installed**, and apt's only offering was
+  `2.3.0+dfsg-0.1` — an Ubuntu-universe package from roughly 2015,
+  Mono-based, not modern .NET. **Resolved by researching further rather
+  than settling for it:** GitHub release downloads are genuinely blocked
+  by egress policy (confirmed via the proxy's own status endpoint — a
+  policy denial, not a config problem, so not routed around), but
+  `api.nuget.org` is reachable and apt has `dotnet-sdk-8.0` directly
+  (Ubuntu's own package). Installed the SDK, then ran
+  `dotnet tool install --global dafny`, which pulled from NuGet — no
+  GitHub involvement anywhere. Result: **Dafny 4.11.0**, a real current
+  release.
+- **Verified against the running binary, not documentation:** a clean
+  pass on a valid clamping method produced exactly `Dafny program
+  verifier finished with 1 verified, 0 errors`, exit 0 — matching
+  `evidence/model.py`'s false-zero note precisely. A broken method
+  produced per-line error blocks plus `0 verified, 2 errors`, **exit
+  code 4** (not 1 — a real finding: Dafny's exit codes aren't a simple
+  0/1 pair the way CrossHair's are). An unsatisfiable precondition
+  (`x > 0 && x < 0`) against an obviously-false postcondition verified
+  clean — confirming Gate C3's vector 1 is a real, reproducible risk on
+  this binary, not speculative. `dafny audit` was checked against the
+  same case and found nothing (`0 findings`) — it's scoped to
+  un-annotated assumes/axioms/non-determinism, not general precondition
+  satisfiability, so Gate C3's originally-planned Z3-based mitigation is
+  still the right approach — confirmed technically feasible (`z3.Solver()`
+  correctly returns `unsat`/`sat` for the contradictory/real cases
+  respectively).
+- **No alteration to the plan needed.** If anything the plan is on
+  firmer ground than when it was written: the false-zero note holds
+  exactly, the vacuous-precondition risk is empirically confirmed rather
+  than assumed, and its mitigation is confirmed feasible with tools
+  already present. One concrete addition to carry into Gate C1: capture
+  the exit code as-is rather than assuming a specific nonzero value.
+  Full findings: `KNOWN_LIMITATIONS.md`.
+- **Not done yet:** this was toolchain research, not Gate C1 itself — no
+  capture runner, no real Dafny spec for `dosage.py`, nothing committed
+  to the repository. That's the next step.
 
 ### Gate C1 — Dafny adapter: capture + minimal false-zero guard (build first)
 
@@ -416,8 +438,13 @@ fully closed.**
 Phase C is now a gate-sequenced plan (Gates C1–C6, suggested build order
 above), not a two-mechanism sketch — produced with the same discipline
 Phase B used: real environment check before assuming a tool works a
-certain way (Z3 present; Dafny not installed, apt's only offering
-2.3.0+dfsg from roughly 2015), one blocking decision named explicitly
-(which Dafny to target) rather than assumed, and one gate (C3's fourth
-vector, specification stripping) named as blocked on incomplete source
-material rather than guessed at. Nothing in Phase C is built yet.
+certain way. That check found Dafny not installed and apt's only
+offering badly out of date (2.3.0+dfsg from roughly 2015) — researched
+further rather than settling for it or asking for an under-informed
+decision, and resolved same day: modern Dafny 4.11.0 obtained via NuGet,
+verified against the real binary (exact false-zero match, real exit-code
+behavior, the vacuous-precondition risk confirmed reproducible, its Z3
+mitigation confirmed feasible). One gate (C3's fourth vector,
+specification stripping) stays named as blocked on incomplete source
+material rather than guessed at. Nothing in Phase C is *built* yet —
+Gate C1's capture runner and a real Dafny spec for `dosage.py` are next.

@@ -28,12 +28,16 @@ needed again. **Phase B's gate ledger is now fully closed.**
 
 Phase C planning has started: restructured from a two-mechanism sketch
 into a gate-sequenced plan (Gates C1–C6) in
-`payloadguard-evidence-roadmap-phaseB-to-C.md`, following a real
-environment check (Z3 4.16.0 present; Dafny not installed, apt's only
-package a ~2015-era release predating modern Dafny) done before any
-Phase C code. Nothing in Phase C is built yet — a Dafny toolchain
-decision is blocked on Steven before Gate C1 can start. See
-`KNOWN_LIMITATIONS.md` for the live gate ledger.
+`payloadguard-evidence-roadmap-phaseB-to-C.md`. Gate C1's Dafny
+toolchain blocker is resolved — Z3 4.16.0 was already present; modern
+**Dafny 4.11.0** was obtained via `dotnet tool install --global dafny`
+(NuGet, not GitHub — GitHub release downloads are genuinely blocked by
+this environment's egress policy), then verified against the real
+binary (exact false-zero match, real exit-code behavior, the
+vacuous-precondition risk confirmed reproducible and its Z3-based
+mitigation confirmed feasible). Nothing in Phase C is *built* yet — no
+capture runner, no real Dafny spec for `dosage.py` — that's Gate C1's
+actual work. See `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

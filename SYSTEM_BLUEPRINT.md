@@ -1,7 +1,7 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Phase B's gate ledger fully closed; Phase C
-restructured into a gate-sequenced plan — see
+Last updated: 2026-07-06 (Phase C Gate C1's Dafny toolchain blocker
+resolved — modern Dafny 4.11.0 obtained and verified via NuGet — see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
@@ -224,12 +224,16 @@ gate ledger.
 
 Phase C (planning): restructured 2026-07-06 from a two-mechanism sketch
 into a gate-sequenced plan (Gates C1–C6, build order specified) in
-`payloadguard-evidence-roadmap-phaseB-to-C.md`. A real environment check
-was done before any Phase C code: Z3 4.16.0 is present (CLI + Python
-bindings); Dafny is NOT installed, and the only apt package
-(`dafny 2.3.0+dfsg-0.1`) is a ~2015-era release depending on Mono, not
-modern Dafny — a real toolchain-version decision is blocked on Steven
-before Gate C1 can start (`KNOWN_LIMITATIONS.md`). Nothing in Phase C is
-built yet; the parser must still assert the literal substring "0 errors"
-plus the further checks in the roadmap once building starts — false-zero
-bug note in `evidence/model.py`.
+`payloadguard-evidence-roadmap-phaseB-to-C.md`. Gate C1's Dafny
+toolchain blocker is resolved: Z3 4.16.0 is present and Dafny 4.11.0 was
+obtained via `dotnet tool install --global dafny` (NuGet, reachable
+through the environment's proxy; GitHub release downloads are genuinely
+blocked by egress policy, confirmed via the proxy's own status endpoint,
+not routed around). Verified against the real binary: the false-zero
+note in `evidence/model.py` matches exactly ("Dafny program verifier
+finished with N verified, 0 errors"); a failing run exits 4, not 1; the
+vacuous-precondition risk Gate C3 names is real and reproducible; its
+planned Z3-based mitigation is confirmed feasible. Full findings:
+`KNOWN_LIMITATIONS.md`. Nothing in Phase C is *built* yet — no capture
+runner, no real Dafny spec, nothing committed from this research; that's
+Gate C1's actual work, still ahead.
