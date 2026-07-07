@@ -6,6 +6,39 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C6 next-phase adaptation work: scoped as far as possible, then blocked and asked
+
+Requested directly: "scope out Gate C6's next phase adaptation work."
+
+Checked first whether the trigger condition Steven set at Gate C6
+sign-off ("once there is a defensible artifact to build it on top of")
+is now met: yes — `dosage.dfy` now carries a full evidence chain (Gate
+C1 proof, Gate C4 STP fix, Gate C5's exhaustive mutation testing across
+all five operator classes with zero survivors, Gate C6's NL sign-off).
+
+Then tried to scope the actual work the way Gate C5's LVR extension was
+scoped (real audit, real prediction, real build order) and could not:
+the only description anywhere in the repo is the single sentence
+recorded at Gate C6 sign-off, repeated verbatim (never elaborated) in
+`nl_confirmation_dosage_dfy.md`, `DEVLOG.md`, `README.md`,
+`SYSTEM_BLUEPRINT.md`, and `KNOWN_LIMITATIONS.md`. Grepped the whole
+repo, including `PayloadGuard-Evidence-Blueprint-1.md`'s already-cited
+FDA premarket-guidance URLs, for anything more specific - found nothing.
+
+Rather than invent a concrete plan from one sentence, wrote the honest
+scope this session could reach into
+`payloadguard-evidence-roadmap-phaseB-to-C.md`'s new "Gate C6 next-phase
+adaptation work" section: the trigger condition is confirmed met, and
+three specific unknowns are named as blocking real scoping (what
+"adapting the spec" means; what "different downstream software" refers
+to; which regulatory pathway - 510(k)/De Novo/PMA/other - this targets).
+This mirrors Gate C3 vector 4's own precedent in this exact repo
+(specification stripping stayed BLOCKED, named, rather than guessed from
+its name alone, since its source material was never available).
+
+`KNOWN_LIMITATIONS.md` gained a pointer row. Asked Steven the three
+questions directly, same turn.
+
 ## 2026-07-07 — Gate C5 LVR extension built: matched its own prediction exactly
 
 Requested directly: "go" - following through on the scoping session

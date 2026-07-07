@@ -1274,6 +1274,57 @@ Steven's confirmation of the generated summary for
 of downstream analysis by different software, for a regulatory
 submission) he explicitly scoped out as separate follow-up work.
 
+### Gate C6 next-phase adaptation work — BLOCKED, named (2026-07-07)
+
+**Trigger condition met, checked not assumed:** Steven's exact
+condition for taking this up was "once there is a defensible artifact to
+build it on top of." As of the same day, that condition is satisfiable —
+`dosage.dfy` now carries a full evidence chain: proven clean (Gate C1),
+tightened against a Spec-Testing Proof gap (Gate C4), mutation-tested
+exhaustively across all five implemented operator classes with zero
+survivors and zero unclassifiable results (Gate C5 + its two same-day
+extensions), and NL-confirmed with human sign-off (Gate C6). This is a
+real, defensible artifact by any reasonable reading of that phrase.
+
+**What is NOT known, and can't be inferred rather than asked:** the
+entirety of the recorded description is one sentence, quoted verbatim
+above and repeated identically (not elaborated) in every other place it
+appears in this repo (`nl_confirmation_dosage_dfy.md`, `DEVLOG.md`,
+`README.md`, `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`). No source
+document, ticket, or fuller description of this next phase exists
+anywhere in the repository — checked directly, not assumed (grepped for
+"downstream software," "regulatory submission," and the FDA
+premarket-guidance URLs already cited in
+`PayloadGuard-Evidence-Blueprint-1.md`, none of which elaborate on this
+specific item). Three concrete unknowns block scoping this the way
+Gate C5's LVR extension was scoped (with a real audit, a real
+prediction, a real build order):
+
+1. **What "adapting the spec" means** — extending `dosage.dfy`'s
+   coverage (e.g. bringing REQ-DOSE-003, currently excluded by name,
+   into some form of scope), restructuring it for submission
+   presentation (e.g. more explicit kernel_scope/system_scope framing),
+   or something else entirely.
+2. **What "different downstream software" refers to** — a specific
+   named tool/platform this evidence needs to feed or be validated
+   against, a general class of regulatory-submission tooling, or
+   something else.
+3. **Which regulatory pathway** this targets (510(k), De Novo, PMA, or
+   a non-FDA/general IEC 62304 documentation context) — this determines
+   which "known requirement" is actually being referenced, and none of
+   the FDA guidance documents already cited in this repo
+   (cybersecurity/QMSR premarket guidance) obviously match "explaining
+   how results get analyzed by downstream software" as a named
+   requirement on their face.
+
+**Named, not guessed, per this repo's own precedent** (Gate C3 vector 4,
+specification stripping, has stayed "BLOCKED, named" since the source
+material describing it was never available — not inferred from the
+vector's name alone). The same discipline applies here: inventing a
+concrete build plan from one sentence would be exactly the kind of
+guess this repo's culture exists to avoid. Resolved by asking Steven the
+three questions above directly, the same turn this section was written.
+
 ### Suggested build order
 
 1. **Environment decision** (which Dafny) — blocks C1 and everything
