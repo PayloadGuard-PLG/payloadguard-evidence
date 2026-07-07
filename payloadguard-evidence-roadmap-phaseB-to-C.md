@@ -731,25 +731,164 @@ C-formal - now reports `intent_ok: true` for both requirements.
 `run_gate()`'s facts count is 9, not 7. Full suite: **98 passed** (93
 prior + updates). Full pipeline re-run end to end.
 
-### Gate C5 — Mutation testing (MutDafny-style) — largest single piece, its own sub-plan
+### Gate C5 — Mutation testing (MutDafny-style) — SCOPED (2026-07-07), not yet built
 
-Six operators with specific, testable purposes: Relational (ROR) and
-Arithmetic (AOR) Operator Replacement test whether numeric bounds are
-load-bearing; Set (SOR) and Heap (HOR) Operator Replacement target
-predicate-membership and frame-condition weaknesses; Logical Operator
-Replacement (LOR) finds redundant/vacuous boolean conditions; Constant
-Operator Insertion (COI) inserts negations to check the spec actually
-constrains the state space. IronSpec's three-pass framework (discard
-logically-weaker mutants, discard vacuity-inducing mutants, re-verify
-survivors) is the filtering logic to reuse rather than reinvent.
+**Purpose, stated precisely:** Gates C1/C4 prove `dosage.dfy`'s postconditions
+hold. Neither proves those postconditions are *tight* — that each boundary
+in them is actually load-bearing rather than incidental. A postcondition
+that would still verify if a boundary were loosened isn't proving that
+boundary at all; it just hasn't been asked to. Mutation testing asks that
+question directly: weaken or perturb the spec in a small, specific way and
+re-run the real verifier. If it still passes, that boundary was never
+proven in the first place — a real finding, not a tooling gap, and it gets
+named and reported exactly like Gate C4's spec gap was, not smoothed over.
 
-**Scope:** run this against `dosage.py`'s eventual Dafny spec before
-trusting any PROVEN claim. A mutation that survives (proof still passes)
-on the max-dose boundary means that boundary isn't actually proven. This
-is effectively building a mutation-testing harness for Dafny specs from
-nothing — recommend treating it as its own multi-step sub-plan once
-Gates C1–C2 are stable, not attempted in one pass the way Gate 2's
-CONFLICT rule build was.
+This is scoped now, not built now: per the roadmap's own original note,
+it's the largest single piece of Gate C, and per this repo's build
+discipline (Gate 2's CONFLICT rule, Gate C4's STPs), a piece this size
+gets a written sub-plan and explicit go-ahead before code, not a
+same-pass build. What follows is that sub-plan.
+
+#### Operator applicability audit against the real spec (not generic — checked against `dosage.dfy` as it exists today)
+
+The literature defines six operator classes. Auditing each against the
+one real spec in this repo, clause by clause, rather than assuming all
+six apply:
+
+- **ROR (Relational Operator Replacement) — applicable, the primary
+  target.** Every comparison in `dosage.dfy` is a candidate: `rawDose <
+  0.0` and `rawDose > maxSafeDoseMgPerHr` in `ExpectedDose`'s body;
+  `concentrationMgPerMl > 0.0` and `maxSafeDoseMgPerHr > 0.0` (both
+  `requires` clauses); the chained `0.0 <= dose <= maxSafeDoseMgPerHr`
+  (two comparisons); `infusionRateMlPerHr >= 0.0` (ensures 3); and the
+  pinning clause's `dose == ExpectedDose(...)` itself, where mutating `==`
+  to `!=` should be killed trivially and is a useful sanity check on the
+  harness, not just on the spec. 8 comparison sites, each mutable to up to
+  5 other relational operators — on the order of 30-40 raw mutants before
+  any filtering.
+- **AOR (Arithmetic Operator Replacement) — applicable, narrowly.** Exactly
+  one arithmetic operator exists in the whole spec: the `*` in
+  `infusionRateMlPerHr * concentrationMgPerMl`. Mutating it to `+`, `-`,
+  or `/` gives 3 mutants. **Named risk:** `/` on Dafny `real` is
+  division-checked (confirmed empirically during Gate C1 — `possible
+  division by zero` is a real verification error on this installed
+  binary), so that mutant may fail to verify for a reason that has
+  nothing to do with the postcondition being violated. The harness must
+  attribute *why* a mutant failed (postcondition violated vs. an
+  unrelated static error like division-by-zero) rather than pattern-match
+  "verification failed" as "mutant killed for the right reason" — an
+  unattributed kill would be exactly the kind of false-confidence finding
+  this repo's discipline exists to prevent.
+- **SOR (Set Operator Replacement) — NOT APPLICABLE, named explicitly.**
+  `dosage.dfy` contains no set-typed values or set operations anywhere.
+  Not silently skipped — recorded here as a real, checked scope exclusion
+  (same pattern as REQ-DOSE-003's exclusion from this same spec in Gate
+  C1), to revisit only if a future Dafny spec in this repo uses sets.
+- **HOR (Heap Operator Replacement) — NOT APPLICABLE, named explicitly.**
+  No object references, `old()` expressions, or `reads`/`modifies`
+  clauses — `dosage.dfy` is pure functional/value code. Same treatment as
+  SOR: named exclusion, not silent omission, revisit if a future spec
+  needs it.
+- **LOR (Logical Operator Replacement) — applicable, narrowly.** Exactly
+  one explicit boolean connective exists: the `||` in
+  `infusionRateMlPerHr >= 0.0 || dose == 0.0` (ensures 3), mutable to
+  `&&`. 1 mutant. **Scope boundary named:** Dafny implicitly ANDs multiple
+  `requires`/`ensures` clauses on one method together, but there is no
+  explicit `&&` token at that seam to mutate — v1 only mutates explicit
+  connectives written within a single clause, and does not attempt to
+  "mutate" the implicit inter-clause conjunction (doing so would mean
+  deleting a whole clause, which is really a different, coarser kind of
+  mutant not attempted here).
+- **COI (Constant Operator Insertion) — applicable, but answers a
+  different question than the other five.** ROR/AOR/LOR ask "is this
+  specific boundary/operator load-bearing." COI asks a coarser question:
+  "does this clause constrain anything at all." Concretely: wrap each
+  `ensures` clause's body in a top-level negation and re-verify. If the
+  *negated* clause still verifies against the real implementation, the
+  original clause was vacuous — true regardless of what the method
+  actually returns, contributing nothing to the proof. This is close in
+  spirit to Gate C3 vector 1's precondition-vacuity check, but applied to
+  postconditions instead, and by direct re-verification rather than Z3
+  satisfiability (Z3 can't evaluate the concrete implementation's return
+  value the way `dafny verify` can). Applied to `dosage.dfy`'s three
+  `ensures` clauses: 3 mutants.
+
+Total: roughly 35-45 raw mutants, entirely from ROR/AOR/LOR/COI — SOR/HOR
+contribute zero for this spec, named rather than hidden.
+
+#### Architecture: reuse, don't reinvent
+
+- **Parsing/mutation target grammar:** `evidence/dafny_spec_lint.py`'s
+  existing tokenizer (`_tokenize`) and recursive-descent parser
+  (`_Parser`) already define exactly the boolean/arithmetic/comparison
+  grammar this repo's clauses use, built and tested in Gate C3. Reuse
+  that grammar as the mutation target set rather than defining a second,
+  possibly-inconsistent one. **Gap named:** the existing `_tokenize`
+  discards character-span information (it only needs token kind/value to
+  build a Z3 expression) — a mutation generator needs to reconstruct
+  mutated *Dafny source text*, so it needs span-preserving tokenization.
+  This is a small, additive extension (carry `m.start()`/`m.end()`
+  alongside each token), not a rewrite — but it's new code, named here so
+  it doesn't get assumed-free at build time.
+- **Vacuity filtering (pass 2 of IronSpec's three-pass framework):**
+  `evidence/dafny_spec_lint.py::check_precondition_satisfiability`
+  already does exactly the check pass 2 needs (Z3 satisfiability of a
+  clause set) — call it directly against each mutant's `requires` clauses
+  before spending a real `dafny verify` invocation on it. A mutant that
+  makes the precondition unsatisfiable is uninteresting (any postcondition
+  holds vacuously) and should be discarded before verification, not
+  reported as a false "survivor."
+- **Static weaker-mutant filtering (pass 1):** discard mutants that are
+  statically implied by the original clause (e.g. `>` mutated to `>=` on
+  a clause already compatible with equality) before running the verifier
+  at all — cheap to check syntactically for the small operator set this
+  spec uses (ROR's own operator lattice), avoids burning a `dafny verify`
+  call on a mutant that was never going to be interesting.
+- **Re-verification (pass 3) and capture discipline:** mirror
+  `run_verify_dafny.py`'s exact pattern — write each surviving mutant to
+  a temp `.dfy` file, invoke the real installed Dafny binary, capture
+  real stdout/exit code, parse via the same false-zero-guarded summary-line
+  logic `evidence/dafny_adapter.py::parse_dafny_capture` already
+  implements (a mutant "kill" must be a real `N verified, M errors` parse
+  with M > 0 and the *right* error — see the AOR division-by-zero caveat
+  above — never a bare nonzero exit code taken on faith).
+
+#### Success criterion
+
+A boundary in `dosage.dfy` is "mutation-proven" only if every mutant that
+touches it is killed by the real verifier for the right reason (the
+mutated postcondition genuinely fails, not an unrelated static error). Any
+surviving mutant is a named, reported finding — a real gap in what the
+proof establishes — exactly as Gate C4's STP finding was handled: fixed if
+fixable, or recorded as a scoped, known limitation if not.
+
+#### Build order (own multi-step sub-plan, not a single pass)
+
+1. Span-preserving tokenizer extension (small, additive, on top of
+   `dafny_spec_lint.py`'s existing grammar).
+2. ROR/AOR/LOR mutant generator + the static weaker-mutant filter (pass 1).
+3. Vacuity filter (pass 2), wired directly to
+   `check_precondition_satisfiability`.
+4. Re-verification harness (pass 3), mirroring `run_verify_dafny.py` and
+   reusing `dafny_adapter.py`'s parser, with explicit failure-reason
+   attribution (not just pass/fail).
+5. COI's separate negation-and-reverify check (distinct question from
+   1-4, built after the ROR/AOR/LOR pipeline is proven out, since it
+   reuses the same re-verification harness from step 4).
+6. A committed report enumerating every mutant generated, its operator
+   class, target clause, and outcome (killed-for-the-right-reason /
+   killed-for-the-wrong-reason / survived / filtered-as-vacuous /
+   filtered-as-statically-weaker) — same "real capture, not smoothed
+   over" discipline as the STP suites' committed output.
+
+#### Explicit non-goals
+
+Not a generic, Dafny-spec-agnostic mutation tool — like Gates C1-C4, this
+builds one mutation suite for the one real spec that exists, per the
+roadmap's own stated scope for this gate. Not wired into `build_matrix()`
+or any generator — a pre-trust check run before relying on a PROVEN claim,
+not part of the artifact-generation pipeline. SOR/HOR are out of scope
+until a future spec actually uses sets or heap state.
 
 ### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early) — BUILT and SIGNED OFF (2026-07-07)
 

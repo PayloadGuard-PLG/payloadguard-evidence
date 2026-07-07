@@ -6,6 +6,51 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5: mutation testing, scoped (not built)
+
+Requested directly: "scope out C5 please."
+
+Per this repo's build discipline (Gate 2's CONFLICT rule, Gate C4's STPs)
+a piece this size gets a written sub-plan and explicit go-ahead before
+code — the roadmap's own original note already called Gate C5 "the
+largest single piece" and recommended treating it as its own multi-step
+sub-plan. Full sub-plan written into
+`payloadguard-evidence-roadmap-phaseB-to-C.md`'s Gate C5 section,
+replacing the prior one-paragraph sketch. Key content:
+
+- **Operator applicability audited against the real spec**, not assumed
+  generically: ROR (~8 comparison sites) and AOR (the single `*`) apply
+  directly; LOR applies to exactly one explicit `||`
+  (`infusionRateMlPerHr >= 0.0 || dose == 0.0`); COI applies to all 3
+  `ensures` clauses via a negate-and-reverify check (a coarser "does this
+  clause constrain anything at all" question, distinct from the other
+  four's "is this specific boundary load-bearing"). SOR and HOR are
+  explicitly NOT APPLICABLE — `dosage.dfy` has no sets and no heap state
+  anywhere — named as a checked exclusion (same treatment as REQ-DOSE-003's
+  exclusion from this same spec), not silently skipped.
+- **A named risk:** AOR's `/` mutant may fail verification for an
+  unrelated reason (Dafny's own division-by-zero check, confirmed real
+  during Gate C1) rather than because the postcondition caught the
+  weakening — the harness must attribute *why* a mutant failed, not just
+  pattern-match "verification failed" as a correct kill, or it risks
+  reporting a false-confidence finding.
+- **Architecture reuses existing infrastructure** rather than building
+  fresh: `dafny_spec_lint.py`'s tokenizer/parser as the mutation target
+  grammar (needs a small, named, span-preserving extension - the existing
+  tokenizer discards character positions since it only ever needed to
+  build Z3 expressions, not reconstruct source text);
+  `check_precondition_satisfiability` reused directly for IronSpec's pass
+  2 (vacuity filtering); re-verification (pass 3) mirrors
+  `run_verify_dafny.py`'s capture pattern and `dafny_adapter.py`'s
+  false-zero-guarded parser.
+- **Six-step build order specified**, ending in a committed report
+  enumerating every mutant, its operator class, target clause, and
+  outcome — same "real capture, not smoothed over" discipline as the STP
+  suites.
+
+Not built. `KNOWN_LIMITATIONS.md` gained a SCOPED table row pointing to
+the full sub-plan.
+
 ## 2026-07-07 — Gate C6: NL-dialogue confirmation, built and signed off
 
 Requested directly: "gate C6 first please" (choosing it over Gate C5,
