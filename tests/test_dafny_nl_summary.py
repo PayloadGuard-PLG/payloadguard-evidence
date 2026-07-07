@@ -40,7 +40,7 @@ def test_real_dosage_spec_summary_cites_the_right_requirement_per_postcondition(
     bounds_line = next(l for l in lines if "0.0 <= dose <= maxSafeDoseMgPerHr" in l)
     assert "REQ-GIP-1-4-12" in bounds_line
 
-    reverse_flow_line = next(l for l in lines if "infusionRateMlPerHr >= 0.0" in l)
+    reverse_flow_line = next(l for l in lines if "infusionRateMlPerHr > 0.0" in l)
     assert "REQ-GIP-1-8-1" in reverse_flow_line
 
     pinning_line = next(l for l in lines if "dose == ExpectedDose" in l)

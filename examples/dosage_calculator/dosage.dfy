@@ -42,6 +42,17 @@
 // that pins `dose` to it exactly — the two original ensures clauses stay,
 // unchanged, for direct per-requirement traceability (REQ-GIP-1-4-12,
 // REQ-GIP-1-8-1), now implied by (not contradicting) the pinning clause.
+//
+// Gate C5 finding and fix (2026-07-07): mutation testing found the
+// REQ-GIP-1-8-1 clause's `>=` was not independently load-bearing at
+// infusionRateMlPerHr == 0.0 exactly — real multiplication by exactly
+// 0.0 already forces dose == 0.0 there via the second disjunct, so
+// `>=`, `!=`, and `>` all verified identically at that boundary
+// (mutation-testing survivors, examples/dosage_calculator/mutation_report.md).
+// Tightened to `>` on Steven's explicit decision, re-verified clean, and
+// re-run through the mutation suite to confirm the survivor is now
+// killed. See examples/dosage_calculator/nl_confirmation_dosage_dfy.md's
+// amendment for the post-change re-confirmation.
 
 function ExpectedDose(
   concentrationMgPerMl: real,
@@ -66,7 +77,7 @@ method CalculateHourlyDose(
   requires maxSafeDoseMgPerHr > 0.0
   ensures dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)
   ensures 0.0 <= dose <= maxSafeDoseMgPerHr        // REQ-GIP-1-4-12, kernel_scope
-  ensures infusionRateMlPerHr >= 0.0 || dose == 0.0 // REQ-GIP-1-8-1
+  ensures infusionRateMlPerHr > 0.0 || dose == 0.0  // REQ-GIP-1-8-1
 {
   var rawDose := infusionRateMlPerHr * concentrationMgPerMl;
   if rawDose < 0.0 {

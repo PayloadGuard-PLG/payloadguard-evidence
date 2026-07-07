@@ -32,22 +32,37 @@ def test_ror_against_real_spec_produces_expected_raw_and_filtered_counts():
     mutants = generate_ror_mutants(_dosage_source(), "CalculateHourlyDose")
     assert len(mutants) == 35
     filtered = [m for m in mutants if m.filtered_reason]
-    assert len(filtered) == 4
+    assert len(filtered) == 6
 
 
-def test_ror_filters_only_the_two_equality_clauses_weakening_to_le_ge():
+def test_ror_filters_equality_clauses_and_the_tightened_reverse_flow_clause():
+    """The pinning/second-disjunct '==' clauses filter their weakenings to
+    <=/>=; REQ-GIP-1-8-1's tightened '>' clause (post Gate C5 fix) filters
+    its own weakenings to >=/!= - a proof of `x > 0` universally implies
+    both, so the pass-1 filter now catches these before Dafny ever runs
+    (previously, when this clause read `>=`, these same two mutations
+    were NOT trivial and were real mutation-testing survivors)."""
     mutants = generate_ror_mutants(_dosage_source(), "CalculateHourlyDose")
     filtered = [m for m in mutants if m.filtered_reason]
+    assert len(filtered) == 6
     for m in filtered:
         assert m.keyword == "ensures"
-        assert "==" in m.description
-        assert m.description.endswith("-> <=") or m.description.endswith("-> >=")
+        assert m.description.endswith("-> <=") or m.description.endswith(
+            "-> >="
+        ) or m.description.endswith("-> !=")
+    reverse_flow_filtered = {
+        m.description for m in filtered if "': > ->" in m.description
+    }
+    assert reverse_flow_filtered == {
+        "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': > -> >=",
+        "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': > -> !=",
+    }
 
 
 def test_lor_finds_the_single_or_site_and_does_not_filter_it():
     mutants = generate_lor_mutants(_dosage_source(), "CalculateHourlyDose")
     assert len(mutants) == 1
-    assert mutants[0].mutated_clause == "infusionRateMlPerHr >= 0.0 && dose == 0.0"
+    assert mutants[0].mutated_clause == "infusionRateMlPerHr > 0.0 && dose == 0.0"
     assert mutants[0].filtered_reason is None
 
 

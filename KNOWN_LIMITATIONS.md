@@ -36,7 +36,7 @@ variant-C-only build is retired — no longer needed. Full detail below).
 | Phase C Gate C3 — Dafny output-parsing hardening | **BUILT for vectors 1–3 (2026-07-07); vector 4 BLOCKED, named** | **Vector 1 (vacuous preconditions):** `evidence/dafny_spec_lint.py::check_precondition_satisfiability` extracts a method's `requires` clauses and asks Z3 for real satisfiability, via a small hand-written expression translator (booleans, comparisons incl. chaining, arithmetic, real/int/nat/bool — anything else, e.g. quantifiers, refused outright). Proven against a real committed fixture, `examples/dosage_calculator/vacuous_precondition_probe.dfy`: Dafny itself reports a clean pass (`1 verified, 0 errors`) on a method whose precondition (`x > 0 && x < 0`) can never hold; the checker correctly reports `unsat`. **Vector 2 (weak postconditions, best-effort heuristic, not a proof):** `scan_weak_postconditions` flags `ensures` clauses using a one-way `==>` without a matching `<==>`, tested against a synthetic weak clause (flagged) and both the real dosage.dfy spec and a `<==>` clause (correctly not flagged). **Vector 3 (timeout/resource-limit masking):** real finding on the installed 4.11.0 binary — `dafny verify --resource-limit=1` on the real dosage.dfy spec produces `Dafny program verifier finished with 0 verified, 0 errors, 1 out of resource` — an "errors" count of 0 alongside an incomplete run. Confirmed the real capture's exit_code is 4 (nonzero), so Gate C1's exit-code check already refuses it (an earlier suspicion of an exit-0 false-zero here was a shell-piping artifact in this session's own probing, corrected before being reported as a finding); the summary-line parser in `evidence/dafny_adapter.py` was still hardened to refuse independently on `"out of resource"`/`"out of memory"`/`"timed out"` markers and on more than one summary line in a capture, as defense in depth. **Vector 4 (specification stripping): still BLOCKED, named** — the source material describing this fourth vector was cut off before detail was captured; needs a follow-up read of the original document before it can be scoped at all, not inferred from the name. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **RESOLVED via Gate C1 + C2** | The field exists on `VerificationResult` (`evidence/model.py`), is set by Gate C1's adapter, and is now load-bearing in Gate C2's R3 check — PROVEN requires it to equal `"completed"`, not just a matching method label. Strength-assignment stays adapter-scoped, so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements. |
 | Phase C Gate C4 — Spec-Testing Proofs (STPs) | **BUILT 2026-07-07; found and fixed a real spec gap** | IronSpec methodology: prove specific input/output pairs are accepted or rejected by the SPECIFICATION alone, independent of any implementation. Applied to dosage.dfy, an STP lemma revealed the original postcondition (bounds + reverse-flow-zero only) never pinned `dose` to the actual clamped value — a wrong candidate value could not be proven excluded, meaning a broken implementation could have satisfied the spec undetected. **Fixed for real:** `dosage.dfy` gained an `ExpectedDose` function and a pinning `ensures dose == ExpectedDose(...)` clause; re-verified clean (`2 verified, 0 errors`); the real committed capture was re-run honestly (`raw_dafny_output.txt` / `run_manifest_dafny.json` now reflect the fixed spec). The original weak spec is preserved verbatim as `dosage_underconstrained.dfy` (an honesty exhibit, same rationale as `dosage_naive_widening.py`). Two STP suites prove both directions for real: `dosage_stp_suite.dfy` (6 lemmas across the 3 logical branches — normal in-range, ceiling-clamped, reverse-flow — `include`s the fixed spec, all verify: `10 verified, 0 errors`) and `dosage_stp_suite_against_underconstrained.dfy` (the 2 REJECT lemmas for the branches that actually had a gap, `include`s the preserved weak spec, both genuinely fail: `0 verified, 2 errors`, exit 4 — a real negative capture, not smoothed over). 6 new tests in `tests/test_dafny_stp_suite.py`, including a regression on a self-caught mistake (an early REJECT-lemma draft used an out-of-bounds wrong value that the weak spec already excluded trivially, giving a false pass that didn't test the real gap — caught and corrected before committing). Neither STP suite is wired into `build_matrix()` or any generator; matches Gates C1–C3's scope discipline. |
-| Phase C Gate C5 — Mutation testing (MutDafny-style) | **BUILT 2026-07-07 for v1 scope (ROR/LOR/COI on requires/ensures clauses); found 2 real survivors, reported not silently fixed** | `evidence/dafny_mutate.py` generates mutants; `examples/dosage_calculator/run_mutation_suite.py` real-verifies every one against the installed Dafny 4.11.0 binary. 39 mutants generated against `dosage.dfy::CalculateHourlyDose`: 29 killed (the boundary held), 4 filtered as statically trivial (pass 1), 2 genuinely **survived** — a real, understood looseness in REQ-GIP-1-8-1's postcondition, reported for Steven's decision rather than silently altering a spec Gate C6 already signed off on — and 4 **unclassifiable**, a real gap in the mutation *engine* (not the spec): mutating one side of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator produces a Dafny *parse* error, not a semantic test. AOR/SOR/HOR are explicitly out of v1 scope, checked not assumed (SOR/HOR: no set or heap syntax anywhere in the spec, confirmed by test; AOR: the one arithmetic operator lives in `ExpectedDose`'s function body, not a requires/ensures clause, deferred per direct guidance to handle real-number precision/accuracy bounding as its own follow-up rather than in this pass). 16 new tests (`tests/test_dafny_mutate.py` — fast, pure generation/filter logic, no Dafny invocations; `tests/test_mutation_report.py` — validates the committed real capture). Full detail, including the survivors' root cause and the pending decision, below. |
+| Phase C Gate C5 — Mutation testing (MutDafny-style) | **BUILT 2026-07-07 for v1 scope (ROR/LOR/COI on requires/ensures clauses); found 2 real survivors, FIXED same day on Steven's decision** | `evidence/dafny_mutate.py` generates mutants; `examples/dosage_calculator/run_mutation_suite.py` real-verifies every one against the installed Dafny 4.11.0 binary. 39 mutants generated against `dosage.dfy::CalculateHourlyDose`: an initial run found 29 killed, 4 filtered as statically trivial (pass 1), 2 genuinely **survived** — a real, understood looseness in REQ-GIP-1-8-1's postcondition (`>=` not independently load-bearing at `infusionRateMlPerHr == 0.0` exactly), reported for Steven's decision rather than silently altering a spec Gate C6 already signed off on — and 4 **unclassifiable**, a real gap in the mutation *engine* (not the spec): mutating one side of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator produces a Dafny *parse* error, not a semantic test. **Steven's decision: tighten REQ-GIP-1-8-1 to `>`** — `dosage.dfy` changed, re-verified clean (`2 verified, 0 errors`, unchanged), mutation suite re-run: **zero survivors remain** (the two former survivors are now correctly recognized as statically trivial by pass 1 before Dafny even runs — a proof of `x > 0` universally implies both `x >= 0` and `x != 0`); killed=29, filtered_static=6, unclassifiable=4 (unchanged, unrelated). AOR/SOR/HOR are explicitly out of v1 scope, checked not assumed (SOR/HOR: no set or heap syntax anywhere in the spec, confirmed by test; AOR: the one arithmetic operator lives in `ExpectedDose`'s function body, not a requires/ensures clause, deferred per direct guidance to handle real-number precision/accuracy bounding as its own follow-up rather than in this pass). 16 tests (`tests/test_dafny_mutate.py` — fast, pure generation/filter logic, no Dafny invocations; `tests/test_mutation_report.py` — validates the committed real capture), updated to match the post-fix reality. Full detail below. |
 | Phase C Gate C6 — NL-dialogue confirmation | **BUILT and SIGNED OFF 2026-07-07** | Process-control gate aimed directly at recurrence of Gate 1's original finding: a spec/requirement-text mismatch caught only at review, not at authoring time. `evidence/dafny_nl_summary.py::summarize_method` mechanically extracts each requires/ensures clause verbatim, plus any REQ-ID cited in a trailing comment, alongside a best-effort operator-substitution English gloss labeled as a reading aid, not comprehension — deliberately not a natural-language generator. Only single-line clauses are supported; the function cross-checks its own line-based, comment-preserving extraction against `dafny_spec_lint`'s canonical, already-tested multi-line-capable extractor and refuses (`SystemExit`) on any content mismatch. That refusal check's first draft compared clause counts, not content, and missed a real case — a synthetic multi-line clause produced the same count under both extractors while the line-based scan had silently truncated it, dropping the continuation; caught in manual testing before the test suite was even written, fixed by comparing normalized clause text instead of counts, with a regression test added. 7 tests in `tests/test_dafny_nl_summary.py`. The gate's actual deliverable is not this code but the recorded human decision it feeds: `examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records Steven's sign-off ("it's good for the spec as is") on the generated summary for `dosage.dfy::CalculateHourlyDose`, plus a next-phase item (adapting the spec and explaining downstream analysis by different software, for a regulatory submission) he explicitly scoped out as separate follow-up work, not part of this gate. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
@@ -996,7 +996,7 @@ Dafny spec written for Phase C gets a small STP suite alongside it,
 authored by whoever writes the spec"), not a generic STP-generation
 tool.
 
-## Phase C Gate C5 — Mutation testing: BUILT for v1 scope, 2 real survivors found (2026-07-07)
+## Phase C Gate C5 — Mutation testing: BUILT for v1 scope, 2 survivors found and FIXED (2026-07-07)
 
 Requested directly: "build it and be careful with Dafny. just. we can
 consider floating points later..it's a known but solvable issue" —
@@ -1071,25 +1071,39 @@ what's committed is the generator, the runner, and the real per-mutant
 outcome: `examples/dosage_calculator/mutation_report.json`/`.md` and
 `run_manifest_mutation.json`.
 
-**The 2 survivors — a real, understood finding, reported not silently
-fixed.** Both are `infusionRateMlPerHr >= 0.0 || dose == 0.0` (REQ-GIP-
-1-8-1) with the first disjunct's `>=` mutated to `!=` or `>`; both still
-verify (`2 verified, 0 errors`), confirmed by direct re-run, not a fluke.
-Root cause, worked out by hand and checked against the real numbers: at
+**The 2 survivors — a real, understood finding, reported then fixed on
+Steven's decision, not silently changed.** Both were
+`infusionRateMlPerHr >= 0.0 || dose == 0.0` (REQ-GIP-1-8-1) with the
+first disjunct's `>=` mutated to `!=` or `>`; both still verified
+(`2 verified, 0 errors`), confirmed by direct re-run, not a fluke. Root
+cause, worked out by hand and checked against the real numbers: at
 `infusionRateMlPerHr == 0.0` exactly, real multiplication gives
 `rawDose == 0.0 * concentrationMgPerMl == 0.0` exactly, which is neither
 `< 0.0` nor `> maxSafeDoseMgPerHr` (since `maxSafeDoseMgPerHr > 0.0` by
 precondition), so `dose == rawDose == 0.0` — meaning the clause's second
 disjunct (`dose == 0.0`) already holds at that single boundary point
 regardless of which comparison operator the first disjunct uses. The
-postcondition's `>=` at that exact point isn't independently load-
-bearing given how the implementation clamps. **Not silently changed:**
+postcondition's `>=` at that exact point wasn't independently load-
+bearing given how the implementation clamps.
+
+**Not silently changed — reported first, fixed on explicit decision:**
 `dosage.dfy` is the spec Steven signed off on in Gate C6 ("it's good for
-the spec as is") — this finding is reported to him for a decision
-(tighten the postcondition, or accept and document the looseness as
-immaterial to REQ-GIP-1-8-1's actual reverse-flow requirement, which
-doesn't speak to the exact-zero boundary), not acted on unilaterally.
-**Status: reported, decision pending.**
+the spec as is") the same day, so this finding was reported for his
+decision rather than acted on unilaterally. **Decision: "go ahead and
+tighten REQ-GIP-1-8-1 to `>`."** `dosage.dfy` changed accordingly,
+re-verified clean (`2 verified, 0 errors`, unchanged — the tightening
+didn't cost anything), and the mutation suite re-run in full to confirm
+the fix rather than just asserting it: **zero survivors remain.** The
+two former survivor mutations (`> -> >=`, `> -> !=`) are now correctly
+recognized by pass 1's static filter as trivially uninteresting *before*
+Dafny is even invoked — a proof of `x > 0` universally implies both
+`x >= 0` and `x != 0` — which is itself a clean, mechanical confirmation
+that the boundary is now tight (filtered_static rose from 4 to 6; killed
+stayed exactly 29; unclassifiable stayed exactly 4 and is unrelated).
+`examples/dosage_calculator/nl_confirmation_dosage_dfy.md` gained an
+amendment recording the decision, the regenerated plain-English summary,
+and the re-confirmation. `dosage.dfy`'s header comment documents the fix
+inline, alongside the Gate C4 fix comment it sits next to.
 
 **The 4 unclassifiable results — a real gap in the mutation engine, not
 in the spec.** All 4 come from mutating exactly one side of the chained

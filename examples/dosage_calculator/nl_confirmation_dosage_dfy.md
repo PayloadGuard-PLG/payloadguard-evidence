@@ -48,3 +48,46 @@ on top of. Gate C6's own deliverable is this recorded confirmation, not
 that follow-on work; do not fold the next-phase adaptation into this
 document or treat it as implied by this sign-off. It should be scoped as
 its own dated decision when it's actually taken up.
+
+## Amendment 2026-07-07 — REQ-GIP-1-8-1 tightened after a Gate C5 finding
+
+Gate C5's mutation-testing run (built the same day, after this sign-off)
+found that postcondition 3's `>=` was not independently load-bearing at
+`infusionRateMlPerHr == 0.0` exactly — real multiplication by exactly
+`0.0` already forces `dose == 0.0` there via the clause's second
+disjunct, so `>=`, `!=`, and `>` all verified identically at that single
+point (2 real mutation-testing survivors, `mutation_report.md`). This
+was reported, not silently changed, since it touched a spec already
+signed off above. **Steven's decision: "go ahead and tighten
+REQ-GIP-1-8-1 to `>`."** `dosage.dfy` changed accordingly, re-verified
+clean (`2 verified, 0 errors`, unchanged), and the mutation suite re-run
+to confirm the fix: the two former survivors are now correctly
+recognized as statically trivial (a proof of `x > 0` universally implies
+both `x >= 0` and `x != 0`, so the pass-1 filter now catches them before
+even invoking Dafny) — zero survivors remain.
+
+### Re-generated summary (`evidence/dafny_nl_summary.py`, 2026-07-07, post-tightening)
+
+```
+# Plain-English summary: `CalculateHourlyDose`
+
+## Parameters
+- `concentrationMgPerMl`: real
+- `infusionRateMlPerHr`: real
+- `maxSafeDoseMgPerHr`: real
+
+## Preconditions (must hold before the method runs)
+1. `concentrationMgPerMl > 0.0` — concentrationMgPerMl is greater than 0.0
+2. `maxSafeDoseMgPerHr > 0.0` — maxSafeDoseMgPerHr is greater than 0.0
+
+## Postconditions (guaranteed to hold on return)
+1. `dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)` — dose equals ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr) *(no requirement cited)*
+2. `0.0 <= dose <= maxSafeDoseMgPerHr` — 0.0 is at most dose is at most maxSafeDoseMgPerHr **[REQ-GIP-1-4-12]**
+3. `infusionRateMlPerHr > 0.0 || dose == 0.0` — infusionRateMlPerHr is greater than 0.0 or dose equals 0.0 **[REQ-GIP-1-8-1]**
+```
+
+Only postcondition 3's operator and gloss changed (`is at least` →
+`is greater than`); everything else is identical to the original
+sign-off above. Presented for confirmation in the same turn as this
+amendment; treated as re-confirmed on the same basis as the original
+sign-off unless Steven flags a correction.

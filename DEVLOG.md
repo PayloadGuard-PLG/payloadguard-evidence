@@ -6,6 +6,68 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5 survivors fixed: REQ-GIP-1-8-1 tightened to `>`
+
+Requested directly, following an out-of-band status message that
+falsely claimed the repo was in an early, mostly-empty state (no Phase
+B, DEVLOG last dated 2026-07-04) - verified directly against git (local
+`main` matched `origin/main` exactly at the real HEAD) and file content
+(README/DEVLOG both showed the real, current state) before responding;
+flagged the discrepancy rather than acting on it. The user's actual
+prior request - interrupted mid-response before this - was "go ahead and
+tighten REQ-GIP-1-8-1 to >"; confirmed and executed once the false
+status claim was cleared up.
+
+- **`dosage.dfy`:** `ensures infusionRateMlPerHr >= 0.0 || dose == 0.0`
+  → `ensures infusionRateMlPerHr > 0.0 || dose == 0.0`. Header comment
+  gained an inline note (alongside the existing Gate C4 fix note)
+  explaining the Gate C5 finding and fix. Re-verified clean: `2
+  verified, 0 errors`, unchanged from before the tightening.
+- **STP suites re-verified for real, not assumed unaffected:**
+  `dosage_stp_suite.dfy` (includes the changed `dosage.dfy`) still
+  verifies clean, `10 verified, 0 errors`, unchanged.
+  `dosage_stp_suite_against_underconstrained.dfy` (includes the
+  untouched, preserved `dosage_underconstrained.dfy`) still correctly
+  fails, `0 verified, 2 errors`, unchanged - both re-captured via their
+  existing runner scripts; only the manifests' timestamps changed.
+- **Mutation suite re-run in full** (`run_mutation_suite.py`, real
+  Dafny invocations, ~45s): **zero survivors remain.** The two former
+  survivor mutations (`> -> >=`, `> -> !=`, previously `>= -> !=`,
+  `>= -> >`) are now correctly recognized by the pass-1 static filter as
+  trivially uninteresting *before* Dafny is even invoked - a proof of
+  `x > 0` universally implies both `x >= 0` and `x != 0` - which is
+  itself a clean, mechanical confirmation that the boundary is now
+  tight, not just an assertion. New counts: killed=29 (unchanged),
+  filtered_static=6 (up from 4), unclassifiable=4 (unchanged, unrelated
+  chain-direction parse-error gap), survived=0 (down from 2).
+  `mutation_report.json`/`.md` and `run_manifest_mutation.json`
+  regenerated to reflect the real re-run.
+- **Gate C6 sign-off amended, not overwritten:** the original
+  2026-07-07 sign-off record
+  (`examples/dosage_calculator/nl_confirmation_dosage_dfy.md`) stays
+  intact as history; a new "Amendment" section records the Gate C5
+  finding, Steven's tightening decision, the regenerated plain-English
+  summary (only postcondition 3's gloss changed, `is at least` → `is
+  greater than`), and treats it as re-confirmed on the same basis as the
+  original sign-off.
+- **Tests updated to match the new real reality, not just made to
+  pass:** `tests/test_dafny_nl_summary.py` (the reverse-flow-clause
+  citation test now matches on `> 0.0`), `tests/test_dafny_mutate.py`
+  (filtered-mutant count 4→6, LOR's expected mutated clause text,
+  renamed/expanded the equality-clause-filter test to also cover the
+  now-tightened reverse-flow clause's own filtered mutations),
+  `tests/test_mutation_report.py` (replaced the "2 named survivors"
+  regression test with a "zero survivors, and the two former survivor
+  mutations are now filtered_static" regression test - so a future
+  regeneration can't let a survivor quietly reappear without a test
+  failing). Full suite: **121 passed**, same count as before (no tests
+  added or removed, only updated).
+- Full documentation set updated to match (`KNOWN_LIMITATIONS.md`,
+  `SYSTEM_BLUEPRINT.md`, the roadmap doc, this entry, README.md, the
+  example's own README). `generate_artifacts.py` re-run as a sanity
+  check: no observable change beyond timestamps, as expected (Gate C5
+  still isn't wired into the matrix pipeline).
+
 ## 2026-07-07 — Gate C5: built for v1 scope, 2 real survivors found
 
 Requested directly, same day as the scoping session: "build it and be

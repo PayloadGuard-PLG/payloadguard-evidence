@@ -26,31 +26,37 @@ def test_report_total_and_outcome_counts():
         counts[r["outcome"]] = counts.get(r["outcome"], 0) + 1
     assert counts == {
         "killed": 29,
-        "filtered_static": 4,
-        "survived": 2,
+        "filtered_static": 6,
         "unclassifiable": 4,
     }
 
 
-def test_the_two_real_survivors_are_named_not_silently_lost():
-    """A real, understood finding (2026-07-07): at infusionRateMlPerHr ==
-    0.0 exactly, real multiplication by zero makes rawDose == 0.0 exactly,
-    so dose == 0.0 already holds independent of the `>=` boundary's exact
-    operator - `>=`, `!=`, and `>` are all satisfied by this
-    implementation at that single point. This is a genuine looseness in
-    REQ-GIP-1-8-1's postcondition (the >=0.0 disjunct's own strictness
-    isn't independently load-bearing), reported to Steven rather than
-    silently 'fixed' in a spec he already signed off on in Gate C6 - see
-    KNOWN_LIMITATIONS.md's Gate C5 section for the decision record. This
-    test exists so a future regeneration can't make this survivor quietly
-    disappear (or newly appear) without a human noticing."""
+def test_no_survivors_remain_after_the_req_gip_1_8_1_tightening():
+    """2026-07-07: mutation testing originally found 2 real survivors -
+    REQ-GIP-1-8-1's `>=` weakened to `!=` or `>` both still verified,
+    because real multiplication by exactly 0.0 makes `dose == 0.0` hold
+    at that boundary independent of the first disjunct's operator. Steven
+    decided to tighten the clause to `>` rather than accept the
+    looseness. Confirmed here: after the fix, the same two mutation
+    targets are no longer even sent to Dafny - the pass-1 static filter
+    now correctly recognizes them as trivial (a proof of `x > 0`
+    universally implies both `x >= 0` and `x != 0`), which is itself
+    evidence the boundary is now tight. See KNOWN_LIMITATIONS.md's Gate
+    C5 section and nl_confirmation_dosage_dfy.md's amendment for the full
+    decision record. This test exists so a future regeneration can't let
+    a survivor quietly reappear without a human noticing."""
     records = _report()
-    survivors = {r["description"] for r in records if r["outcome"] == "survived"}
-    assert survivors == {
-        "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': "
-        ">= -> !=",
-        "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': "
-        ">= -> >",
+    assert not [r for r in records if r["outcome"] == "survived"]
+    reverse_flow_filtered = {
+        r["description"]
+        for r in records
+        if r["outcome"] == "filtered_static" and "': > ->" in r["description"]
+    }
+    assert reverse_flow_filtered == {
+        "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': "
+        "> -> >=",
+        "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': "
+        "> -> !=",
     }
 
 
@@ -84,7 +90,6 @@ def test_run_manifest_records_real_dafny_version_and_matching_counts():
     assert manifest["total_mutants"] == 39
     assert manifest["counts"] == {
         "killed": 29,
-        "filtered_static": 4,
-        "survived": 2,
+        "filtered_static": 6,
         "unclassifiable": 4,
     }

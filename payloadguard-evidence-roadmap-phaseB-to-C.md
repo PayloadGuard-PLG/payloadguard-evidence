@@ -67,14 +67,20 @@ be careful with Dafny... we can consider floating points later, it's a
 known but solvable issue"): `evidence/dafny_mutate.py` generates
 ROR/LOR/AOR/COI mutants against `dosage.dfy`'s requires/ensures clauses;
 `examples/dosage_calculator/run_mutation_suite.py` real-verifies every
-one. Real run: 39 mutants, 29 killed, 4 filtered as statically trivial,
-**2 survived** (a real, understood looseness in REQ-GIP-1-8-1's
+one. Initial real run: 39 mutants, 29 killed, 4 filtered as statically
+trivial, **2 survived** (a real, understood looseness in REQ-GIP-1-8-1's
 postcondition at the `infusionRateMlPerHr == 0.0` boundary — reported to
 Steven for a decision, not silently changed in a spec he already signed
 off on in Gate C6), **4 unclassifiable** (a real gap in the mutation
 engine, not the spec: mutating one side of a chained comparison to a
 descending operator produces a Dafny parse error, not a semantic test).
-AOR/SOR/HOR stay out of v1 scope, checked not assumed. Full detail below.
+**Decision, same day: "go ahead and tighten REQ-GIP-1-8-1 to `>`."**
+`dosage.dfy` changed, re-verified clean (`2 verified, 0 errors`,
+unchanged), mutation suite re-run in full: **zero survivors remain** —
+the two former survivor mutations are now correctly recognized as
+statically trivial before Dafny is even invoked, itself a clean
+confirmation the boundary is now tight. AOR/SOR/HOR stay out of v1
+scope, checked not assumed. Full detail below.
 
 ## Where we are
 
@@ -113,10 +119,12 @@ AOR/SOR/HOR stay out of v1 scope, checked not assumed. Full detail below.
   See below.
 - Phase C Gate C5 (mutation testing) — BUILT for v1 scope 2026-07-07:
   `evidence/dafny_mutate.py` + `run_mutation_suite.py`. 39 mutants
-  against `dosage.dfy::CalculateHourlyDose`: 29 killed, 4 filtered
-  static, 2 survived (real REQ-GIP-1-8-1 looseness, reported not fixed),
-  4 unclassifiable (real mutation-engine gap: chain-direction parse
-  errors). AOR/SOR/HOR out of v1 scope, checked not assumed. See below.
+  against `dosage.dfy::CalculateHourlyDose` found 2 real REQ-GIP-1-8-1
+  survivors, reported then FIXED same day (tightened `>=` to `>` on
+  Steven's decision) — zero survivors remain after re-run (29 killed, 6
+  filtered static, 4 unclassifiable — a real, unrelated mutation-engine
+  gap: chain-direction parse errors). AOR/SOR/HOR out of v1 scope,
+  checked not assumed. See below.
 
 ## Guiding principle (unchanged)
 
@@ -768,23 +776,36 @@ named and reported exactly like Gate C4's spec gap was, not smoothed over.
 built same day as the scoping session below, on direct instruction
 ("build it and be careful with Dafny... we can consider floating points
 later, it's a known but solvable issue" — read as: build ROR/LOR/COI on
-clauses now, defer the AOR/division-by-zero risk named below). Real run
-against `dosage.dfy::CalculateHourlyDose`: 39 mutants — 29 killed, 4
-filtered as statically trivial, **2 survived** (`infusionRateMlPerHr >=
-0.0 || dose == 0.0` weakened to `!=` or `>` at the first disjunct both
-still verify, because real multiplication by exactly `0.0` already makes
-`dose == 0.0` hold at that boundary regardless of the first disjunct's
-operator — a real, understood REQ-GIP-1-8-1 postcondition looseness,
-**reported to Steven for a decision, not silently changed** in a spec
-already signed off in Gate C6), **4 unclassifiable** (mutating one side
-of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending
-operator is a genuine Dafny *parse* error — a real gap in the mutation
-engine's understanding of chain-direction compatibility, not a spec
-finding). AOR/SOR/HOR stayed out of v1 scope exactly as scoped below,
+clauses now, defer the AOR/division-by-zero risk named below). Initial
+real run against `dosage.dfy::CalculateHourlyDose`: 39 mutants — 29
+killed, 4 filtered as statically trivial, **2 survived**
+(`infusionRateMlPerHr >= 0.0 || dose == 0.0` weakened to `!=` or `>` at
+the first disjunct both still verify, because real multiplication by
+exactly `0.0` already makes `dose == 0.0` hold at that boundary
+regardless of the first disjunct's operator — a real, understood
+REQ-GIP-1-8-1 postcondition looseness, **reported to Steven for a
+decision, not silently changed** in a spec already signed off in Gate
+C6), **4 unclassifiable** (mutating one side of the chained
+`0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator is a
+genuine Dafny *parse* error — a real gap in the mutation engine's
+understanding of chain-direction compatibility, not a spec finding).
+**Decision, same day: "go ahead and tighten REQ-GIP-1-8-1 to `>`."**
+`dosage.dfy` changed, re-verified clean (`2 verified, 0 errors`,
+unchanged), mutation suite re-run in full to confirm rather than assume
+the fix: **zero survivors remain** — the two former survivor mutations
+(`> -> >=`, `> -> !=`) are now correctly recognized by the pass-1 static
+filter as trivially uninteresting *before* Dafny is even invoked (a
+proof of `x > 0` universally implies both `x >= 0` and `x != 0`), a
+clean mechanical confirmation the boundary is now tight
+(`filtered_static` rose 4→6, `killed` unchanged at 29, `unclassifiable`
+unchanged at 4 and unrelated). `nl_confirmation_dosage_dfy.md` gained an
+amendment recording the decision and the regenerated, re-confirmed
+summary. AOR/SOR/HOR stayed out of v1 scope exactly as scoped below,
 checked not assumed (SOR/HOR: no set/heap syntax anywhere in the spec,
 confirmed by test; AOR: implemented and exercised, correctly returns
 zero mutants since its one site lives in a function body, out of
-clause-mutation scope). 16 new tests; full suite 121 passed.
+clause-mutation scope). 16 tests, updated to match the post-fix reality;
+full suite 121 passed.
 
 What follows is the original same-day sub-plan this build actually
 followed — kept as the architectural record, not superseded by the

@@ -5,13 +5,19 @@ Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT for v1 scope
 + examples/dosage_calculator/run_mutation_suite.py. Real run against
 dosage.dfy::CalculateHourlyDose: 39 mutants, 29 killed, 4 filtered as
 statically trivial, 2 genuinely SURVIVED (a real, understood REQ-GIP-
-1-8-1 postcondition looseness at the infusionRateMlPerHr==0.0 boundary,
-reported to Steven for a decision rather than silently altered - the
-spec he already signed off on in Gate C6), 4 UNCLASSIFIABLE (a real
-mutation-engine gap, not a spec finding: mutating one side of a chained
-comparison to a descending operator produces a Dafny parse error).
-AOR/SOR/HOR explicitly out of v1 scope, checked not assumed. 16 new
-tests; full suite now 121 passed. Earlier the same week: Gate C6,
+1-8-1 postcondition looseness at the infusionRateMlPerHr==0.0 boundary),
+4 UNCLASSIFIABLE (a real mutation-engine gap, not a spec finding:
+mutating one side of a chained comparison to a descending operator
+produces a Dafny parse error). The 2 survivors were reported to Steven
+rather than silently altering a spec he'd already signed off on in Gate
+C6 - his decision, same day: "go ahead and tighten REQ-GIP-1-8-1 to >".
+dosage.dfy changed, re-verified clean (2 verified, 0 errors, unchanged),
+mutation suite re-run: zero survivors remain (filtered_static now 6,
+killed still 29, unclassifiable still 4 and unrelated) -
+nl_confirmation_dosage_dfy.md gained an amendment recording the decision
+and re-confirming the regenerated summary. AOR/SOR/HOR explicitly out of
+v1 scope, checked not assumed. 16 tests, updated to match; full suite
+121 passed. Earlier the same week: Gate C6,
 NL-dialogue confirmation, BUILT and SIGNED OFF: evidence/dafny_nl_summary.py
 mechanically summarizes a Dafny method's requires/ensures clauses in
 plain English, cross-checked against dafny_spec_lint's canonical
@@ -232,7 +238,13 @@ payloadguard-evidence/
 │   │                            fix pinned dose == ExpectedDose(...)).
 │   │                            REQ-DOSE-003 excluded by name (Dafny
 │   │                            real has no IEEE overflow concept -
-│   │                            confirmed empirically)
+│   │                            confirmed empirically). Gate C5
+│   │                            (2026-07-07): REQ-GIP-1-8-1's ensures
+│   │                            clause tightened >= -> > after mutation
+│   │                            testing found the >= boundary wasn't
+│   │                            independently load-bearing; still
+│   │                            verifies clean (2 verified, 0 errors,
+│   │                            unchanged)
 │   ├── dosage_broken.dfy        Gate C1: Sample-B-equivalent broken variant
 │   │                            (clamp removed); fails for real (0 verified,
 │   │                            2 errors, exit code 4)
@@ -307,11 +319,15 @@ payloadguard-evidence/
 │   │                            run_manifest_mutation.json instead
 │   ├── mutation_report.json/.md  Gate C5: real captured outcome of all
 │   │                            39 mutants against dosage.dfy::
-│   │                            CalculateHourlyDose - 29 killed, 4
-│   │                            filtered_static, 2 survived (a real,
-│   │                            reported REQ-GIP-1-8-1 looseness,
-│   │                            decision pending), 4 unclassifiable (a
-│   │                            real mutation-engine gap: chained-
+│   │                            CalculateHourlyDose, post REQ-GIP-1-8-1
+│   │                            fix - 29 killed, 6 filtered_static, 0
+│   │                            survived (2 real survivors found and
+│   │                            fixed same day - REQ-GIP-1-8-1's `>=`
+│   │                            tightened to `>` on Steven's decision;
+│   │                            the two former survivor mutations are
+│   │                            now correctly filtered as statically
+│   │                            trivial), 4 unclassifiable (a real
+│   │                            mutation-engine gap, unrelated: chained-
 │   │                            comparison direction incompatibility
 │   │                            produces a Dafny parse error, not a
 │   │                            semantic test)
@@ -744,7 +760,8 @@ REQ-GIP-1-4-12 and REQ-GIP-1-8-1; `run_gate()`'s facts count is 9, not
 findings: `KNOWN_LIMITATIONS.md`.
 
 **Gate C5 (mutation testing) is now built for v1 scope (2026-07-07),
-following the same-day scoping session, and found 2 real survivors.**
+following the same-day scoping session, found 2 real survivors, and both
+were fixed the same day on Steven's decision.**
 `evidence/dafny_mutate.py` generates ROR/LOR/AOR/COI mutants against
 `dosage.dfy`'s requires/ensures clauses; `examples/dosage_calculator/run_mutation_suite.py`
 real-verifies every one against the installed Dafny 4.11.0 binary,
@@ -766,7 +783,16 @@ because real multiplication by exactly `0.0` makes `dose == 0.0` already
 hold at that boundary independent of the first disjunct's operator; a
 real, understood looseness in REQ-GIP-1-8-1's postcondition, reported to
 Steven for a decision rather than silently changed in a spec he already
-signed off on in Gate C6 — **4 unclassifiable** — mutating one side of
+signed off on in Gate C6. **Decision: "go ahead and tighten REQ-GIP-1-8-1
+to `>`."** `dosage.dfy` changed, re-verified clean (`2 verified, 0 errors`,
+unchanged), mutation suite re-run in full: **zero survivors remain** —
+the two former survivor mutations are now recognized as statically
+trivial by pass 1 *before* Dafny is even invoked (a proof of `x > 0`
+universally implies both `x >= 0` and `x != 0`), itself a clean
+mechanical confirmation the boundary is now tight.
+`nl_confirmation_dosage_dfy.md` gained an amendment recording the
+decision and the regenerated, re-confirmed summary. **4 unclassifiable,
+unaffected by the fix** — mutating one side of
 the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator
 produces a genuine Dafny *parse* error (chained comparisons must stay
 direction-consistent), a real gap in the mutation engine, not the spec,
