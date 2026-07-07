@@ -1,9 +1,11 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Phase C Gate C1 built: a real Dafny spec for the
-dosage kernel, a capture runner pair, and evidence/dafny_adapter.py's
-false-zero-guard parser, with a committed regression test — not yet wired
-into build_matrix() or any generator, that's Gate C2 — see
+Last updated: 2026-07-07 (Phase C Gate C2 built: ruling R3 supersedes R2 —
+assert_no_realized_proven now permits PROVEN only for method=="dafny"
+records with verifier_completion_status=="completed"; every other method
+stays permanently excluded, checked explicitly in 8 new tests. Gate C1
+(Dafny spec, capture runner, false-zero-guard parser) was built the same
+day. Neither is wired into build_matrix() or any generator yet — see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
@@ -53,18 +55,24 @@ payloadguard-evidence/
 │                                it); folds in CONFLICT Type 1 as its
 │                                first step, before assembling any
 │                                record; derive_intent (R1);
-│                                assert_no_realized_proven (R2). The
-│                                original per-variant functions and the
-│                                test that checked build_matrix() against
-│                                them are deleted (Step 4) - git history
-│                                holds them if ever needed again
+│                                assert_no_realized_proven (R3, Phase C
+│                                Gate C2 - supersedes R2: PROVEN permitted
+│                                only for method=="dafny" records with
+│                                verifier_completion_status=="completed";
+│                                every other method stays permanently
+│                                excluded). The original per-variant
+│                                functions and the test that checked
+│                                build_matrix() against them are deleted
+│                                (Step 4) - git history holds them if ever
+│                                needed again
 │   └── dafny_adapter.py         Gate C1: parse_dafny_capture() - the
 │                                 false-zero guard, regex on the verifier's
 │                                 own summary line, never a substring match
 │                                 or bare exit_code. NOT called from
-│                                 build_matrix() or any generator - wiring
-│                                 a Dafny-sourced PROVEN result into the
-│                                 matrix pipeline is Gate C2's job
+│                                 build_matrix() or any generator - no
+│                                 binder yet assembles a dafny-method
+│                                 record into a live matrix row, though R3
+│                                 (Gate C2) now permits one to exist there
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -119,7 +127,9 @@ payloadguard-evidence/
     ├── conftest.py              Import-path plumbing
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
     ├── test_overflow_probe.py   Deterministic IEEE overflow as executable fact
-    ├── test_structural_proven_check.py  R2 structural rule over real artifacts
+    ├── test_structural_proven_check.py  R3 structural rule over real
+    │                            artifacts (formerly R2; corruption cases
+    │                            unchanged by the Gate C2 migration)
     ├── test_fact_equality.py    B2 gate: facts/intent/bounds identical across
     │                            views; base = symbolic-subset legacy view
     ├── test_conflict_check.py  Gate 2 CONFLICT Types 1+2: three ratified
@@ -132,11 +142,18 @@ payloadguard-evidence/
     ├── test_cli.py              Gate 2 CLI: subprocess-driven, all four
     │                            variants match committed artifacts;
     │                            Tier-1 error paths; stdout/file modes
-    └── test_dafny_adapter.py    Gate C1: real committed clean + broken
-                                 captures parse correctly; false-zero
-                                 substring-trap regression; belt-and-
-                                 suspenders check that assert_no_realized_proven
-                                 still blocks this adapter's PROVEN output
+    ├── test_dafny_adapter.py    Gate C1: real committed clean + broken
+    │                            captures parse correctly; false-zero
+    │                            substring-trap regression; belt-and-
+    │                            suspenders check that assert_no_realized_proven
+    │                            still blocks this adapter's PROVEN output
+    └── test_proven_exclusivity.py  Gate C2, ruling R3: positive (real
+                                 dafny PROVEN accepted) + explicit
+                                 negatives (crosshair/concrete_test/
+                                 missing-method/incomplete-status all
+                                 still refused, checked not assumed);
+                                 row-level shape; regression over all
+                                 four committed matrix artifacts
 ```
 
 ## 3. Data flow (end to end)
@@ -168,7 +185,9 @@ payloadguard-evidence/
               │  3 derive_intent(): requirement-scoped, computed ONCE; │
               │      views carry it read-only            [ruling R1]   │
               │  4 assert_no_realized_proven(): generation fails if    │
-              │      any realized strength == PROVEN     [ruling R2]   │
+              │      any realized strength == PROVEN, UNLESS method   │
+              │      == "dafny" AND verifier_completion_status ==     │
+              │      "completed"                          [ruling R3] │
               │  5 render JSON + Markdown with per-strength caveats    │
               └────────────────────┬───────────────────────────────────┘
                                    ▼
@@ -265,9 +284,17 @@ runner pair, and `evidence/dafny_adapter.py::parse_dafny_capture` — the
 false-zero guard, implemented and regression-tested
 (`tests/test_dafny_adapter.py`, 6 tests). REQ-DOSE-003 is named as an
 explicit scope exclusion from the Dafny spec (Dafny `real` has no IEEE
-overflow concept). The adapter produces a `VerificationResult` in Python
-only — it is not wired into `build_matrix()` or any generator, and
-`assert_no_realized_proven` is confirmed (by test) to still block PROVEN
-from reaching any rendered matrix row. That wiring is Gate C2 (the
-PROVEN-exclusivity migration), still unbuilt. Full findings:
-`KNOWN_LIMITATIONS.md`.
+overflow concept). **Gate C2 (PROVEN's exclusivity migration) is also
+now built (2026-07-07):** ruling R3 supersedes R2 —
+`assert_no_realized_proven` permits PROVEN as a realized strength only
+when a record's `method == "dafny"` and its `verifier_completion_status
+== "completed"`; every other method, including a record with no method
+at all, remains permanently excluded, checked explicitly in 8 new tests
+(`tests/test_proven_exclusivity.py`) rather than assumed from the fact
+that no binder produces one yet. Neither gate is wired into
+`build_matrix()` or any generator — no binder yet assembles a
+Dafny-sourced record into a live matrix row, so R3's positive branch is
+proven correct in isolation, not yet exercised end-to-end. That wiring
+belongs alongside Gate C4 (STPs, "alongside the first real spec") per
+the roadmap's suggested build order; trusting a live PROVEN claim in
+earnest still waits on Gate C3. Full findings: `KNOWN_LIMITATIONS.md`.

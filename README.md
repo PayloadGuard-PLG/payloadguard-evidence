@@ -41,9 +41,17 @@ verifies clean; REQ-DOSE-003 named as an explicit scope exclusion —
 Dafny's `real` type has no IEEE overflow concept), a capture runner
 pair, and `evidence/dafny_adapter.py`'s false-zero-guard parser (regex
 on the verifier's own summary line, regression-tested against a
-substring trap). Not yet wired into `build_matrix()` or any generator —
-that's Gate C2 (PROVEN exclusivity migration), still ahead. See
-`KNOWN_LIMITATIONS.md` for the live gate ledger.
+substring trap). **Gate C2 is also now built:** ruling **R3** supersedes
+R2 — `assert_no_realized_proven` now permits PROVEN as a realized
+strength only for a record with `method == "dafny"` **and**
+`verifier_completion_status == "completed"`; every other method
+(`crosshair`, `concrete_test`, or no method at all) remains permanently
+excluded, checked explicitly in 8 new tests
+(`tests/test_proven_exclusivity.py`), not by omission. Neither gate is
+wired into `build_matrix()` or any generator yet — no binder assembles a
+Dafny-sourced record into a live matrix row, so no committed artifact's
+rendered content has changed. See `KNOWN_LIMITATIONS.md` for the live
+gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

@@ -18,8 +18,12 @@ Shared discipline (unchanged from manual_matrix.py):
     (derive_intent, ruling R1); projections carry it read-only.
   - Intent-mismatch notes inline intended_method verbatim (ruling R2:
     quoting authored metadata is fidelity, not a violation); the structural
-    rule enforced by assert_no_realized_proven() is that PROVEN never
-    appears as a REALIZED strength in any record or rendered cell.
+    rule enforced by assert_no_realized_proven() (ruling R3, Phase C Gate
+    C2 — supersedes the original R2 hard-block) is that PROVEN never
+    appears as a REALIZED strength in any record or rendered cell UNLESS
+    that record's method is "dafny" and its verifier_completion_status is
+    "completed" — CrossHair/pytest-backed records remain permanently
+    excluded from PROVEN, checked explicitly, not by omission.
 """
 
 import datetime
@@ -162,22 +166,46 @@ def _view_notes(intent_entry, method):
 
 
 def assert_no_realized_proven(matrix):
-    """R2 structural rule: PROVEN must never appear as a realized/assigned
-    strength in any evidence record or rendered strength cell. (It MAY appear
-    inside intent-mismatch notes quoting authored metadata.) Called by every
-    variant builder before returning; generation fails hard on violation."""
+    """R3 structural rule (Phase C, Gate C2 — supersedes R2): PROVEN must
+    never appear as a realized/assigned strength in any evidence record or
+    rendered strength cell UNLESS that record's method is exactly "dafny"
+    AND it carries verifier_completion_status == "completed". For every
+    other method — crosshair, concrete_test, or no method at all — PROVEN
+    remains permanently, unconditionally blocked, exactly as under R2; this
+    function does not know or care whether a Dafny-shaped record actually
+    came from evidence.dafny_adapter.parse_dafny_capture (that adapter is
+    structurally incapable of returning PROVEN unless its own exit-code,
+    summary-line, and false-zero checks already passed — see
+    evidence/dafny_adapter.py) — it only re-checks the two cheapest, most
+    load-bearing signals of that fact at the matrix boundary, in case a
+    future binder ever assembles a Dafny record by hand instead of through
+    the adapter. (PROVEN MAY still appear inside intent-mismatch notes
+    quoting authored metadata verbatim — that's text, not a strength
+    field.) Called by every variant builder before returning; generation
+    fails hard on violation."""
     for row in matrix["rows"]:
         for rec in row.get("evidence", []):
-            if rec["strength"] == "PROVEN":
-                raise AssertionError(
-                    "structural PROVEN check failed: evidence record for "
-                    f"{row['requirement_id']} carries realized strength PROVEN"
-                )
-        if row.get("strength") == "PROVEN":
-            raise AssertionError(
-                "structural PROVEN check failed: row for "
-                f"{row['requirement_id']} carries realized strength PROVEN"
-            )
+            _assert_proven_gate(row, rec)
+        _assert_proven_gate(row, row)
+
+
+def _assert_proven_gate(row, rec):
+    if rec.get("strength") != "PROVEN":
+        return
+    if rec.get("method") != "dafny":
+        raise AssertionError(
+            "structural PROVEN check failed: record for "
+            f"{row['requirement_id']} carries realized strength PROVEN "
+            f"from method {rec.get('method')!r}, not dafny (R3 permits "
+            "PROVEN only for dafny-sourced, completed records)"
+        )
+    if rec.get("verifier_completion_status") != "completed":
+        raise AssertionError(
+            "structural PROVEN check failed: dafny-sourced record for "
+            f"{row['requirement_id']} carries realized strength PROVEN "
+            "without verifier_completion_status == 'completed' "
+            f"(got {rec.get('verifier_completion_status')!r})"
+        )
 
 
 def derive_bounds_block(metadata, manifest):

@@ -4,12 +4,17 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-07 (Phase C Gate C1 BUILT: a real Dafny spec for
-the dosage kernel, verified for real against Dafny 4.11.0; a capture
-runner mirroring run_verify.py's discipline; a parser implementing the
-false-zero guard, with a committed regression test proving it isn't
-fooled by a substring trap. Not yet wired into any traceability matrix —
-that's Gate C2. One item remains blocked: Gate C3's fourth vector).
+Last updated: 2026-07-07 (Phase C Gate C2 BUILT: ruling R3 — PROVEN may
+now appear as a realized strength only when a record's method is
+"dafny" AND its verifier_completion_status is "completed"; CrossHair and
+concrete_test records remain permanently excluded, checked explicitly
+in 8 new tests, not by omission. Gate C1 (the Dafny adapter itself) was
+built the same day: a real Dafny spec for the dosage kernel, verified
+for real against Dafny 4.11.0; a capture runner mirroring
+run_verify.py's discipline; a parser implementing the false-zero guard.
+Still not wired into any live traceability matrix — that's the
+first-real-spec integration alongside Gate C4 (STPs). One item remains
+blocked: Gate C3's fourth vector).
 
 | Gate | Status | Summary |
 |---|---|---|
@@ -18,9 +23,10 @@ that's Gate C2. One item remains blocked: Gate C3's fourth vector).
 | Gate 4 — binding authorship | **DECIDED: option 3 (both, cross-checked); Type 1 now implements this for all three metadata shapes, incl. variant C** | Decision and mechanism below. |
 | Gate 5 — single-evidence-type fixture for variant C | **FULLY RESOLVED (2026-07-06)** | `tests/test_single_evidence_type.py`: both symbolic-only AND concrete-only in-memory fixtures now appear in exactly one variant-C artifact each. The concrete-only case was impossible until today: `_bind_self_describing` bound a symbolic record to every requirement unconditionally, regardless of what it declared. Details below. |
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
-| Phase C Gate C1 — Dafny adapter | **BUILT 2026-07-07** | Real Dafny 4.11.0 spec for the dosage kernel (`examples/dosage_calculator/dosage.dfy`, verifies clean: `1 verified, 0 errors`) plus a deliberately broken variant (`dosage_broken.dfy`, fails for real: `0 verified, 2 errors`, exit 4); a capture runner pair (`run_verify_dafny.py` / `run_verify_dafny_broken.py`) mirroring `run_verify.py`'s discipline, with real committed captures; and `evidence/dafny_adapter.py::parse_dafny_capture`, implementing the false-zero guard via regex on the verifier's own summary line (never a substring match, never bare exit code), refusing on nonzero exit, missing summary line, or nonzero error count. Six tests in `tests/test_dafny_adapter.py`, including a substring-trap regression and a check that `assert_no_realized_proven` still blocks this adapter's PROVEN output from ever reaching a matrix row. REQ-DOSE-003 is explicitly scoped out of the Dafny spec (Dafny `real` has no IEEE overflow concept — confirmed empirically). Not yet wired into `build_matrix()` or any generator — that's Gate C2 (PROVEN exclusivity migration), still unbuilt. |
+| Phase C Gate C1 — Dafny adapter | **BUILT 2026-07-07** | Real Dafny 4.11.0 spec for the dosage kernel (`examples/dosage_calculator/dosage.dfy`, verifies clean: `1 verified, 0 errors`) plus a deliberately broken variant (`dosage_broken.dfy`, fails for real: `0 verified, 2 errors`, exit 4); a capture runner pair (`run_verify_dafny.py` / `run_verify_dafny_broken.py`) mirroring `run_verify.py`'s discipline, with real committed captures; and `evidence/dafny_adapter.py::parse_dafny_capture`, implementing the false-zero guard via regex on the verifier's own summary line (never a substring match, never bare exit code), refusing on nonzero exit, missing summary line, or nonzero error count. Six tests in `tests/test_dafny_adapter.py`, including a substring-trap regression and a check that `assert_no_realized_proven` still blocks this adapter's PROVEN output from ever reaching a matrix row. REQ-DOSE-003 is explicitly scoped out of the Dafny spec (Dafny `real` has no IEEE overflow concept — confirmed empirically). |
+| Phase C Gate C2 — PROVEN exclusivity migration | **BUILT 2026-07-07** | Ruling **R3** (supersedes R2): `assert_no_realized_proven` (`evidence/render/matrix_variants.py`) now permits PROVEN as a realized strength only when a record's `method == "dafny"` AND `verifier_completion_status == "completed"`; every other method — including a record with no method at all — is still hard-blocked, exactly as under R2. 8 new tests in `tests/test_proven_exclusivity.py`: a positive case (a real Dafny PROVEN record, produced the same way Gate C1's adapter produces it, is accepted), explicit negatives for crosshair and concrete_test records forced to claim PROVEN (checked explicitly, not by omission), a missing-method case, two defense-in-depth cases (a `method == "dafny"` record without a completed status is still refused), the row-level-cell shape (variant B/C), and a regression check that all four committed matrix artifacts — none of which contain a dafny record today — still pass unchanged. Still not wired into `build_matrix()` or any generator; a Dafny-sourced record cannot yet reach a live matrix row at all, so R3's positive branch is proven correct in isolation, not yet exercised end-to-end. |
 | Phase C Gate C3 — specification-stripping vector | **BLOCKED, named** | The fourth Dafny output-parsing vulnerability (of four) referenced an LLM-self-healing-loop scenario but the source material was cut off before detail was captured. Needs a follow-up read of the original document before this vector can be scoped at all — not inferred from the name. |
-| Phase C interface: `verifier_completion_status` on VerificationResult | **NOTED for Gate 2** | The Gate 2 binder/schema must reserve room for this field (Blueprint false-zero trap) and keep strength-assignment adapter-scoped so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements even after the Dafny adapter exists. Phase C now has four concrete mechanisms (STPs, mutation testing, sharpened false-zero parsing, NL-dialogue confirmation) — see `payloadguard-evidence-roadmap-phaseB-to-C.md`. |
+| Phase C interface: `verifier_completion_status` on VerificationResult | **RESOLVED via Gate C1 + C2** | The field exists on `VerificationResult` (`evidence/model.py`), is set by Gate C1's adapter, and is now load-bearing in Gate C2's R3 check — PROVEN requires it to equal `"completed"`, not just a matching method label. Strength-assignment stays adapter-scoped, so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -636,6 +642,89 @@ for guaranteeing the toolchain is ready before any command runs).
 Validated by running it directly in this session (exit 0, ~1.4s on the
 already-provisioned path) and confirming `dafny --version` and the full
 test suite (41 passed) both work immediately after.
+
+## Phase C Gate C2 — PROVEN's exclusivity migration: BUILT (2026-07-07)
+
+Requested directly: "start gate C2." The roadmap's design for this gate
+was already fully specified (`payloadguard-evidence-roadmap-phaseB-to-C.md`,
+Gate C2 section) before this build — this session implemented that
+ratified design rather than inventing a new one.
+
+**The rule (ruling R3, supersedes R2):** `assert_no_realized_proven`
+(`evidence/render/matrix_variants.py`) previously hard-failed if ANY
+record anywhere claimed PROVEN, full stop, no exceptions. It now permits
+PROVEN as a realized strength under exactly one condition: the record's
+`method` field equals `"dafny"` **and** its `verifier_completion_status`
+field equals `"completed"`. Both conditions are required — a record
+naming `method="dafny"` alone is not enough; a hand-assembled or
+corrupted record that skipped the adapter's own checks is still refused.
+Every other method — `crosshair`, `concrete_test`, or a row/record with
+no method at all (e.g. a scope-GAP row) — remains permanently,
+unconditionally excluded from PROVEN, exactly as under R2.
+
+**Why the completion-status check is real defense-in-depth, not
+redundant paranoia:** `evidence/dafny_adapter.py::parse_dafny_capture` is
+already structurally incapable of returning a PROVEN
+`VerificationResult` unless its own exit-code, summary-line, and
+false-zero checks all passed — so in the adapter's own output, `method
+== "dafny"` and `verifier_completion_status == "completed"` are always
+both true together. R3 re-checks both anyway, at the matrix boundary,
+because `assert_no_realized_proven` has no way to know whether a future
+binder assembled a given record through the adapter or by hand; the
+check must hold regardless of how the record got there, not just for
+today's one call site.
+
+**8 new tests, `tests/test_proven_exclusivity.py`** — the roadmap named
+two required cases (a positive and a negative); this build has both plus
+additional defense-in-depth and shape coverage:
+1. **Positive:** a real Dafny PROVEN record, produced via
+   `parse_dafny_capture` against the real committed clean capture (the
+   same one Gate C1 verified), is accepted by `assert_no_realized_proven`
+   without raising.
+2. **Negative, crosshair:** a `method="crosshair"` record with
+   `strength="PROVEN"` and a completed status is refused — checked
+   explicitly with a real fixture, not inferred from the absence of a
+   binder that would produce one.
+3. **Negative, concrete_test:** same property, the other permanently-
+   excluded method.
+4. **Negative, missing method:** a record with no `method` key at all
+   (mirrors a scope-GAP row's actual shape) is refused, not silently
+   accepted because there's nothing to compare against `"dafny"`.
+5. **Negative, dafny method without completed status:** a record naming
+   `method="dafny"` but `verifier_completion_status=None` is still
+   refused — the method label alone is not trusted.
+6. **Negative, dafny method with an explicit incomplete status:** same
+   property with a non-`None`, non-`"completed"` value.
+7. **Row-level shape:** variant B/C's rows carry `strength`/`method`
+   directly on the row (not nested in an `evidence` list) — confirmed
+   the same rule applies to that shape too.
+8. **Regression:** all four committed matrix artifacts (none of which
+   contain a dafny record today) still pass `assert_no_realized_proven`
+   unchanged — R3 does not alter behavior for the live, all-CrossHair/
+   concrete-test dataset.
+
+**Existing structural tests unaffected, verified not assumed:**
+`tests/test_structural_proven_check.py`'s corruption cases (a
+`crosshair`-method record forced to `PROVEN`) still raise under R3 with
+the identical error-message substring (`"realized strength PROVEN"`) —
+its assertions needed no changes, confirming R3 is a strict relaxation
+for one specific, checked case rather than a broadening of the rule in
+general. Full suite re-run after this build: 55 passed (47 prior + 8
+new). The full `generate_artifacts.py` pipeline was also re-run,
+producing zero observable change to any committed matrix artifact beyond
+`generated_utc` timestamps — confirming R3 has no effect on the live
+pipeline today, since no binder yet produces a dafny-method record.
+
+**Explicitly not done here, and not this gate's job:** no binder in
+`evidence/render/matrix_variants.py` (`_bind_declared`, `_bind_shadow`,
+`_bind_self_describing`) was changed to actually assemble a Dafny-sourced
+record into a live matrix row. R3 makes that *possible* without
+violating the structural gate; it does not make it *happen*. Per the
+roadmap's own suggested build order, wiring a real Dafny record into the
+matrix pipeline belongs alongside Gate C4 (Spec-Testing Proofs,
+"alongside the first real spec"), and trusting a live PROVEN claim in
+earnest still waits on Gate C3's parser hardening. Gate C2's job was
+narrowly the structural rule change — done.
 
 ## What's left for Gate 2
 

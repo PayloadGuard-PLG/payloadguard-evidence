@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant A: evidence array per requirement)
 
-Generated (UTC): 2026-07-07T10:01:52.637899+00:00
+Generated (UTC): 2026-07-07T10:18:31.782100+00:00
 Tool versions: {'crosshair': 'crosshair-tool 0.0.107'}
 Declared bounds (intended envelope): {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1}
 Effective bounds (demonstrated by capture): {'per_condition_timeout_s': 30}
