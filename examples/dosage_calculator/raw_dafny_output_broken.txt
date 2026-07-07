@@ -1,0 +1,22 @@
+dosage_broken.dfy(17,0): Error: a postcondition could not be proved on this return path
+   |
+17 | {
+   | ^
+
+dosage_broken.dfy(15,14): Related location: this is the postcondition that could not be proved
+   |
+15 |   ensures 0.0 <= dose <= maxSafeDoseMgPerHr
+   |               ^^
+
+dosage_broken.dfy(17,0): Error: a postcondition could not be proved on this return path
+   |
+17 | {
+   | ^
+
+dosage_broken.dfy(15,22): Related location: this is the postcondition that could not be proved
+   |
+15 |   ensures 0.0 <= dose <= maxSafeDoseMgPerHr
+   |                       ^^
+
+
+Dafny program verifier finished with 0 verified, 2 errors

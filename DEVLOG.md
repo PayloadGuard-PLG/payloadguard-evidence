@@ -6,6 +6,77 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Phase C Gate C1 built: real Dafny spec, capture runner, false-zero-guard adapter
+
+Requested directly: "I need the C1 local build implementation" - not
+just the toolchain research from the day before, the actual gate build.
+
+- **`examples/dosage_calculator/dosage.dfy`** - a real Dafny method,
+  `CalculateHourlyDose`, translated from `dosage.py`'s contracts
+  (mirrors the clamping shape: `requires concentrationMgPerMl > 0.0`,
+  `requires maxSafeDoseMgPerHr > 0.0`, `ensures 0.0 <= dose <=
+  maxSafeDoseMgPerHr`, `ensures infusionRateMlPerHr >= 0.0 || dose ==
+  0.0`). Verified for real against Dafny 4.11.0: `Dafny program
+  verifier finished with 1 verified, 0 errors`, exit 0.
+- **REQ-DOSE-003 explicitly scoped out of the Dafny spec** - checked,
+  not assumed: `y := x / 0.0` on Dafny's `real` type is itself a
+  flagged verification error, not a silent `inf`. Dafny reals are
+  exact/arbitrary-precision with no IEEE overflow/infinity/NaN concept
+  at all, so "finite result under overflow" cannot be faithfully stated
+  as a Dafny postcondition. Named here as a deliberate exclusion rather
+  than silently dropped or wrongly claimed proven. `weight_kg` also
+  intentionally omitted (unused precondition-only guard in the Python
+  original).
+- **`dosage_broken.dfy`** - the Sample-B-equivalent broken variant
+  (clamp removed). Fails for real: `0 verified, 2 errors`, exit code 4
+  (not 1 - confirms the exit-code finding from the prior day's
+  toolchain research, now exercised on the actual dosage spec).
+- **`run_verify_dafny.py` / `run_verify_dafny_broken.py`** - capture
+  runners mirroring `run_verify.py` exactly: subprocess `dafny verify`,
+  commit verbatim stdout+stderr and a run manifest (tool, tool_version,
+  command, exit_code, started_utc, target). Both run for real, producing
+  genuine committed captures - `raw_dafny_output.txt`,
+  `run_manifest_dafny.json`, `raw_dafny_output_broken.txt`,
+  `run_manifest_dafny_broken.json`. No fabricated output anywhere.
+- **`evidence/dafny_adapter.py::parse_dafny_capture`** - the false-zero
+  guard, sharpened beyond the originally-planned substring floor.
+  Parses the verifier's own summary line via regex (`Dafny program
+  verifier finished with (\d+) verified, (\d+) errors?`) and checks the
+  parsed error count - never a blind `"0 errors" in raw_output`
+  substring match, which a printed error message could coincidentally
+  contain. Refuses, in order: nonzero exit code (cheapest, checked
+  first); no summary line found (a crash, timeout, or a `dafny audit`-
+  style "did not attempt verification" message must not be silently
+  treated as success just because exit_code happens to be 0); nonzero
+  parsed error count. `evidence/model.py` gained
+  `verifier_completion_status: Optional[str] = None` on
+  `VerificationResult` (purely additive).
+- **`tests/test_dafny_adapter.py`** - six tests, all passing. One found
+  and fixed an incorrect test expectation during writing: the real
+  broken capture's `exit_code=4` triggers the exit-code refusal before
+  the summary line is ever parsed, so
+  `test_refuses_real_committed_broken_capture` was corrected to expect
+  `"does not report a clean pass"` (not a summary-line error match).
+  The load-bearing regression,
+  `test_false_zero_guard_is_not_fooled_by_a_substring_trap`, constructs
+  raw output containing the literal substring `"0 errors"` in an
+  unrelated sentence plus a real summary line reporting `3 verified, 2
+  errors`, and confirms the parser correctly refuses where a blind
+  substring check would have wrongly passed. A sixth test,
+  `test_producing_a_proven_result_does_not_reopen_the_matrix_gate`,
+  builds a fake matrix row from this adapter's real `Strength.PROVEN`
+  output and confirms `assert_no_realized_proven`
+  (`evidence/render/matrix_variants.py`) still hard-blocks it.
+- **Explicitly not done, and not this module's job:** `dafny_adapter.py`
+  is not called from `build_matrix()`, any `generate_matrix_*.py`
+  script, or the CLI. Wiring a Dafny-sourced PROVEN result into the
+  matrix pipeline is Gate C2's job by name (the PROVEN-exclusivity
+  migration), still unbuilt.
+- Full suite re-run after the build (47 passed) and the full
+  `generate_artifacts.py` pipeline re-run, confirming zero observable
+  change to existing committed matrix artifacts beyond `generated_utc`
+  timestamps.
+
 ## 2026-07-06 — SessionStart hook: make the Dafny/Python toolchain reproducible
 
 The toolchain research below only held for this session's container.

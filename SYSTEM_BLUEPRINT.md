@@ -1,7 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-06 (Phase C Gate C1's Dafny toolchain blocker
-resolved — modern Dafny 4.11.0 obtained and verified via NuGet — see
+Last updated: 2026-07-07 (Phase C Gate C1 built: a real Dafny spec for the
+dosage kernel, a capture runner pair, and evidence/dafny_adapter.py's
+false-zero-guard parser, with a committed regression test — not yet wired
+into build_matrix() or any generator, that's Gate C2 — see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
@@ -56,14 +58,32 @@ payloadguard-evidence/
 │                                test that checked build_matrix() against
 │                                them are deleted (Step 4) - git history
 │                                holds them if ever needed again
+│   └── dafny_adapter.py         Gate C1: parse_dafny_capture() - the
+│                                 false-zero guard, regex on the verifier's
+│                                 own summary line, never a substring match
+│                                 or bare exit_code. NOT called from
+│                                 build_matrix() or any generator - wiring
+│                                 a Dafny-sourced PROVEN result into the
+│                                 matrix pipeline is Gate C2's job
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
 │   ├── dosage_broken.py         Clamp removed — failure-path fixture source
 │   ├── dosage_naive_widening.py Preserved review artifact (wrong branch
 │   │                            order; documents why ordering is load-bearing)
+│   ├── dosage.dfy               Gate C1: real Dafny spec of the dosage
+│   │                            kernel's clamping shape; verifies clean
+│   │                            (1 verified, 0 errors). REQ-DOSE-003
+│   │                            excluded by name (Dafny real has no IEEE
+│   │                            overflow concept - confirmed empirically)
+│   ├── dosage_broken.dfy        Gate C1: Sample-B-equivalent broken variant
+│   │                            (clamp removed); fails for real (0 verified,
+│   │                            2 errors, exit code 4)
 │   ├── overflow_probe.py        Domain-free model-fidelity probe
 │   ├── run_verify*.py           Capture runners (one per target + concrete)
+│   ├── run_verify_dafny(_broken).py  Gate C1: capture runners mirroring
+│   │                            run_verify.py exactly, targeting
+│   │                            dosage.dfy / dosage_broken.dfy
 │   ├── gate3_seed_patch_test.py Gate 3 investigation script (not part of
 │   │                            the evidence-capture path): behaviorally
 │   │                            tests a make_default_solver seed-override
@@ -109,9 +129,14 @@ payloadguard-evidence/
     ├── test_single_evidence_type.py  Gate 5: symbolic-only AND
     │                            concrete-only in-memory fixtures each
     │                            appear in exactly one variant-C artifact
-    └── test_cli.py              Gate 2 CLI: subprocess-driven, all four
-                                 variants match committed artifacts;
-                                 Tier-1 error paths; stdout/file modes
+    ├── test_cli.py              Gate 2 CLI: subprocess-driven, all four
+    │                            variants match committed artifacts;
+    │                            Tier-1 error paths; stdout/file modes
+    └── test_dafny_adapter.py    Gate C1: real committed clean + broken
+                                 captures parse correctly; false-zero
+                                 substring-trap regression; belt-and-
+                                 suspenders check that assert_no_realized_proven
+                                 still blocks this adapter's PROVEN output
 ```
 
 ## 3. Data flow (end to end)
@@ -222,7 +247,7 @@ manifest/concrete-store path rather than the hardcoded worked-example
 paths the generator scripts use. See `KNOWN_LIMITATIONS.md` for the live
 gate ledger.
 
-Phase C (planning): restructured 2026-07-06 from a two-mechanism sketch
+Phase C (in progress): restructured 2026-07-06 from a two-mechanism sketch
 into a gate-sequenced plan (Gates C1–C6, build order specified) in
 `payloadguard-evidence-roadmap-phaseB-to-C.md`. Gate C1's Dafny
 toolchain blocker is resolved: Z3 4.16.0 is present and Dafny 4.11.0 was
@@ -233,7 +258,16 @@ not routed around). Verified against the real binary: the false-zero
 note in `evidence/model.py` matches exactly ("Dafny program verifier
 finished with N verified, 0 errors"); a failing run exits 4, not 1; the
 vacuous-precondition risk Gate C3 names is real and reproducible; its
-planned Z3-based mitigation is confirmed feasible. Full findings:
-`KNOWN_LIMITATIONS.md`. Nothing in Phase C is *built* yet — no capture
-runner, no real Dafny spec, nothing committed from this research; that's
-Gate C1's actual work, still ahead.
+planned Z3-based mitigation is confirmed feasible. **Gate C1 itself is
+now built (2026-07-07):** a real Dafny spec of the dosage kernel
+(`dosage.dfy`, clean; `dosage_broken.dfy`, fails for real), a capture
+runner pair, and `evidence/dafny_adapter.py::parse_dafny_capture` — the
+false-zero guard, implemented and regression-tested
+(`tests/test_dafny_adapter.py`, 6 tests). REQ-DOSE-003 is named as an
+explicit scope exclusion from the Dafny spec (Dafny `real` has no IEEE
+overflow concept). The adapter produces a `VerificationResult` in Python
+only — it is not wired into `build_matrix()` or any generator, and
+`assert_no_realized_proven` is confirmed (by test) to still block PROVEN
+from reaching any rendered matrix row. That wiring is Gate C2 (the
+PROVEN-exclusivity migration), still unbuilt. Full findings:
+`KNOWN_LIMITATIONS.md`.

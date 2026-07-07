@@ -1,13 +1,16 @@
 # PayloadGuard Evidence Layer — Roadmap: Phase B → Phase C
 
-Updated 2026-07-06: Phase B's gate ledger is now fully closed (Gates
-1–6 all resolved, decided, or complete — see below), and Phase C is
-restructured from a two-mechanism sketch into a gate-sequenced plan
-(Gates C1–C6) mirroring how Phase B was actually run. Gate C1's Dafny
-toolchain blocker — resolved same day: modern Dafny 4.11.0 obtained via
-NuGet (`dotnet tool install --global dafny`), no GitHub involvement,
-verified against the real binary. Nothing else in Phase C is built yet
-— capture runner, real spec, and PROVEN-exclusivity migration are all
+Updated 2026-07-07: Phase B's gate ledger is fully closed (Gates 1–6 all
+resolved, decided, or complete — see below), and Phase C is restructured
+from a two-mechanism sketch into a gate-sequenced plan (Gates C1–C6)
+mirroring how Phase B was actually run. Gate C1's Dafny toolchain
+blocker — resolved 2026-07-06: modern Dafny 4.11.0 obtained via NuGet
+(`dotnet tool install --global dafny`), no GitHub involvement, verified
+against the real binary. **Gate C1 itself is now built (2026-07-07):** a
+real Dafny spec for the dosage kernel, a capture runner pair, and
+`evidence/dafny_adapter.py`'s false-zero-guard parser, with a committed
+regression test proving the guard resists a substring trap — see below.
+Not yet wired into `build_matrix()` or any generator; that's Gate C2,
 still ahead.
 
 ## Where we are
@@ -24,6 +27,9 @@ still ahead.
 - Gate 6 (FRN) — resolved, see below.
 - Gate 2 (CONFLICT rule + vocabulary-agnostic binder + CLI) — COMPLETE,
   see below.
+- Phase C Gate C1 (Dafny adapter) — BUILT 2026-07-07: real spec, capture
+  runner, false-zero-guard parser, regression-tested. Not yet wired into
+  the matrix pipeline (Gate C2). See below.
 
 ## Guiding principle (unchanged)
 
@@ -283,23 +289,58 @@ certain way).
   capture runner, no real Dafny spec for `dosage.py`, nothing committed
   to the repository. That's the next step.
 
-### Gate C1 — Dafny adapter: capture + minimal false-zero guard (build first)
+### Gate C1 — Dafny adapter: capture + minimal false-zero guard — BUILT (2026-07-07)
 
-- A capture runner mirroring `run_verify.py`'s discipline: invoke Dafny
-  as a subprocess, commit verbatim stdout+stderr, the exact command
-  argv, exit code, and ISO-8601 UTC timestamp — no re-running evidence
-  inside the generation pipeline, same as every existing capture.
-- **Target decision:** reuse `dosage.py`'s existing contracts, translated
-  to Dafny, rather than fork a second worked example — keeps one
-  through-line for the REQ-GIP-* citations rather than forking a second
-  audit trail. (Flagging as a recommendation, not assuming it's settled.)
-- Parser asserts the literal substring `"0 errors"` — the minimum bar
-  already named in `evidence/model.py`'s false-zero note. Gate C3
-  hardens this further; C1 is the floor, not the ceiling.
-- `verifier_completion_status` added to `VerificationResult` (already
-  reserved for this in `KNOWN_LIMITATIONS.md` — the field exists in the
-  schema/model now, capturing whether the verifier actually completed
-  vs. timed out or aborted, feeding both C1's and C3's checks).
+- **Target decision made:** reused `dosage.py`'s existing contracts,
+  translated to Dafny (`examples/dosage_calculator/dosage.dfy`), rather
+  than forking a second worked example — keeps one through-line for the
+  REQ-GIP-* citations. `weight_kg` is intentionally omitted (an unused
+  precondition-only guard in the Python original). **REQ-DOSE-003 is
+  explicitly excluded from the Dafny spec** — confirmed empirically that
+  Dafny's `real` type is exact/arbitrary-precision with no IEEE
+  overflow/infinity/NaN concept (`y := x / 0.0` on a `real` is itself a
+  flagged verification error, not a silent `inf`), so "finite result
+  under overflow" cannot be faithfully stated as a Dafny postcondition.
+  Named as a deliberate scope exclusion, not a silent gap.
+- Verifies clean against the real 4.11.0 binary: `Dafny program verifier
+  finished with 1 verified, 0 errors`, exit 0.
+  `examples/dosage_calculator/dosage_broken.dfy` (clamp removed) fails
+  for real: `0 verified, 2 errors`, exit code 4 (confirms the exit-code
+  finding from the toolchain research, now exercised on the actual spec).
+- A capture runner pair mirroring `run_verify.py`'s discipline
+  (`run_verify_dafny.py` / `run_verify_dafny_broken.py`): invoke Dafny as
+  a subprocess, commit verbatim stdout+stderr, the exact command argv,
+  exit code, and ISO-8601 UTC timestamp — no re-running evidence inside
+  the generation pipeline, same as every existing capture. Both run for
+  real, producing genuine committed captures (`raw_dafny_output*.txt`,
+  `run_manifest_dafny*.json`).
+- **Parser sharpened beyond the originally-planned floor:** rather than
+  asserting the literal substring `"0 errors"` (the minimum bar named in
+  `evidence/model.py`'s false-zero note), `evidence/dafny_adapter.py`
+  parses the verifier's own summary line via regex
+  (`Dafny program verifier finished with (\d+) verified, (\d+) errors?`)
+  and checks the parsed error count — never a blind substring match. A
+  committed regression test
+  (`test_false_zero_guard_is_not_fooled_by_a_substring_trap`) constructs
+  raw output containing the literal substring `"0 errors"` in an
+  unrelated sentence plus a real summary line reporting `3 verified, 2
+  errors`, and confirms the regex-based parser correctly refuses where a
+  substring check would have wrongly passed. Refuses, in order: nonzero
+  exit code (cheapest, checked first); no summary line found (a crash,
+  timeout, or `dafny audit`-style "did not attempt verification" — must
+  not be silently treated as success); nonzero parsed error count.
+- `verifier_completion_status` added to `VerificationResult`
+  (`evidence/model.py`) — purely additive, `"completed"` on success, only
+  meaningful for adapter-produced results so far.
+- Six tests in `tests/test_dafny_adapter.py`, including a belt-and-
+  suspenders check that constructs a fake matrix row from this adapter's
+  real `Strength.PROVEN` output and confirms
+  `assert_no_realized_proven` still hard-blocks it — proving this
+  adapter cannot itself reopen the PROVEN-exclusivity boundary.
+- **Explicitly not done here:** `dafny_adapter.py` is not called from
+  `build_matrix()`, any `generate_matrix_*.py` script, or the CLI. That
+  wiring is Gate C2's job by name, not an incidental side effect of this
+  build.
 
 ### Gate C2 — PROVEN's exclusivity migration (do this right after C1, before any real spec)
 
@@ -446,5 +487,11 @@ verified against the real binary (exact false-zero match, real exit-code
 behavior, the vacuous-precondition risk confirmed reproducible, its Z3
 mitigation confirmed feasible). One gate (C3's fourth vector,
 specification stripping) stays named as blocked on incomplete source
-material rather than guessed at. Nothing in Phase C is *built* yet —
-Gate C1's capture runner and a real Dafny spec for `dosage.py` are next.
+material rather than guessed at. **Gate C1 is now built** (2026-07-07): a
+real Dafny spec for the dosage kernel (REQ-DOSE-003 named as an explicit
+scope exclusion), a capture runner pair, and
+`evidence/dafny_adapter.py`'s false-zero-guard parser — sharpened beyond
+the originally-planned substring floor to a regex on the verifier's own
+summary line, regression-tested against a substring trap and against
+`assert_no_realized_proven`. Not wired into `build_matrix()` or any
+generator — Gate C2 (PROVEN exclusivity migration) is next.

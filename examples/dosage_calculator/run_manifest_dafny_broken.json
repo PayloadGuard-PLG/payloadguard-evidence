@@ -1,0 +1,12 @@
+{
+  "tool": "dafny",
+  "tool_version": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2",
+  "command": [
+    "dafny",
+    "verify",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_broken.dfy"
+  ],
+  "exit_code": 4,
+  "started_utc": "2026-07-07T09:59:57.855278+00:00",
+  "target": "dosage_broken.dfy"
+}

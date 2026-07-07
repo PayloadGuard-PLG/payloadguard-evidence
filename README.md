@@ -26,8 +26,8 @@ checked `build_matrix()` against them are deleted, per explicit
 direction to build the CLI first — git history holds them if ever
 needed again. **Phase B's gate ledger is now fully closed.**
 
-Phase C planning has started: restructured from a two-mechanism sketch
-into a gate-sequenced plan (Gates C1–C6) in
+Phase C is in progress: restructured from a two-mechanism sketch into a
+gate-sequenced plan (Gates C1–C6) in
 `payloadguard-evidence-roadmap-phaseB-to-C.md`. Gate C1's Dafny
 toolchain blocker is resolved — Z3 4.16.0 was already present; modern
 **Dafny 4.11.0** was obtained via `dotnet tool install --global dafny`
@@ -35,9 +35,15 @@ toolchain blocker is resolved — Z3 4.16.0 was already present; modern
 this environment's egress policy), then verified against the real
 binary (exact false-zero match, real exit-code behavior, the
 vacuous-precondition risk confirmed reproducible and its Z3-based
-mitigation confirmed feasible). Nothing in Phase C is *built* yet — no
-capture runner, no real Dafny spec for `dosage.py` — that's Gate C1's
-actual work. See `KNOWN_LIMITATIONS.md` for the live gate ledger.
+mitigation confirmed feasible). **Gate C1 itself is now built:** a real
+Dafny spec for the dosage kernel (`examples/dosage_calculator/dosage.dfy`,
+verifies clean; REQ-DOSE-003 named as an explicit scope exclusion —
+Dafny's `real` type has no IEEE overflow concept), a capture runner
+pair, and `evidence/dafny_adapter.py`'s false-zero-guard parser (regex
+on the verifier's own summary line, regression-tested against a
+substring trap). Not yet wired into `build_matrix()` or any generator —
+that's Gate C2 (PROVEN exclusivity migration), still ahead. See
+`KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

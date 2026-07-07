@@ -36,6 +36,16 @@ class VerificationResult:
     timestamp: str
     bounds: Optional[dict] = None
     counterexample: Optional[str] = None
+    # Phase C, Gate C1: whether the verifier actually completed a run
+    # ("completed") vs. produced no summary line at all - a crash, a
+    # timeout, or a tool that "did not attempt verification" (confirmed
+    # real: `dafny audit` reports exactly that on some inputs). Distinct
+    # from a completed run that reports errors (that's strength=GAP with
+    # raw_status carrying the error count, not an incomplete run). Only
+    # meaningful for adapter-produced results so far (evidence/dafny_adapter.py);
+    # None for CrossHair/pytest-backed records, which have no equivalent
+    # ambiguity to guard against.
+    verifier_completion_status: Optional[str] = None
 
 @dataclass
 class RequirementBinding:
