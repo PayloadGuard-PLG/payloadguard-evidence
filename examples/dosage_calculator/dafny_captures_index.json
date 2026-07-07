@@ -1,0 +1,8 @@
+{
+  "dosage.dfy::CalculateHourlyDose": {
+    "spec_source_path": "dosage.dfy",
+    "raw_output_path": "raw_dafny_output.txt",
+    "manifest_path": "run_manifest_dafny.json",
+    "dafny_method": "CalculateHourlyDose"
+  }
+}

@@ -14,17 +14,18 @@ generators complete) and the test suite (tests/test_fact_equality.py, over
 the committed artifacts). The base Phase A matrix is frozen (ruling R2c)
 and participates as the symbolic-subset legacy view.
 
-VARIANT_ARTIFACTS is deliberately unchanged by the 2026-07-07 Gate 2/C2-C4
-wiring: traceability_matrix.formal.json (variant C's third partition,
-real Dafny-sourced PROVEN evidence) is NOT in this tuple, and run_gate()
-below is NOT touched. Passing dafny_store into variants A and B is an
-explicitly deferred follow-up (Steven: "can we post hoc verify A and B
-after C variant is proven") - until it lands, A/B's own intent_ok for
-REQ-GIP-1-4-12/REQ-GIP-1-8-1 stays False (no dafny binding there), while
-the formal view's is True. That is a REAL, NAMED, TRACKED divergence,
-not a bug - run_formal_check() below verifies it is exactly that
-divergence and no other, the same "fail loudly on anything unexpected"
-discipline the main gate already applies. See KNOWN_LIMITATIONS.md.
+VARIANT_ARTIFACTS gained traceability_matrix.formal.json (2026-07-07,
+Gate 2/C2-C4 wiring extended to variants A/B): when the formal view first
+landed (variant C only), it deliberately stayed OUT of this tuple and a
+separate, narrower check (run_formal_check, since removed) verified a
+real, temporary, named divergence against variants A/B (which didn't yet
+bind dafny evidence). Now that A and B bind the same real dafny evidence
+declared in metadata.a.yaml/metadata.b.yaml, that divergence is closed -
+traceability_matrix.formal.json is a full peer in the same strict
+all-must-match check as A/B/symbolic/concrete, with no carve-out. facts_c
+is now the union of symbolic, concrete, AND formal - the three-way split
+that constitutes variant C's total claim, compared against A's and B's
+single-artifact totality.
 """
 
 import json
@@ -35,17 +36,10 @@ VARIANT_ARTIFACTS = (
     "traceability_matrix.b.json",
     "traceability_matrix.symbolic.json",
     "traceability_matrix.concrete.json",
+    "traceability_matrix.formal.json",
 )
 BASE_ARTIFACT = "traceability_matrix.json"
 FORMAL_ARTIFACT = "traceability_matrix.formal.json"
-
-# The only requirements allowed to diverge between the formal view and
-# the A/B/symbolic/concrete reference, and only in the True direction
-# (newly proven via dafny evidence) - named and tracked here rather than
-# silently permitted. Remove this carve-out (and tighten
-# run_formal_check to a plain equality) once variant A/B's own dafny
-# wiring lands and their intent_ok catches up to match.
-KNOWN_FORMAL_INTENT_DIVERGENCE = frozenset({"REQ-GIP-1-4-12", "REQ-GIP-1-8-1"})
 
 
 def _fact(requirement_id, record):
@@ -105,8 +99,10 @@ def run_gate(artifact_dir):
 
     facts_a = normalize_facts(variants["traceability_matrix.a.json"])
     facts_b = normalize_facts(variants["traceability_matrix.b.json"])
-    facts_c = normalize_facts(variants["traceability_matrix.symbolic.json"]) | (
-        normalize_facts(variants["traceability_matrix.concrete.json"])
+    facts_c = (
+        normalize_facts(variants["traceability_matrix.symbolic.json"])
+        | normalize_facts(variants["traceability_matrix.concrete.json"])
+        | normalize_facts(variants[FORMAL_ARTIFACT])
     )
     if not (facts_a == facts_b == facts_c):
         raise AssertionError(
@@ -125,10 +121,26 @@ def run_gate(artifact_dir):
     intents = {n: extract_intent(variants[n]) for n in VARIANT_ARTIFACTS}
     reference = intents[VARIANT_ARTIFACTS[0]]
     for name, values in intents.items():
-        if values != reference:
+        # Subset comparison, not strict dict equality: traceability_matrix.formal.json
+        # (2026-07-07, Gate 2/C2-C4 wiring) only ever renders rows for
+        # requirements that actually declare dafny evidence - REQ-DOSE-003
+        # is permanently, deliberately out of dosage.dfy's scope (see the
+        # spec's own header comment), so formal.json will never have an
+        # opinion about it. That's a legitimate "doesn't cover this
+        # requirement" absence, not a divergence - every requirement a
+        # view DOES have an opinion about must still agree with the
+        # reference exactly, and a requirement id the reference has never
+        # heard of at all is still a hard failure.
+        mismatched = {
+            req: (reference[req], val)
+            for req, val in values.items()
+            if req in reference and reference[req] != val
+        }
+        unknown = sorted(set(values) - set(reference))
+        if mismatched or unknown:
             raise AssertionError(
                 f"fact-equality gate failed: intent_ok differs in {name}: "
-                f"{values} != {reference}"
+                f"mismatched={mismatched} unknown_requirements={unknown}"
             )
 
     blocks = [variants[n]["bounds"] for n in VARIANT_ARTIFACTS]
@@ -138,56 +150,3 @@ def run_gate(artifact_dir):
         )
 
     return {"facts": len(facts_a), "intent": reference}
-
-
-def run_formal_check(artifact_dir, reference_intent):
-    """Checks variant C's third partition (traceability_matrix.formal.json,
-    real Dafny-sourced evidence) against the A/B/symbolic/concrete
-    reference intent (run_gate()'s own return value - callers pass it
-    straight through rather than recomputing it, keeping this a check
-    ABOUT run_gate()'s result, not a second independent source of truth).
-
-    Deliberately separate from run_gate() and from VARIANT_ARTIFACTS: the
-    formal view is real, new, and not yet reconciled with variants A/B
-    (that wiring is an explicitly deferred follow-up), so folding it into
-    the strict all-must-match gate above would either hard-fail on a
-    known, expected divergence or (worse) require softening that gate
-    for everyone. Instead: every requirement's intent_ok must match the
-    reference EXACTLY, except the named, tracked set in
-    KNOWN_FORMAL_INTENT_DIVERGENCE, which must specifically be True (not
-    just "different") - proving dafny evidence closed the intent gap it
-    was meant to close, not just that something changed. Raises
-    AssertionError on any unexpected or wrong-direction divergence;
-    returns a small summary dict on success."""
-    d = pathlib.Path(artifact_dir)
-    formal = json.loads((d / FORMAL_ARTIFACT).read_text())
-    formal_intent = extract_intent(formal)
-
-    unexpected = {
-        req: (reference_intent.get(req), formal_intent[req])
-        for req in formal_intent
-        if req not in KNOWN_FORMAL_INTENT_DIVERGENCE
-        and formal_intent[req] != reference_intent.get(req)
-    }
-    if unexpected:
-        raise AssertionError(
-            f"formal-view intent check failed: unexpected divergence from "
-            f"the A/B/symbolic/concrete reference: {unexpected}"
-        )
-
-    wrong_direction = {
-        req: formal_intent[req]
-        for req in KNOWN_FORMAL_INTENT_DIVERGENCE
-        if req in formal_intent and formal_intent[req] is not True
-    }
-    if wrong_direction:
-        raise AssertionError(
-            "formal-view intent check failed: expected "
-            f"{sorted(wrong_direction)} to be newly proven (intent_ok=True) "
-            f"via dafny evidence, got {wrong_direction}"
-        )
-
-    return {
-        "formal_requirements_checked": len(formal_intent),
-        "known_divergence": sorted(KNOWN_FORMAL_INTENT_DIVERGENCE & formal_intent.keys()),
-    }

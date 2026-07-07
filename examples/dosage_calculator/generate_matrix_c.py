@@ -55,17 +55,27 @@ def main():
         ("c-concrete", "traceability_matrix.concrete"),
         ("c-formal", "traceability_matrix.formal"),
     ):
-        kwargs = {}
+        # dafny_store is passed to ALL THREE calls (2026-07-07, extended
+        # when variants A/B were wired the same day) - not just
+        # "c-formal". Symbolic/concrete's RENDERED rows are unaffected
+        # (their shape filters to crosshair/concrete_test only), but
+        # their internal derive_intent() computation needs the same
+        # complete evidence picture as variants A/B now have, or their
+        # own intent_ok for REQ-GIP-1-4-12/REQ-GIP-1-8-1 would silently
+        # stay False while A/B/formal say True - breaking the
+        # fact-equality gate's intent comparison for real, not just in
+        # theory. Only the formal view's header advertises the dafny
+        # tool version, since only it actually renders a dafny row.
         tv = dict(tool_versions)
         if variant_key == "c-formal":
-            # Only the formal view's header advertises the dafny tool
-            # version - symbolic/concrete stay exactly as they were
-            # before this wiring existed (verified by regenerating and
-            # diffing; see KNOWN_LIMITATIONS.md).
-            kwargs["dafny_store"] = dafny_store
             tv["dafny"] = dafny_manifest["tool_version"]
         matrix, markdown = build_matrix(
-            variant_key, metadata, manifest, concrete_store, tool_versions=tv, **kwargs
+            variant_key,
+            metadata,
+            manifest,
+            concrete_store,
+            tool_versions=tv,
+            dafny_store=dafny_store,
         )
         (HERE / f"{stem}.json").write_text(json.dumps(matrix, indent=2) + "\n")
         (HERE / f"{stem}.md").write_text(markdown)

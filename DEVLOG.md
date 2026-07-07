@@ -6,6 +6,101 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate 2/C2-C4 wiring extended to variants A and B
+
+Requested directly, same day as the variant-C-only wiring: "go ahead and
+extend variant A and B now."
+
+- **Declarations.** `metadata.a.yaml` gained `- method: dafny,
+  spec_target: "dosage.dfy", dafny_method: "CalculateHourlyDose"` in
+  REQ-GIP-1-4-12/REQ-GIP-1-8-1's `evidence` lists - the same declaration
+  style Gate 4/5 already established. `evidence/schema/metadata.schema.a.json`
+  gained the matching `dafny` enum value + `spec_target`/`dafny_method`
+  conditional (identical fix to schema.c.json's). `metadata.b.yaml`
+  gained two new shadow pseudo-requirements, `REQ-GIP-1-4-12.formal-1`
+  and `REQ-GIP-1-8-1.formal-1`, `implementation: "dosage.dfy::CalculateHourlyDose"`
+  - the same shadow pattern concrete evidence uses, distinguished as a
+  dafny shadow by the `.dfy` file extension, no new declared field.
+  `evidence/schema/metadata.schema.b.json`'s shadow-id pattern extended
+  from `\.concrete-[0-9]+` to `\.(concrete|formal)-[0-9]+` to allow it.
+- **Binders.** `_bind_declared` (A) and `_bind_shadow` (B) both gained
+  an optional `dafny_store` parameter - but unlike variant C's
+  symbolic/concrete sub-views, a requirement declaring dafny evidence
+  with no `dafny_store` provided at all is refused outright
+  (`SystemExit`), not silently skipped: A/B have no "legitimately
+  excludes dafny" concept, since their single artifact renders every
+  declared evidence type together. `_bind_shadow` distinguishes a dafny
+  shadow from a concrete one by checking whether the implementation
+  file ends in `.dfy`. `_shape_flattened_shadow` gained the same
+  `verifier_completion_status` field `_shape_method_partitioned` already
+  carried, load-bearing for ruling R3's row-level check.
+- **CONFLICT Type 1 generalized, and a real bug fixed along the way.**
+  `_declared_concrete_bindings` previously treated every shadow row's
+  implementation suffix as a concrete test_id unconditionally - a dafny
+  shadow's `dafny_method` would have been mis-parsed as a bogus test_id
+  and crashed with a false "declared test_id not found" error. Fixed to
+  skip `.dfy`-suffixed shadow rows. A new `_declared_dafny_bindings`
+  generator unifies dafny's two declaration shapes (A/C's evidence list,
+  B's `.dfy` shadow rows) the same way concrete evidence's own generator
+  already does; `dafny_binding_conflicts` was rewritten to use it.
+- **Intent parity required extending dafny_store beyond "c-formal".**
+  `generate_matrix_c.py` now passes `dafny_store` to ALL THREE of its
+  `build_matrix()` calls, not just `"c-formal"` - `derive_intent()` runs
+  inside each call using that call's own bound records, so
+  `c-symbolic`/`c-concrete` would otherwise keep computing
+  `intent_ok = False` for the two now-proven requirements while A/B/
+  formal say `True`, genuinely breaking the fact-equality gate. Their
+  RENDERED rows are unaffected either way - only internal intent
+  computation changes. Only `"c-formal"`'s header advertises the dafny
+  tool version.
+- **The fact-equality gate required two real changes.**
+  `evidence/reconcile.py::VARIANT_ARTIFACTS` now includes
+  `traceability_matrix.formal.json` as a full fifth member.
+  `facts_c` is now the union of symbolic, concrete, AND formal. The
+  intent comparison changed from strict dict equality to **subset
+  comparison**: `formal.json` will *permanently* lack an opinion about
+  REQ-DOSE-003 (`dosage.dfy`'s own header comment explicitly excludes
+  it - a durable scope boundary, not a temporary gap), so requiring
+  identical dicts was never going to hold once C was folded in for
+  real. New rule: every requirement a view has an opinion about must
+  match the reference exactly; a view may have no opinion about a
+  requirement it doesn't cover; a completely unknown requirement id is
+  still a hard failure (in practice caught even earlier, by the facts
+  check). The temporary `run_formal_check`/`KNOWN_FORMAL_INTENT_DIVERGENCE`
+  carve-out built for the C-only phase is retired - deleted from
+  `evidence/reconcile.py`, its call removed from `regenerate_all.py`.
+- **The CLI needed `--dafny-captures`, and this was not optional.** Once
+  metadata.a.yaml/b.yaml declared dafny evidence,
+  `python -m evidence.cli build --variant a ...` genuinely broke - a
+  real regression this extension would otherwise have introduced.
+  `evidence/cli.py` gained `--dafny-captures <index.json>`: a small JSON
+  file mapping `"{spec_target}::{dafny_method}"` keys to *paths*
+  (relative to the index file's own directory), not inlined file
+  content - keeps the index small and hand-readable.
+  `examples/dosage_calculator/dafny_captures_index.json` is the real,
+  committed index. `"c-formal"` was also added to the CLI's variant
+  choices (deferred in the C-only build, needed now).
+- **The result:** every variant artifact - A, B, C-symbolic, C-concrete,
+  C-formal - now reports `intent_ok: true` for both REQ-GIP-1-4-12 and
+  REQ-GIP-1-8-1. `run_gate()`'s facts count is **9**, not 7.
+- **Tests:** `tests/test_dafny_wiring.py` rewritten substantially (real
+  A/B PROVEN records checked directly; the full fact-equality gate
+  checked to pass with intent True everywhere; the subset-vs-strict-
+  equality fix exercised directly with both a legitimate-absence case
+  and a real-mismatch case; CLI `--dafny-captures` round-trips for a/b
+  and the CLI's refusal without it confirmed real, not hypothetical).
+  `tests/test_cli.py` and `tests/test_fact_equality.py` updated for the
+  new committed reality (5 CLI variants now, including "c-formal"; facts
+  9 not 7; intent True not False). Full suite: **98 passed**. Full
+  `generate_artifacts.py` pipeline re-run end to end: PASS.
+- **Docs:** `examples/dosage_calculator/README.md` gained a 2026-07-07
+  amendment (the prior claim that Dafny "is not wired in this phase" was
+  specific to the frozen base matrix, which is still accurate and
+  unchanged - clarified rather than deleted); `RECONCILIATION.md` gained
+  a pointer note that its historical facts/intent figures (7 facts,
+  REQ-GIP-1-4-12/1-8-1 false) describe the Phase A/B state, preserved
+  unedited as the record of what ruling R1 verified at the time.
+
 ## 2026-07-07 — Gate 2/C2-C4 wiring: first real Dafny-sourced PROVEN row ever rendered
 
 Requested directly: "we need z3 integration and invocation in order to

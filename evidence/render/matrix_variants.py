@@ -501,9 +501,17 @@ def _md_notes(rows):
 # =============================================================================
 
 
-def _bind_declared(metadata, manifest, concrete_store, bounds):
+def _bind_declared(metadata, manifest, concrete_store, bounds, dafny_store=None):
     """Variant A's binding strategy: metadata's per-requirement `evidence`
-    list is authoritative and drives which records get assembled."""
+    list is authoritative and drives which records get assembled.
+
+    dafny_store (2026-07-07, Gate 2/C2-C4 wiring, extended to variant A):
+    unlike variant C's symbolic/concrete sub-views, variant A has no
+    concept of "a view that intentionally excludes dafny evidence" - its
+    single artifact renders every declared evidence type in one row's
+    evidence list. So a requirement declaring `method: dafny` with no
+    dafny_store provided at all is a real configuration error, refused
+    outright, not silently skipped."""
     cases = {c["test_id"]: c for c in concrete_store["cases"]}
     records_by_req = {}
     for req in metadata["requirements"]:
@@ -513,6 +521,21 @@ def _bind_declared(metadata, manifest, concrete_store, bounds):
                 records.append(symbolic_record(manifest, bounds, req["implementation"]))
             elif ev["method"] == "concrete_test":
                 records.append(concrete_record(cases[ev["test_id"]]))
+            elif ev["method"] == "dafny":
+                if dafny_store is None:
+                    raise SystemExit(
+                        f"requirement {req['id']} declares dafny evidence "
+                        "but no dafny_store was provided; refusing to bind"
+                    )
+                key = f"{ev['spec_target']}::{ev['dafny_method']}"
+                capture = dafny_store.get(key)
+                if capture is None:
+                    raise SystemExit(
+                        f"requirement {req['id']} declares dafny evidence "
+                        f"{key!r} but no matching capture was provided in "
+                        "dafny_store; refusing to bind"
+                    )
+                records.append(dafny_record(capture, key))
             else:
                 raise SystemExit(f"unknown evidence method: {ev['method']}")
         records_by_req[req["id"]] = records
@@ -544,13 +567,21 @@ def _shape_evidence_array(metadata, records_by_req, intent):
     return rows
 
 
-def _bind_shadow(metadata, manifest, concrete_store, bounds):
+def _bind_shadow(metadata, manifest, concrete_store, bounds, dafny_store=None):
     """Variant B's binding strategy: non-shadow requirements get an implicit
     crosshair record; shadow pseudo-requirements (parent_requirement set)
-    get a concrete record via a test_id embedded as the implementation
-    suffix, attributed to the parent. Returns (records_by_req, bound_record)
-    - bound_record carries one record per METADATA entry (shadow or not),
-    needed by the flattened-shadow shape to render one row per entry."""
+    get either a concrete record (test_id embedded as the implementation
+    suffix) or a dafny record (implementation pointing at a .dfy file,
+    e.g. "dosage.dfy::CalculateHourlyDose" - the file extension is what
+    distinguishes a dafny shadow from a concrete one, not a separate
+    declared field), attributed to the parent either way. Returns
+    (records_by_req, bound_record) - bound_record carries one record per
+    METADATA entry (shadow or not), needed by the flattened-shadow shape
+    to render one row per entry.
+
+    dafny_store (2026-07-07, Gate 2/C2-C4 wiring, extended to variant B):
+    like variant A, a dafny shadow row with no dafny_store provided at
+    all is a real configuration error, refused outright."""
     cases = {c["test_id"]: c for c in concrete_store["cases"]}
     bound_record = {}
     records_by_req = {}
@@ -560,8 +591,25 @@ def _bind_shadow(metadata, manifest, concrete_store, bounds):
             record = symbolic_record(manifest, bounds, req["implementation"])
             records_by_req.setdefault(req["id"], []).append(record)
         else:
-            test_id = req["implementation"].split("::")[-1]
-            record = concrete_record(cases[test_id])
+            impl_file, _, impl_method = req["implementation"].partition("::")
+            if impl_file.endswith(".dfy"):
+                if dafny_store is None:
+                    raise SystemExit(
+                        f"shadow requirement {req['id']} declares dafny "
+                        "evidence but no dafny_store was provided; "
+                        "refusing to bind"
+                    )
+                key = req["implementation"]
+                capture = dafny_store.get(key)
+                if capture is None:
+                    raise SystemExit(
+                        f"shadow requirement {req['id']} declares dafny "
+                        f"evidence {key!r} but no matching capture was "
+                        "provided in dafny_store; refusing to bind"
+                    )
+                record = dafny_record(capture, key)
+            else:
+                record = concrete_record(cases[impl_method])
             records_by_req.setdefault(parent, []).append(record)
         bound_record[req["id"]] = record
     return records_by_req, bound_record
@@ -591,6 +639,13 @@ def _shape_flattened_shadow(metadata, bound_record, intent):
                 "inputs": record.get("inputs"),
                 "expected": record.get("expected"),
                 "observed": record.get("observed"),
+                # Load-bearing for ruling R3 (Gate C2), same as variant
+                # C's method-partitioned shape: a rendered row's own
+                # strength cell is what assert_no_realized_proven checks.
+                # Absent (None) for crosshair/concrete_test records, a
+                # harmless no-op since R3 only inspects it when
+                # strength == "PROVEN".
+                "verifier_completion_status": record.get("verifier_completion_status"),
                 "intent_ok": intent_ok,
                 "notes": notes,
             }
@@ -744,23 +799,31 @@ def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=
     the whole dataset, not one variant's binding - so it stays a standalone
     stage, the same way the fact-equality gate does.
 
-    dafny_store (2026-07-07, Gate 2/C2-C4 wiring) defaults to None and is
-    only meaningful for "c-formal" - passing it to any other variant_key
-    is harmless (self_describing's binder ignores it unless a "dafny"
-    evidence entry is actually declared; declared/shadow binders don't
-    accept it as a parameter at all). Keeping it None for "c-symbolic"/
-    "c-concrete" is what keeps those two views' output byte-identical to
-    before this wiring existed - see _bind_self_describing's docstring."""
+    dafny_store (2026-07-07, Gate 2/C2-C4 wiring; extended to variants
+    A/B the same day) defaults to None. For "a" and "b", None means the
+    metadata must not declare any dafny evidence at all (both binders
+    refuse outright otherwise - a single-artifact variant has no
+    "intentionally excludes dafny" view). For "c-symbolic"/"c-concrete",
+    None is what keeps those two views' RENDERED rows unchanged from
+    before this wiring existed, even though passing a real dafny_store to
+    them too (as the worked-example generators now do) is what keeps
+    their internal intent_ok computation consistent with variants A/B and
+    "c-formal" - see _bind_self_describing's docstring for the `is not
+    None` vs. truthiness distinction this all rests on."""
     run_conflict_gate(metadata, concrete_store, manifest, dafny_store=dafny_store)
     spec = _VARIANT_SPECS[variant_key]
     bounds = metadata["toolchain"]["crosshair_bounds"]
 
     if spec["binder"] == "declared":
-        records_by_req = _bind_declared(metadata, manifest, concrete_store, bounds)
+        records_by_req = _bind_declared(
+            metadata, manifest, concrete_store, bounds, dafny_store=dafny_store
+        )
         intent = derive_intent(metadata, records_by_req)
         rows = _shape_evidence_array(metadata, records_by_req, intent)
     elif spec["binder"] == "shadow":
-        records_by_req, bound_record = _bind_shadow(metadata, manifest, concrete_store, bounds)
+        records_by_req, bound_record = _bind_shadow(
+            metadata, manifest, concrete_store, bounds, dafny_store=dafny_store
+        )
         intent = derive_intent(metadata, records_by_req)
         rows = _shape_flattened_shadow(metadata, bound_record, intent)
     elif spec["binder"] == "self_describing":

@@ -50,6 +50,9 @@ requirements:
   - method: crosshair
   - method: concrete_test
     test_id: kernel_detects_bolus_limit_exceeded
+  - method: dafny
+    spec_target: dosage.dfy
+    dafny_method: CalculateHourlyDose
 - id: REQ-GIP-1-8-1
   text: 'Continuous reverse delivery shall not be possible during normal use or
     a single-fault condition. Modelled at this kernel as a fault input: a negative
@@ -66,6 +69,9 @@ requirements:
     test_id: ordinary_negative_rate_clamps_to_zero
   - method: concrete_test
     test_id: overflow_negative_rate_clamps_to_zero
+  - method: dafny
+    spec_target: dosage.dfy
+    dafny_method: CalculateHourlyDose
 - id: REQ-DOSE-003
   text: 'Calculation shall yield a finite, in-range result for all inputs meeting
     preconditions. DECLARED - not sourced from GIP v1.0, which does not address

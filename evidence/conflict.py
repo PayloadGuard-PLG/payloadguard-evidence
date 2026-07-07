@@ -23,16 +23,21 @@ cross-check on that side; that gap is exactly what Gate 4's option 3
 (cross-checked dual-authorship) is meant to close once C also carries a
 declared binding.
 
-  - Dafny evidence (2026-07-07, Gate 2/C2-C4 wiring): metadata declares
+  - Dafny evidence (2026-07-07, Gate 2/C2-C4 wiring; extended to variants
+    A/B 2026-07-07): metadata declares a dafny binding two ways, mirroring
+    concrete evidence's own A/B split — variant A/C's per-requirement
     `evidence: [{method: dafny, spec_target: "dosage.dfy", dafny_method:
-    "CalculateHourlyDose"}]`; the bottom-up counterpart is a `dafny_store`
-    dict (assembled by the calling script from a real committed Dafny
-    capture, keyed by `"{spec_target}::{dafny_method}"`) whose manifest
-    records what file was actually verified. `dafny_binding_conflicts`
-    is a no-op (returns no conflicts) when `dafny_store is None` — the
-    two symbolic/concrete-only variant-C views (which never pass a
-    dafny_store) must not be penalized for metadata that also happens to
-    declare dafny evidence meant for the third, formal view.
+    "CalculateHourlyDose"}]` list, or variant B's shadow pseudo-
+    requirements (`parent_requirement` + an `implementation` pointing at
+    a `.dfy` file, e.g. `dosage.dfy::CalculateHourlyDose` — distinguished
+    from a concrete shadow by that file extension, not a separate
+    declared field). The bottom-up counterpart is a `dafny_store` dict
+    (assembled by the calling script from a real committed Dafny capture,
+    keyed by `"{spec_target}::{dafny_method}"`) whose manifest records
+    what file was actually verified. `dafny_binding_conflicts` is a no-op
+    (returns no conflicts) when `dafny_store is None` — a caller that
+    never intends to bind dafny evidence at all must not be penalized for
+    metadata that declares it.
 
 Type 2 (outcome mismatch) is implemented below: two manifests that claim
 the identical verification act (same tool, same target, same
@@ -49,16 +54,40 @@ exists at all (the same invocation really can land differently).
 
 def _declared_concrete_bindings(metadata):
     """Yield (declared_owner, test_id, declared_by) for every top-down
-    concrete-test binding in metadata, across both shapes in use."""
+    concrete-test binding in metadata, across both shapes in use.
+    Shadow rows whose implementation targets a .dfy file are dafny
+    shadows, not concrete ones (see _declared_dafny_bindings) - skipped
+    here rather than mistakenly treated as a concrete test_id."""
     for req in metadata["requirements"]:
         parent = req.get("parent_requirement")
         if parent is not None:
+            impl_file = req["implementation"].split("::")[0]
+            if impl_file.endswith(".dfy"):
+                continue
             test_id = req["implementation"].split("::")[-1]
             yield parent, test_id, req["id"]
             continue
         for ev in req.get("evidence", []):
             if ev.get("method") == "concrete_test":
                 yield req["id"], ev["test_id"], req["id"]
+
+
+def _declared_dafny_bindings(metadata):
+    """Yield (declared_owner, spec_target, dafny_method, declared_by) for
+    every top-down dafny binding in metadata, across both shapes in use:
+    variant A/C's per-requirement `evidence: [{method: dafny, ...}]` list,
+    and variant B's shadow pseudo-requirements (implementation pointing
+    at a .dfy file)."""
+    for req in metadata["requirements"]:
+        parent = req.get("parent_requirement")
+        if parent is not None:
+            impl_file, _, impl_method = req["implementation"].partition("::")
+            if impl_file.endswith(".dfy"):
+                yield parent, impl_file, impl_method, req["id"]
+            continue
+        for ev in req.get("evidence", []):
+            if ev.get("method") == "dafny":
+                yield req["id"], ev["spec_target"], ev["dafny_method"], req["id"]
 
 
 def concrete_binding_conflicts(metadata, concrete_store):
@@ -119,44 +148,45 @@ def symbolic_binding_conflicts(metadata, manifest):
 def dafny_binding_conflicts(metadata, dafny_store):
     """Type 1 check for Dafny evidence: does the requirement's declared
     spec_target agree with the file the captured Dafny manifest actually
-    verified? `dafny_store` keys are `"{spec_target}::{dafny_method}"`; a
-    declared key absent from the store is itself a conflict (the binding
-    points at evidence that doesn't exist). Deliberately a no-op when
-    `dafny_store is None` (not merely falsy/empty) — that means the
-    caller isn't binding dafny evidence in this call at all (the
-    symbolic/concrete variant-C views), as opposed to genuinely having
-    zero captures to check."""
+    verified? Covers both declaration shapes via _declared_dafny_bindings
+    (variant A/C's `evidence` list and variant B's .dfy-suffixed shadow
+    rows), the same dual-shape pattern concrete evidence already uses.
+    `dafny_store` keys are `"{spec_target}::{dafny_method}"`; a declared
+    key absent from the store is itself a conflict (the binding points at
+    evidence that doesn't exist). Deliberately a no-op when `dafny_store
+    is None` (not merely falsy/empty) — that means the caller isn't
+    binding dafny evidence in this call at all, as opposed to genuinely
+    having zero captures to check."""
     if dafny_store is None:
         return []
     conflicts = []
-    for req in metadata["requirements"]:
-        for ev in req.get("evidence", []):
-            if ev.get("method") != "dafny":
-                continue
-            key = f"{ev['spec_target']}::{ev['dafny_method']}"
-            capture = dafny_store.get(key)
-            if capture is None:
-                conflicts.append(
-                    {
-                        "type": "identity_mismatch",
-                        "class": "dafny_binding",
-                        "requirement_id": req["id"],
-                        "declared_key": key,
-                        "evidence_store_owner": None,
-                    }
-                )
-                continue
-            manifest_target = capture["manifest"].get("target")
-            if manifest_target != ev["spec_target"]:
-                conflicts.append(
-                    {
-                        "type": "identity_mismatch",
-                        "class": "dafny_binding",
-                        "requirement_id": req["id"],
-                        "declared_target_file": ev["spec_target"],
-                        "manifest_target_file": manifest_target,
-                    }
-                )
+    for owner, spec_target, dafny_method, declared_by in _declared_dafny_bindings(metadata):
+        key = f"{spec_target}::{dafny_method}"
+        capture = dafny_store.get(key)
+        if capture is None:
+            conflicts.append(
+                {
+                    "type": "identity_mismatch",
+                    "class": "dafny_binding",
+                    "declared_owner": owner,
+                    "declared_via": declared_by,
+                    "declared_key": key,
+                    "evidence_store_owner": None,
+                }
+            )
+            continue
+        manifest_target = capture["manifest"].get("target")
+        if manifest_target != spec_target:
+            conflicts.append(
+                {
+                    "type": "identity_mismatch",
+                    "class": "dafny_binding",
+                    "declared_owner": owner,
+                    "declared_via": declared_by,
+                    "declared_target_file": spec_target,
+                    "manifest_target_file": manifest_target,
+                }
+            )
     return conflicts
 
 
@@ -242,15 +272,6 @@ def run_conflict_gate(metadata, concrete_store, manifest, dafny_store=None):
             for req in metadata["requirements"]
             if req.get("parent_requirement") is None and req.get("implementation")
         )
-        + (
-            sum(
-                1
-                for req in metadata["requirements"]
-                for ev in req.get("evidence", [])
-                if ev.get("method") == "dafny"
-            )
-            if dafny_store is not None
-            else 0
-        )
+        + (sum(1 for _ in _declared_dafny_bindings(metadata)) if dafny_store is not None else 0)
     )
     return {"bindings_checked": checked, "conflicts": 0}

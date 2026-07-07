@@ -4,25 +4,24 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-07 (Gate 2/C2-C4 WIRING BUILT: the first real
-Dafny-sourced PROVEN evidence ever to reach a live, rendered
-traceability matrix row in this repository. Variant C gains a third
-partition, `traceability_matrix.formal.json` (Gate 5's dual-matrix
-pattern extended to three), binding real dosage.dfy evidence to
-REQ-GIP-1-4-12 and REQ-GIP-1-8-1 — both flip `intent_ok` from False to
-True for the first time since Phase A. PROVEN is gated by two real,
-independent checks inside the binder itself: Z3 precondition
-satisfiability (Gate C3 vector 1) and the false-zero guard (Gate C1).
-Ruling R3 (Gate C2) is exercised end to end for the first time, not just
-in isolation. Metadata declares the dafny evidence explicitly, cross-
-checked by a new Gate 2 CONFLICT Type 1 sub-check. Variants A and B are
-deliberately, explicitly deferred — "post hoc verify A and B after C is
-proven" — and a new, narrowly-scoped reconciliation check
-(`run_formal_check`) names and tracks the resulting temporary intent
-divergence rather than silently permitting or hard-blocking it. Gate C4
-(STPs, found and fixed a real gap in dosage.dfy) and Gates C1-C3 were
-built earlier the same week and are unaffected by this wiring beyond the
-spec fix already documented below).
+Last updated: 2026-07-07 (Gate 2/C2-C4 WIRING EXTENDED TO VARIANTS A/B:
+every schema variant now binds the same real Dafny evidence.
+`metadata.a.yaml` declares it in REQ-GIP-1-4-12/REQ-GIP-1-8-1's
+`evidence` lists; `metadata.b.yaml` gained `.formal-N` shadow rows
+(e.g. `REQ-GIP-1-4-12.formal-1`); `traceability_matrix.formal.json`
+(variant C's third partition, built first and confirmed correct before
+this extension) is now a full peer in the fact-equality gate, not a
+tracked temporary divergence. `intent_ok` is `True` for BOTH requirements
+in EVERY variant artifact (A, B, C-symbolic, C-concrete, C-formal) — the
+first time since Phase A that `intended_method: "PROVEN"` has been
+realized everywhere it's declared, not just in one view. The
+fact-equality gate's intent comparison became subset-based (not strict
+dict equality) to accommodate `traceability_matrix.formal.json`
+permanently lacking an opinion about REQ-DOSE-003 (out of `dosage.dfy`'s
+scope by design). The CLI gained `--dafny-captures`, now required to
+build variant A/B at all via `evidence.cli`. The temporary
+`run_formal_check`/`KNOWN_FORMAL_INTENT_DIVERGENCE` carve-out from the
+variant-C-only build is retired — no longer needed. Full detail below).
 
 | Gate | Status | Summary |
 |---|---|---|
@@ -33,7 +32,7 @@ spec fix already documented below).
 | Gate 6 — FRN pump-type tag | **RESOLVED** | `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725); within the GIP taxonomy, general-purpose volumetric infusion pumps (peristaltic mechanism, cassette-based administration set), distinct from `All`. Full trail in `sources/README.md`. Well-supported (NotebookLM extraction of the full source PDF, cross-checked against independent FDA-registry research landing on the same code) but not yet independently re-verified against the raw Sec 2.4.1 text — noted, not hidden. |
 | Phase C Gate C1 — Dafny adapter | **BUILT 2026-07-07; spec strengthened 2026-07-07 by Gate C4** | Real Dafny 4.11.0 spec for the dosage kernel (`examples/dosage_calculator/dosage.dfy`, verifies clean: `2 verified, 0 errors` — an `ExpectedDose` function plus the method, since Gate C4's fix) plus a deliberately broken variant (`dosage_broken.dfy`, fails for real: `0 verified, 2 errors`, exit 4); a capture runner pair (`run_verify_dafny.py` / `run_verify_dafny_broken.py`) mirroring `run_verify.py`'s discipline, with real committed captures; and `evidence/dafny_adapter.py::parse_dafny_capture`, implementing the false-zero guard via regex on the verifier's own summary line (never a substring match, never bare exit code), refusing on nonzero exit, missing summary line, or nonzero error count. Six tests in `tests/test_dafny_adapter.py`, including a substring-trap regression and a check that `assert_no_realized_proven` still blocks this adapter's PROVEN output from ever reaching a matrix row. REQ-DOSE-003 is explicitly scoped out of the Dafny spec (Dafny `real` has no IEEE overflow concept — confirmed empirically). |
 | Phase C Gate C2 — PROVEN exclusivity migration | **BUILT 2026-07-07; wired end-to-end 2026-07-07** | Ruling **R3** (supersedes R2): `assert_no_realized_proven` (`evidence/render/matrix_variants.py`) now permits PROVEN as a realized strength only when a record's `method == "dafny"` AND `verifier_completion_status == "completed"`; every other method — including a record with no method at all — is still hard-blocked, exactly as under R2. 8 new tests in `tests/test_proven_exclusivity.py`: a positive case (a real Dafny PROVEN record, produced the same way Gate C1's adapter produces it, is accepted), explicit negatives for crosshair and concrete_test records forced to claim PROVEN (checked explicitly, not by omission), a missing-method case, two defense-in-depth cases (a `method == "dafny"` record without a completed status is still refused), the row-level-cell shape (variant B/C), and a regression check that all four committed matrix artifacts — none of which contain a dafny record today — still pass unchanged. **Wiring (2026-07-07):** R3's positive branch is no longer only proven correct in isolation — `traceability_matrix.formal.json` is a real artifact where it fires for real, verified by the structural PROVEN sweep in `generate_artifacts.py`. |
-| Gate 2 / C2-C4 wiring — real Dafny evidence reaches a live matrix row | **BUILT 2026-07-07** | The first real PROVEN row ever rendered in this repository. Scope ratified with Steven before building (variant C only; Z3 gate inside the binder; metadata declares dafny evidence explicitly) — see the detailed section below for the full design and the temporary variant A/B divergence this creates, named and tracked, not silently permitted. |
+| Gate 2 / C2-C4 wiring — real Dafny evidence reaches a live matrix row | **BUILT 2026-07-07 (variant C); EXTENDED 2026-07-07 (variants A/B)** | The first real PROVEN row ever rendered in this repository. Scope ratified with Steven before building (variant C only, then explicitly extended: "go ahead and extend variant A and B now"; Z3 gate inside the binder; metadata declares dafny evidence explicitly). `intent_ok` is `True` for REQ-GIP-1-4-12/REQ-GIP-1-8-1 in EVERY variant artifact now — the temporary A/B divergence tracked when C landed first is closed and its carve-out mechanism retired. See the detailed section below for the full design. |
 | Phase C Gate C3 — Dafny output-parsing hardening | **BUILT for vectors 1–3 (2026-07-07); vector 4 BLOCKED, named** | **Vector 1 (vacuous preconditions):** `evidence/dafny_spec_lint.py::check_precondition_satisfiability` extracts a method's `requires` clauses and asks Z3 for real satisfiability, via a small hand-written expression translator (booleans, comparisons incl. chaining, arithmetic, real/int/nat/bool — anything else, e.g. quantifiers, refused outright). Proven against a real committed fixture, `examples/dosage_calculator/vacuous_precondition_probe.dfy`: Dafny itself reports a clean pass (`1 verified, 0 errors`) on a method whose precondition (`x > 0 && x < 0`) can never hold; the checker correctly reports `unsat`. **Vector 2 (weak postconditions, best-effort heuristic, not a proof):** `scan_weak_postconditions` flags `ensures` clauses using a one-way `==>` without a matching `<==>`, tested against a synthetic weak clause (flagged) and both the real dosage.dfy spec and a `<==>` clause (correctly not flagged). **Vector 3 (timeout/resource-limit masking):** real finding on the installed 4.11.0 binary — `dafny verify --resource-limit=1` on the real dosage.dfy spec produces `Dafny program verifier finished with 0 verified, 0 errors, 1 out of resource` — an "errors" count of 0 alongside an incomplete run. Confirmed the real capture's exit_code is 4 (nonzero), so Gate C1's exit-code check already refuses it (an earlier suspicion of an exit-0 false-zero here was a shell-piping artifact in this session's own probing, corrected before being reported as a finding); the summary-line parser in `evidence/dafny_adapter.py` was still hardened to refuse independently on `"out of resource"`/`"out of memory"`/`"timed out"` markers and on more than one summary line in a capture, as defense in depth. **Vector 4 (specification stripping): still BLOCKED, named** — the source material describing this fourth vector was cut off before detail was captured; needs a follow-up read of the original document before it can be scoped at all, not inferred from the name. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **RESOLVED via Gate C1 + C2** | The field exists on `VerificationResult` (`evidence/model.py`), is set by Gate C1's adapter, and is now load-bearing in Gate C2's R3 check — PROVEN requires it to equal `"completed"`, not just a matching method label. Strength-assignment stays adapter-scoped, so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements. |
 | Phase C Gate C4 — Spec-Testing Proofs (STPs) | **BUILT 2026-07-07; found and fixed a real spec gap** | IronSpec methodology: prove specific input/output pairs are accepted or rejected by the SPECIFICATION alone, independent of any implementation. Applied to dosage.dfy, an STP lemma revealed the original postcondition (bounds + reverse-flow-zero only) never pinned `dose` to the actual clamped value — a wrong candidate value could not be proven excluded, meaning a broken implementation could have satisfied the spec undetected. **Fixed for real:** `dosage.dfy` gained an `ExpectedDose` function and a pinning `ensures dose == ExpectedDose(...)` clause; re-verified clean (`2 verified, 0 errors`); the real committed capture was re-run honestly (`raw_dafny_output.txt` / `run_manifest_dafny.json` now reflect the fixed spec). The original weak spec is preserved verbatim as `dosage_underconstrained.dfy` (an honesty exhibit, same rationale as `dosage_naive_widening.py`). Two STP suites prove both directions for real: `dosage_stp_suite.dfy` (6 lemmas across the 3 logical branches — normal in-range, ceiling-clamped, reverse-flow — `include`s the fixed spec, all verify: `10 verified, 0 errors`) and `dosage_stp_suite_against_underconstrained.dfy` (the 2 REJECT lemmas for the branches that actually had a gap, `include`s the preserved weak spec, both genuinely fail: `0 verified, 2 errors`, exit 4 — a real negative capture, not smoothed over). 6 new tests in `tests/test_dafny_stp_suite.py`, including a regression on a self-caught mistake (an early REJECT-lemma draft used an out-of-bounds wrong value that the weak spec already excluded trivially, giving a false pass that didn't test the real gap — caught and corrected before committing). Neither STP suite is wired into `build_matrix()` or any generator; matches Gates C1–C3's scope discipline. |
@@ -1139,22 +1138,142 @@ PROVEN sweep (stage 6) now explicitly sweeping
 real row inside the actual pipeline, not just when
 `generate_matrix_c.py` happens to be run standalone.
 
-### Explicitly not done here
+### Explicitly not done here (as of the variant-C-only build; SUPERSEDED for A/B — see below)
 
-- **Variants A and B** don't bind dafny evidence at all — deliberately
-  deferred, per the ratified scope decision. `tests/test_dafny_wiring.py`
-  confirms they are completely untouched (no `"dafny"` string anywhere
-  in either artifact, `intent_ok` unchanged), so "post hoc" is still
-  entirely ahead, not accidentally already done.
-- **The CLI** (`evidence/cli.py`) was not extended with a `"c-formal"`
-  variant choice or a way to supply a `dafny_store` from the command
-  line — a real, separate design question (how does a vocabulary-
-  agnostic CLI accept a third evidence source generically?) that wasn't
-  part of this ask and would have expanded scope well beyond it.
+- ~~Variants A and B don't bind dafny evidence at all — deliberately
+  deferred, per the ratified scope decision.~~ **Done same day** — see
+  "Gate 2/C2-C4 wiring extended to variants A and B" below.
+- ~~The CLI was not extended with a `"c-formal"` variant choice or a way
+  to supply a `dafny_store` from the command line.~~ **Done same day** —
+  `--dafny-captures` landed as part of the A/B extension (it turned out
+  not to be optional: once metadata.a.yaml/metadata.b.yaml declared
+  dafny evidence, the CLI genuinely could not build those variants
+  without it — see below).
 - **No generic "wire any future Dafny spec into the matrix" tooling.**
-  This built the ONE wiring path for the ONE spec that exists
-  (`dosage.dfy`), the same scope discipline every other Gate C mechanism
-  in this repository has followed.
+  Still true: this built the ONE wiring path for the ONE spec that
+  exists (`dosage.dfy`), the same scope discipline every other Gate C
+  mechanism in this repository has followed.
+
+### Gate 2/C2-C4 wiring extended to variants A and B (2026-07-07)
+
+Requested directly, same day as the variant-C-only build: "go ahead and
+extend variant A and B now." Confirms the "post hoc" framing from the
+scope decision that shipped C first — this is that follow-up landing.
+
+**Declarations.** `metadata.a.yaml` gained `- method: dafny, spec_target:
+"dosage.dfy", dafny_method: "CalculateHourlyDose"` in REQ-GIP-1-4-12 and
+REQ-GIP-1-8-1's `evidence` lists — the same declaration style Gate 4/5
+already established for crosshair/concrete_test.
+`evidence/schema/metadata.schema.a.json` gained the matching `dafny`
+enum value and `spec_target`/`dafny_method` conditional (identical fix
+to what schema.c.json got when C was wired). `metadata.b.yaml` gained
+two new shadow pseudo-requirements, `REQ-GIP-1-4-12.formal-1` and
+`REQ-GIP-1-8-1.formal-1`, with `implementation: "dosage.dfy::CalculateHourlyDose"` -
+the SAME shadow pattern concrete evidence already uses
+(`parent_requirement` + implementation), but distinguished as a dafny
+shadow by the `.dfy` file extension rather than a separate declared
+field. `evidence/schema/metadata.schema.b.json`'s shadow-id pattern was
+extended from `\.concrete-[0-9]+` to `\.(concrete|formal)-[0-9]+` to
+allow it.
+
+**Binders.** `_bind_declared` (variant A) and `_bind_shadow` (variant B)
+both gained an optional `dafny_store` parameter and the same dafny-
+record construction `_bind_self_describing` already had — but with a
+different default-None behavior, deliberately: variant A/B have no
+concept of "a view that legitimately excludes dafny evidence" the way
+C's symbolic/concrete sub-views do (their single artifact renders every
+declared evidence type together), so a requirement declaring dafny
+evidence with no `dafny_store` provided at all is refused outright
+(`SystemExit`), not silently skipped. `_bind_shadow` distinguishes a
+dafny shadow from a concrete one by checking whether the implementation
+file ends in `.dfy` — no new declared field needed, since the file
+extension is already meaningfully informative (a real, existing
+convention, not a new hack). `_shape_flattened_shadow` (variant B's row
+shape) gained the same `verifier_completion_status` field
+`_shape_method_partitioned` already carries, load-bearing for ruling
+R3's row-level check.
+
+**CONFLICT Type 1 generalized, not duplicated.** `_declared_concrete_bindings`
+(the existing generator unifying variant A's evidence-list declarations
+and variant B's shadow rows for concrete evidence) needed a real fix: it
+previously treated EVERY shadow row's implementation suffix as a
+concrete test_id unconditionally, which would have mis-parsed a dafny
+shadow's `dafny_method` as a bogus test_id and crashed with a false
+"declared test_id not found" error. Fixed to skip `.dfy`-suffixed shadow
+rows (now correctly recognized as dafny bindings, not concrete ones). A
+new, parallel generator, `_declared_dafny_bindings`, unifies dafny's own
+two declaration shapes (A/C's evidence list, B's `.dfy`-suffixed shadow
+rows) the same way — `dafny_binding_conflicts` was rewritten to use it,
+so Type 1 now genuinely covers variant B's dafny bindings too, not just
+A/C's.
+
+**Intent parity required extending dafny_store to symbolic/concrete too,
+not just formal.** `generate_matrix_c.py` now passes `dafny_store` to
+ALL THREE of its `build_matrix()` calls, not only `"c-formal"` — a real,
+necessary consequence of extending A/B: since `derive_intent()` runs
+inside each `build_matrix()` call using that call's own bound records,
+`c-symbolic`/`c-concrete` would otherwise keep computing `intent_ok =
+False` for the two now-proven requirements while A/B (and formal) say
+`True`, breaking the fact-equality gate for real. Their RENDERED rows
+are unaffected either way (the shape function still filters to
+crosshair/concrete_test only) — only their internal intent computation
+changes. Only `"c-formal"`'s header advertises the dafny tool version;
+symbolic/concrete's stays crosshair-only, since only formal actually
+renders a dafny row (verified by diff).
+
+**The fact-equality gate itself required two real changes, not zero.**
+`evidence/reconcile.py::VARIANT_ARTIFACTS` now includes
+`traceability_matrix.formal.json` as a full fifth member — no longer
+carved out. `facts_c` is now the union of symbolic, concrete, AND formal
+(previously symbolic ∪ concrete only), representing variant C's true
+three-way total claim against A's and B's single-artifact totality. The
+intent comparison changed from strict dict equality to **subset
+comparison**: `traceability_matrix.formal.json` will *permanently* lack
+an opinion about REQ-DOSE-003 (dosage.dfy's own header comment
+explicitly excludes it — this is not a temporary gap, it's a real,
+durable scope boundary), so requiring its intent dict to be identical to
+A's (which always has an opinion about every requirement) was never
+going to hold. The new rule: every requirement a view DOES have an
+opinion about must still match the reference exactly; a view is free to
+have no opinion about a requirement it doesn't cover; a requirement id
+the reference has never heard of at all is still a hard failure. The
+temporary carve-out mechanism (`run_formal_check`,
+`KNOWN_FORMAL_INTENT_DIVERGENCE`) built for the C-only phase is now
+retired — deleted from `evidence/reconcile.py`, its call removed from
+`regenerate_all.py` — since the divergence it tracked is closed.
+
+**The CLI needed `--dafny-captures`, and this was not optional.** Once
+`metadata.a.yaml`/`metadata.b.yaml` declared dafny evidence,
+`python -m evidence.cli build --variant a ...` genuinely broke
+(`build_matrix()` refuses without a `dafny_store`) — this is a real
+regression the A/B extension would otherwise have introduced, not a
+nice-to-have. `evidence/cli.py` gained `--dafny-captures <index.json>`:
+a small JSON file mapping `"{spec_target}::{dafny_method}"` keys to
+*paths* (relative to the index file's own directory) for the spec
+source, raw output, and manifest, rather than embedding the actual file
+content inline (keeps the index small and hand-readable).
+`examples/dosage_calculator/dafny_captures_index.json` is the real,
+committed index for the worked example. `"c-formal"` was also added to
+the CLI's variant choices (deferred in the C-only build; needed now that
+the CLI is being extended anyway).
+
+**The result:** every variant artifact — A, B, C-symbolic, C-concrete,
+C-formal — now reports `intent_ok: true` for both REQ-GIP-1-4-12 and
+REQ-GIP-1-8-1. `run_gate()`'s facts count is **9**, not 7. Full test
+suite: **98 passed** (added `test_reconcile_intent_comparison_is_subset_not_strict_equality`,
+`test_variant_a_has_dafny_evidence_and_a_proven_record`,
+`test_variant_b_has_dafny_shadow_rows_and_a_proven_record`,
+`test_cli_build_matches_committed_with_dafny_captures`,
+`test_cli_refuses_variant_a_without_dafny_captures`, and more, in
+`tests/test_dafny_wiring.py`; updated `tests/test_cli.py` and
+`tests/test_fact_equality.py` for the new committed reality). Full
+`generate_artifacts.py` pipeline re-run end to end: PASS.
+
+**Explicitly not done here:** no generic "wire any future Dafny spec
+into the matrix" tooling — this extended the ONE wiring path to the
+existing metadata for the ONE spec that exists.
+
+## What's left for Gate 2
 
 - CONFLICT rule Type 1: **built AND folded into `build_matrix()`**
   (`evidence/conflict.py`; runs on every `build_matrix()` call, tested

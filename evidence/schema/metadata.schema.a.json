@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PayloadGuard evidence metadata - variant A (evidence array per requirement)",
-  "description": "T4-A fork of metadata.schema.json: each requirement may carry an 'evidence' array of binding records (method 'crosshair' or 'concrete_test'; concrete records must name their test_id in concrete_results.json). Gaps are signalled by field absence, never by placeholder strings. Realized strength/caveat never appear in metadata; they come only from captures at generation time.",
+  "description": "T4-A fork of metadata.schema.json: each requirement may carry an 'evidence' array of binding records (method 'crosshair', 'concrete_test', or 'dafny'; concrete records must name their test_id in concrete_results.json; dafny records must name spec_target and dafny_method, cross-checked against the captured Dafny run manifest by Gate 2 CONFLICT Type 1 - evidence/conflict.py). Gaps are signalled by field absence, never by placeholder strings. Realized strength/caveat never appear in metadata; they come only from captures at generation time.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -88,25 +88,51 @@
                 "method": {
                   "enum": [
                     "crosshair",
-                    "concrete_test"
+                    "concrete_test",
+                    "dafny"
                   ]
                 },
                 "test_id": {
                   "type": "string"
+                },
+                "spec_target": {
+                  "type": "string"
+                },
+                "dafny_method": {
+                  "type": "string"
                 }
               },
-              "if": {
-                "properties": {
-                  "method": {
-                    "const": "concrete_test"
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "method": {
+                        "const": "concrete_test"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "test_id"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "method": {
+                        "const": "dafny"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "spec_target",
+                      "dafny_method"
+                    ]
                   }
                 }
-              },
-              "then": {
-                "required": [
-                  "test_id"
-                ]
-              }
+              ]
             }
           },
           "kernel_scope": {

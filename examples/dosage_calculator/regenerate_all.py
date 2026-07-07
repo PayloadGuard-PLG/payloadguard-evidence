@@ -8,11 +8,12 @@
 # the generation-time gate; the committed artifacts remain protected by
 # tests/test_fact_equality.py.
 #
-# 2026-07-07 (Gate 2/C2-C4 wiring): also runs run_formal_check() against
-# variant C's third partition (traceability_matrix.formal.json, real
-# Dafny-sourced evidence) - a separate, narrower check than run_gate()
-# itself, which stays unchanged (see evidence/reconcile.py's module
-# docstring for why the formal view isn't folded into it).
+# 2026-07-07 (Gate 2/C2-C4 wiring, extended to variants A/B same day):
+# traceability_matrix.formal.json is now a full peer inside run_gate()
+# itself (evidence/reconcile.py::VARIANT_ARTIFACTS) - the separate,
+# narrower run_formal_check() this file used to call while A/B's own
+# dafny wiring was still pending has been retired now that it's landed
+# and the temporary divergence it tracked is closed.
 import pathlib
 import subprocess
 import sys
@@ -21,7 +22,7 @@ HERE = pathlib.Path(__file__).parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from evidence.reconcile import run_formal_check, run_gate  # noqa: E402
+from evidence.reconcile import run_gate  # noqa: E402
 
 GENERATORS = ("generate_matrix_a.py", "generate_matrix_b.py", "generate_matrix_c.py")
 
@@ -33,12 +34,6 @@ def main():
     print(
         f"fact-equality gate: PASS ({result['facts']} facts; "
         f"intent {result['intent']})"
-    )
-    formal_result = run_formal_check(HERE, result["intent"])
-    print(
-        "formal-view intent check: PASS "
-        f"({formal_result['formal_requirements_checked']} requirements; "
-        f"known divergence {formal_result['known_divergence']})"
     )
 
 

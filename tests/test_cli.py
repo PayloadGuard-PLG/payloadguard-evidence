@@ -29,6 +29,9 @@ def _strip_ts(matrix):
     return m
 
 
+DAFNY_CAPTURES = str(ART_DIR / "dafny_captures_index.json")
+
+
 @pytest.mark.parametrize(
     "variant,metadata_name,committed_name",
     [
@@ -36,9 +39,16 @@ def _strip_ts(matrix):
         ("b", "metadata.b.yaml", "traceability_matrix.b.json"),
         ("c-symbolic", "metadata.c.yaml", "traceability_matrix.symbolic.json"),
         ("c-concrete", "metadata.c.yaml", "traceability_matrix.concrete.json"),
+        ("c-formal", "metadata.c.yaml", "traceability_matrix.formal.json"),
     ],
 )
 def test_cli_build_matches_committed_artifact(tmp_path, variant, metadata_name, committed_name):
+    # --dafny-captures is required for every variant here (2026-07-07,
+    # Gate 2/C2-C4 wiring extended to A/B): metadata.a.yaml/b.yaml/c.yaml
+    # all declare dafny evidence now, and even c-symbolic/c-concrete need
+    # dafny_store passed for their own intent_ok computation to match the
+    # committed artifacts (their RENDERED rows are unaffected either way -
+    # see _bind_self_describing's docstring).
     out_json = tmp_path / "out.json"
     result = _run_cli(
         "build",
@@ -46,6 +56,7 @@ def test_cli_build_matches_committed_artifact(tmp_path, variant, metadata_name, 
         "--metadata", str(ART_DIR / metadata_name),
         "--manifest", str(ART_DIR / "run_manifest.json"),
         "--concrete", str(ART_DIR / "concrete_results.json"),
+        "--dafny-captures", DAFNY_CAPTURES,
         "--out-json", str(out_json),
     )
     assert result.returncode == 0, result.stderr
@@ -63,6 +74,7 @@ def test_cli_writes_markdown_too(tmp_path):
         "--metadata", str(ART_DIR / "metadata.a.yaml"),
         "--manifest", str(ART_DIR / "run_manifest.json"),
         "--concrete", str(ART_DIR / "concrete_results.json"),
+        "--dafny-captures", DAFNY_CAPTURES,
         "--out-json", str(out_json),
         "--out-md", str(out_md),
     )
@@ -85,6 +97,7 @@ def test_cli_prints_to_stdout_when_no_output_path_given():
         "--metadata", str(ART_DIR / "metadata.a.yaml"),
         "--manifest", str(ART_DIR / "run_manifest.json"),
         "--concrete", str(ART_DIR / "concrete_results.json"),
+        "--dafny-captures", DAFNY_CAPTURES,
     )
     assert result.returncode == 0, result.stderr
     produced = json.loads(result.stdout)
@@ -139,12 +152,17 @@ def test_cli_missing_required_arg_exits_nonzero():
 def test_cli_tool_name_derived_from_manifest_not_hardcoded(tmp_path):
     """tool_versions is keyed by the manifest's own 'tool' field, not a
     hardcoded 'crosshair' string - a small genuine vocabulary-agnostic
-    improvement over the existing generator scripts."""
+    improvement over the existing generator scripts. Uses c-symbolic
+    without --dafny-captures: unlike variants A/B/c-formal, that view
+    doesn't require dafny_store at all (declared dafny evidence is
+    silently unbound there, not refused - see
+    _bind_self_describing's docstring), so it's the cleanest way to
+    isolate this assertion to the manifest-derived tool name alone."""
     out_json = tmp_path / "out.json"
     _run_cli(
         "build",
-        "--variant", "a",
-        "--metadata", str(ART_DIR / "metadata.a.yaml"),
+        "--variant", "c-symbolic",
+        "--metadata", str(ART_DIR / "metadata.c.yaml"),
         "--manifest", str(ART_DIR / "run_manifest.json"),
         "--concrete", str(ART_DIR / "concrete_results.json"),
         "--out-json", str(out_json),

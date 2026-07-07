@@ -2,10 +2,19 @@
 
 All three variants are generated from the identical underlying evidence:
 the Sample A CrossHair capture (`run_manifest.json`,
-`raw_crosshair_output.txt`) and the four concrete runs of T4-0
+`raw_crosshair_output.txt`), the four concrete runs of T4-0
 (`concrete_results.json`, produced from
-`tests/test_dosage_concrete.py::CASES`, pytest 4 passed). No variant has
-its own evidence source.
+`tests/test_dosage_concrete.py::CASES`, pytest 4 passed), and, since
+2026-07-07 (Gate 2/C2-C4 wiring), the real Dafny capture
+(`dosage.dfy`, `raw_dafny_output.txt`, `run_manifest_dafny.json`) for
+REQ-GIP-1-4-12/REQ-GIP-1-8-1 only - dosage.dfy's own header comment
+explicitly excludes REQ-DOSE-003. No variant has its own evidence
+source. **The facts/intent figures below (7 facts; REQ-GIP-1-4-12/
+REQ-GIP-1-8-1 false) describe the state through Phase A/B, before that
+wiring - see `examples/dosage_calculator/README.md`'s 2026-07-07
+amendment for the current state (9 facts; all three requirements
+`intent_ok: true`). Preserved here unedited as the historical record of
+what ruling R1 actually verified at the time.**
 
 ## Evidence records per requirement per variant
 

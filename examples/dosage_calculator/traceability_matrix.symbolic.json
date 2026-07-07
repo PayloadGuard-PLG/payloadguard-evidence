@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: symbolic evidence)",
-  "generated_utc": "2026-07-07T11:16:21.835684+00:00",
+  "generated_utc": "2026-07-07T11:41:00.689141+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -41,10 +41,8 @@
       "expected": null,
       "observed": null,
       "verifier_completion_status": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
-      ]
+      "intent_ok": true,
+      "notes": []
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
@@ -65,10 +63,8 @@
       "expected": null,
       "observed": null,
       "verifier_completion_status": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
-      ]
+      "intent_ok": true,
+      "notes": []
     },
     {
       "requirement_id": "REQ-DOSE-003",
@@ -108,7 +104,7 @@
       "expected": null,
       "observed": null,
       "scope": "system_scope",
-      "intent_ok": false,
+      "intent_ok": true,
       "notes": [
         "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
       ]

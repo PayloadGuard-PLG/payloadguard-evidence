@@ -75,20 +75,25 @@ mechanically prove both directions for real — six lemmas pass against
 the fix, the same two REJECT lemmas genuinely fail against the preserved
 original.
 
-**Gate 2/C2-C4 wiring is also now built — the first real Dafny-sourced
-PROVEN evidence ever to reach a live, rendered matrix row.**
-`traceability_matrix.formal.json` (variant C's third partition,
-extending Gate 5's dual-matrix pattern to a triple) binds real
-`dosage.dfy` evidence to REQ-GIP-1-4-12 and REQ-GIP-1-8-1 — both flip
-`intent_ok` from False to True for the first time since Phase A, gated
-inside the binder itself by Z3 precondition satisfiability (Gate C3) and
-the false-zero guard (Gate C1) before any record is even constructed.
-Variants A and B are deliberately, explicitly deferred ("post hoc verify
-A and B after C is proven") — a real, temporary intent divergence,
-named and tracked by a new, narrowly-scoped check
-(`evidence/reconcile.py::run_formal_check`) rather than silently
-permitted or used to weaken the existing, unchanged fact-equality gate.
-See `KNOWN_LIMITATIONS.md` for the live gate ledger.
+**Gate 2/C2-C4 wiring is also now built, and extended to every schema
+variant — the first real Dafny-sourced PROVEN evidence ever to reach a
+live, rendered matrix row.** `traceability_matrix.formal.json` (variant
+C's third partition, extending Gate 5's dual-matrix pattern to a triple)
+binds real `dosage.dfy` evidence to REQ-GIP-1-4-12 and REQ-GIP-1-8-1,
+gated inside the binder itself by Z3 precondition satisfiability (Gate
+C3) and the false-zero guard (Gate C1) before any record is even
+constructed — built and confirmed correct for variant C first, then
+**extended to variants A and B the same day**: `metadata.a.yaml`'s
+evidence list and `metadata.b.yaml`'s new `.formal-N` shadow rows
+declare the same real evidence; the CLI gained `--dafny-captures`
+(required, not optional, once A/B declared it); the fact-equality
+gate's intent comparison became subset-based, since
+`traceability_matrix.formal.json` permanently lacks an opinion about
+REQ-DOSE-003 (out of `dosage.dfy`'s scope by design). **`intent_ok` is
+now `True` for both requirements in every variant artifact** — the
+first time since Phase A that `intended_method: "PROVEN"` has been
+realized everywhere it's declared. See `KNOWN_LIMITATIONS.md` for the
+live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

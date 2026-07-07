@@ -1,6 +1,6 @@
 {
   "artifact": "PayloadGuard evidence artifact index",
-  "generated_utc": "2026-07-07T11:16:21.883279+00:00",
+  "generated_utc": "2026-07-07T11:41:00.735819+00:00",
   "pipeline": "generate_artifacts.py (Turn B4)",
   "gates": {
     "schema_validation": "PASS",
@@ -13,8 +13,8 @@
   "inputs": {
     "dosage.py": "04656c5f7f65abaee87e15275ab5d1da84a737a7dc85260b94eec405cd55f992",
     "metadata.yaml": "a2ea10689fa2bdbdaa746381642d1df0defe871184fdba62ddac4b33e2bbc2fe",
-    "metadata.a.yaml": "addee6c1c881fc41a53f71d4d234656d752f19aff3211e94942247b91e0d47dd",
-    "metadata.b.yaml": "05263b2adb294980f33c79aae72fbd34deff95d8abdfbb80f6e97c95de94c034",
+    "metadata.a.yaml": "290d97a07e3bfadd927091039f401af8c35b491a497294fee2ba4870d04d8d6f",
+    "metadata.b.yaml": "ed9a24b73d5964f6243834a96079aff67c4b66a903162729d26759d53a076837",
     "metadata.c.yaml": "b424fa93103b9eef4454d8d1d0e6d3bb4f2d862e5ee8bdce1b5ef9add14df004",
     "run_manifest.json": "9688e066c7af9b8ca0877f3df0d4cda8e740e1ebd8166bc3f8e368ffdcafefb5",
     "raw_crosshair_output.txt": "9eb34bb02fc8894326d9a5b50c0f1dad9e70c69eec96ca104cdb80d537ddeded",
@@ -23,21 +23,21 @@
     "raw_dafny_output.txt": "8b086c8efecfd215c39cce83107b6532fd7d96e000ac491f0efadea0d3203d9c",
     "run_manifest_dafny.json": "79d070fe418109ae4bd4aeda768a976ee429a8e554731ee8d70fb57f761efd32",
     "evidence/schema/metadata.schema.json": "68662c435bc571bd59e2f5044166cb962b56c8540f04b27f4be9798d700f91ad",
-    "evidence/schema/metadata.schema.a.json": "bf7dcdc6575f54482505be536f96643a94b4bcd7e87e7bcd328e45fdd700b2c1",
-    "evidence/schema/metadata.schema.b.json": "78fa3b0da0deb25ca9cc81bfbb0da54046a13fa692fa36fe2f5cb37f76d3ac25",
+    "evidence/schema/metadata.schema.a.json": "0702a0fb636393cef4ad735eabe7ef0f225b973b7a180756f4b19bb3aeb4619e",
+    "evidence/schema/metadata.schema.b.json": "ab7844244e3df418e3dba1f3dc302c43858f4bcd6f1fc0f31b554ac1fba95f00",
     "evidence/schema/metadata.schema.c.json": "4d55126bf933df360d6c1cda1900237d8809a8082290757b71d629aa91e3a6ef"
   },
   "outputs": {
-    "traceability_matrix.a.json": "cdb3c2d2154e7bb1b5b72f892724d6d3ed18377c9ad02ec3675642eccf5ff875",
-    "traceability_matrix.b.json": "4f9641a1329ae1d1ac93cf269cae123aa145991c9dc25e2487036e1d4e911582",
-    "traceability_matrix.symbolic.json": "8e60494bf8d79ae723222cf322257afd4a1665a803235ef2290c9c9c001d212f",
-    "traceability_matrix.concrete.json": "db9fade0029a9786e04d648c4f72cb68c65ccecfe54d808026d95e6395a6dc33",
-    "traceability_matrix.a.md": "0854125adeb0eb266a61e3996ab234e54f02db4f156ab52c83977ed7ee775d75",
-    "traceability_matrix.b.md": "4f2afd3362900e3eccf749e5928bd16301a1f85afa8a6d1a9268ad682a1393a6",
-    "traceability_matrix.symbolic.md": "c82b0f2be6ba53a8f96d94e73bb1798c4f428b87b7dd62a46f35c240fbb9f3a1",
-    "traceability_matrix.concrete.md": "f3523d81b7f720e078959a142b1d5ceb30d0b54c0889b16131b8c090ed8b4647",
-    "traceability_matrix.formal.json": "ae26fb15125ac80e0fe80f59723d02f48dc6f7e04ca87c10f639edc6c357be9c",
-    "traceability_matrix.formal.md": "0bf380cd5b305ab3fd11991c4d2d713aa88b96b8c380f26f0c6ec6c800aeb954"
+    "traceability_matrix.a.json": "b091b5f3ae405b9c1a11b7662dd520d2fa08493461fa0185bbe69c55f99ded28",
+    "traceability_matrix.b.json": "b9005167d49b97a75a795086c0806453a8b9264fb11d99951e5024101295f843",
+    "traceability_matrix.symbolic.json": "aa0f4ef24ba8d28c5782acc2f5342bbe0cb59d3fd12bd38f347b21e22f776360",
+    "traceability_matrix.concrete.json": "e04915f4c0c3eaa9039736f81573b625e4e4d53b2c9aee1acc47211553e790c4",
+    "traceability_matrix.formal.json": "0289c3d7076a6a5a749132181737c4712a6f9857a2846c2736ce234417012a72",
+    "traceability_matrix.a.md": "50df314b987f67336651010f65e369125194bbed0c3e9f311e97358418acc67b",
+    "traceability_matrix.b.md": "b1bc3f1e38c2be4675f393d5107e2bf947ccbdd981643136f566c77a5f3e7280",
+    "traceability_matrix.symbolic.md": "6d62a07464ad8bc2e5234fbe3d00352098ec4444fe7df7222909fef23f7e6065",
+    "traceability_matrix.concrete.md": "765aee60dcde9906a0ec06329237196d44e45e71f8ecac7e7f66763f64ef2d6b",
+    "traceability_matrix.formal.md": "2e1d71e33d71f99a50effe9f39481dae782cbe854c5f1f22ea4fe8db58a10df1"
   },
   "frozen_evidence": {
     "traceability_matrix.json": "c465ea69d2b3373d5d2d1d01681ee1021b0e7154de3ae9e7315c4c9a9bc6afdf",

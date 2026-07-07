@@ -1,8 +1,9 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant B: flattened pseudo-requirements)",
-  "generated_utc": "2026-07-07T11:16:21.678988+00:00",
+  "generated_utc": "2026-07-07T11:41:00.473870+00:00",
   "tool_versions": {
-    "crosshair": "crosshair-tool 0.0.107"
+    "crosshair": "crosshair-tool 0.0.107",
+    "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
   },
   "crosshair_bounds": {
     "per_condition_timeout_s": 30,
@@ -40,10 +41,9 @@
       "inputs": null,
       "expected": null,
       "observed": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
-      ]
+      "verifier_completion_status": null,
+      "intent_ok": true,
+      "notes": []
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
@@ -64,10 +64,9 @@
       "inputs": null,
       "expected": null,
       "observed": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED"
-      ]
+      "verifier_completion_status": null,
+      "intent_ok": true,
+      "notes": []
     },
     {
       "requirement_id": "REQ-DOSE-003",
@@ -88,6 +87,7 @@
       "inputs": null,
       "expected": null,
       "observed": null,
+      "verifier_completion_status": null,
       "intent_ok": true,
       "notes": []
     },
@@ -111,7 +111,8 @@
       },
       "expected": 0.0,
       "observed": 0.0,
-      "intent_ok": false,
+      "verifier_completion_status": null,
+      "intent_ok": true,
       "notes": []
     },
     {
@@ -134,7 +135,8 @@
       },
       "expected": 0.0,
       "observed": 0.0,
-      "intent_ok": false,
+      "verifier_completion_status": null,
+      "intent_ok": true,
       "notes": []
     },
     {
@@ -157,6 +159,7 @@
       },
       "expected": 6.0,
       "observed": 6.0,
+      "verifier_completion_status": null,
       "intent_ok": true,
       "notes": []
     },
@@ -180,7 +183,46 @@
       },
       "expected": 10.0,
       "observed": 10.0,
-      "intent_ok": false,
+      "verifier_completion_status": null,
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-4-12.formal-1",
+      "parent_requirement": "REQ-GIP-1-4-12",
+      "requirement_text": "Formal evidence for REQ-GIP-1-4-12: Dafny proof that CalculateHourlyDose's computed dose is pinned to the exact clamped value (via the ExpectedDose function) and never exceeds max_safe_dose_mg_per_hr. (Shadow pseudo-requirement, T4-B, 2026-07-07; evidence is the real Dafny capture in raw_dafny_output.txt / run_manifest_dafny.json.)",
+      "code_location": "dosage.dfy::CalculateHourlyDose",
+      "method": "dafny",
+      "strength": "PROVEN",
+      "caveat": "Formally proven against the stated specification.",
+      "result_status": "proven",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "verifier_completion_status": "completed",
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-GIP-1-8-1.formal-1",
+      "parent_requirement": "REQ-GIP-1-8-1",
+      "requirement_text": "Formal evidence for REQ-GIP-1-8-1: Dafny proof that CalculateHourlyDose yields exactly zero delivered dose whenever infusionRateMlPerHr is negative. (Shadow pseudo-requirement, T4-B, 2026-07-07; evidence is the real Dafny capture in raw_dafny_output.txt / run_manifest_dafny.json.)",
+      "code_location": "dosage.dfy::CalculateHourlyDose",
+      "method": "dafny",
+      "strength": "PROVEN",
+      "caveat": "Formally proven against the stated specification.",
+      "result_status": "proven",
+      "bounds": null,
+      "counterexample": null,
+      "test_id": null,
+      "inputs": null,
+      "expected": null,
+      "observed": null,
+      "verifier_completion_status": "completed",
+      "intent_ok": true,
       "notes": []
     },
     {
@@ -199,7 +241,7 @@
       "expected": null,
       "observed": null,
       "scope": "system_scope",
-      "intent_ok": false,
+      "intent_ok": true,
       "notes": [
         "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
       ]

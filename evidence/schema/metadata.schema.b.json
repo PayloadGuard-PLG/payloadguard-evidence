@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PayloadGuard evidence metadata - variant B (flattened pseudo-requirements)",
-  "description": "T4-B fork of metadata.schema.json: preserves the one-record-per-binding shape. Concrete runs bind to shadow requirement entries whose id is a dotted child of the parent (e.g. REQ-GIP-1-8-1.concrete-1); every shadow entry MUST carry an explicit parent_requirement field (machine-enforced via if/then), so lineage is not naming-convention-only. Gaps are signalled by field absence, never by placeholder strings.",
+  "description": "T4-B fork of metadata.schema.json: preserves the one-record-per-binding shape. Concrete runs bind to shadow requirement entries whose id is a dotted child of the parent (e.g. REQ-GIP-1-8-1.concrete-1); every shadow entry MUST carry an explicit parent_requirement field (machine-enforced via if/then), so lineage is not naming-convention-only. Dafny evidence (2026-07-07) uses the same shadow pattern with a '.formal-N' suffix (e.g. REQ-GIP-1-4-12.formal-1) and an implementation pointing at a .dfy file (e.g. dosage.dfy::CalculateHourlyDose) - the binder (evidence/render/matrix_variants.py::_bind_shadow) distinguishes a dafny shadow from a concrete shadow by that file extension, not a separate declared field. Gaps are signalled by field absence, never by placeholder strings.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -58,7 +58,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^REQ-[A-Z0-9-]+(\\.concrete-[0-9]+)?$"
+            "pattern": "^REQ-[A-Z0-9-]+(\\.(concrete|formal)-[0-9]+)?$"
           },
           "text": {
             "type": "string"

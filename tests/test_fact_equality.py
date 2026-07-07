@@ -19,11 +19,16 @@ ART_DIR = REPO_ROOT / "examples" / "dosage_calculator"
 
 
 def test_gate_passes_on_committed_artifacts():
+    """9 facts, not 7 (2026-07-07, Gate 2/C2-C4 wiring extended to
+    variants A/B): +1 real dafny fact each for REQ-GIP-1-4-12 and
+    REQ-GIP-1-8-1. intent_ok is True for all three requirements now -
+    the two formerly-intended-but-never-realized PROVEN requirements are
+    finally realized, for the first time since Phase A."""
     result = run_gate(ART_DIR)
-    assert result["facts"] == 7
+    assert result["facts"] == 9
     assert result["intent"] == {
-        "REQ-GIP-1-4-12": False,
-        "REQ-GIP-1-8-1": False,
+        "REQ-GIP-1-4-12": True,
+        "REQ-GIP-1-8-1": True,
         "REQ-DOSE-003": True,
     }
 

@@ -96,6 +96,23 @@ requirements:
     pseudo-requirement, T4-B; evidence recorded in concrete_results.json.)'
   implementation: tests/test_dosage_concrete.py::kernel_detects_bolus_limit_exceeded
   intended_method: EXAMPLE_CHECKED
+- id: REQ-GIP-1-4-12.formal-1
+  parent_requirement: REQ-GIP-1-4-12
+  text: 'Formal evidence for REQ-GIP-1-4-12: Dafny proof that CalculateHourlyDose''s
+    computed dose is pinned to the exact clamped value (via the ExpectedDose
+    function) and never exceeds max_safe_dose_mg_per_hr. (Shadow pseudo-requirement,
+    T4-B, 2026-07-07; evidence is the real Dafny capture in raw_dafny_output.txt
+    / run_manifest_dafny.json.)'
+  implementation: dosage.dfy::CalculateHourlyDose
+  intended_method: PROVEN
+- id: REQ-GIP-1-8-1.formal-1
+  parent_requirement: REQ-GIP-1-8-1
+  text: 'Formal evidence for REQ-GIP-1-8-1: Dafny proof that CalculateHourlyDose
+    yields exactly zero delivered dose whenever infusionRateMlPerHr is negative.
+    (Shadow pseudo-requirement, T4-B, 2026-07-07; evidence is the real Dafny
+    capture in raw_dafny_output.txt / run_manifest_dafny.json.)'
+  implementation: dosage.dfy::CalculateHourlyDose
+  intended_method: PROVEN
 threat_model:
 - id: THR-GIP-1-2
   threat: 'Overinfusion: dose limit exceeded due to too many bolus requests. (GIP

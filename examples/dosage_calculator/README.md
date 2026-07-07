@@ -262,5 +262,51 @@ manifest and raw output, constructs a `VerificationResult`, and runs
 `evidence.render.manual_matrix.build_traceability_matrix` against
 `metadata.yaml`. Strength in every row comes only from the verification
 result (`BOUNDED_CHECKED`); the two requirements whose `intended_method`
-is `PROVEN` are correctly reported with `intent_ok: false`, because Dafny
-is not wired in this phase and nothing in this repository claims `PROVEN`.
+is `PROVEN` are correctly reported with `intent_ok: false` in THIS
+FROZEN BASE VIEW specifically (ruling R2c) — it never calls
+`build_matrix()` and stays the unchanged Phase A symbolic-subset legacy
+view even after Dafny was wired into variants A/B/C (below). Variants
+A/B/C now report `intent_ok: true` for both — see the 2026-07-07
+amendment.
+
+## Amendment 2026-07-07 — Dafny evidence wired into variants A, B, and C
+
+Recorded per the audit-trail discipline in `sources/README.md`.
+
+Phase C, Gates C1-C4 built a real Dafny spec (`dosage.dfy`), a capture
+runner, a false-zero-guard parser, a PROVEN-exclusivity structural rule
+(ruling R3), Z3-based precondition-satisfiability hardening, and
+Spec-Testing Proofs — all standalone, none wired into any traceability
+matrix. This amendment is the wiring: `evidence/render/matrix_variants.py::dafny_record()`
+gates PROVEN on both Z3 satisfiability and the false-zero guard before
+constructing any record, and is now reachable from every schema variant.
+
+- **Variant C** gained a third partition, `traceability_matrix.formal.json`
+  (extending Gate 5's dual-matrix pattern to a triple), built first and
+  confirmed correct before extending A/B.
+- **Variants A and B** now declare the same real dafny evidence
+  explicitly (`metadata.a.yaml`'s `evidence: [{method: dafny, ...}]`;
+  `metadata.b.yaml`'s new `.formal-N` shadow rows, e.g.
+  `REQ-GIP-1-4-12.formal-1`), cross-checked by a new Gate 2 CONFLICT
+  Type 1 sub-check (`dafny_binding_conflicts`).
+- **REQ-GIP-1-4-12 and REQ-GIP-1-8-1's `intent_ok` flips from `false` to
+  `true`** in every variant artifact (A, B, C-symbolic, C-concrete,
+  C-formal) — the first time since Phase A that `intended_method:
+  "PROVEN"` has been realized, not just declared. The frozen base matrix
+  (above) is unaffected by design.
+- **The fact-equality gate** (`evidence/reconcile.py::run_gate`) now
+  holds at **9 facts**, not 7 — the two new dafny facts. Its intent
+  comparison became subset-based rather than strict dict equality:
+  `traceability_matrix.formal.json` permanently, deliberately has no
+  opinion about REQ-DOSE-003 (out of `dosage.dfy`'s scope, named in its
+  own header comment), so it can never carry the FULL requirement set
+  the way A/B/base/symbolic/concrete always do — a real structural
+  asymmetry between C's three-way split and A/B's single-artifact shape,
+  not a bug to paper over.
+- **The CLI** (`evidence/cli.py`) gained a `--dafny-captures` option -
+  once metadata.a.yaml/metadata.b.yaml declared dafny evidence,
+  `build_matrix()` genuinely requires a `dafny_store` to build those
+  variants at all, so the CLI needed a way to supply one.
+- Built in two phases on explicit direction: variant C first ("hmm. can
+  we post hoc verify A and B after C variant is proven?"), then A and B
+  the same day ("go ahead and extend variant A and B now").

@@ -25,6 +25,30 @@ evidence/schema/metadata.schema.<a|b|c>.json for the given --variant -
 a convenience, not a hardcoded requirement. Pass --schema explicitly for
 a metadata shape that lives elsewhere.
 
+--dafny-captures is optional (2026-07-07, Gate 2/C2-C4 wiring, extended
+to variants A/B the same day): a path to a small JSON "index" file
+mapping "{spec_target}::{dafny_method}" keys to paths (relative to the
+index file's own directory) for the three real inputs a dafny_record()
+call needs - spec_source_path (the .dfy source), raw_output_path (the
+verbatim capture text), manifest_path (the run manifest JSON) - plus the
+dafny_method name itself. Example:
+    {
+      "dosage.dfy::CalculateHourlyDose": {
+        "spec_source_path": "dosage.dfy",
+        "raw_output_path": "raw_dafny_output.txt",
+        "manifest_path": "run_manifest_dafny.json",
+        "dafny_method": "CalculateHourlyDose"
+      }
+    }
+Paths-of-paths rather than inlined file content, so the index stays a
+small, readable, hand-maintainable file instead of embedding multi-line
+Dafny source and raw capture text inside JSON string escapes. Required
+whenever the target metadata declares any `method: dafny` evidence
+(variants A/B unconditionally; variant C's symbolic/concrete views only
+need it for intent_ok consistency, not rendering - see
+_bind_self_describing's docstring in matrix_variants.py) - build_matrix()
+itself refuses with a clear message if it's missing and needed.
+
 Exit codes: 0 on success. A Tier-1 failure (schema validation, Gate 2
 CONFLICT Type 1 - folded into build_matrix() itself, see
 matrix_variants.py - or the structural PROVEN check) exits non-zero with
@@ -50,12 +74,31 @@ _SCHEMA_SUFFIX_BY_VARIANT = {
     "b": "b",
     "c-symbolic": "c",
     "c-concrete": "c",
+    "c-formal": "c",
 }
 
 
 def _default_schema_path(variant):
     suffix = _SCHEMA_SUFFIX_BY_VARIANT[variant]
     return REPO_ROOT / "evidence" / "schema" / f"metadata.schema.{suffix}.json"
+
+
+def _load_dafny_store(index_path):
+    """Read a --dafny-captures index file and assemble the real dafny_store
+    dict build_matrix() expects, reading each referenced file relative to
+    the index file's own directory."""
+    index_path = pathlib.Path(index_path)
+    index = json.loads(index_path.read_text())
+    base = index_path.parent
+    store = {}
+    for key, entry in index.items():
+        store[key] = {
+            "spec_source": (base / entry["spec_source_path"]).read_text(),
+            "raw_output": (base / entry["raw_output_path"]).read_text(),
+            "manifest": json.loads((base / entry["manifest_path"]).read_text()),
+            "dafny_method": entry["dafny_method"],
+        }
+    return store
 
 
 def _build(args):
@@ -71,8 +114,29 @@ def _build(args):
     # (Phase C's Dafny/Z3 adapters) doesn't need this CLI changed.
     tool_versions = {manifest["tool"]: manifest["tool_version"]} if "tool" in manifest else {}
 
+    dafny_store = None
+    if args.dafny_captures:
+        dafny_store = _load_dafny_store(args.dafny_captures)
+        # Advertise dafny's own tool version too, same as
+        # generate_matrix_a/b/c.py do - but ONLY for the variants that
+        # actually RENDER a dafny row (a, b, c-formal). c-symbolic/
+        # c-concrete need dafny_store passed for their own intent_ok
+        # computation (see _bind_self_describing's docstring) but their
+        # rendered rows never include a dafny record, so their
+        # tool_versions header stays crosshair-only, matching the
+        # committed artifacts exactly.
+        if args.variant not in ("c-symbolic", "c-concrete"):
+            any_capture = next(iter(dafny_store.values()), None)
+            if any_capture is not None and "tool_version" in any_capture["manifest"]:
+                tool_versions["dafny"] = any_capture["manifest"]["tool_version"]
+
     matrix, markdown = build_matrix(
-        args.variant, metadata, manifest, concrete_store, tool_versions=tool_versions
+        args.variant,
+        metadata,
+        manifest,
+        concrete_store,
+        tool_versions=tool_versions,
+        dafny_store=dafny_store,
     )
 
     # JSON to stdout when --out-json is omitted, so the CLI composes with
@@ -114,6 +178,12 @@ def build_arg_parser():
         "--schema",
         default=None,
         help="Defaults to evidence/schema/metadata.schema.<a|b|c>.json for --variant.",
+    )
+    build_parser.add_argument(
+        "--dafny-captures",
+        default=None,
+        help="Path to a dafny_store index JSON file - required if the "
+        "target metadata declares any method: dafny evidence.",
     )
     build_parser.add_argument("--out-json", default=None)
     build_parser.add_argument("--out-md", default=None)
