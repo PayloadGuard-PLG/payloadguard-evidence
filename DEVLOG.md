@@ -6,6 +6,54 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5 LVR extension scoped (not built)
+
+Requested directly: "scope out Gate C5's LVR extension." Full sub-plan
+written into `payloadguard-evidence-roadmap-phaseB-to-C.md`, mirroring
+the discipline used for Gate C5's own original scoping session and its
+chain-direction/function-body-AOR extension.
+
+- **Literal-site audit, checked empirically, not assumed:** ran the real
+  tokenizer against `dosage.dfy` to enumerate every numeric literal in
+  scope (5 in `CalculateHourlyDose`'s requires/ensures clauses, 2 in
+  `ExpectedDose`'s function body). All 7 are exactly `0.0` — no other
+  numeric constant exists anywhere in this spec.
+- **Value-selection strategy:** exactly `original ± 0.01` per site (the
+  clinical-precision floor sourced in the prior research session) —
+  this is the first place that guidance has an actual application,
+  since it was named as bounding literal/constant perturbation
+  specifically, a mutation class Gate C5 hadn't built until now.
+- **Static filter, reusing ROR's polarity principle:** generalized from
+  operator-implication (a fixed lookup table) to magnitude-implication
+  (numeric comparison between original and mutant literal values) for
+  LE/LT/GE/GT-adjacent sites. Two real design points named rather than
+  glossed over: EQ-literal mutation has no such filter at all (changing
+  an equality target is neither a superset nor subset of the original in
+  either direction); function-body literals (2 of the 7 sites) have no
+  requires/ensures role to apply the principle to, so v1 would send them
+  straight to real verification unfiltered, mirroring the AOR
+  function-body precedent.
+- **Predicted outcome recorded as a hypothesis, not a promise:** 14 raw
+  mutants, 4 filtered as statically trivial, 10 sent to real
+  verification, all 10 hand-predicted killed (worked through by hand for
+  each site, e.g. why widening a requires clause's `> 0.0` to `> -0.01`
+  should fail via `ExpectedDose`'s own unchanged precondition at the
+  pinning clause's call site) — explicit that disagreement with this
+  prediction at build time would itself be the finding worth reporting.
+- **One named, unresolved tension:** whether the clinical-precision
+  floor (sourced from dosage-*threshold* rounding practice) is the right
+  test for REQ-GIP-1-8-1's *exact-zero* safety requirement specifically
+  — a regulator could reasonably view any nonzero delivery on reverse
+  flow as a real hazard, not clinically negligible noise. Left as an
+  open judgment call for whoever builds this, not decided here.
+- Reuses all existing extraction machinery
+  (`_locate_clause_sites`/`_tokenize_with_spans`/`_find_function_body_span`/
+  `check_precondition_satisfiability`) — the build order only needs a new
+  filter rule and a new `LVR` operator label, no new extraction code.
+
+Not built. `KNOWN_LIMITATIONS.md` gained a SCOPED table row pointing to
+the full sub-plan.
+
 ## 2026-07-07 — Gate C5 extended: chain-direction-aware ROR + function-body AOR
 
 Requested directly: "build both" - the two follow-ups named at the end

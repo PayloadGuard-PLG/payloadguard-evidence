@@ -1040,6 +1040,170 @@ roadmap's own stated scope for this gate. Not wired into `build_matrix()`
 or any generator — a pre-trust check run before relying on a PROVEN claim,
 not part of the artifact-generation pipeline.
 
+### Gate C5 LVR extension — Literal Value Replacement — SCOPED (2026-07-07), not yet built
+
+**Purpose.** ROR tests whether a comparison's *operator* is load-bearing;
+AOR tests whether an *arithmetic operator* is load-bearing. Neither
+tests whether a comparison's or expression's *literal constant* is
+load-bearing — e.g. is `0.0` in `concentrationMgPerMl > 0.0` the right
+threshold, or would `> -0.01` have been just as provable? LVR
+(Literal Value Replacement) is the standard sixth-ish mutation class
+(alongside ROR/AOR/LOR/SOR/HOR/COI in the broader literature, though not
+one of the six the roadmap originally scoped for Gate C5) that answers
+this. This is also the first place the clinical-precision-floor guidance
+from `gate_c5_mutation_testing_research_findings.md` (bound any
+real-valued mutant to the accuracy the dosage calculation actually
+requires — sourced at ≥0.01 mL/hr, syringe-pump precision) has an actual
+application: it was named as relevant to "literal/constant perturbation"
+specifically, and this is that mutation class.
+
+#### Real-spec literal-site audit (checked empirically, not assumed)
+
+Every numeric literal in `dosage.dfy`'s requires/ensures clauses and
+`ExpectedDose`'s function body was enumerated by running the existing
+tokenizer against the real file — **all 7 are the literal `0.0`; no
+other numeric constant exists anywhere in this spec:**
+
+1. `requires concentrationMgPerMl > 0.0` (GT, requires)
+2. `requires maxSafeDoseMgPerHr > 0.0` (GT, requires)
+3. `ensures 0.0 <= dose <= maxSafeDoseMgPerHr` — the `0.0` (LE, ensures,
+   chain position 0 — no chain-DIRECTION issue here the way ROR has:
+   mutating a literal doesn't change the operator, so this class has no
+   analog to ROR's stillborn-chain problem, named explicitly so it isn't
+   assumed to need the same handling)
+4. `ensures infusionRateMlPerHr > 0.0 || dose == 0.0` — the first `0.0`
+   (GT, ensures)
+5. `ensures infusionRateMlPerHr > 0.0 || dose == 0.0` — the second `0.0`
+   (EQ, ensures)
+6. `ExpectedDose` body: `if rawDose < 0.0` (LT, comparison operand
+   inside a function body, not a contract clause — see below)
+7. `ExpectedDose` body: `then 0.0` (a bare return value, not a
+   comparison operand at all — the value returned when `rawDose < 0.0`)
+
+Two of these (6, 7) are inside `ExpectedDose`'s function body rather
+than a requires/ensures clause — consistent with extending scope there
+the same way AOR's function-body extension already did, reusing
+`_find_function_body_span`/the same tokenizer rather than adding new
+extraction machinery.
+
+#### Value-selection strategy: ±0.01 only, not an open-ended range
+
+Rather than generating mutants at arbitrary constants, generate exactly
+two candidates per site: `original ± 0.01` (the sourced clinical
+precision floor). This is deliberately the *sharpest* possible test, not
+a weaker one: if a proof survives the smallest clinically-distinguishable
+nudge across a boundary, it would survive a larger one too in the same
+direction, and if it's killed by the smallest nudge, that's the tightest
+possible confirmation the threshold matters. Larger magnitudes (±0.1,
+±1.0) are a possible future addition if ±0.01 turns out to reveal
+nothing — not built into v1, since starting minimal and exhaustive for
+one real spec matches every other Gate C1-C5 decision so far.
+
+**Named tension, not resolved here — a judgment call for whoever builds
+this:** the clinical-precision floor is sourced from device-rounding
+practice for *dosage thresholds* (e.g. the max-dose ceiling). Site 7
+(`then 0.0`, REQ-GIP-1-8-1's "reverse delivery yields exactly zero") is
+different in kind — the requirement text is about complete cessation of
+flow on a hazard condition, not a measurement with acceptable rounding
+error, and a regulator could reasonably view "delivers 0.01 mg/hr instead
+of exactly 0" as a real safety question, not clinically negligible
+noise. Whether the ±0.01 floor is the right test for an *exact-zero
+safety requirement* specifically (vs. a *threshold* requirement like the
+max-dose ceiling) is named here as an open design question, not silently
+decided either way.
+
+#### Predicted outcome (hand-derived from the value-selection rule above; a hypothesis to check at build time, not a promise)
+
+Using the same requires/ensures polarity principle ROR's pass 1 already
+established — for a **requires** clause, *narrowing* (stricter) is the
+trivial direction; for an **ensures** clause, *weakening* is the trivial
+direction — generalized from operator-implication to magnitude-implication:
+
+- Sites 1, 2 (GT, requires): `+0.01` narrows the precondition (trivially
+  filterable); `-0.01` widens it (informative — and predicted to be
+  **killed**, since it would admit inputs that violate `ExpectedDose`'s
+  own unchanged `requires > 0.0` at the pinning clause's call site).
+- Site 3 (LE, ensures, literal on the low side of the chain): `-0.01`
+  weakens the bound (trivially filterable); `+0.01` strengthens it
+  (informative — predicted **killed**, since the implementation can
+  produce `dose == 0.0` exactly on reverse flow, violating a mutant
+  requiring `dose >= 0.01`).
+- Site 4 (GT, ensures, reverse-flow first disjunct): same shape as 1/2
+  but in the ensures role — `-0.01` trivial, `+0.01` informative
+  (predicted **killed**: for `infusionRateMlPerHr` in `(0, 0.01]`,
+  `rawDose` is a small positive, non-zero value, so neither disjunct
+  holds).
+- Site 5 (EQ, ensures): **no magnitude-implication filter applies to
+  EQ** — changing an equality's target value is neither a superset nor
+  subset of the original in either direction (`dose == 0.0` doesn't
+  imply or get implied by `dose == 0.01`), so both `+0.01` and `-0.01`
+  are always informative, always real-verified. Both predicted
+  **killed** (reverse-flow always produces `dose == 0.0` exactly; a
+  mutated target value can never match).
+- Sites 6, 7 (function body): **no requires/ensures role exists inside a
+  function body** — the polarity principle has no clean analog here (it
+  isn't a contract clause, it's part of defining what `ExpectedDose`
+  computes), so v1 sends both candidates at both sites straight to real
+  verification with no static pre-filter, mirroring how AOR's
+  function-body mutants also skip passes 1-2 entirely. Both predicted
+  **killed** at both sites (any threshold or return-value mismatch
+  between `ExpectedDose`'s definition and the method body's actual,
+  unmutated computation breaks the pinning `ensures dose ==
+  ExpectedDose(...)` clause for some input in the perturbed range).
+
+**Predicted totals: 14 raw mutants (7 sites × 2 candidates), 4 filtered
+as statically trivial (sites 1/2/3/4's narrowing/weakening direction
+each), 10 sent to real verification, all 10 predicted killed — zero
+survivors predicted.** If the real run disagrees with this prediction
+anywhere, that disagreement is itself the finding worth reporting, not
+a bug in the prediction to quietly fix.
+
+#### Architecture: reuse, no new extraction machinery needed
+
+Clause-level sites (1-5): reuse `_locate_clause_sites` and
+`_tokenize_with_spans` exactly as ROR does — `_tokenize_with_spans`
+already emits `NUM`-kind tokens with spans, nothing new to build there.
+Function-body sites (6-7): reuse `_find_function_body_span` and the same
+tokenizer, exactly as the AOR function-body extension does. Pass 2
+(vacuity filtering) applies to sites 1 and 2 (the only requires-clause
+literal mutants) exactly as it does for ROR — reuse
+`check_precondition_satisfiability` directly, no new Z3 code. Pass 3
+(re-verification) reuses `run_mutation_suite.py`'s existing harness
+unchanged — a new `operator="LVR"` label is the only new field value,
+no new capture/parse logic needed.
+
+#### Build order
+
+1. `_locate_numeric_literal_sites` (clause-level): scan a clause's
+   tokens for `NUM` kind, parallel to how ROR/LOR scan for their kinds.
+2. Magnitude-implication filter, generalizing `_CMP_IMPLIES`'s role
+   (requires-narrows-trivial / ensures-weakens-trivial) to a numeric
+   comparison between original and mutant literal values, keyed by the
+   surrounding operator's kind (LE/LT/GE/GT get a filter rule; EQ/NE get
+   none, per the analysis above) - tested against a synthetic spec
+   independent of `dosage.dfy`, matching ROR's own polarity test, since
+   getting the direction backwards here would be exactly as
+   silently-wrong as it would have been for ROR.
+3. Function-body literal-site scanner, reusing AOR's
+   `_find_function_body_span` plumbing; no static filter applied (per
+   the analysis above), straight to pass 3.
+4. Wire into `generate_mutants`/`run_mutation_suite.py`; extend the
+   committed report format with the new `LVR` operator label.
+5. Real run against the actual spec; compare against the predicted
+   outcome above and report any disagreement explicitly, the same way
+   Gate C5's own survivors were reported rather than assumed away.
+
+#### Explicit non-goals
+
+No identifier-substitution mutants (replacing a literal with a variable
+reference, or vice versa) — a different, unbuilt mutation class,
+sometimes grouped with LVR in the broader literature but not the same
+operator; named as out of scope rather than silently included. No
+literals beyond the 7 real ones audited above — this is, like every
+other Gate C5 operator class, one mutation suite for the one real spec
+that exists, not a generic literal-mutation framework. Not wired into
+`build_matrix()` or any generator, matching every other Gate C5 class.
+
 ### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early) — BUILT and SIGNED OFF (2026-07-07)
 
 Before the proof search runs: generate a plain-English summary of what
