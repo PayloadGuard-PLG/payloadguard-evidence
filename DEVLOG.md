@@ -6,6 +6,56 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5 research findings recorded; one mischaracterization corrected
+
+Steven sent the external research prompt drafted earlier this session
+(`gate-c5-research-prompt.md`) out and brought back a thorough,
+well-sourced response covering the three open Gate C5 questions.
+Recorded in full at
+`examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md`.
+
+- **Correction made:** Gate C5 was labeled "MutDafny/IronSpec-style" in
+  `evidence/dafny_mutate.py`'s module docstring and the roadmap doc. The
+  research found this wrong - IronSpec's actual mutation-testing
+  technique (Goldweber et al., OSDI'24) is a directional,
+  implication-lemma-based approach (`S'(p) ⟹ S(p)`), not the brute
+  verify/observe approach this module actually implements, which
+  matches MutDafny (Amaral, Mendes & Campos, 2025) instead. Corrected
+  the docstring and the roadmap doc's separate, also-unconfirmed
+  "IronSpec's three-pass framework" attribution for the filter pipeline.
+  Gate C4's own IronSpec attribution (Spec-Testing Proofs) is a
+  different, correct part of IronSpec's toolkit and is unaffected.
+- **Problem A (the `>=` survivor, already fixed last entry) got a name
+  and real precedent:** *masking*, the MC/DC term (DO-178B/C,
+  Chilenski 1994) for a sibling condition making a boundary's operator
+  choice unobservable - an FAA/DO-178C-accepted pattern in the adjacent
+  aerospace safety-critical field. Recorded for the historical record;
+  Steven's tightening decision already resolved the underlying finding
+  before this research came back.
+- **Problem B (chain-direction stillborn mutants) confirmed as expected,
+  not a gap:** Dafny's chaining rule is now citable directly from the
+  Reference Manual (§5.2.1-5.2.2) rather than only empirically observed;
+  `run_mutation_suite.py`'s comment updated to cite it.
+  `dafny_mutate.py`'s `unclassifiable` bucketing strategy was
+  independently confirmed to match MutDafny's own published `Invalid`-
+  mutant handling - not behind the state of the art. A genuine,
+  not-yet-built improvement was identified (restrict each chain link's
+  mutation candidates to direction-compatible operators, eliminating
+  the 4 unclassifiable mutants by construction - MutDafny itself doesn't
+  do this).
+- **Problem C (deferred AOR/floating-point precision) got a concrete
+  plan, not just deferred:** MutDafny's own `/`↔`%`-only AOR restriction
+  directly resolves the division-by-zero attribution risk named when
+  AOR was originally deferred; a sourced ≥0.01 mL/hr clinical-precision
+  floor (pharmacy/nursing device-rounding practice, not a formal
+  regulatory standard - the research is explicit about that distinction)
+  gives a concrete cutoff for real-valued mutant magnitude, whenever
+  that work is picked up.
+- No code changes beyond the docstring/comment corrections named above;
+  no rebuild triggered by this research since the one thing it bore on
+  directly (the Problem A survivor) was already fixed in the prior
+  entry. Full suite unaffected: **121 passed**, unchanged.
+
 ## 2026-07-07 — Gate C5 survivors fixed: REQ-GIP-1-8-1 tightened to `>`
 
 Requested directly, following an out-of-band status message that

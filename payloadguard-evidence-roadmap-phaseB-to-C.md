@@ -892,7 +892,13 @@ contribute zero for this spec, named rather than hidden.
   This is a small, additive extension (carry `m.start()`/`m.end()`
   alongside each token), not a rewrite — but it's new code, named here so
   it doesn't get assumed-free at build time.
-- **Vacuity filtering (pass 2 of IronSpec's three-pass framework):**
+- **Vacuity filtering (pass 2 of a three-pass filter-then-verify
+  pipeline — the "IronSpec's three-pass framework" credit in an earlier
+  draft of this section was unconfirmed and is now corrected: external
+  research found IronSpec's actual mutation-testing technique is a
+  directional, implication-lemma-based approach, not a three-pass
+  filter pipeline — see
+  examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md):**
   `evidence/dafny_spec_lint.py::check_precondition_satisfiability`
   already does exactly the check pass 2 needs (Z3 satisfiability of a
   clause set) — call it directly against each mutant's `requires` clauses

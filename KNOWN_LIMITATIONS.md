@@ -1147,19 +1147,48 @@ solved piecemeal here.
 
 `tests/test_dafny_mutate.py` (11 tests) — pure generation/filter logic,
 no Dafny invocations, fast: real-spec ROR/LOR/AOR/COI counts and
-filtering; the SOR/HOR non-applicability check; a byte-level check that
-a mutation changes exactly the targeted operator and nothing else; the
-requires/ensures polarity-flip test described above; tokenizer
-function-call and unknown-syntax handling. `tests/test_mutation_report.py`
-(5 tests) — validates the COMMITTED real capture rather than re-running
-39 Dafny invocations on every test pass (matches this repo's established
-pattern for other real captures): total/outcome counts, the two named
-survivors present by exact description (so a future regeneration can't
-silently lose or gain one without a test failing), the four
-unclassifiable entries all attributed to the chain-direction parse
-error, and that no recorded mutant ever touches the method's own
-implementation body. Full suite after this gate: **121 passed** (105
-prior + 16 new).
+filtering (updated post-fix: 6 filtered, not 4); the SOR/HOR
+non-applicability check; a byte-level check that a mutation changes
+exactly the targeted operator and nothing else; the requires/ensures
+polarity-flip test described above; tokenizer function-call and
+unknown-syntax handling. `tests/test_mutation_report.py` (5 tests) —
+validates the COMMITTED real capture rather than re-running 39 Dafny
+invocations on every test pass (matches this repo's established pattern
+for other real captures): total/outcome counts (0 survivors, post-fix),
+a regression confirming the two former survivor mutations are now
+`filtered_static` (so a future regeneration can't let a survivor
+quietly reappear without a test failing), the four unclassifiable
+entries all attributed to the chain-direction parse error, and that no
+recorded mutant ever touches the method's own implementation body. Full
+suite after this gate: **121 passed** (105 prior + 16 new).
+
+### Research findings and a correction (2026-07-07)
+
+External research into the two open questions this gate's build raised
+(sent out via `gate-c5-research-prompt.md`, results recorded in full in
+`examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md`)
+produced one correction worth stating plainly: **this gate's own label,
+"MutDafny/IronSpec-style," was wrong.** IronSpec's actual mutation
+technique is a directional, implication-lemma-based approach, distinct
+from what this module does (brute verify/observe, matching MutDafny).
+Corrected in `evidence/dafny_mutate.py`'s module docstring and
+throughout this repo's docs; Gate C4's own IronSpec attribution (STPs)
+is unaffected and correct. The research also gave the Problem-A survivor
+finding a name with real precedent — **masking**, the MC/DC term for a
+sibling condition making a boundary's exact operator unobservable,
+FAA/DO-178C-accepted in the adjacent aerospace safety-critical field —
+confirmed the chained-comparison direction rule against the Dafny
+Reference Manual directly (not just this repo's own empirical
+observation), and confirmed the current `unclassifiable` bucketing
+strategy independently matches MutDafny's own published `Invalid`-mutant
+handling, not a gap relative to it. Two concrete, not-yet-built
+follow-ups came out of it: restricting each chained-comparison link's
+mutation candidates to direction-compatible operators (would eliminate
+the 4 unclassifiable mutants by construction, ahead of what MutDafny
+itself does), and restricting any future AOR `/` mutant generation the
+way MutDafny does (never introduce division where the original had
+none) plus a sourced ≥0.01 mL/hr clinical-precision floor for real-valued
+mutants — both named as scoped future work, not acted on in this pass.
 
 ## Phase C Gate C6 — NL-dialogue confirmation: BUILT and SIGNED OFF (2026-07-07)
 

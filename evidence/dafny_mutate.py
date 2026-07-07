@@ -1,5 +1,20 @@
-"""Phase C, Gate C5: mutation testing (MutDafny/IronSpec-style) for the
-real Dafny spec in this repository.
+"""Phase C, Gate C5: mutation testing (MutDafny-style) for the real Dafny
+spec in this repository.
+
+Correction (2026-07-07, per external research recorded in
+examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md):
+this was originally mislabeled "MutDafny/IronSpec-style." IronSpec's own
+mutation-testing technique (Goldweber et al., OSDI'24) is directional -
+it generates mutants strictly STRONGER than the original spec and checks
+a formal weakness-implication lemma (S is at least as weak as S' iff
+forall p. S'(p) implies S(p)) to see whether the spec could have been
+tightened without breaking the implementation. This module instead
+perturbs operators in ways that aren't uniformly stronger or weaker
+(e.g. `!=` is neither a superset nor subset of `>=`) and checks brute
+Dafny verification pass/fail - MutDafny's (Amaral, Mendes & Campos,
+2025) approach, not IronSpec's. Gate C4's STP suites (Spec-Testing
+Proofs) are correctly IronSpec-attributed - a real, separate part of
+IronSpec's toolkit - only this module's own label was wrong.
 
 Gates C1/C4 prove `dosage.dfy`'s postconditions HOLD. Neither proves they
 are TIGHT - that each boundary is actually load-bearing rather than

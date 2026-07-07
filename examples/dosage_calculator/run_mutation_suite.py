@@ -49,11 +49,19 @@ def _classify(raw_output, exit_code):
     if exit_code not in (0, 4):
         # exit_code == 2 is a real, observed case (a chained comparison
         # like `0.0 <= dose <= max` mutated on only one side produces a
-        # direction-incompatible chain, e.g. `0.0 >= dose <= max` -
-        # Dafny's own PARSER rejects this, not the verifier; relay
-        # Dafny's own error line rather than a bare code, since this is a
-        # mutation-engine gap (it doesn't yet model chain-direction
-        # compatibility), not a spec finding.
+        # direction-incompatible chain, e.g. `0.0 >= dose <= max`).
+        # Confirmed against the Dafny Reference Manual (Sec 5.2.1-5.2.2)
+        # and dafny.org/latest/HowToFAQ/Errors, not just this repo's own
+        # empirical observation: chained relational operators must stay
+        # "same direction" (equality mixes freely into either direction;
+        # </=/<= cannot chain with >/>=). This produces a genuine PARSER
+        # rejection, not a verifier failure; relay Dafny's own error line
+        # rather than a bare code, since this is a mutation-engine gap
+        # (it doesn't yet model chain-direction compatibility - a real,
+        # scoped follow-up: restrict each chain link's mutation
+        # candidates to direction-compatible operators, eliminating this
+        # by construction - see gate_c5_mutation_testing_research_findings.md),
+        # not a spec finding.
         parse_error = _PARSE_ERROR_RE.search(raw_output)
         if parse_error:
             # Strip the temp file's generated name/path so the committed
