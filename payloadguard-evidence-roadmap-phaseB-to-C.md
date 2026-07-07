@@ -14,9 +14,18 @@ is also now built (2026-07-07):** ruling R3 supersedes R2 —
 `assert_no_realized_proven` permits PROVEN only for `method == "dafny"`
 records with `verifier_completion_status == "completed"`; every other
 method stays permanently excluded, checked explicitly (not by omission)
-in 8 new tests — see below. Neither gate is wired into `build_matrix()`
-or any generator yet; that wiring belongs alongside Gate C4 (STPs),
-per the suggested build order below.
+in 8 new tests. **Gate C3 is now built for 3 of its 4 named vectors:**
+`evidence/dafny_spec_lint.py` adds a real Z3-based vacuous-precondition
+check (vector 1, proven against a real committed Dafny fixture that
+verifies clean despite an unsatisfiable precondition) and a best-effort
+weak-postcondition heuristic (vector 2); `evidence/dafny_adapter.py`'s
+summary-line parser is hardened (vector 3) after a real finding on the
+installed binary — a resource-starved run can report `"0 errors"`
+alongside an `"N out of resource"` marker. Vector 4 (specification
+stripping) stays BLOCKED, named — see below. None of C1/C2/C3's
+mechanisms are wired into `build_matrix()` or any generator yet; that
+wiring belongs alongside Gate C4 (STPs), per the suggested build order
+below.
 
 ## Where we are
 
@@ -35,9 +44,13 @@ per the suggested build order below.
 - Phase C Gate C1 (Dafny adapter) — BUILT 2026-07-07: real spec, capture
   runner, false-zero-guard parser, regression-tested. See below.
 - Phase C Gate C2 (PROVEN exclusivity migration) — BUILT 2026-07-07:
-  ruling R3 supersedes R2, 8 new tests. Neither C1 nor C2 is wired into
-  the live matrix pipeline yet — no binder assembles a Dafny record into
-  a matrix row. See below.
+  ruling R3 supersedes R2, 8 new tests.
+- Phase C Gate C3 (Dafny output-parsing hardening) — BUILT 2026-07-07 for
+  vectors 1–3 (Z3 vacuous-precondition check, weak-postcondition
+  heuristic, hardened summary-line parser after a real "out of resource"
+  finding); vector 4 (specification stripping) stays BLOCKED, named.
+  None of C1/C2/C3 is wired into the live matrix pipeline yet — no
+  binder assembles a Dafny record into a matrix row. See below.
 
 ## Guiding principle (unchanged)
 
@@ -400,31 +413,76 @@ guarantee was never at risk of being violated by existing data.
   first real spec") per the suggested build order below; trusting a
   live PROVEN claim in earnest still waits on Gate C3.
 
-### Gate C3 — Dafny output-parsing hardening (sharpens the false-zero trap; 3 of 4 vectors scoped)
+### Gate C3 — Dafny output-parsing hardening — BUILT for vectors 1–3 (2026-07-07); vector 4 BLOCKED
 
-Four distinct failure modes, each with its own signature — "0 errors" in
-the output is necessary but not sufficient:
+Four distinct failure modes were named, each with its own signature —
+"0 errors" in the output is necessary but not sufficient. Three were
+scopeable and are now built; the fourth remains blocked exactly as
+before, no new source material surfaced.
 
-- **Vacuous proofs from contradictory preconditions** — a `requires`
-  clause that's unsatisfiable (e.g. `x > 0 && x < 0`) makes the empty
-  logical state vacuously satisfy any postcondition. Checkable: extract
-  the precondition and hand it to Z3 (available) for a satisfiability
-  check, rather than trusting Dafny's own report.
-- **Weak postconditions** — a one-way implication (`==>`) where a
-  bi-implication (`<==>`) was needed lets a broken implementation (e.g.
-  one that always returns empty) still satisfy the spec. Checkable as a
-  pattern/heuristic on safety-critical postconditions — not a full
-  proof, named as best-effort.
-- **Timeout/resource-limit masking** — capture the real exit code and
-  any intermediate timeout warnings (via `verifier_completion_status`
-  from C1), not just "0 errors" appearing somewhere in output that may
-  have been truncated by a timeout partway through.
-- **Specification stripping** — **BLOCKED, named rather than dropped:**
-  the source material describing this fourth vector was cut off before
-  this session had it in full (an LLM-self-healing-loop scenario was
-  referenced but not detailed). Needs a follow-up read of the original
-  document before this vector can be scoped at all — per the standing
-  discipline, not inferred from the name.
+- **Vacuous proofs from contradictory preconditions — BUILT.**
+  `evidence/dafny_spec_lint.py::check_precondition_satisfiability`
+  extracts a method's `requires` clauses and hands their conjunction to
+  Z3 for a real satisfiability check, via a small, explicitly-scoped
+  expression translator (booleans, comparisons incl. chaining,
+  arithmetic, real/int/nat/bool) — quantifiers and anything else out of
+  scope raise `SystemExit` rather than being mistranslated. **Proven
+  against a real committed fixture, not a synthetic string only:**
+  `examples/dosage_calculator/vacuous_precondition_probe.dfy` — Dafny
+  4.11.0 verifies it clean (`1 verified, 0 errors`, exit 0) despite an
+  unsatisfiable precondition (`x > 0 && x < 0`); the Z3 checker
+  correctly reports `unsat` on the same method. A true-negative
+  companion confirms the real dosage.dfy kernel's actual precondition is
+  `sat`.
+- **Weak postconditions — BUILT (heuristic, best-effort, as scoped).**
+  `scan_weak_postconditions` flags `ensures` clauses using `==>` without
+  a matching `<==>`, tested against a synthetic weak clause (flagged),
+  the real dosage.dfy spec (zero warnings, true negative — its clauses
+  use `<=`/`==`/`||`, never `==>`), and a `<==>` clause (not flagged).
+  This is a lint for human review, not a proof — it cannot decide
+  whether a bi-implication was actually *needed* for a given spec.
+- **Timeout/resource-limit masking — BUILT, with a real finding.** A
+  genuine empirical result on the installed Dafny 4.11.0 binary:
+  `dafny verify --resource-limit=1` on the real, committed `dosage.dfy`
+  spec produces `Dafny program verifier finished with 0 verified, 0
+  errors, 1 out of resource` — an errors count of 0 on an incomplete
+  run. Committed for real via `run_verify_dafny_resource_limited.py`.
+  **Checked, not assumed:** the real captured `exit_code` is 4
+  (nonzero), so Gate C1's exit-code check already refuses this capture —
+  this vector does not silently bypass exit-code protection on this
+  Dafny version. (An earlier session suspicion that exit_code was 0 here
+  turned out to be a shell-piping artifact in this session's own
+  probing — `$?` captured `tail`'s exit status, not `dafny`'s — caught
+  and corrected before being reported as a finding.) Hardened anyway, as
+  real defense in depth: `evidence/dafny_adapter.py`'s summary-line
+  parser now refuses independently on `"out of resource"`/`"out of
+  memory"`/`"timed out"` markers in the summary tail, and on more than
+  one summary line in a capture (checked empirically that a normal
+  multi-file `dafny verify` still emits exactly one aggregate summary
+  line). Only `"out of resource"` was independently reproduced
+  end-to-end; the sibling markers are the confirmed vocabulary from the
+  same Boogie/Dafny code path (verified via UTF-16 string extraction
+  from the installed `Boogie.ExecutionEngine.dll` / `DafnyDriver.dll`)
+  but not independently forced to reproduce — named as such.
+- **Specification stripping — still BLOCKED, named rather than
+  dropped:** the source material describing this fourth vector was cut
+  off before this session had it in full (an LLM-self-healing-loop
+  scenario was referenced but not detailed). Needs a follow-up read of
+  the original document before this vector can be scoped at all — per
+  the standing discipline, not inferred from the name. No new
+  information surfaced this session either.
+
+**Test count:** 11 new tests in `tests/test_dafny_spec_lint.py` (vectors
+1–2), 6 in `tests/test_dafny_timeout_masking.py` (vector 3) — 17 new,
+full suite now 72 passed. Full `generate_artifacts.py` pipeline re-run:
+zero observable change beyond `generated_utc` timestamps.
+
+**Explicitly not done here:** neither the Z3 check nor the
+weak-postcondition heuristic is invoked automatically anywhere in the
+capture or generation pipeline — standalone, tested capabilities, same
+scope discipline as Gate C1. Wiring them into the capture workflow so
+every future Dafny spec gets both checks run as a matter of course is a
+natural follow-up but wasn't asked for here.
 
 ### Gate C4 — Spec-Testing Proofs (STPs)
 
@@ -489,6 +547,12 @@ first real Dafny spec, not deferring it behind C1–C5.
    before trusting any PROVEN claim in earnest.
 7. **Gate C5** (mutation testing) — largest, last, its own sub-plan.
 
+**Actual order taken (2026-07-07):** C1 → C2 → C3, each built on
+explicit direction ("start gate C2" / "start gate c3"), ahead of C4 —
+a deviation from the order suggested above, but not a problem: C3's
+vectors 1–3 don't depend on a real spec existing beyond the one Gate C1
+already built, and C4 (STPs) was never blocked on C3 landing first.
+
 ### PROVEN's exclusivity today (R3 landed 2026-07-07; still no realized PROVEN in any live artifact)
 
 `assert_no_realized_proven` now implements ruling **R3**: PROVEN may
@@ -538,8 +602,18 @@ regression-tested against a substring trap and against
 ruling R3 supersedes R2 — PROVEN may appear as a realized strength only
 for `method == "dafny"` records with `verifier_completion_status ==
 "completed"`, every other method permanently excluded, checked
-explicitly in 8 new tests rather than assumed. Neither gate is wired
-into `build_matrix()` or any generator — no binder assembles a
+explicitly in 8 new tests rather than assumed. **Gate C3 is also now
+built for 3 of its 4 named vectors (2026-07-07):**
+`evidence/dafny_spec_lint.py` adds a real Z3-based vacuous-precondition
+check (proven against a real committed fixture Dafny itself verifies
+clean despite an unsatisfiable precondition) and a best-effort
+weak-postcondition heuristic; `evidence/dafny_adapter.py`'s summary-line
+parser is hardened after a real "N out of resource" finding on the
+installed binary (a resource-starved run can report a 0 errors count
+while incomplete — confirmed the real capture's exit code is nonzero,
+already caught, hardened anyway as defense in depth). Vector 4
+(specification stripping) stays BLOCKED, named. None of C1/C2/C3 is
+wired into `build_matrix()` or any generator — no binder assembles a
 Dafny-sourced record into a live matrix row yet, so no committed
 artifact's rendered content has changed. Gate C4 (STPs, alongside the
 first real spec) is next in the suggested build order.

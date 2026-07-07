@@ -47,11 +47,22 @@ strength only for a record with `method == "dafny"` **and**
 `verifier_completion_status == "completed"`; every other method
 (`crosshair`, `concrete_test`, or no method at all) remains permanently
 excluded, checked explicitly in 8 new tests
-(`tests/test_proven_exclusivity.py`), not by omission. Neither gate is
-wired into `build_matrix()` or any generator yet — no binder assembles a
-Dafny-sourced record into a live matrix row, so no committed artifact's
-rendered content has changed. See `KNOWN_LIMITATIONS.md` for the live
-gate ledger.
+(`tests/test_proven_exclusivity.py`), not by omission. **Gate C3 is also
+now built for 3 of its 4 named vectors:** `evidence/dafny_spec_lint.py`
+adds a real Z3-based vacuous-precondition check (proven against a real
+committed fixture, `examples/dosage_calculator/vacuous_precondition_probe.dfy`,
+that Dafny itself verifies clean — `1 verified, 0 errors` — despite an
+unsatisfiable precondition) and a best-effort weak-postcondition
+heuristic; `evidence/dafny_adapter.py`'s summary-line parser is hardened
+after a real finding on the installed binary — a resource-starved run
+(`dafny verify --resource-limit=1`) can report `0 errors` alongside an
+`"N out of resource"` marker (the real capture's exit code is confirmed
+nonzero, so already caught; hardened independently anyway). Vector 4
+(specification stripping) stays BLOCKED, named. None of Gates C1/C2/C3
+is wired into `build_matrix()` or any generator yet — no binder
+assembles a Dafny-sourced record into a live matrix row, so no committed
+artifact's rendered content has changed. See `KNOWN_LIMITATIONS.md` for
+the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

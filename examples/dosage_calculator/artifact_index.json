@@ -1,6 +1,6 @@
 {
   "artifact": "PayloadGuard evidence artifact index",
-  "generated_utc": "2026-07-07T10:18:32.059672+00:00",
+  "generated_utc": "2026-07-07T10:34:53.824195+00:00",
   "pipeline": "generate_artifacts.py (Turn B4)",
   "gates": {
     "schema_validation": "PASS",
@@ -25,14 +25,14 @@
     "evidence/schema/metadata.schema.c.json": "6c21639519f260b47c031cabf5f69fbba6e234a7acb8d268c5f23b813aaba673"
   },
   "outputs": {
-    "traceability_matrix.a.json": "347ff51db3d8fc9d5205c81995467e6f9750b24000092a91488395a4d1669f3b",
-    "traceability_matrix.b.json": "988f345505820d70cf1509faa0a6052a312a23fd9e36d5d51ad3977dbeb71dda",
-    "traceability_matrix.symbolic.json": "0ce37809317108f8770dc1cf8649a4a24869978a437d5ad6e08010ee62953561",
-    "traceability_matrix.concrete.json": "d668321ff1cd2b980a879497a80799a4a3a6469eabdbcaa275a86d0af22771d1",
-    "traceability_matrix.a.md": "1fb30185f526de18306ac43dd84cad38b9de4962424a25efaf694ba26c848970",
-    "traceability_matrix.b.md": "55eb304ce0c6ab129e15f66b5af643ed81ccafb5e230f6165920c227b482bf5c",
-    "traceability_matrix.symbolic.md": "951b64485eb9c01ee3eb93fe2c82fa997081bb9dca53ae6f11ebda89630a4730",
-    "traceability_matrix.concrete.md": "89b9f5f2dc3225e87803ba7c86a1014db924fb9a6e0a9cd286ff3f08cad4c299"
+    "traceability_matrix.a.json": "5e83bcea3a1c5391d5fd114df576a1ca52d68338511ce9870a8d45d77aee9e4c",
+    "traceability_matrix.b.json": "c2cbcbaffab2ba1b24260e38042b2096c7a1b70d97ad3d661e34167966e5caf1",
+    "traceability_matrix.symbolic.json": "1f46e8b853ca1843e516ae0d45237f5187305e8a8ebe28693e2dac396fb72abe",
+    "traceability_matrix.concrete.json": "e1061cf717935a426221305e17fc43d52ab432201c3109e5b699c3609469fd88",
+    "traceability_matrix.a.md": "f59653a7bfcf9bf92724a94d1dfd8701c33c30b52dfc1c8c1a7075fb2dd37f69",
+    "traceability_matrix.b.md": "33e4840b6056b905063d04b626f1b08f2c6d6d29406ac2919be3064edcc24939",
+    "traceability_matrix.symbolic.md": "7a2b980b2bd0454fca57f4d970d54c28e6f96e51c0ed3bc715a59f5db1c844ac",
+    "traceability_matrix.concrete.md": "29b1e47b1f76e8d56fc45a1bc4b4d07299cd5d460ab3a5e3c6cf297e4269d3a7"
   },
   "frozen_evidence": {
     "traceability_matrix.json": "c465ea69d2b3373d5d2d1d01681ee1021b0e7154de3ae9e7315c4c9a9bc6afdf",

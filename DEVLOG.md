@@ -6,6 +6,88 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Phase C Gate C3 built (vectors 1-3): Z3 precondition check, weak-postcondition heuristic, timeout/resource-limit masking hardened
+
+Requested directly: "start gate c3." Four vectors were named in the
+roadmap; three were scopeable and are built here, the fourth stays
+blocked exactly as before.
+
+- **Vector 1 (vacuous preconditions) - BUILT.** New module
+  `evidence/dafny_spec_lint.py::check_precondition_satisfiability`:
+  extracts a method's `requires` clauses (`_find_method_header` tracks
+  paren depth to find the body's opening brace; `_extract_clauses`
+  splits on clause keywords) and hands their conjunction to Z3 for a
+  real satisfiability check. A small hand-written recursive-descent
+  translator (`_tokenize` + `_Parser`) covers the boolean/comparison/
+  arithmetic subset this repo's specs actually use - `&&`, `||`, `!`,
+  `==>`, `<==>`, chained comparisons, `+-*/`, real/int/nat/bool
+  identifiers and literals (`nat` gets its implicit `>= 0` Dafny
+  semantics). Quantifiers, `old(...)`, unknown parameter types, and any
+  unparseable syntax raise `SystemExit` outright - refused, never
+  mistranslated.
+- **Proven against a real committed fixture, not a synthetic string
+  only:** new `examples/dosage_calculator/vacuous_precondition_probe.dfy`
+  - a tiny, dedicated Dafny file with `requires x > 0 && x < 0` and
+  `ensures r == 999999`. Verified for real against Dafny 4.11.0: **`1
+  verified, 0 errors`, exit 0** - a genuine clean pass on a method whose
+  precondition can never hold. The Z3 checker correctly reports `unsat`
+  on the same method - catching mechanically what the verifier's own
+  clean-pass report missed. A true-negative companion confirms the real
+  dosage.dfy kernel's actual precondition is `sat`.
+- **Vector 2 (weak postconditions) - BUILT, heuristic, best-effort, as
+  the roadmap scoped it.** `scan_weak_postconditions` flags `ensures`
+  clauses using `==>` without a matching `<==>`. Tested against a
+  synthetic weak clause (flagged, clause text quoted verbatim), the real
+  dosage.dfy spec (zero warnings - its clauses use `<=`/`==`/`||`, never
+  `==>`, a true negative), and a `<==>` clause (not flagged, another
+  true negative). Explicitly not a proof: it cannot decide whether a
+  bi-implication was actually needed for a given spec.
+- **Vector 3 (timeout/resource-limit masking) - BUILT, with a real
+  empirical finding.** `dafny verify --resource-limit=1` on the real,
+  committed `dosage.dfy` spec produces
+  `Dafny program verifier finished with 0 verified, 0 errors, 1 out of resource`
+  - an errors count of 0 on a run that did not complete. Committed for
+  real via new `run_verify_dafny_resource_limited.py`, producing genuine
+  `raw_dafny_output_resource_limited.txt` /
+  `run_manifest_dafny_resource_limited.json`.
+- **Checked whether this is actually exploitable via exit_code alone -
+  it is not, on this Dafny version.** The real captured `exit_code` is
+  **4** (nonzero), so Gate C1's existing exit-code check already refuses
+  this capture before the summary line is parsed. An earlier suspicion
+  in this same session that the exit code was 0 here turned out to be a
+  shell-scripting artifact - a piped command (`... | tail -20; echo
+  "EXIT:$?"`) whose `$?` captured `tail`'s exit status, not `dafny`'s.
+  Caught and corrected by re-running the same command without the pipe
+  before reporting it as a finding - the "verify empirically, don't
+  assume" discipline applied to my own probing, not just the tool under
+  test.
+- **Hardened `evidence/dafny_adapter.py` anyway, as real defense in
+  depth:** the summary-line regex now captures the tail after the error
+  count and refuses if it contains `"out of resource"`, `"out of
+  memory"`, or `"timed out"` (case-insensitive), independent of the
+  exit-code check. Of these, only `"out of resource"` was independently
+  reproduced end-to-end; the other two are the confirmed sibling
+  vocabulary from the same Boogie/Dafny summary-formatting code path
+  (verified by extracting UTF-16 string literals directly from the
+  installed `Boogie.ExecutionEngine.dll` / `DafnyDriver.dll`) but not
+  independently forced to reproduce this session - named as such. Also
+  hardened: the parser now refuses if a capture contains more than one
+  summary-line match (checked empirically that a normal multi-file
+  `dafny verify` still emits exactly one aggregate summary line, so this
+  closes a theoretical ambiguity without changing real-capture behavior).
+- **Vector 4 (specification stripping) - still BLOCKED, named.** No new
+  source material surfaced this session either.
+- **Tests:** `tests/test_dafny_spec_lint.py` (11, vectors 1-2) and
+  `tests/test_dafny_timeout_masking.py` (6, vector 3) - 17 new tests.
+  Full suite: **72 passed** (55 prior + 17 new). Full
+  `generate_artifacts.py` pipeline re-run: zero observable change beyond
+  `generated_utc` timestamps.
+- **Explicitly not done, and not this gate's job:** neither the Z3 check
+  nor the weak-postcondition heuristic is invoked automatically anywhere
+  in the capture or generation pipeline - standalone, tested
+  capabilities, matching Gate C1's own scope. Wiring them into the
+  capture workflow is a natural follow-up but wasn't asked for.
+
 ## 2026-07-07 — Phase C Gate C2 built: ruling R3, PROVEN's exclusivity migration
 
 Requested directly: "start gate C2." The design was already fully

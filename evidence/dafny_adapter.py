@@ -23,6 +23,26 @@ false-zero bug class this repo has tracked since Phase A
 missing entirely (a crash, a timeout, or a Dafny subcommand that "did not
 attempt verification" - confirmed real behavior of `dafny audit` on some
 inputs) is refused, not guessed at.
+
+Phase C, Gate C3 vector 3 hardening (2026-07-07): a real, reproducible
+capture (examples/dosage_calculator/raw_dafny_output_resource_limited.txt,
+produced by run_verify_dafny_resource_limited.py running the real
+dosage.dfy spec under `--resource-limit=1`) shows Dafny 4.11.0 can report
+    Dafny program verifier finished with 0 verified, 0 errors, 1 out of resource
+- an "errors" count of 0 alongside an incomplete run. Confirmed empirically
+that this real capture's exit_code is 4 (nonzero), so the exit-code check
+above already refuses it - but the summary-line parser is hardened to
+refuse on this signal independently, as defense in depth against ever
+relying on exit_code alone (Boogie/Dafny's shared vocabulary for this class
+also includes "out of memory" and "timed out" suffixes in the same summary
+line, per the installed binary's own strings, though only "out of
+resource" was independently reproduced end-to-end this session - all
+three are treated identically here). The parser also now refuses if more
+than one summary line is found in one capture, rather than silently
+trusting the first match - confirmed empirically that a normal
+multi-target `dafny verify` invocation still emits exactly one aggregate
+summary line, so this only closes a theoretical ambiguity, it does not
+change behavior for any real single-target capture in this repo.
 """
 
 import re
@@ -30,14 +50,16 @@ import re
 from evidence.model import Strength, VerificationResult
 
 _SUMMARY_RE = re.compile(
-    r"Dafny program verifier finished with (\d+) verified, (\d+) errors?"
+    r"Dafny program verifier finished with (\d+) verified, (\d+) errors?(.*)"
 )
+_INCOMPLETE_MARKERS = ("out of resource", "out of memory", "timed out")
 
 
 def parse_dafny_capture(raw_output: str, manifest: dict) -> VerificationResult:
     """Parse one committed Dafny capture. Raises SystemExit (Tier 1,
-    refuses rather than guesses) on any non-clean signal: nonzero exit,
-    no summary line, or a nonzero error count in that summary."""
+    refuses rather than guesses) on any non-clean signal: nonzero exit, no
+    summary line, more than one summary line, an incomplete-run marker in
+    the summary line's tail, or a nonzero error count in that summary."""
     target = manifest["target"]
 
     if manifest["exit_code"] != 0:
@@ -46,15 +68,37 @@ def parse_dafny_capture(raw_output: str, manifest: dict) -> VerificationResult:
             f"(exit_code={manifest['exit_code']}); refusing to bind"
         )
 
-    match = _SUMMARY_RE.search(raw_output)
-    if match is None:
+    matches = list(_SUMMARY_RE.finditer(raw_output))
+    if not matches:
         raise SystemExit(
             f"dafny capture {target!r} has no verifier summary line; "
             "cannot confirm verification actually completed "
             "(verifier_completion_status would be 'incomplete') - refusing to bind"
         )
+    if len(matches) > 1:
+        raise SystemExit(
+            f"dafny capture {target!r} contains {len(matches)} verifier "
+            "summary lines; refusing to guess which one is authoritative"
+        )
 
-    verified_count, error_count = int(match.group(1)), int(match.group(2))
+    match = matches[0]
+    verified_count, error_count, tail = (
+        int(match.group(1)),
+        int(match.group(2)),
+        match.group(3),
+    )
+
+    tail_lower = tail.lower()
+    marker = next((m for m in _INCOMPLETE_MARKERS if m in tail_lower), None)
+    if marker is not None:
+        raise SystemExit(
+            f"dafny capture {target!r} reports incomplete verification "
+            f"({marker!r} present in the summary line: {tail.strip()!r}); "
+            f"refusing to bind a PROVEN result even though the reported "
+            f"error count is {error_count} (Gate C3 vector 3: a clean-"
+            "looking error count does not mean verification completed)"
+        )
+
     if error_count != 0:
         raise SystemExit(
             f"dafny capture {target!r} reports {error_count} error(s) "

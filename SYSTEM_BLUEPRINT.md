@@ -1,11 +1,15 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Phase C Gate C2 built: ruling R3 supersedes R2 —
-assert_no_realized_proven now permits PROVEN only for method=="dafny"
-records with verifier_completion_status=="completed"; every other method
-stays permanently excluded, checked explicitly in 8 new tests. Gate C1
-(Dafny spec, capture runner, false-zero-guard parser) was built the same
-day. Neither is wired into build_matrix() or any generator yet — see
+Last updated: 2026-07-07 (Phase C Gate C3 built for 3 of 4 named vectors:
+evidence/dafny_spec_lint.py adds a real Z3-based vacuous-precondition
+check (vector 1, proven against a real committed Dafny fixture that
+verifies clean despite an unsatisfiable precondition) and a best-effort
+weak-postcondition heuristic (vector 2); evidence/dafny_adapter.py's
+summary-line parser is hardened against a real "N out of resource"
+false-zero-adjacent finding on the installed binary (vector 3). Vector 4
+(specification stripping) stays BLOCKED, named. Gates C1/C2 (built
+earlier the same week) are unchanged. Nothing from Phase C is wired into
+build_matrix() or any generator yet — see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
@@ -65,14 +69,33 @@ payloadguard-evidence/
 │                                build_matrix() against them are deleted
 │                                (Step 4) - git history holds them if ever
 │                                needed again
-│   └── dafny_adapter.py         Gate C1: parse_dafny_capture() - the
-│                                 false-zero guard, regex on the verifier's
-│                                 own summary line, never a substring match
-│                                 or bare exit_code. NOT called from
-│                                 build_matrix() or any generator - no
+│   ├── dafny_adapter.py         Gate C1 (+ C3 vector 3 hardening):
+│                                 parse_dafny_capture() - the false-zero
+│                                 guard, regex on the verifier's own
+│                                 summary line, never a substring match or
+│                                 bare exit_code. Also refuses on an
+│                                 "out of resource"/"out of memory"/"timed
+│                                 out" marker in the summary tail (real
+│                                 finding, Gate C3) and on more than one
+│                                 summary line in a capture. NOT called
+│                                 from build_matrix() or any generator - no
 │                                 binder yet assembles a dafny-method
 │                                 record into a live matrix row, though R3
 │                                 (Gate C2) now permits one to exist there
+│   └── dafny_spec_lint.py       Gate C3 vectors 1-2: lints Dafny SOURCE
+│                                 TEXT (not captured output, that's
+│                                 dafny_adapter.py's job). vector 1 -
+│                                 check_precondition_satisfiability():
+│                                 extracts requires clauses, asks Z3 for
+│                                 real satisfiability via a small scoped
+│                                 expression translator (refuses on
+│                                 quantifiers/unsupported syntax rather
+│                                 than mistranslating). vector 2 -
+│                                 scan_weak_postconditions(): heuristic,
+│                                 best-effort flag of one-way ==> ensures
+│                                 clauses without a matching <==>. Neither
+│                                 is wired into the capture/generation
+│                                 pipeline - standalone, tested modules
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -87,11 +110,25 @@ payloadguard-evidence/
 │   ├── dosage_broken.dfy        Gate C1: Sample-B-equivalent broken variant
 │   │                            (clamp removed); fails for real (0 verified,
 │   │                            2 errors, exit code 4)
+│   ├── vacuous_precondition_probe.dfy  Gate C3 vector 1 fixture: a real,
+│   │                            committed Dafny file with an
+│   │                            unsatisfiable precondition
+│   │                            (x > 0 && x < 0) - Dafny itself verifies
+│   │                            it clean (1 verified, 0 errors),
+│   │                            confirming the false-positive is real;
+│   │                            dafny_spec_lint.py's Z3 check correctly
+│   │                            reports unsat on the same method
 │   ├── overflow_probe.py        Domain-free model-fidelity probe
 │   ├── run_verify*.py           Capture runners (one per target + concrete)
 │   ├── run_verify_dafny(_broken).py  Gate C1: capture runners mirroring
 │   │                            run_verify.py exactly, targeting
 │   │                            dosage.dfy / dosage_broken.dfy
+│   ├── run_verify_dafny_resource_limited.py  Gate C3 vector 3: real
+│   │                            capture of dosage.dfy under
+│   │                            --resource-limit=1, producing the real
+│   │                            "0 verified, 0 errors, 1 out of resource"
+│   │                            finding (exit_code=4, already caught by
+│   │                            the exit-code check; hardened anyway)
 │   ├── gate3_seed_patch_test.py Gate 3 investigation script (not part of
 │   │                            the evidence-capture path): behaviorally
 │   │                            tests a make_default_solver seed-override
@@ -147,13 +184,27 @@ payloadguard-evidence/
     │                            substring-trap regression; belt-and-
     │                            suspenders check that assert_no_realized_proven
     │                            still blocks this adapter's PROVEN output
-    └── test_proven_exclusivity.py  Gate C2, ruling R3: positive (real
-                                 dafny PROVEN accepted) + explicit
-                                 negatives (crosshair/concrete_test/
-                                 missing-method/incomplete-status all
-                                 still refused, checked not assumed);
-                                 row-level shape; regression over all
-                                 four committed matrix artifacts
+    ├── test_proven_exclusivity.py  Gate C2, ruling R3: positive (real
+    │                            dafny PROVEN accepted) + explicit
+    │                            negatives (crosshair/concrete_test/
+    │                            missing-method/incomplete-status all
+    │                            still refused, checked not assumed);
+    │                            row-level shape; regression over all
+    │                            four committed matrix artifacts
+    ├── test_dafny_spec_lint.py  Gate C3 vectors 1-2: real vacuous-
+    │                            precondition fixture -> unsat; real
+    │                            dosage.dfy precondition -> sat (true
+    │                            negative); quantifier/unknown-type
+    │                            refusal; nat implicit >=0; weak-
+    │                            postcondition heuristic flagged/not-
+    │                            flagged cases
+    └── test_dafny_timeout_masking.py  Gate C3 vector 3: real resource-
+                                 limited capture refused (exit code);
+                                 synthetic out-of-resource/out-of-memory/
+                                 timed-out markers refused even with a
+                                 forced exit_code=0 (defense in depth);
+                                 ambiguous multi-summary-line capture
+                                 refused; real clean capture unregressed
 ```
 
 ## 3. Data flow (end to end)
@@ -294,7 +345,26 @@ at all, remains permanently excluded, checked explicitly in 8 new tests
 that no binder produces one yet. Neither gate is wired into
 `build_matrix()` or any generator — no binder yet assembles a
 Dafny-sourced record into a live matrix row, so R3's positive branch is
-proven correct in isolation, not yet exercised end-to-end. That wiring
-belongs alongside Gate C4 (STPs, "alongside the first real spec") per
-the roadmap's suggested build order; trusting a live PROVEN claim in
-earnest still waits on Gate C3. Full findings: `KNOWN_LIMITATIONS.md`.
+proven correct in isolation, not yet exercised end-to-end. **Gate C3
+(Dafny output-parsing hardening) is also now built for 3 of its 4 named
+vectors (2026-07-07):** vector 1 (vacuous preconditions) —
+`evidence/dafny_spec_lint.py::check_precondition_satisfiability` asks Z3
+directly whether a method's `requires` clauses are jointly satisfiable,
+proven against a real committed fixture
+(`vacuous_precondition_probe.dfy`) that Dafny itself verifies clean
+despite an unsatisfiable precondition. Vector 2 (weak postconditions) —
+`scan_weak_postconditions`, an explicitly best-effort heuristic flagging
+one-way `==>` in `ensures` clauses. Vector 3 (timeout/resource-limit
+masking) — a real finding on the installed binary
+(`dafny verify --resource-limit=1` on the real dosage.dfy spec reports
+`0 verified, 0 errors, 1 out of resource`, `exit_code=4`, already caught
+by Gate C1's exit-code check) led to hardening
+`evidence/dafny_adapter.py`'s summary-line parser to also refuse
+independently on out-of-resource/out-of-memory/timed-out markers and on
+ambiguous multi-summary-line captures. Vector 4 (specification
+stripping) remains BLOCKED, named — no new source material surfaced.
+None of Gate C3's mechanisms are wired into the capture or generation
+pipeline either — standalone, tested modules, same scope discipline as
+Gates C1/C2. That wiring belongs alongside Gate C4 (STPs, "alongside the
+first real spec") per the roadmap's suggested build order. Full
+findings: `KNOWN_LIMITATIONS.md`.
