@@ -80,7 +80,26 @@ unchanged), mutation suite re-run in full: **zero survivors remain** —
 the two former survivor mutations are now correctly recognized as
 statically trivial before Dafny is even invoked, itself a clean
 confirmation the boundary is now tight. AOR/SOR/HOR stay out of v1
-scope, checked not assumed. Full detail below.
+scope, checked not assumed.
+
+**Gate C5 was then extended the same day** from external research into
+the two open questions this build raised
+(`examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md`),
+on direct instruction ("build both"): **chain-direction-aware ROR**
+(restricts each chained-comparison link's mutation candidates to
+direction-compatible operators, per the Dafny Reference Manual's own
+chaining rule — eliminates the 4 former unclassifiable mutants by
+construction, ahead of what MutDafny itself does) and **function-body
+AOR** (extends `generate_aor_mutants` to `ExpectedDose`'s function body,
+restricted to MutDafny's own `+`/`-`/`*` ↔ `/`/`%` group rule so a
+mutation never introduces `/` where the original had none, eliminating
+the division-by-zero false-kill risk by construction). The research also
+corrected a mislabel: Gate C5 was "MutDafny/IronSpec-style," should have
+been just MutDafny-style — IronSpec's own mutation technique is a
+different, directional approach. Final real run: **42 mutants — 31
+killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible — zero survived, zero unclassifiable.**
+Full detail below.
 
 ## Where we are
 
@@ -117,14 +136,20 @@ scope, checked not assumed. Full detail below.
   summary; `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`
   records Steven's sign-off on it for `dosage.dfy::CalculateHourlyDose`.
   See below.
-- Phase C Gate C5 (mutation testing) — BUILT for v1 scope 2026-07-07:
-  `evidence/dafny_mutate.py` + `run_mutation_suite.py`. 39 mutants
-  against `dosage.dfy::CalculateHourlyDose` found 2 real REQ-GIP-1-8-1
-  survivors, reported then FIXED same day (tightened `>=` to `>` on
-  Steven's decision) — zero survivors remain after re-run (29 killed, 6
-  filtered static, 4 unclassifiable — a real, unrelated mutation-engine
-  gap: chain-direction parse errors). AOR/SOR/HOR out of v1 scope,
-  checked not assumed. See below.
+- Phase C Gate C5 (mutation testing) — BUILT then EXTENDED same day from
+  research findings, 2026-07-07: `evidence/dafny_mutate.py` +
+  `run_mutation_suite.py`. v1's 39 mutants against
+  `dosage.dfy::CalculateHourlyDose` found 2 real REQ-GIP-1-8-1
+  survivors, FIXED same day (tightened `>=` to `>` on Steven's decision),
+  plus 4 unclassifiable chain-direction parse errors. External research
+  then produced a correction (mislabeled "MutDafny/IronSpec-style";
+  IronSpec's own mutation technique is different) and two more builds on
+  "build both": chain-direction-aware ROR and function-body AOR
+  (MutDafny's own restriction, eliminating the division-by-zero
+  false-kill risk by construction). Final: 42 mutants — 31 killed, 6
+  filtered_static, 4 filtered_chain_incompatible, 1
+  filtered_ar_group_incompatible — zero survived, zero unclassifiable.
+  See below.
 
 ## Guiding principle (unchanged)
 
@@ -807,9 +832,34 @@ zero mutants since its one site lives in a function body, out of
 clause-mutation scope). 16 tests, updated to match the post-fix reality;
 full suite 121 passed.
 
-What follows is the original same-day sub-plan this build actually
+**Extension (2026-07-07), same day, from external research
+(`gate_c5_mutation_testing_research_findings.md`), on direct instruction
+("build both"):** the research corrected a mislabel (Gate C5 was
+"MutDafny/IronSpec-style" - IronSpec's own mutation technique is a
+different, directional, implication-lemma-based approach; fixed to just
+MutDafny-style) and identified two concrete, buildable follow-ups, both
+built same day. **Chain-direction-aware ROR:** confirmed the chained-
+comparison direction rule against the Dafny Reference Manual (Sec
+5.2.1-5.2.2) directly; new helpers restrict each chain link's mutation
+candidates to direction-compatible operators, eliminating the 4 former
+`unclassifiable` mutants by construction (a `filtered_chain_incompatible`
+outcome now, never reaching Dafny) - MutDafny itself does not do this.
+**Function-body AOR:** `generate_aor_mutants` gained an optional
+`function_name` parameter; `ExpectedDose`'s one `*` operator now gets
+mutated too (part of the formal spec, never `CalculateHourlyDose`'s own
+implementation), restricted to MutDafny's own `+`/`-`/`*` <-> `/`/`%`
+group rule so a mutation can never introduce `/` where the original had
+none - the division-by-zero false-kill risk named when AOR was
+originally deferred is closed by construction. Real re-run with both
+extensions active: **42 mutants - 31 killed, 6 filtered_static, 4
+filtered_chain_incompatible, 1 filtered_ar_group_incompatible, zero
+survived, zero unclassifiable.** The 2 new function-body mutants
+(`* -> +`, `* -> -`) are both genuinely killed, confirming `*` is
+load-bearing. 10 more tests; full suite now **131 passed**.
+
+What follows is the original same-day sub-plan the v1 build actually
 followed — kept as the architectural record, not superseded by the
-summary above.
+summaries above.
 
 #### Operator applicability audit against the real spec (not generic — checked against `dosage.dfy` as it exists today)
 

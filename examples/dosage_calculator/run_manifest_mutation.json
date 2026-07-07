@@ -6,13 +6,14 @@
     "verify",
     "<mutant>.dfy"
   ],
-  "started_utc": "2026-07-07T16:24:16.480026+00:00",
+  "started_utc": "2026-07-07T16:49:20.900659+00:00",
   "target": "dosage.dfy",
   "method": "CalculateHourlyDose",
-  "total_mutants": 39,
+  "total_mutants": 42,
   "counts": {
-    "killed": 29,
+    "killed": 31,
     "filtered_static": 6,
-    "unclassifiable": 4
+    "filtered_chain_incompatible": 4,
+    "filtered_ar_group_incompatible": 1
   }
 }

@@ -77,7 +77,7 @@ Not needed for the current fix (tightening resolved it directly) but
 worth keeping in mind if a future survivor is judged acceptable-as-is
 rather than fixed.
 
-## Problem B — chained-comparison stillborn mutants: confirmed as expected, not a gap to close urgently
+## Problem B — chained-comparison stillborn mutants: confirmed as expected, then closed
 
 - Dafny's chaining rule is now citable from a primary source: Dafny
   Reference Manual §5.2.1–5.2.2 and the official Errors/FAQ page
@@ -96,13 +96,18 @@ rather than fixed.
   most recent published Dafny mutation tool uses — not a gap relative to
   the state of the art.
 
-**Scoped, not-yet-built improvement, genuinely ahead of published
-tooling if built:** restrict each link's mutation candidates in a
-chained comparison to direction-compatible operators only (for an
-ascending chain: `{<, <=, ==, !=}`, never `>`/`>=`), eliminating the 4
-stillborn mutants by construction instead of generating-then-refusing
-them. MutDafny does not do this. Not built in this session; a real,
-scoped follow-up for whenever Gate C5's engine is revisited.
+**Built (2026-07-07), genuinely ahead of published tooling:** each
+chain link's mutation candidates are now restricted to
+direction-compatible operators only (for an ascending chain:
+`{<, <=, ==, !=}`, never `>`/`>=`) — `evidence/dafny_mutate.py`'s
+`_chain_group_ids`/`_chain_incompatible`, wired into
+`_generate_token_mutants`'s `chain_aware` path (used by
+`generate_ror_mutants` only). Eliminates the 4 stillborn mutants by
+construction: they're now `filtered_chain_incompatible` before any
+Dafny invocation, not generated-then-refused. Re-run against the real
+spec: the `unclassifiable` outcome bucket is now empty entirely.
+MutDafny itself does not do this - this is a genuine improvement over
+the published state of the art, not parity with it.
 
 ## Problem C — bounding real-valued mutation precision: no established term, but a concrete technique and a concrete number
 
@@ -128,11 +133,20 @@ scoped follow-up for whenever Gate C5's engine is revisited.
   clinically meaningful mutant differs from the original by less than
   this," should real-valued/AOR mutation testing be built later.
 
-**Not built:** AOR mutation on `ExpectedDose`'s function body remains
-out of scope (per the original Gate C5 v1 scope cut). This research
-gives a concrete plan for that future work (MutDafny's `/↔%`-only
-restriction, plus a ≥0.01 mL/hr magnitude floor on literal/constant
-mutants) rather than an open question, whenever it's picked up.
+**Built (2026-07-07):** AOR mutation now extends to `ExpectedDose`'s
+function body - `generate_aor_mutants`'s optional `function_name`
+parameter, `_locate_function_body_arithmetic_sites`,
+`_generate_function_body_aor_mutants`. MutDafny's `/`↔`%` group
+restriction is applied directly (`_ar_group_incompatible`): the one `*`
+operator's candidates are `+`/`-` (both real-verified, both genuinely
+killed - confirming `*` is load-bearing) and `/` (filtered before
+verification, never risking a division-by-zero false-kill). **Not
+built:** the ≥0.01 mL/hr clinical-precision floor has no application
+yet - it bounds literal-value-replacement (LVR) mutants specifically
+(a *magnitude* concept), and Gate C5's scope was always
+ROR/LOR/AOR/SOR/HOR/COI, never LVR. Named rather than forced onto AOR,
+which mutates operators, not literal magnitudes. Worth revisiting only
+if LVR mutation is ever added to this module's scope.
 
 ## Full response and sources
 

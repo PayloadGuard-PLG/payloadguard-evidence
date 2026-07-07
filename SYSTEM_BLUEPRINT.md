@@ -1,23 +1,27 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT for v1 scope
-- ROR/LOR/COI on requires/ensures clauses - via evidence/dafny_mutate.py
-+ examples/dosage_calculator/run_mutation_suite.py. Real run against
-dosage.dfy::CalculateHourlyDose: 39 mutants, 29 killed, 4 filtered as
-statically trivial, 2 genuinely SURVIVED (a real, understood REQ-GIP-
-1-8-1 postcondition looseness at the infusionRateMlPerHr==0.0 boundary),
-4 UNCLASSIFIABLE (a real mutation-engine gap, not a spec finding:
-mutating one side of a chained comparison to a descending operator
-produces a Dafny parse error). The 2 survivors were reported to Steven
-rather than silently altering a spec he'd already signed off on in Gate
-C6 - his decision, same day: "go ahead and tighten REQ-GIP-1-8-1 to >".
-dosage.dfy changed, re-verified clean (2 verified, 0 errors, unchanged),
-mutation suite re-run: zero survivors remain (filtered_static now 6,
-killed still 29, unclassifiable still 4 and unrelated) -
-nl_confirmation_dosage_dfy.md gained an amendment recording the decision
-and re-confirming the regenerated summary. AOR/SOR/HOR explicitly out of
-v1 scope, checked not assumed. 16 tests, updated to match; full suite
-121 passed. Earlier the same week: Gate C6,
+Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT then EXTENDED
+same day from external research findings: evidence/dafny_mutate.py +
+examples/dosage_calculator/run_mutation_suite.py. v1 build (ROR/LOR/COI
+on requires/ensures clauses) found 2 real REQ-GIP-1-8-1 survivors,
+reported to and FIXED by Steven ("go ahead and tighten REQ-GIP-1-8-1 to
+>") rather than silently changed, plus 4 unclassifiable chain-direction
+parse errors. External research (gate_c5_mutation_testing_research_
+findings.md) then produced a correction - Gate C5 was mislabeled
+"MutDafny/IronSpec-style," corrected to MutDafny-style, IronSpec's own
+mutation technique is a different, directional approach - and two
+concrete follow-ups, both built same day on "build both": chain-
+direction-aware ROR (restricts each chained-comparison link's mutation
+candidates to direction-compatible operators, eliminating the 4
+unclassifiable mutants by construction - ahead of what MutDafny itself
+does) and function-body AOR on ExpectedDose (MutDafny's own +/-/*
+<-> /,% group restriction means a mutation can never introduce / where
+the original had none, eliminating the division-by-zero false-kill risk
+by construction). Final real run: 42 mutants - 31 killed, 6
+filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible - zero survived, zero unclassifiable. 26
+new tests across both builds; full suite 131 passed. Earlier the same
+week: Gate C6,
 NL-dialogue confirmation, BUILT and SIGNED OFF: evidence/dafny_nl_summary.py
 mechanically summarizes a Dafny method's requires/ensures clauses in
 plain English, cross-checked against dafny_spec_lint's canonical
@@ -209,22 +213,37 @@ payloadguard-evidence/
 │                                 dafny_nl_summary's clause-line regex +
 │                                 dafny_spec_lint's header-finder; a
 │                                 local, span-preserving tokenizer extends
-│                                 dafny_spec_lint's grammar with one
-│                                 addition (commas, for function-call
-│                                 clauses like the pinning ensures
-│                                 clause). Pass-1 static filter (skip
-│                                 mutants a fixed relational-implication
-│                                 table proves uninteresting) flips
-│                                 direction by clause role - weakening is
-│                                 trivial for ensures, strengthening is
-│                                 trivial for requires - tested against a
-│                                 synthetic spec independent of dosage.dfy.
-│                                 SOR/HOR not implemented (no set/heap
-│                                 syntax in this spec, confirmed by test);
-│                                 AOR implemented but returns [] against
-│                                 this spec (its one arithmetic operator
-│                                 lives in a function body, out of v1's
-│                                 clause-mutation scope - named, deferred)
+│                                 dafny_spec_lint's grammar with commas
+│                                 (function-call clauses) and, since the
+│                                 2026-07-07 extension, ASSIGN/SEMI (`:=`,
+│                                 `;`, needed for function-body scanning).
+│                                 Pass-1 static filter (skip mutants a
+│                                 fixed relational-implication table
+│                                 proves uninteresting) flips direction by
+│                                 clause role - weakening is trivial for
+│                                 ensures, strengthening is trivial for
+│                                 requires - tested against a synthetic
+│                                 spec independent of dosage.dfy. SOR/HOR
+│                                 not implemented (no set/heap syntax in
+│                                 this spec, confirmed by test).
+│                                 Chain-direction-aware ROR
+│                                 (_chain_group_ids/_chain_incompatible,
+│                                 2026-07-07): restricts each chained-
+│                                 comparison link's candidates to
+│                                 direction-compatible operators per the
+│                                 Dafny Reference Manual's own chaining
+│                                 rule - eliminates stillborn mutants by
+│                                 construction, ahead of MutDafny itself.
+│                                 Function-body AOR (_find_function_body_span/
+│                                 _locate_function_body_arithmetic_sites/
+│                                 _ar_group_incompatible, 2026-07-07):
+│                                 generate_aor_mutants(..., function_name=...)
+│                                 scans a companion function's body (never
+│                                 the target method's own trusted
+│                                 implementation), restricted to MutDafny's
+│                                 own +/-/* <-> /,% group rule so a
+│                                 mutation never introduces `/` where the
+│                                 original had none
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -318,19 +337,21 @@ payloadguard-evidence/
 │   │                            mutation_report.json/.md +
 │   │                            run_manifest_mutation.json instead
 │   ├── mutation_report.json/.md  Gate C5: real captured outcome of all
-│   │                            39 mutants against dosage.dfy::
-│   │                            CalculateHourlyDose, post REQ-GIP-1-8-1
-│   │                            fix - 29 killed, 6 filtered_static, 0
-│   │                            survived (2 real survivors found and
-│   │                            fixed same day - REQ-GIP-1-8-1's `>=`
-│   │                            tightened to `>` on Steven's decision;
-│   │                            the two former survivor mutations are
-│   │                            now correctly filtered as statically
-│   │                            trivial), 4 unclassifiable (a real
-│   │                            mutation-engine gap, unrelated: chained-
-│   │                            comparison direction incompatibility
-│   │                            produces a Dafny parse error, not a
-│   │                            semantic test)
+│   │                            42 mutants against dosage.dfy::
+│   │                            CalculateHourlyDose (+ExpectedDose's
+│   │                            function body), post REQ-GIP-1-8-1 fix
+│   │                            AND the chain-direction/function-body-AOR
+│   │                            extension - 31 killed, 6 filtered_static,
+│   │                            4 filtered_chain_incompatible, 1
+│   │                            filtered_ar_group_incompatible, ZERO
+│   │                            survived, ZERO unclassifiable. History:
+│   │                            2 real survivors found and fixed same day
+│   │                            (REQ-GIP-1-8-1's `>=` tightened to `>` on
+│   │                            Steven's decision); 4 unclassifiable
+│   │                            chain-direction parse errors then closed
+│   │                            by teaching the generator Dafny's own
+│   │                            chaining rule (now filtered_chain_
+│   │                            incompatible, never reach Dafny at all)
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
@@ -462,16 +483,30 @@ payloadguard-evidence/
     │                            ensures static-filter polarity flip
     │                            (tested on a synthetic spec, the least
     │                            obvious part of the design); tokenizer
-    │                            function-call/unknown-syntax handling
+    │                            function-call/unknown-syntax handling.
+    │                            2026-07-07 extension (19 tests, up from
+    │                            11): chain-direction filtering on the
+    │                            real chained clause; direct unit tests of
+    │                            _chain_incompatible/_ar_group_incompatible
+    │                            against hand-derived cases; function-body
+    │                            AOR generation and its division-free
+    │                            restriction; ASSIGN/SEMI tokenizer
+    │                            support; _locate_function_body_arithmetic_sites
+    │                            finds exactly the one `*`
     ├── test_mutation_report.py  Gate C5: validates the COMMITTED real
-    │                            capture (39 mutants; 29 killed, 4
-    │                            filtered_static, 2 survived, 4
-    │                            unclassifiable) rather than re-running
-    │                            Dafny 39 times per test pass; the two
-    │                            named survivors and four chain-direction
-    │                            parse errors are pinned by exact
-    │                            description so a regeneration can't
-    │                            silently lose or gain one
+    │                            capture (42 mutants; 31 killed, 6
+    │                            filtered_static, 4
+    │                            filtered_chain_incompatible, 1
+    │                            filtered_ar_group_incompatible, ZERO
+    │                            survived, ZERO unclassifiable, as of the
+    │                            2026-07-07 extension - 7 tests, up from
+    │                            5) rather than re-running Dafny 42 times
+    │                            per test pass; the reverse-flow clause's
+    │                            filtered (formerly-survivor) mutations
+    │                            and the chain-incompatible (formerly-
+    │                            unclassifiable) mutations are pinned by
+    │                            exact description so a regeneration
+    │                            can't silently reintroduce either
     └── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
                                  then extended to A/B (2026-07-07): real
                                  formal artifact + real A/B artifacts all
@@ -810,5 +845,41 @@ tests (`tests/test_dafny_mutate.py`, pure generation logic;
 `tests/test_mutation_report.py`, validates the committed real capture).
 Mutant `.dfy` files are not committed individually (mechanically
 derived); the real per-mutant outcome is `mutation_report.json`/`.md` +
-`run_manifest_mutation.json`. Full suite now 121 passed. Full findings:
-`KNOWN_LIMITATIONS.md`.
+`run_manifest_mutation.json`. Full suite was 121 passed at that point.
+
+**Gate C5 was then extended the same day, from external research
+findings (`gate_c5_mutation_testing_research_findings.md`), on direct
+instruction ("build both").** One correction and two builds. Correction:
+the "MutDafny/IronSpec-style" label was wrong — IronSpec's own mutation
+technique is a directional, implication-lemma-based approach, distinct
+from what this module actually does (brute verify/observe, matching
+MutDafny) — fixed in the module docstring. **Build 1, chain-direction-
+aware ROR:** confirmed against the Dafny Reference Manual (Sec
+5.2.1–5.2.2) that chained comparisons must stay direction-consistent;
+new helpers `_chain_group_ids`/`_chain_incompatible` restrict each chain
+link's mutation candidates to direction-compatible operators, wired into
+`generate_ror_mutants` only (no analogous rule for `&&`/`||`/arithmetic).
+The 4 former `unclassifiable` mutants (real Dafny parse errors) are now
+filtered *before* generation reaches verification — a new
+`filtered_chain_incompatible` outcome, distinct from pass 1's
+`filtered_static`. MutDafny itself does not do this — a genuine
+improvement over the published state of the art. **Build 2,
+function-body AOR:** `generate_aor_mutants` gained an optional
+`function_name` parameter; new helpers `_find_function_body_span` (brace-
+matched, mirroring `dafny_spec_lint`'s header-finder but returning the
+body) and `_locate_function_body_arithmetic_sites` locate arithmetic
+operators in `ExpectedDose`'s body (part of the formal spec, never
+`CalculateHourlyDose`'s own trusted implementation, which is never
+mutated). `_ar_group_incompatible` applies MutDafny's own restriction
+directly: `+`/`-`/`*` freely interchange, `/` only with `%` (absent from
+this spec) — a mutation can never introduce `/` where the original had
+none, eliminating the division-by-zero false-kill risk by construction,
+not post-hoc attribution. `_TOKEN_SPAN_RE` gained `ASSIGN`/`SEMI` token
+kinds, needed for body statements (`var rawDose := ... ;`) but never
+present in clauses. **Real re-run with both extensions active: 42
+mutants — 31 killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible — zero survived, zero unclassifiable.**
+The 2 new real-verified function-body mutants (`* -> +`, `* -> -`) are
+both genuinely killed, confirming `*` is load-bearing. 10 more tests (19
+total in `tests/test_dafny_mutate.py`, 7 in `tests/test_mutation_report.py`);
+full suite now **131 passed**. Full findings: `KNOWN_LIMITATIONS.md`.

@@ -6,6 +6,66 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5 extended: chain-direction-aware ROR + function-body AOR
+
+Requested directly: "build both" - the two follow-ups named at the end
+of the previous entry's research findings.
+
+- **Chain-direction-aware ROR.** New helpers in `evidence/dafny_mutate.py`:
+  `_chain_group_ids` partitions a clause's tokens into groups that never
+  cross a boolean-connective or parenthesis boundary (a conservative,
+  tested approximation of Dafny's actual chain-scoping rule);
+  `_chain_incompatible` checks whether a candidate operator would mix an
+  ascending relation with a descending one against its chain siblings
+  (`==`/`!=` always compatible). Wired into `_generate_token_mutants` via
+  a new `chain_aware` parameter, used only by `generate_ror_mutants`
+  (`&&`/`||`/arithmetic have no analogous rule). Result: the 4 mutants
+  that used to reach real Dafny invocation and come back
+  `unclassifiable` are now filtered before generation ever reaches
+  verification - a new `filtered_chain_incompatible` outcome, kept
+  distinct from pass 1's `filtered_static` since the reason (syntactic
+  invalidity vs. semantic redundancy) is genuinely different.
+- **Function-body AOR, MutDafny-restricted.** `generate_aor_mutants`
+  gained an optional `function_name` parameter. New helpers:
+  `_find_function_body_span` (brace-matched, mirroring
+  `dafny_spec_lint._find_method_header`'s depth-tracking but returning
+  the body content, not the header); `_locate_function_body_arithmetic_sites`
+  (refuses outright - rather than risk a misaligned offset - if the body
+  contains a `//` comment; none does today, checked).
+  `_TOKEN_SPAN_RE` gained `ASSIGN` (`:=`) and `SEMI` (`;`) token kinds,
+  needed for body statements but never present in requires/ensures
+  clauses. `_ar_group_incompatible` applies MutDafny's own restriction
+  directly: `+`/`-`/`*` freely interchange, `/` only with `%` (absent
+  from this spec) - a mutation can never introduce `/` where the
+  original had none, closing the division-by-zero false-kill risk by
+  construction. `generate_mutants` gained the same parameter; the real
+  caller (`run_mutation_suite.py`) now passes `"ExpectedDose"`.
+- **Real re-run, both extensions active: 42 mutants - 31 killed, 6
+  filtered_static, 4 filtered_chain_incompatible, 1
+  filtered_ar_group_incompatible, zero survived, zero unclassifiable.**
+  The 2 new function-body mutants (`* -> +`, `* -> -`) are both
+  genuinely killed - confirming `*` is load-bearing, since the method
+  body's own unmutated computation then diverges from the mutated
+  `ExpectedDose`'s pinning clause. No leftover temp files (verified).
+- **Tests:** `tests/test_dafny_mutate.py` grew from 11 to 19 - new
+  chain-direction filtering test on the real spec, direct unit tests of
+  `_chain_incompatible`/`_ar_group_incompatible` against hand-derived
+  cases independent of the real spec, function-body AOR generation and
+  its division-free restriction, a tokenizer test for `:=`/`;`, and a
+  direct test that `_locate_function_body_arithmetic_sites` finds
+  exactly the one `*`. `tests/test_mutation_report.py` grew from 5 to 7
+  - replaced the "4 unclassifiable, all chain-direction" regression with
+  "zero survivors AND zero unclassifiable," added a direct check on the
+  function-body AOR outcomes. Full suite: **131 passed** (121 prior +
+  10 new).
+- Full documentation set updated to match (`KNOWN_LIMITATIONS.md`,
+  `SYSTEM_BLUEPRINT.md`, the roadmap doc, this entry, README.md, the
+  example's own README, and the research-findings doc itself - both
+  follow-ups marked BUILT rather than not-yet-built).
+  `generate_artifacts.py` re-run as a sanity check: no observable change
+  beyond timestamps, as expected (Gate C5 still isn't wired into the
+  matrix pipeline).
+
 ## 2026-07-07 — Gate C5 research findings recorded; one mischaracterization corrected
 
 Steven sent the external research prompt drafted earlier this session

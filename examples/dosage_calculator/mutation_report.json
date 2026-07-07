@@ -153,9 +153,8 @@
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
     "mutated_clause": "0.0 >= dose <= maxSafeDoseMgPerHr",
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >=",
-    "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(79,22): Error: this operator chain cannot continue with an ascending operator",
-    "exit_code": 2
+    "outcome": "filtered_chain_incompatible",
+    "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
     "operator": "ROR",
@@ -193,9 +192,8 @@
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
     "mutated_clause": "0.0 > dose <= maxSafeDoseMgPerHr",
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >",
-    "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(79,21): Error: this operator chain cannot continue with an ascending operator",
-    "exit_code": 2
+    "outcome": "filtered_chain_incompatible",
+    "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
     "operator": "ROR",
@@ -203,9 +201,8 @@
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
     "mutated_clause": "0.0 <= dose >= maxSafeDoseMgPerHr",
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >=",
-    "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(79,22): Error: this operator chain cannot continue with a descending operator",
-    "exit_code": 2
+    "outcome": "filtered_chain_incompatible",
+    "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
     "operator": "ROR",
@@ -243,9 +240,8 @@
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
     "mutated_clause": "0.0 <= dose > maxSafeDoseMgPerHr",
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >",
-    "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(79,22): Error: this operator chain cannot continue with a descending operator",
-    "exit_code": 2
+    "outcome": "filtered_chain_incompatible",
+    "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
     "operator": "ROR",
@@ -352,6 +348,35 @@
     "outcome": "killed",
     "detail": "1 verified, 2 errors",
     "exit_code": 4
+  },
+  {
+    "operator": "AOR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body operator '*'",
+    "mutated_clause": "ExpectedDose body operator '+'",
+    "description": "AOR on ExpectedDose's function body: * -> +",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "AOR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body operator '*'",
+    "mutated_clause": "ExpectedDose body operator '-'",
+    "description": "AOR on ExpectedDose's function body: * -> -",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "AOR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body operator '*'",
+    "mutated_clause": "ExpectedDose body operator '/'",
+    "description": "AOR on ExpectedDose's function body: * -> /",
+    "outcome": "filtered_ar_group_incompatible",
+    "detail": "arithmetic-operator group incompatible (MutDafny's own restriction: never introduce / from +/-/*, avoiding a division-by-zero false-kill by construction)"
   },
   {
     "operator": "COI",

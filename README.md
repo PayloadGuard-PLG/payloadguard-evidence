@@ -109,27 +109,37 @@ records Steven's sign-off on the generated summary for
 `dosage.dfy::CalculateHourlyDose` ("it's good for the spec as is"), plus
 a next-phase item he explicitly scoped out as separate follow-up work.
 
-**Gate C5 (mutation testing) is also now built for v1 scope, and found
-2 real survivors — both fixed the same day.** `evidence/dafny_mutate.py`
-generates ROR/LOR/AOR/COI mutants against `dosage.dfy`'s requires/ensures
-clauses;
+**Gate C5 (mutation testing) is also now built, and extended the same
+day from external research — zero survivors, zero unclassifiable
+remain.** `evidence/dafny_mutate.py` generates ROR/LOR/AOR/COI mutants
+against `dosage.dfy`'s requires/ensures clauses (and, as of the
+extension, `ExpectedDose`'s function body);
 [`examples/dosage_calculator/run_mutation_suite.py`](examples/dosage_calculator/run_mutation_suite.py)
-real-verifies every one against the installed Dafny binary. Initial run:
-39 mutants — 29 killed, 4 filtered as statically trivial, **2 survived**
-(`infusionRateMlPerHr >= 0.0 || dose == 0.0` weakened at its first
-disjunct still verified, because real multiplication by exactly `0.0`
-already makes `dose == 0.0` hold at that boundary — a real, understood
-looseness in REQ-GIP-1-8-1's postcondition, **reported to Steven for a
-decision, not silently changed** in the spec he'd just signed off on in
-Gate C6). **Decision: "go ahead and tighten REQ-GIP-1-8-1 to `>`."**
-`dosage.dfy` changed, re-verified clean (unchanged), mutation suite
-re-run in full: **zero survivors remain** — the two former survivor
-mutations are now correctly recognized as statically trivial before
-Dafny is even invoked, confirming the boundary is now tight. Separately,
-**4 unclassifiable** (a real, unrelated gap in the mutation engine, not
-the spec: mutating one side of a chained comparison to a descending
-operator is a genuine Dafny parse error). AOR/SOR/HOR stay out of v1
-scope, checked not assumed — see
+real-verifies every one against the installed Dafny binary. The v1 build
+found 2 real survivors — `infusionRateMlPerHr >= 0.0 || dose == 0.0`
+weakened at its first disjunct still verified, because real
+multiplication by exactly `0.0` already makes `dose == 0.0` hold at that
+boundary — a real, understood looseness in REQ-GIP-1-8-1's
+postcondition, **reported to Steven for a decision, not silently
+changed** in the spec he'd just signed off on in Gate C6; his decision,
+"go ahead and tighten REQ-GIP-1-8-1 to `>`," fixed it. External research
+into that finding and a separate mutation-engine gap
+([full findings](examples/dosage_calculator/gate_c5_mutation_testing_research_findings.md))
+then produced one correction (Gate C5 was mislabeled
+"MutDafny/IronSpec-style" — corrected to MutDafny-style) and two
+concrete follow-ups, both built the same day on "build both":
+**chain-direction-aware ROR** (restricts each chained-comparison link's
+candidates to direction-compatible operators, per the Dafny Reference
+Manual's own chaining rule — eliminates 4 formerly-unclassifiable
+mutants by construction, ahead of what MutDafny itself does) and
+**function-body AOR** (extends mutation to `ExpectedDose`'s one
+arithmetic operator, restricted to MutDafny's own group rule so a
+mutation can never introduce `/` where the original had none —
+eliminating the division-by-zero false-kill risk by construction, not
+post-hoc attribution). Final real run: **42 mutants — 31 killed, 6
+filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible — zero survived, zero unclassifiable** —
+see
 [`examples/dosage_calculator/mutation_report.md`](examples/dosage_calculator/mutation_report.md)
 for the full per-mutant outcome and `KNOWN_LIMITATIONS.md` for complete
 detail.

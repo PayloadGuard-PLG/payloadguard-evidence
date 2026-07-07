@@ -30,6 +30,7 @@ from evidence.dafny_spec_lint import check_precondition_satisfiability
 HERE = pathlib.Path(__file__).parent
 TARGET = HERE / "dosage.dfy"
 METHOD = "CalculateHourlyDose"
+FUNCTION = "ExpectedDose"
 
 
 def _version():
@@ -105,9 +106,20 @@ def _real_verify(mutated_source):
         tmp_path.unlink(missing_ok=True)
 
 
+def _filtered_outcome(reason):
+    """Distinguish WHY a mutant was filtered before real verification -
+    three different reasons, three different outcome buckets, so a
+    reader never has to parse the detail text to know which applies."""
+    if reason.startswith("chain-direction incompatible"):
+        return "filtered_chain_incompatible"
+    if reason.startswith("arithmetic-operator group incompatible"):
+        return "filtered_ar_group_incompatible"
+    return "filtered_static"
+
+
 def main():
     source = TARGET.read_text()
-    mutants = generate_mutants(source, METHOD)
+    mutants = generate_mutants(source, METHOD, function_name=FUNCTION)
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
     records = []
@@ -120,7 +132,7 @@ def main():
             "description": m.description,
         }
         if m.filtered_reason:
-            record["outcome"] = "filtered_static"
+            record["outcome"] = _filtered_outcome(m.filtered_reason)
             record["detail"] = m.filtered_reason
             records.append(record)
             continue
@@ -153,9 +165,10 @@ def main():
         "",
         "SOR: 0 mutants (no set-typed operations in this spec) — NOT APPLICABLE, checked.",
         "HOR: 0 mutants (no heap/object state, old()/reads/modifies) — NOT APPLICABLE, checked.",
-        "AOR: 0 mutants against this spec's requires/ensures clauses — the one arithmetic "
-        "operator lives in ExpectedDose's function body, out of this v1's clause-mutation "
-        "scope (named, deferred — see evidence/dafny_mutate.py's module docstring).",
+        "AOR: 0 mutants against this spec's requires/ensures clauses (no arithmetic in any "
+        "clause) + 3 against ExpectedDose's function body (its one `*` operator), restricted "
+        "per MutDafny's own group rule (+/-/* freely interchange; never introduce `/`, "
+        "eliminating the division-by-zero false-kill risk by construction).",
         "",
         "| Operator | Clause | Mutation | Outcome | Detail |",
         "|---|---|---|---|---|",

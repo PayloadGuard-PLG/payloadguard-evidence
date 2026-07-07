@@ -1,7 +1,7 @@
 """Phase C, Gate C5: validates the COMMITTED mutation report - the real,
 captured outcome of every mutant against the real installed Dafny binary
 (run_mutation_suite.py). Does not re-invoke Dafny (that capture is real
-and already made; re-running 39 verifications on every test pass would
+and already made; re-running 42 verifications on every test pass would
 be slow and would let a regenerated report silently drift without a
 human noticing) - reads mutation_report.json exactly the way
 tests/test_dafny_stp_suite.py and friends read other committed captures.
@@ -20,33 +20,42 @@ def _report():
 
 def test_report_total_and_outcome_counts():
     records = _report()
-    assert len(records) == 39
+    assert len(records) == 42
     counts = {}
     for r in records:
         counts[r["outcome"]] = counts.get(r["outcome"], 0) + 1
     assert counts == {
-        "killed": 29,
+        "killed": 31,
         "filtered_static": 6,
-        "unclassifiable": 4,
+        "filtered_chain_incompatible": 4,
+        "filtered_ar_group_incompatible": 1,
     }
 
 
-def test_no_survivors_remain_after_the_req_gip_1_8_1_tightening():
-    """2026-07-07: mutation testing originally found 2 real survivors -
-    REQ-GIP-1-8-1's `>=` weakened to `!=` or `>` both still verified,
-    because real multiplication by exactly 0.0 makes `dose == 0.0` hold
-    at that boundary independent of the first disjunct's operator. Steven
-    decided to tighten the clause to `>` rather than accept the
-    looseness. Confirmed here: after the fix, the same two mutation
-    targets are no longer even sent to Dafny - the pass-1 static filter
-    now correctly recognizes them as trivial (a proof of `x > 0`
-    universally implies both `x >= 0` and `x != 0`), which is itself
-    evidence the boundary is now tight. See KNOWN_LIMITATIONS.md's Gate
-    C5 section and nl_confirmation_dosage_dfy.md's amendment for the full
-    decision record. This test exists so a future regeneration can't let
-    a survivor quietly reappear without a human noticing."""
+def test_no_survivors_and_no_unclassifiable_results_remain():
+    """2026-07-07: mutation testing originally found 2 real survivors
+    (REQ-GIP-1-8-1's `>=` boundary, fixed by tightening to `>`) and 4
+    unclassifiable results (chain-direction parse errors, fixed by
+    teaching the generator Dafny's chain-direction rule so it never
+    generates those candidates in the first place). Both classes are
+    gone now, not just reduced - the former "unclassifiable" bucket no
+    longer exists at all; the same 4 mutants are now filtered before
+    ever reaching Dafny (filtered_chain_incompatible). See
+    KNOWN_LIMITATIONS.md's Gate C5 section for the full history."""
     records = _report()
-    assert not [r for r in records if r["outcome"] == "survived"]
+    outcomes = {r["outcome"] for r in records}
+    assert "survived" not in outcomes
+    assert "unclassifiable" not in outcomes
+
+
+def test_reverse_flow_clause_weakenings_are_filtered_not_survivors():
+    """The two mutations that used to be real survivors before the
+    REQ-GIP-1-8-1 tightening are now correctly recognized as statically
+    trivial (a proof of `x > 0` universally implies both `x >= 0` and
+    `x != 0`) before Dafny is even invoked - itself a mechanical
+    confirmation the boundary is tight. This test exists so a future
+    regeneration can't let a survivor quietly reappear."""
+    records = _report()
     reverse_flow_filtered = {
         r["description"]
         for r in records
@@ -60,36 +69,59 @@ def test_no_survivors_remain_after_the_req_gip_1_8_1_tightening():
     }
 
 
-def test_unclassifiable_mutants_are_all_chain_direction_parse_errors():
-    """A real, understood mutation-engine gap, not a spec finding: mutating
-    only one side of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a
-    descending operator produces a Dafny PARSE error (chained comparisons
-    must stay direction-consistent), not a semantic test. Named and
-    refused (Tier 1) rather than misclassified as killed or survived."""
+def test_chained_clause_direction_incompatible_mutants_are_filtered_pre_verification():
+    """Built 2026-07-07 from external research: mutating one side of the
+    chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator
+    (>=, >) is a genuine Dafny PARSE error (chained comparisons must stay
+    direction-consistent, Dafny Reference Manual Sec 5.2.1-5.2.2). These
+    4 mutants (2 links x 2 incompatible operators) are now filtered by
+    the generator itself, before any Dafny invocation - not sent to
+    Dafny and refused post-hoc as "unclassifiable" the way they were
+    before this fix."""
     records = _report()
-    unclassifiable = [r for r in records if r["outcome"] == "unclassifiable"]
-    assert len(unclassifiable) == 4
-    for r in unclassifiable:
-        assert "operator chain" in r["detail"]
+    chain_filtered = [r for r in records if r["outcome"] == "filtered_chain_incompatible"]
+    assert len(chain_filtered) == 4
+    for r in chain_filtered:
+        assert "chain-direction incompatible" in r["detail"]
         assert "0.0 <= dose <= maxSafeDoseMgPerHr" in r["original_clause"]
 
 
-def test_no_mutant_touches_the_method_implementation_body():
-    """Mutation testing perturbs the SPEC, never the trusted
-    implementation - every mutated_clause recorded must come from a
-    requires/ensures clause or an explicit COI negation of one, never
-    from CalculateHourlyDose's own `{ ... }` body."""
+def test_function_body_aor_mutants_present_and_division_free_candidate_filtered():
+    """Built 2026-07-07 from external research: ExpectedDose's function
+    body (part of the formal spec, referenced by the pinning ensures
+    clause) now gets AOR mutation on its one `*` operator, restricted
+    per MutDafny's own group rule - `+`/`-` are real, sent to Dafny (both
+    genuinely killed, confirming `*` is load-bearing); `/` is filtered
+    before verification, never risking Dafny's division-by-zero check
+    producing a false "kill" for the wrong reason."""
+    records = _report()
+    body_mutants = [r for r in records if r["keyword"] == "function_body"]
+    assert len(body_mutants) == 3
+    by_op = {r["description"].rsplit(" ", 1)[-1]: r for r in body_mutants}
+    assert by_op["+"]["outcome"] == "killed"
+    assert by_op["-"]["outcome"] == "killed"
+    assert by_op["/"]["outcome"] == "filtered_ar_group_incompatible"
+    assert "group incompatible" in by_op["/"]["detail"]
+
+
+def test_no_mutant_touches_the_calculatehourlydose_method_implementation_body():
+    """Mutation testing perturbs the SPEC, never
+    CalculateHourlyDose's trusted implementation - every recorded mutant
+    comes from a requires/ensures clause, an explicit COI negation of
+    one, or ExpectedDose's function body (also spec, not implementation)
+    - never CalculateHourlyDose's own `{ ... }` body."""
     records = _report()
     for r in records:
-        assert r["keyword"] in ("requires", "ensures")
+        assert r["keyword"] in ("requires", "ensures", "function_body")
 
 
 def test_run_manifest_records_real_dafny_version_and_matching_counts():
     manifest = json.loads((ART_DIR / "run_manifest_mutation.json").read_text())
     assert "4.11.0" in manifest["tool_version"]
-    assert manifest["total_mutants"] == 39
+    assert manifest["total_mutants"] == 42
     assert manifest["counts"] == {
-        "killed": 29,
+        "killed": 31,
         "filtered_static": 6,
-        "unclassifiable": 4,
+        "filtered_chain_incompatible": 4,
+        "filtered_ar_group_incompatible": 1,
     }

@@ -18,6 +18,9 @@ from evidence.dafny_mutate import (  # noqa: E402
     generate_lor_mutants,
     generate_mutants,
     generate_ror_mutants,
+    _ar_group_incompatible,
+    _chain_incompatible,
+    _locate_function_body_arithmetic_sites,
     _tokenize_with_spans,
 )
 
@@ -32,7 +35,7 @@ def test_ror_against_real_spec_produces_expected_raw_and_filtered_counts():
     mutants = generate_ror_mutants(_dosage_source(), "CalculateHourlyDose")
     assert len(mutants) == 35
     filtered = [m for m in mutants if m.filtered_reason]
-    assert len(filtered) == 6
+    assert len(filtered) == 10
 
 
 def test_ror_filters_equality_clauses_and_the_tightened_reverse_flow_clause():
@@ -43,7 +46,7 @@ def test_ror_filters_equality_clauses_and_the_tightened_reverse_flow_clause():
     (previously, when this clause read `>=`, these same two mutations
     were NOT trivial and were real mutation-testing survivors)."""
     mutants = generate_ror_mutants(_dosage_source(), "CalculateHourlyDose")
-    filtered = [m for m in mutants if m.filtered_reason]
+    filtered = [m for m in mutants if m.filtered_reason and "statically weaker" in m.filtered_reason]
     assert len(filtered) == 6
     for m in filtered:
         assert m.keyword == "ensures"
@@ -59,6 +62,36 @@ def test_ror_filters_equality_clauses_and_the_tightened_reverse_flow_clause():
     }
 
 
+def test_ror_filters_chain_direction_incompatible_mutants_on_the_chained_clause():
+    """Built 2026-07-07 from external research: naively mutating one side
+    of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending
+    operator (>=, >) produces a Dafny PARSE error, not a semantic test
+    (Dafny Reference Manual Sec 5.2.1-5.2.2: chained relational operators
+    must stay the same direction). These 4 candidates (2 links x 2
+    incompatible operators each) must be filtered before generation
+    reaches real verification, not sent to Dafny and misclassified."""
+    mutants = generate_ror_mutants(_dosage_source(), "CalculateHourlyDose")
+    chain_filtered = [
+        m
+        for m in mutants
+        if m.filtered_reason and "chain-direction incompatible" in m.filtered_reason
+    ]
+    assert len(chain_filtered) == 4
+    for m in chain_filtered:
+        assert m.original_clause == "0.0 <= dose <= maxSafeDoseMgPerHr"
+        assert m.description.endswith("-> >=") or m.description.endswith("-> >")
+    # LT/EQ/NE candidates for the same clause must NOT be chain-filtered -
+    # only the direction-incompatible ones.
+    same_clause = [m for m in mutants if m.original_clause == "0.0 <= dose <= maxSafeDoseMgPerHr"]
+    compatible = [
+        m
+        for m in same_clause
+        if not m.filtered_reason
+        or "chain-direction incompatible" not in m.filtered_reason
+    ]
+    assert len(compatible) == 6  # 2 links x 3 compatible candidates (<, ==, !=)
+
+
 def test_lor_finds_the_single_or_site_and_does_not_filter_it():
     mutants = generate_lor_mutants(_dosage_source(), "CalculateHourlyDose")
     assert len(mutants) == 1
@@ -66,12 +99,46 @@ def test_lor_finds_the_single_or_site_and_does_not_filter_it():
     assert mutants[0].filtered_reason is None
 
 
-def test_aor_returns_empty_against_real_spec():
-    """The real spec's one arithmetic operator lives in ExpectedDose's
-    function body, not a requires/ensures clause - out of v1's
-    clause-mutation scope (named in evidence/dafny_mutate.py's module
-    docstring), so this must return [], not raise or silently skip."""
+def test_aor_returns_empty_against_real_spec_clauses_alone():
+    """No requires/ensures clause of CalculateHourlyDose contains
+    arithmetic - confirmed by an empty result, not just left
+    unexercised, when no companion function_name is given."""
     assert generate_aor_mutants(_dosage_source(), "CalculateHourlyDose") == []
+
+
+def test_aor_against_expecteddose_body_restricts_to_plus_minus_only():
+    """Built 2026-07-07 from external research: MutDafny's own AOR
+    restriction (+/-/* freely interchange; / only with %, not present in
+    this spec) means the one `*` in ExpectedDose's body never gets a `/`
+    candidate sent to real verification - eliminating the
+    division-by-zero false-kill risk named when this was deferred, by
+    construction rather than post-hoc attribution."""
+    mutants = generate_aor_mutants(
+        _dosage_source(), "CalculateHourlyDose", function_name="ExpectedDose"
+    )
+    assert len(mutants) == 3
+    by_target = {m.description.rsplit(" ", 1)[-1]: m for m in mutants}
+    assert set(by_target) == {"+", "-", "/"}
+    assert by_target["+"].filtered_reason is None
+    assert by_target["-"].filtered_reason is None
+    assert by_target["/"].filtered_reason is not None
+    assert "group incompatible" in by_target["/"].filtered_reason
+    for m in mutants:
+        assert m.keyword == "function_body"
+
+
+def test_aor_never_touches_the_method_body_only_the_function_body():
+    """Mutation testing perturbs the SPEC (ExpectedDose, referenced by a
+    pinning ensures clause), never CalculateHourlyDose's own trusted
+    `{...}` implementation, which recomputes the same multiplication but
+    must never be mutated."""
+    source = _dosage_source()
+    mutants = generate_aor_mutants(source, "CalculateHourlyDose", function_name="ExpectedDose")
+    for m in mutants:
+        # every mutated_source must still contain the METHOD's own body
+        # line unchanged - the only multiplication touched is inside
+        # ExpectedDose, which appears earlier in the file.
+        assert "dose := rawDose;" in m.mutated_source
 
 
 def test_coi_wraps_every_ensures_clause_and_only_ensures_clauses():
@@ -125,6 +192,12 @@ def test_generate_mutants_aggregates_all_four_implemented_classes():
     assert total == ror + lor + aor + coi == 39
 
 
+def test_generate_mutants_with_function_name_includes_body_aor():
+    source = _dosage_source()
+    total = len(generate_mutants(source, "CalculateHourlyDose", function_name="ExpectedDose"))
+    assert total == 39 + 3  # the 3 function-body AOR mutants added
+
+
 def test_tokenize_with_spans_handles_function_call_commas():
     tokens = _tokenize_with_spans("dose == ExpectedDose(a, b, c)")
     kinds = [k for k, _v, _s, _e in tokens]
@@ -135,6 +208,54 @@ def test_tokenize_with_spans_handles_function_call_commas():
 def test_tokenize_with_spans_refuses_unknown_syntax():
     with pytest.raises(SystemExit, match="unsupported syntax"):
         _tokenize_with_spans("x @ y")
+
+
+def test_tokenize_with_spans_handles_assignment_and_semicolon():
+    """Needed for function-body scanning (`var rawDose := a * b;`) -
+    requires/ensures clauses never contain `:=` or `;`, so this wasn't
+    needed before the AOR function-body extension."""
+    tokens = _tokenize_with_spans("var rawDose := a * b;")
+    kinds = [k for k, _v, _s, _e in tokens]
+    assert "ASSIGN" in kinds
+    assert "SEMI" in kinds
+    assert "STAR" in kinds
+
+
+def test_chain_incompatible_matches_dafny_direction_rule():
+    """Direct unit test of the pure helper, independent of the real
+    spec: ascending (</<=) and descending (>/>=) can't mix in one chain;
+    EQ/NE are always compatible with either direction; a chain link with
+    no directional siblings (empty or all-EQ/NE) is unconstrained."""
+    assert _chain_incompatible("GE", ["LE"]) is True
+    assert _chain_incompatible("GT", ["LE"]) is True
+    assert _chain_incompatible("LT", ["LE"]) is False
+    assert _chain_incompatible("EQ", ["LE"]) is False
+    assert _chain_incompatible("NE", ["LE"]) is False
+    assert _chain_incompatible("GE", ["LT"]) is True  # descending vs ascending
+    assert _chain_incompatible("LE", ["GT"]) is True  # ascending vs descending
+    assert _chain_incompatible("GT", []) is False  # no siblings, unconstrained
+    assert _chain_incompatible("GT", ["EQ", "NE"]) is False  # only neutral siblings
+
+
+def test_ar_group_incompatible_matches_mutdafny_restriction():
+    """Direct unit test of the pure helper: +/-/* freely interchange;
+    / is only compatible with % (not present in _AR_TEXT at all), so
+    every +/-/*  <-> / crossing is incompatible in both directions."""
+    assert _ar_group_incompatible("STAR", "PLUS") is False
+    assert _ar_group_incompatible("STAR", "MINUS") is False
+    assert _ar_group_incompatible("PLUS", "MINUS") is False
+    assert _ar_group_incompatible("STAR", "SLASH") is True
+    assert _ar_group_incompatible("SLASH", "STAR") is True
+    assert _ar_group_incompatible("SLASH", "PLUS") is True
+
+
+def test_locate_function_body_arithmetic_sites_finds_exactly_the_one_star():
+    source = _dosage_source()
+    sites = _locate_function_body_arithmetic_sites(source, "ExpectedDose")
+    assert len(sites) == 1
+    abs_start, abs_end, kind = sites[0]
+    assert kind == "STAR"
+    assert source[abs_start:abs_end] == "*"
 
 
 def test_ror_polarity_flips_between_requires_and_ensures():
