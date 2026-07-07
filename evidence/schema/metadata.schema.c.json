@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PayloadGuard evidence metadata - variant C (dual matrix)",
-  "description": "T4-C fork of metadata.schema.json: the metadata shape is UNCHANGED from the base (one-record-per-binding preserved end-to-end). Evidence partitioning happens at generation time: symbolic evidence binds by implementation match (as in the base matrix); concrete evidence is self-describing and binds by the requirement_id carried in each concrete_results.json case. Two independent artifacts are rendered (traceability_matrix.symbolic.* / traceability_matrix.concrete.*) by one renderer parametrised by method filter. intended_method enum gains EXAMPLE_CHECKED. Gaps are signalled by field absence, never by placeholder strings. The optional `evidence` field (2026-07-06, Gate 4 option 3) declares a top-down binding for CROSS-CHECKING ONLY - C's actual binding stays evidence-store-carried and unchanged; a mismatch between this declaration and the evidence store's self-declared requirement_id is a Type 1 CONFLICT (evidence/conflict.py).",
+  "description": "T4-C fork of metadata.schema.json: the metadata shape is UNCHANGED from the base (one-record-per-binding preserved end-to-end). Evidence partitioning happens at generation time: symbolic evidence binds by implementation match (as in the base matrix); concrete evidence is self-describing and binds by the requirement_id carried in each concrete_results.json case. Three independent artifacts are rendered (traceability_matrix.symbolic.* / traceability_matrix.concrete.* / traceability_matrix.formal.*, the last added when Dafny evidence was wired into the live pipeline) by one renderer parametrised by method filter. intended_method enum gains EXAMPLE_CHECKED. Gaps are signalled by field absence, never by placeholder strings. The optional `evidence` field (2026-07-06, Gate 4 option 3) declares a top-down binding for CROSS-CHECKING ONLY - C's actual binding stays evidence-store-carried and unchanged; a mismatch between this declaration and the evidence store's self-declared requirement_id is a Type 1 CONFLICT (evidence/conflict.py). A `method: dafny` evidence entry requires `spec_target` (the .dfy file) and `dafny_method` (the method within it) - both cross-checked against the captured Dafny run manifest by the same Type 1 mechanism, and both consumed by evidence.render.matrix_variants.dafny_record() to look up the matching capture in a caller-supplied dafny_store.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -94,25 +94,51 @@
                 "method": {
                   "enum": [
                     "crosshair",
-                    "concrete_test"
+                    "concrete_test",
+                    "dafny"
                   ]
                 },
                 "test_id": {
                   "type": "string"
+                },
+                "spec_target": {
+                  "type": "string"
+                },
+                "dafny_method": {
+                  "type": "string"
                 }
               },
-              "if": {
-                "properties": {
-                  "method": {
-                    "const": "concrete_test"
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "method": {
+                        "const": "concrete_test"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "test_id"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "method": {
+                        "const": "dafny"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "spec_target",
+                      "dafny_method"
+                    ]
                   }
                 }
-              },
-              "then": {
-                "required": [
-                  "test_id"
-                ]
-              }
+              ]
             }
           }
         }

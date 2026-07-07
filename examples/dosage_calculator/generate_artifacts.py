@@ -40,7 +40,11 @@ REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from evidence.conflict import run_conflict_gate, run_outcome_gate  # noqa: E402
-from evidence.reconcile import BASE_ARTIFACT, VARIANT_ARTIFACTS  # noqa: E402
+from evidence.reconcile import (  # noqa: E402
+    BASE_ARTIFACT,
+    FORMAL_ARTIFACT,
+    VARIANT_ARTIFACTS,
+)
 from evidence.render.matrix_variants import assert_no_realized_proven  # noqa: E402
 
 SCHEMA_PAIRS = (
@@ -60,6 +64,10 @@ INPUTS = (
     "run_manifest.json",
     "raw_crosshair_output.txt",
     "concrete_results.json",
+    # Gate 2/C2-C4 wiring (2026-07-07): the formal view's real inputs.
+    "dosage.dfy",
+    "raw_dafny_output.txt",
+    "run_manifest_dafny.json",
 )
 INPUT_SCHEMAS = tuple(pair[0] for pair in SCHEMA_PAIRS)
 
@@ -68,6 +76,8 @@ OUTPUTS = tuple(VARIANT_ARTIFACTS) + (
     "traceability_matrix.b.md",
     "traceability_matrix.symbolic.md",
     "traceability_matrix.concrete.md",
+    FORMAL_ARTIFACT,
+    "traceability_matrix.formal.md",
 )
 
 # Committed evidence that the pipeline depends on but never regenerates.
@@ -161,9 +171,14 @@ def stage_generate():
 
 
 def stage_proven_sweep():
-    for name in tuple(VARIANT_ARTIFACTS) + (BASE_ARTIFACT,):
+    # FORMAL_ARTIFACT is deliberately swept too (2026-07-07, Gate 2/C2-C4
+    # wiring) even though it's the one artifact expected to contain a
+    # REALIZED PROVEN row for the first time in this repository's
+    # history - the sweep is what proves ruling R3 accepts it for real,
+    # not just when generate_matrix_c.py happens to run standalone.
+    for name in tuple(VARIANT_ARTIFACTS) + (BASE_ARTIFACT, FORMAL_ARTIFACT):
         assert_no_realized_proven(json.loads((HERE / name).read_text()))
-    print("stage 6 structural PROVEN sweep: PASS (4 variants + frozen base)")
+    print("stage 6 structural PROVEN sweep: PASS (4 variants + frozen base + formal)")
 
 
 def stage_index():

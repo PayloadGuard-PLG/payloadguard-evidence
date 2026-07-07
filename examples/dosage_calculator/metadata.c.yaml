@@ -66,10 +66,18 @@ requirements:
     # CROSS-CHECKING ONLY against concrete_results.json's self-declared
     # requirement_id - binding itself stays evidence-store-carried,
     # unchanged (evidence/conflict.py, Type 1).
+    # 2026-07-07 (Gate 2/C2-C4 wiring): dafny evidence declared -
+    # PROVEN is now REALIZED, not just intended, for the kernel_scope
+    # half only (system_scope stays a named, deferred GAP - a Dafny
+    # proof of the kernel's detection logic says nothing about whether
+    # an integrated system actually raises the audible/visual alarm).
     evidence:
       - method: crosshair
       - method: concrete_test
         test_id: kernel_detects_bolus_limit_exceeded
+      - method: dafny
+        spec_target: "dosage.dfy"
+        dafny_method: "CalculateHourlyDose"
 
   - id: "REQ-GIP-1-8-1"
     text: >
@@ -81,12 +89,17 @@ requirements:
       the 2026-07-04 Option A amendment)
     implementation: "dosage.py::calculate_hourly_dose"
     intended_method: "PROVEN"
+    # 2026-07-07 (Gate 2/C2-C4 wiring): dafny evidence declared - see
+    # REQ-GIP-1-4-12's note above for the same rationale.
     evidence:
       - method: crosshair
       - method: concrete_test
         test_id: ordinary_negative_rate_clamps_to_zero
       - method: concrete_test
         test_id: overflow_negative_rate_clamps_to_zero
+      - method: dafny
+        spec_target: "dosage.dfy"
+        dafny_method: "CalculateHourlyDose"
 
   - id: "REQ-DOSE-003"
     text: >

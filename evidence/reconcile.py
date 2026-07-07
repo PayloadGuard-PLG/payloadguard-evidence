@@ -13,6 +13,18 @@ entrypoint (examples/dosage_calculator/regenerate_all.py, after all
 generators complete) and the test suite (tests/test_fact_equality.py, over
 the committed artifacts). The base Phase A matrix is frozen (ruling R2c)
 and participates as the symbolic-subset legacy view.
+
+VARIANT_ARTIFACTS is deliberately unchanged by the 2026-07-07 Gate 2/C2-C4
+wiring: traceability_matrix.formal.json (variant C's third partition,
+real Dafny-sourced PROVEN evidence) is NOT in this tuple, and run_gate()
+below is NOT touched. Passing dafny_store into variants A and B is an
+explicitly deferred follow-up (Steven: "can we post hoc verify A and B
+after C variant is proven") - until it lands, A/B's own intent_ok for
+REQ-GIP-1-4-12/REQ-GIP-1-8-1 stays False (no dafny binding there), while
+the formal view's is True. That is a REAL, NAMED, TRACKED divergence,
+not a bug - run_formal_check() below verifies it is exactly that
+divergence and no other, the same "fail loudly on anything unexpected"
+discipline the main gate already applies. See KNOWN_LIMITATIONS.md.
 """
 
 import json
@@ -25,6 +37,15 @@ VARIANT_ARTIFACTS = (
     "traceability_matrix.concrete.json",
 )
 BASE_ARTIFACT = "traceability_matrix.json"
+FORMAL_ARTIFACT = "traceability_matrix.formal.json"
+
+# The only requirements allowed to diverge between the formal view and
+# the A/B/symbolic/concrete reference, and only in the True direction
+# (newly proven via dafny evidence) - named and tracked here rather than
+# silently permitted. Remove this carve-out (and tighten
+# run_formal_check to a plain equality) once variant A/B's own dafny
+# wiring lands and their intent_ok catches up to match.
+KNOWN_FORMAL_INTENT_DIVERGENCE = frozenset({"REQ-GIP-1-4-12", "REQ-GIP-1-8-1"})
 
 
 def _fact(requirement_id, record):
@@ -117,3 +138,56 @@ def run_gate(artifact_dir):
         )
 
     return {"facts": len(facts_a), "intent": reference}
+
+
+def run_formal_check(artifact_dir, reference_intent):
+    """Checks variant C's third partition (traceability_matrix.formal.json,
+    real Dafny-sourced evidence) against the A/B/symbolic/concrete
+    reference intent (run_gate()'s own return value - callers pass it
+    straight through rather than recomputing it, keeping this a check
+    ABOUT run_gate()'s result, not a second independent source of truth).
+
+    Deliberately separate from run_gate() and from VARIANT_ARTIFACTS: the
+    formal view is real, new, and not yet reconciled with variants A/B
+    (that wiring is an explicitly deferred follow-up), so folding it into
+    the strict all-must-match gate above would either hard-fail on a
+    known, expected divergence or (worse) require softening that gate
+    for everyone. Instead: every requirement's intent_ok must match the
+    reference EXACTLY, except the named, tracked set in
+    KNOWN_FORMAL_INTENT_DIVERGENCE, which must specifically be True (not
+    just "different") - proving dafny evidence closed the intent gap it
+    was meant to close, not just that something changed. Raises
+    AssertionError on any unexpected or wrong-direction divergence;
+    returns a small summary dict on success."""
+    d = pathlib.Path(artifact_dir)
+    formal = json.loads((d / FORMAL_ARTIFACT).read_text())
+    formal_intent = extract_intent(formal)
+
+    unexpected = {
+        req: (reference_intent.get(req), formal_intent[req])
+        for req in formal_intent
+        if req not in KNOWN_FORMAL_INTENT_DIVERGENCE
+        and formal_intent[req] != reference_intent.get(req)
+    }
+    if unexpected:
+        raise AssertionError(
+            f"formal-view intent check failed: unexpected divergence from "
+            f"the A/B/symbolic/concrete reference: {unexpected}"
+        )
+
+    wrong_direction = {
+        req: formal_intent[req]
+        for req in KNOWN_FORMAL_INTENT_DIVERGENCE
+        if req in formal_intent and formal_intent[req] is not True
+    }
+    if wrong_direction:
+        raise AssertionError(
+            "formal-view intent check failed: expected "
+            f"{sorted(wrong_direction)} to be newly proven (intent_ok=True) "
+            f"via dafny evidence, got {wrong_direction}"
+        )
+
+    return {
+        "formal_requirements_checked": len(formal_intent),
+        "known_divergence": sorted(KNOWN_FORMAL_INTENT_DIVERGENCE & formal_intent.keys()),
+    }

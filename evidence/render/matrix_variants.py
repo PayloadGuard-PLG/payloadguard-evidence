@@ -7,8 +7,11 @@ concrete_results.json (T4-0). They differ only in shape:
   Variant A: one row per requirement, evidence as a LIST of records.
   Variant B: one record per row; concrete runs are shadow pseudo-requirements
              with an explicit parent_requirement field.
-  Variant C: one record per row; two independent artifacts partitioned by
-             method (symbolic / concrete).
+  Variant C: one record per row; independent artifacts partitioned by
+             method (symbolic / concrete / formal — the last added
+             2026-07-07 when Dafny evidence was wired into the live
+             pipeline, still variant-C-only; variants A/B's own
+             extension is deferred - see KNOWN_LIMITATIONS.md).
 
 Shared discipline (unchanged from manual_matrix.py):
   - Strength comes ONLY from the evidence record, never from intended_method.
@@ -24,11 +27,19 @@ Shared discipline (unchanged from manual_matrix.py):
     that record's method is "dafny" and its verifier_completion_status is
     "completed" — CrossHair/pytest-backed records remain permanently
     excluded from PROVEN, checked explicitly, not by omission.
+  - dafny_record() (below) is the wiring that lets a real Dafny capture
+    ever satisfy R3's two conditions: it gates PROVEN on Z3 precondition
+    satisfiability (Gate C3 vector 1) AND parse_dafny_capture's own
+    false-zero guard (Gate C1) BEFORE constructing a record, so by the
+    time assert_no_realized_proven re-checks R3 at the matrix boundary,
+    it is re-confirming, not originating, the guarantee.
 """
 
 import datetime
 
 from evidence.conflict import run_conflict_gate
+from evidence.dafny_adapter import parse_dafny_capture
+from evidence.dafny_spec_lint import check_precondition_satisfiability
 from evidence.model import CAVEAT, Strength
 
 _ARTIFACT_TITLES = {
@@ -36,6 +47,7 @@ _ARTIFACT_TITLES = {
     "b": "IEC 62304 Traceability Matrix (variant B: flattened pseudo-requirements)",
     "c-symbolic": "IEC 62304 Traceability Matrix (variant C: symbolic evidence)",
     "c-concrete": "IEC 62304 Traceability Matrix (variant C: concrete evidence)",
+    "c-formal": "IEC 62304 Traceability Matrix (variant C: formally proven evidence)",
 }
 
 
@@ -76,6 +88,54 @@ def concrete_record(case):
         "inputs": case["inputs"],
         "expected": case["expected"],
         "observed": case["observed"],
+    }
+
+
+def dafny_record(capture, code_location):
+    """Realized record for one Dafny-sourced capture (Gate 2's wiring of
+    Gate C1-C4 into the live pipeline, 2026-07-07). `capture` is one entry
+    of a caller-assembled dafny_store dict: {"spec_source": <.dfy text>,
+    "raw_output": <verbatim capture text>, "manifest": <run manifest
+    dict>, "dafny_method": <method name>}. Gates PROVEN on two
+    independent, real checks before ever constructing a record - this is
+    the only place in the codebase that can produce a dafny-method
+    PROVEN record, and it refuses (SystemExit, Tier 1) rather than binds
+    if either check fails:
+      1. Z3 precondition satisfiability (Gate C3 vector 1,
+         evidence.dafny_spec_lint.check_precondition_satisfiability) -
+         an unsatisfiable precondition would let any postcondition hold
+         vacuously, making a Dafny "clean pass" prove nothing.
+      2. parse_dafny_capture's own false-zero guard (Gate C1,
+         evidence.dafny_adapter) - nonzero exit, a missing or ambiguous
+         summary line, an incomplete-run marker (Gate C3 vector 3), or a
+         nonzero error count all refuse there already.
+    assert_no_realized_proven's ruling R3 (Gate C2) still independently
+    re-checks method=="dafny" and verifier_completion_status=="completed"
+    at the matrix boundary - this function satisfying both today does
+    not change that; R3 does not trust this function's own diligence."""
+    verdict, detail = check_precondition_satisfiability(
+        capture["spec_source"], capture["dafny_method"]
+    )
+    if verdict != "sat":
+        raise SystemExit(
+            f"dafny evidence {code_location!r} precondition check reports "
+            f"{verdict!r} ({detail}); refusing to bind a PROVEN result from "
+            "a vacuous or undecidable precondition"
+        )
+    result = parse_dafny_capture(capture["raw_output"], capture["manifest"])
+    return {
+        "method": "dafny",
+        "strength": result.strength.value,
+        "caveat": CAVEAT[result.strength],
+        "code_location": code_location,
+        "result_status": "proven",
+        "verifier_completion_status": result.verifier_completion_status,
+        "bounds": None,
+        "counterexample": None,
+        "test_id": None,
+        "inputs": None,
+        "expected": None,
+        "observed": None,
     }
 
 
@@ -358,6 +418,8 @@ def _detail(rec):
         return f"deferred scope `{rec.get('scope')}` — no evidence at this phase"
     if rec["method"] == "crosshair":
         return f"bounds: {rec.get('bounds')}"
+    if rec["method"] == "dafny":
+        return f"verifier_completion_status: {rec.get('verifier_completion_status')}"
     return (
         f"test `{rec.get('test_id')}`; inputs {rec.get('inputs')}; "
         f"expected {rec.get('expected')}; observed {rec.get('observed')}"
@@ -542,7 +604,7 @@ def _shape_flattened_shadow(metadata, bound_record, intent):
     return rows
 
 
-def _bind_self_describing(metadata, manifest, concrete_store, bounds):
+def _bind_self_describing(metadata, manifest, concrete_store, bounds, dafny_store=None):
     """Variant C's binding strategy: concrete evidence stays fully
     self-describing (every concrete_results.json case whose own
     requirement_id names a requirement is bound to it, regardless of
@@ -557,7 +619,17 @@ def _bind_self_describing(metadata, manifest, concrete_store, bounds):
     constructible for the first time (Gate 5). Every real requirement in
     the committed metadata.c.yaml declares `crosshair`, so this changes
     nothing observable for the committed dataset - verified by
-    regenerating and diffing."""
+    regenerating and diffing.
+
+    dafny_store (2026-07-07, Gate 2/C2-C4 wiring) defaults to None, which
+    means "this call does not bind dafny evidence at all" - declared
+    `method: dafny` entries are silently ignored, not an error. This is
+    deliberate: variant C's symbolic/concrete sub-views call this
+    function without a dafny_store (they render only their own method),
+    and metadata.c.yaml declaring dafny evidence for the THIRD (formal)
+    view must not make those two calls fail. Only when a caller passes a
+    real dict (even an empty one - `is not None`, not truthiness) does a
+    declared-but-unresolved dafny key become a refusal."""
     records_by_req = {}
     for req in metadata["requirements"]:
         evidence = req.get("evidence")
@@ -572,20 +644,35 @@ def _bind_self_describing(metadata, manifest, concrete_store, bounds):
             for c in concrete_store["cases"]
             if c["requirement_id"] == req["id"]
         ]
+        if dafny_store is not None:
+            for ev in evidence or []:
+                if ev.get("method") != "dafny":
+                    continue
+                key = f"{ev['spec_target']}::{ev['dafny_method']}"
+                capture = dafny_store.get(key)
+                if capture is None:
+                    raise SystemExit(
+                        f"requirement {req['id']} declares dafny evidence "
+                        f"{key!r} but no matching capture was provided in "
+                        "dafny_store; refusing to bind"
+                    )
+                records.append(dafny_record(capture, key))
         records_by_req[req["id"]] = records
     return records_by_req
 
 
 def _shape_method_partitioned(metadata, records_by_req, intent, method):
     """Variant C's row shape: one row per record, filtered by method into
-    one of two independent artifacts; scope-GAP rows are method-agnostic
-    and appear in both."""
+    one of several independent artifacts (symbolic / concrete / formal);
+    scope-GAP rows are method-agnostic and appear in all of them."""
     rows = []
     for req in metadata["requirements"]:
         if method == "crosshair":
             records = [r for r in records_by_req[req["id"]] if r["method"] == "crosshair"]
         elif method == "concrete_test":
             records = [r for r in records_by_req[req["id"]] if r["method"] == "concrete_test"]
+        elif method == "dafny":
+            records = [r for r in records_by_req[req["id"]] if r["method"] == "dafny"]
         else:
             raise SystemExit(f"unknown method filter: {method}")
         for record in records:
@@ -603,6 +690,13 @@ def _shape_method_partitioned(metadata, records_by_req, intent, method):
                     "inputs": record.get("inputs"),
                     "expected": record.get("expected"),
                     "observed": record.get("observed"),
+                    # Load-bearing for ruling R3 (Gate C2): a rendered row's
+                    # own strength cell is what assert_no_realized_proven
+                    # checks for variant C's shape. Absent (None) for
+                    # crosshair/concrete_test records, a harmless no-op
+                    # there since R3 only inspects this field when
+                    # strength == "PROVEN".
+                    "verifier_completion_status": record.get("verifier_completion_status"),
                     "intent_ok": intent_ok,
                     "notes": notes,
                 }
@@ -619,6 +713,7 @@ _VARIANT_SPECS = {
     "b": {"binder": "shadow", "shape": "flattened_shadow"},
     "c-symbolic": {"binder": "self_describing", "shape": "method_partitioned", "method": "crosshair"},
     "c-concrete": {"binder": "self_describing", "shape": "method_partitioned", "method": "concrete_test"},
+    "c-formal": {"binder": "self_describing", "shape": "method_partitioned", "method": "dafny"},
 }
 
 _MARKDOWN_RENDERERS = {
@@ -626,11 +721,12 @@ _MARKDOWN_RENDERERS = {
     "b": _markdown_variant_b,
     "c-symbolic": _markdown_variant_c,
     "c-concrete": _markdown_variant_c,
+    "c-formal": _markdown_variant_c,
 }
 
 
-def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=None):
-    """Vocabulary-agnostic entry point: one implementation driving all four
+def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=None, dafny_store=None):
+    """Vocabulary-agnostic entry point: one implementation driving all
     schema-variant shapes via a declarative binder+shape dispatch, instead of
     a separate top-level function per variant. See the module-level note
     above this section for the correctness discipline this was built under.
@@ -646,8 +742,16 @@ def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=
     generate_artifacts.py::stage_base_conflict_check. Type 2 (outcome
     mismatch) has no per-variant home - it compares raw manifests across
     the whole dataset, not one variant's binding - so it stays a standalone
-    stage, the same way the fact-equality gate does."""
-    run_conflict_gate(metadata, concrete_store, manifest)
+    stage, the same way the fact-equality gate does.
+
+    dafny_store (2026-07-07, Gate 2/C2-C4 wiring) defaults to None and is
+    only meaningful for "c-formal" - passing it to any other variant_key
+    is harmless (self_describing's binder ignores it unless a "dafny"
+    evidence entry is actually declared; declared/shadow binders don't
+    accept it as a parameter at all). Keeping it None for "c-symbolic"/
+    "c-concrete" is what keeps those two views' output byte-identical to
+    before this wiring existed - see _bind_self_describing's docstring."""
+    run_conflict_gate(metadata, concrete_store, manifest, dafny_store=dafny_store)
     spec = _VARIANT_SPECS[variant_key]
     bounds = metadata["toolchain"]["crosshair_bounds"]
 
@@ -660,7 +764,9 @@ def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=
         intent = derive_intent(metadata, records_by_req)
         rows = _shape_flattened_shadow(metadata, bound_record, intent)
     elif spec["binder"] == "self_describing":
-        records_by_req = _bind_self_describing(metadata, manifest, concrete_store, bounds)
+        records_by_req = _bind_self_describing(
+            metadata, manifest, concrete_store, bounds, dafny_store=dafny_store
+        )
         intent = derive_intent(metadata, records_by_req)
         rows = _shape_method_partitioned(metadata, records_by_req, intent, spec["method"])
     else:

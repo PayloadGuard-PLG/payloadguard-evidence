@@ -73,10 +73,22 @@ original is preserved byte-for-byte as `dosage_underconstrained.dfy`
 (`dosage_stp_suite.dfy`, `dosage_stp_suite_against_underconstrained.dfy`)
 mechanically prove both directions for real — six lemmas pass against
 the fix, the same two REJECT lemmas genuinely fail against the preserved
-original. None of Gates C1–C4 is wired into `build_matrix()` or any
-generator yet — no binder assembles a Dafny-sourced record into a live
-matrix row, so no committed artifact's rendered content has changed. See
-`KNOWN_LIMITATIONS.md` for the live gate ledger.
+original.
+
+**Gate 2/C2-C4 wiring is also now built — the first real Dafny-sourced
+PROVEN evidence ever to reach a live, rendered matrix row.**
+`traceability_matrix.formal.json` (variant C's third partition,
+extending Gate 5's dual-matrix pattern to a triple) binds real
+`dosage.dfy` evidence to REQ-GIP-1-4-12 and REQ-GIP-1-8-1 — both flip
+`intent_ok` from False to True for the first time since Phase A, gated
+inside the binder itself by Z3 precondition satisfiability (Gate C3) and
+the false-zero guard (Gate C1) before any record is even constructed.
+Variants A and B are deliberately, explicitly deferred ("post hoc verify
+A and B after C is proven") — a real, temporary intent divergence,
+named and tracked by a new, narrowly-scoped check
+(`evidence/reconcile.py::run_formal_check`) rather than silently
+permitted or used to weaken the existing, unchanged fact-equality gate.
+See `KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

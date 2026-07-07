@@ -30,8 +30,15 @@ to prove a wrong candidate value impossible. Fixed for real (an
 `ExpectedDose` function + a pinning ensures clause, re-verified clean,
 real capture re-run to match); the original preserved as
 `dosage_underconstrained.dfy`; two STP suites mechanically prove both
-directions — see below. None of C1–C4's mechanisms are wired into
-`build_matrix()` or any generator yet.
+directions. **Gate 2/C2-C4 wiring is also now built (2026-07-07): the
+first real Dafny-sourced PROVEN evidence to reach a live matrix row.**
+`traceability_matrix.formal.json` (variant C's third partition, Gate 5's
+dual-matrix pattern extended) binds real `dosage.dfy` evidence to
+REQ-GIP-1-4-12/REQ-GIP-1-8-1, gated inside the binder by Z3 precondition
+satisfiability and the false-zero guard; both requirements' `intent_ok`
+flips True for the first time since Phase A. Variants A/B are
+deliberately deferred — a named, tracked, temporary divergence, not
+silently permitted — see below.
 
 ## Where we are
 
@@ -58,8 +65,11 @@ directions — see below. None of C1–C4's mechanisms are wired into
 - Phase C Gate C4 (Spec-Testing Proofs) — BUILT 2026-07-07: found and
   fixed a real gap in dosage.dfy's postcondition (bounds-only, never
   pinned the dose value); two STP suites prove both directions for real.
-  None of C1–C4 is wired into the live matrix pipeline yet — no binder
-  assembles a Dafny record into a matrix row. See below.
+- Gate 2/C2-C4 wiring — BUILT 2026-07-07: `traceability_matrix.formal.json`
+  (variant C's third partition) carries this repository's first-ever
+  real, rendered PROVEN rows, gated by Z3 + the false-zero guard inside
+  the binder. Variants A/B deliberately deferred - a named, tracked
+  divergence, not silently permitted. See below.
 
 ## Guiding principle (unchanged)
 
@@ -576,6 +586,81 @@ one spec that exists (`dosage.dfy`), not a generic STP-generation tool
 or an automated gate that runs on every future spec. Neither STP suite
 is wired into `build_matrix()` or any generator.
 
+### Gate 2 / C2-C4 wiring — real Dafny evidence reaches a live matrix row — BUILT (2026-07-07)
+
+Requested directly: "we need z3 integration and invocation in order to
+reach PROVEN status, in concurrence with gate 5 extension." This is the
+highest-stakes change to this repository's structural guarantees since
+ruling R1 itself — the first time PROVEN would ever appear in a live
+rendered row — so three design decisions were confirmed before building,
+not guessed at:
+
+1. **Scope: variant C only, for now** ("hmm. can we post hoc verify A
+   and B after C variant is proven?"). Variants A and B are deliberately
+   deferred, creating a real, temporary cross-variant divergence -
+   named and tracked below, not silently permitted.
+2. **The Z3 gate lives inside the binder itself** (`dafny_record()`),
+   mirroring how `symbolic_record`/`concrete_record` already refuse on
+   failed captures internally - not a separate pipeline stage.
+3. **Metadata declares the dafny evidence explicitly**, consistent with
+   Gate 4/5's existing declaration pattern, cross-checked by a new Gate
+   2 CONFLICT Type 1 sub-check rather than bound unconditionally.
+
+**What was built:** `metadata.schema.c.json` gained a `dafny` evidence
+method (requiring `spec_target`/`dafny_method` together);
+`metadata.c.yaml` declares it for REQ-GIP-1-4-12 and REQ-GIP-1-8-1 -
+exactly the two requirements `intended_method: "PROVEN"` has named since
+Phase A/B, and exactly the two `dosage.dfy` scopes itself to.
+`evidence/conflict.py::dafny_binding_conflicts` adds the Type 1 check
+(declared `spec_target` vs. the captured manifest's actual target),
+correctly a no-op when `dafny_store is None` rather than merely falsy -
+a symbolic/concrete build_matrix() call that never intends to bind dafny
+evidence must not be penalized for metadata that also declares it for
+the third view. `evidence/render/matrix_variants.py::dafny_record()` is
+the wiring itself: gates PROVEN on Z3 precondition satisfiability (Gate
+C3) AND `parse_dafny_capture`'s false-zero guard (Gate C1) before ever
+constructing a record - `assert_no_realized_proven`'s ruling R3 still
+independently re-checks both conditions at the matrix boundary
+regardless. `_bind_self_describing`, `_shape_method_partitioned`,
+`_VARIANT_SPECS`, and `build_matrix()` itself all gained the plumbing
+for a new `"c-formal"` variant key and an optional `dafny_store`
+parameter. `generate_matrix_c.py` now renders THREE artifacts
+(`traceability_matrix.formal.json/.md` alongside symbolic/concrete),
+assembling `dafny_store` from the real, already-committed Gate C1
+capture - no re-running evidence inside the generation pipeline.
+
+**The result:** `traceability_matrix.formal.json` has two real PROVEN
+rows (REQ-GIP-1-4-12, REQ-GIP-1-8-1), both `verifier_completion_status:
+"completed"`, both `intent_ok: true` for the first time since Phase A.
+
+**The temporary variant A/B divergence, named and tracked:** since A/B
+don't bind dafny evidence, their `intent_ok` for these two requirements
+correctly stays `False` - a real divergence from the formal view's
+`True`. The existing fact-equality gate
+(`evidence/reconcile.py::run_gate`, `VARIANT_ARTIFACTS`) is deliberately
+**unchanged** (the formal artifact isn't in that tuple), so the
+pre-existing strict A==B==symbolic==concrete check keeps passing exactly
+as before. A new, separate, narrowly-scoped check,
+`run_formal_check`, verifies the formal view's divergence is EXACTLY the
+expected one (`KNOWN_FORMAL_INTENT_DIVERGENCE = {"REQ-GIP-1-4-12",
+"REQ-GIP-1-8-1"}`) and no other - any other requirement diverging, or
+either named one diverging in the wrong direction, is still a hard
+failure. This carve-out is meant to be temporary: removed and tightened
+to plain equality once variant A/B's own dafny wiring lands.
+
+**Tests:** `tests/test_dafny_wiring.py`, 15 tests. Full suite: **93
+passed** (78 prior + 15 new). Full `generate_artifacts.py` pipeline
+re-run end to end, including the new formal-view check: PASS, with the
+structural PROVEN sweep now explicitly sweeping the formal artifact too.
+
+**Explicitly not done:** variants A/B don't bind dafny evidence at all
+(deliberately deferred, confirmed unaffected by test); the CLI
+(`evidence/cli.py`) was not extended with a `"c-formal"` variant choice
+or a way to supply a `dafny_store` from the command line (a separate
+design question, out of scope for this ask); no generic tooling wires
+any future Dafny spec into the matrix automatically - this built the one
+wiring path for the one spec that exists.
+
 ### Gate C5 — Mutation testing (MutDafny-style) — largest single piece, its own sub-plan
 
 Six operators with specific, testable purposes: Relational (ROR) and
@@ -632,16 +717,19 @@ before C3, but nothing about C4 was ever blocked on C3 landing first, so
 the swap cost nothing). C4 turned out to matter more than a checklist
 item: it found and fixed a real gap in Gate C1's own spec.
 
-### PROVEN's exclusivity today (R3 landed 2026-07-07; still no realized PROVEN in any live artifact)
+### PROVEN's exclusivity today (R3 landed 2026-07-07; now exercised for real, not just possible)
 
-`assert_no_realized_proven` now implements ruling **R3**: PROVEN may
-appear as a realized strength only for a record with `method == "dafny"`
-and `verifier_completion_status == "completed"`; every other method
-remains permanently excluded, exactly as R2 guaranteed before it. No
-committed matrix artifact contains a dafny-method record today — no
-binder assembles one — so every live artifact's PROVEN-exclusivity
-guarantee is observationally identical to R2's; R3 only changes what's
-*possible*, not what's *rendered*, until a binder wires one in (Gate C4).
+`assert_no_realized_proven` implements ruling **R3**: PROVEN may appear
+as a realized strength only for a record with `method == "dafny"` and
+`verifier_completion_status == "completed"`; every other method remains
+permanently excluded, exactly as R2 guaranteed before it. As of the Gate
+2/C2-C4 wiring (2026-07-07), this is no longer only a structural
+possibility: `traceability_matrix.formal.json` is a real, committed
+artifact containing two real PROVEN rows, both satisfying R3's two
+conditions for real, confirmed by the structural PROVEN sweep in
+`generate_artifacts.py`. Every OTHER committed artifact (base, A, B,
+symbolic, concrete) still contains zero PROVEN records - R3's guarantee
+remains observationally identical to R2's there.
 
 ---
 
@@ -707,7 +795,23 @@ mechanically prove both directions — six lemmas pass against the fix,
 the same two REJECT lemmas genuinely fail against the preserved
 original. A self-caught mistake (an out-of-bounds wrong-value choice
 that gave a false pass for an unrelated reason) was corrected before
-committing, with a regression test guarding against it recurring. None
-of C1–C4 is wired into `build_matrix()` or any generator — no binder
-assembles a Dafny-sourced record into a live matrix row yet, so no
-committed artifact's rendered content has changed.
+committing, with a regression test guarding against it recurring.
+
+**Gate 2/C2-C4 wiring is also now built (2026-07-07) — the first real
+Dafny-sourced PROVEN evidence ever to reach a live matrix row.** Three
+design decisions were confirmed before building: scope is variant C only
+for now (A/B explicitly deferred); the Z3 gate lives inside the binder
+itself (`dafny_record()`); metadata declares the dafny evidence
+explicitly, cross-checked by a new CONFLICT Type 1 sub-check.
+`traceability_matrix.formal.json` (variant C's third partition, Gate 5's
+dual-matrix pattern extended to a triple) binds real `dosage.dfy`
+evidence to REQ-GIP-1-4-12/REQ-GIP-1-8-1, gated by Z3 precondition
+satisfiability and the false-zero guard before any record is even
+constructed — both requirements' `intent_ok` flips True for the first
+time since Phase A. `assert_no_realized_proven`'s ruling R3 is exercised
+end to end for the first time, not just in isolation. Variants A/B's own
+`intent_ok` correctly stays False — a real, temporary divergence, named
+and tracked by a new, narrowly-scoped check
+(`evidence/reconcile.py::run_formal_check`) rather than silently
+permitted or used to weaken the existing, unchanged fact-equality gate.
+15 new tests, full suite now 93 passed, full pipeline re-run end to end.

@@ -1,8 +1,9 @@
 {
-  "artifact": "IEC 62304 Traceability Matrix (variant C: symbolic evidence)",
-  "generated_utc": "2026-07-07T11:16:21.835684+00:00",
+  "artifact": "IEC 62304 Traceability Matrix (variant C: formally proven evidence)",
+  "generated_utc": "2026-07-07T11:16:21.848069+00:00",
   "tool_versions": {
-    "crosshair": "crosshair-tool 0.0.107"
+    "crosshair": "crosshair-tool 0.0.107",
+    "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
   },
   "crosshair_bounds": {
     "per_condition_timeout_s": 30,
@@ -20,75 +21,41 @@
     },
     "enforcement_note": "max_iterations and seed are declared-only in metadata; crosshair-tool 0.0.107 has no CLI flags to enforce them."
   },
-  "method_filter": "crosshair",
+  "method_filter": "dafny",
   "rows": [
     {
       "requirement_id": "REQ-GIP-1-4-12",
       "requirement_text": "[kernel_scope] [VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8] The kernel shall detect when a bolus request would cause the computed hourly dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to the calling layer via a clamped output value. This is the ALARM CONDITION half of IEC 60601-1-8's alarm-system definition (\"parts of equipment that detect alarm conditions and, as appropriate, generate alarm signals\") - detection only, no signal generation. The GIP source table itself treats \"Alarm()\" as an abstract response function attached to hazards, not a mandate that every hazard-adjacent component emit the physical signal.",
-      "code_location": "dosage.py::calculate_hourly_dose",
-      "method": "crosshair",
-      "strength": "BOUNDED_CHECKED",
-      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
-      "result_status": "no_counterexample",
-      "bounds": {
-        "per_condition_timeout_s": 30,
-        "max_iterations": 100000,
-        "seed": 1
-      },
+      "code_location": "dosage.dfy::CalculateHourlyDose",
+      "method": "dafny",
+      "strength": "PROVEN",
+      "caveat": "Formally proven against the stated specification.",
+      "result_status": "proven",
+      "bounds": null,
       "counterexample": null,
       "test_id": null,
       "inputs": null,
       "expected": null,
       "observed": null,
-      "verifier_completion_status": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
-      ]
+      "verifier_completion_status": "completed",
+      "intent_ok": true,
+      "notes": []
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
       "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
-      "code_location": "dosage.py::calculate_hourly_dose",
-      "method": "crosshair",
-      "strength": "BOUNDED_CHECKED",
-      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
-      "result_status": "no_counterexample",
-      "bounds": {
-        "per_condition_timeout_s": 30,
-        "max_iterations": 100000,
-        "seed": 1
-      },
+      "code_location": "dosage.dfy::CalculateHourlyDose",
+      "method": "dafny",
+      "strength": "PROVEN",
+      "caveat": "Formally proven against the stated specification.",
+      "result_status": "proven",
+      "bounds": null,
       "counterexample": null,
       "test_id": null,
       "inputs": null,
       "expected": null,
       "observed": null,
-      "verifier_completion_status": null,
-      "intent_ok": false,
-      "notes": [
-        "intended PROVEN; realized in this view: BOUNDED_CHECKED (requirement-scoped intent evaluated across all evidence per R1)"
-      ]
-    },
-    {
-      "requirement_id": "REQ-DOSE-003",
-      "requirement_text": "Calculation shall yield a finite, in-range result for all inputs meeting preconditions. DECLARED - not sourced from GIP v1.0, which does not address floating-point overflow at the implementation level.",
-      "code_location": "dosage.py::calculate_hourly_dose",
-      "method": "crosshair",
-      "strength": "BOUNDED_CHECKED",
-      "caveat": "No counterexample found within the recorded bounds; this is a bounded search, not a proof.",
-      "result_status": "no_counterexample",
-      "bounds": {
-        "per_condition_timeout_s": 30,
-        "max_iterations": 100000,
-        "seed": 1
-      },
-      "counterexample": null,
-      "test_id": null,
-      "inputs": null,
-      "expected": null,
-      "observed": null,
-      "verifier_completion_status": null,
+      "verifier_completion_status": "completed",
       "intent_ok": true,
       "notes": []
     },
@@ -108,7 +75,7 @@
       "expected": null,
       "observed": null,
       "scope": "system_scope",
-      "intent_ok": false,
+      "intent_ok": true,
       "notes": [
         "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
       ]

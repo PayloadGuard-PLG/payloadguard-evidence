@@ -6,6 +6,126 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate 2/C2-C4 wiring: first real Dafny-sourced PROVEN row ever rendered
+
+Requested directly: "we need z3 integration and invocation in order to
+reach PROVEN status, in concurrence with gate 5 extension." The single
+highest-stakes change to this repository's structural guarantees since
+ruling R1 - the first time PROVEN would ever appear in a live rendered
+row, something R1->R2->R2c->R3 has guarded since Phase A. Three design
+decisions were confirmed with Steven before building, not guessed at:
+
+- **Scope: variant C only, for now.** "hmm. can we post hoc verify A and
+  B after C variant is proven?" - variants A and B are deliberately,
+  explicitly deferred. This creates a real, temporary cross-variant
+  intent divergence, named and tracked below, not silently permitted.
+- **The Z3 gate lives inside the binder itself** (`dafny_record()`),
+  mirroring how `symbolic_record`/`concrete_record` already refuse on
+  failed captures internally - not a separate pipeline stage.
+- **Metadata declares the dafny evidence explicitly**
+  (`evidence: [{method: dafny, spec_target: ..., dafny_method: ...}]`),
+  consistent with Gate 4/5's existing declaration pattern, cross-checked
+  by a new Gate 2 CONFLICT Type 1 sub-check rather than bound
+  unconditionally.
+
+**What was built:**
+
+- **`evidence/schema/metadata.schema.c.json`** - `method: dafny` added
+  to the evidence enum, requiring `spec_target`/`dafny_method` together
+  via a new `allOf` conditional (alongside the existing `concrete_test`/
+  `test_id` one).
+- **`examples/dosage_calculator/metadata.c.yaml`** - `evidence:
+  [{method: dafny, spec_target: "dosage.dfy", dafny_method:
+  "CalculateHourlyDose"}]` added to REQ-GIP-1-4-12 and REQ-GIP-1-8-1 -
+  exactly the two requirements `intended_method: "PROVEN"` has named
+  since Phase A/B, and exactly the two `dosage.dfy`'s own header comment
+  scopes itself to.
+- **`evidence/conflict.py::dafny_binding_conflicts`** - the new Type 1
+  identity check: does the declared `spec_target` match the file the
+  captured Dafny manifest actually verified? Deliberately a no-op when
+  `dafny_store is None` (not merely falsy) - the symbolic/concrete
+  variant-C sub-views, which never intend to bind dafny evidence, must
+  not be penalized for metadata that also declares it for the third
+  view. `run_conflict_gate` gained an optional `dafny_store` parameter.
+- **`evidence/render/matrix_variants.py::dafny_record()`** - the wiring
+  itself. Gates PROVEN on two independent, real checks before ever
+  constructing a record: (1) Z3 precondition satisfiability
+  (`evidence.dafny_spec_lint.check_precondition_satisfiability`, Gate
+  C3) - refuses if unsat; (2) `parse_dafny_capture` (Gate C1) - refuses
+  on any non-clean signal, already covering false-zero and the Gate C3
+  vector 3 hardening. `assert_no_realized_proven`'s ruling R3 still
+  independently re-checks `method`/`verifier_completion_status` at the
+  matrix boundary regardless - this function satisfying both today
+  doesn't change that.
+- **`_bind_self_describing`** gained an optional `dafny_store` parameter:
+  `None` means "this call doesn't bind dafny evidence at all" (declared
+  entries silently ignored), vs. an explicit dict (even empty) meaning
+  "this call does bind dafny evidence, and an unresolved declared entry
+  is a real refusal." This `is not None` vs. truthiness distinction is
+  what keeps `c-symbolic`/`c-concrete` behaviorally unchanged (aside from
+  one new, always-null `verifier_completion_status` field added to every
+  variant-C row, load-bearing for R3's row-level check) while enabling
+  the new `"c-formal"` variant.
+- **`generate_matrix_c.py`** now renders THREE artifacts
+  (`traceability_matrix.formal.json/.md` alongside symbolic/concrete),
+  assembling `dafny_store` from the real, already-committed Gate C1
+  capture (`dosage.dfy`, `raw_dafny_output.txt`, `run_manifest_dafny.json`)
+  - no re-running evidence inside the generation pipeline. Only the
+  formal call's `tool_versions` gains a `"dafny"` key; symbolic/concrete
+  stays exactly as before (confirmed by diff).
+- **`evidence/reconcile.py::run_formal_check`** - a new, separate,
+  narrowly-scoped check for the formal view. The existing fact-equality
+  gate (`run_gate`, `VARIANT_ARTIFACTS`) is deliberately **unchanged** -
+  the formal artifact isn't in that tuple, so the strict
+  A==B==symbolic==concrete check keeps passing exactly as before
+  (`intent {'REQ-GIP-1-4-12': False, 'REQ-GIP-1-8-1': False,
+  'REQ-DOSE-003': True}`, byte-identical to before this wiring).
+  `run_formal_check` instead verifies the formal view's intent_ok
+  matches that reference EXCEPT a named, tracked set,
+  `KNOWN_FORMAL_INTENT_DIVERGENCE = {"REQ-GIP-1-4-12", "REQ-GIP-1-8-1"}`,
+  which must specifically be `True` - any other requirement diverging,
+  or either named one diverging in the wrong direction, is still a hard
+  failure. Wired into `regenerate_all.py` right after the main gate.
+- **`generate_artifacts.py`** - the structural PROVEN sweep (stage 6)
+  now explicitly sweeps `traceability_matrix.formal.json` too, proving
+  ruling R3 accepts this real row inside the actual pipeline, not just
+  when `generate_matrix_c.py` runs standalone. `dosage.dfy`,
+  `raw_dafny_output.txt`, `run_manifest_dafny.json` added to `INPUTS`;
+  the new formal artifacts added to `OUTPUTS`.
+
+**The result:** `traceability_matrix.formal.json` - 3 rows: two real
+PROVEN rows (REQ-GIP-1-4-12, REQ-GIP-1-8-1; `method: "dafny"`;
+`verifier_completion_status: "completed"`; `intent_ok: true`) and the
+pre-existing `system_scope` GAP row for REQ-GIP-1-4-12 (unchanged in
+kind). `intent_ok` flips from `False` to `True` for both requirements in
+this view - the first time since Phase A that `intended_method:
+"PROVEN"` has actually been realized, not just declared.
+
+**Tests:** `tests/test_dafny_wiring.py`, 15 tests - the real formal
+artifact has exactly the two expected PROVEN rows, each satisfying R3;
+passes `assert_no_realized_proven` for real; symbolic/concrete/A/B
+confirmed completely unaffected (regression); `dafny_record` refuses an
+unsatisfiable precondition and a broken capture (both gates
+independently exercised) and accepts the real committed capture;
+`dafny_binding_conflicts` catches a spec_target mismatch and a missing
+capture, correctly no-ops when `dafny_store is None`; the real metadata
++ dafny store combination has zero conflicts; `run_formal_check` passes
+on the real committed artifacts and correctly rejects both an unnamed
+divergence and a wrong-direction divergence of a named one; an
+end-to-end `build_matrix("c-formal", ...)` call matches the committed
+artifact byte-for-byte. Full suite: **93 passed** (78 prior + 15 new).
+Full `generate_artifacts.py` pipeline re-run end to end: PASS, including
+the new formal-view check.
+
+**Explicitly not done, and not this build's job:** variants A and B
+don't bind dafny evidence at all - deliberately deferred, per the
+ratified scope decision, confirmed unaffected by test rather than
+assumed. The CLI (`evidence/cli.py`) was not extended with a
+`"c-formal"` variant choice or a way to supply a `dafny_store` from the
+command line - a separate design question that wasn't part of this ask.
+No generic "wire any future Dafny spec into the matrix" tooling was
+built - this wired the one path for the one spec that exists.
+
 ## 2026-07-07 — Phase C Gate C4 built: Spec-Testing Proofs found and fixed a real gap in dosage.dfy
 
 Requested directly: "start gate C4." Applied IronSpec's methodology -

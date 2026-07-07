@@ -1,15 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Phase C Gate C4 built: Spec-Testing Proofs
-found dosage.dfy's original postcondition never pinned the dose value
-(bounds-only, a wrong implementation could have satisfied it) - confirmed
-mechanically via a failing Dafny lemma, then fixed for real (an
-ExpectedDose function + a pinning ensures clause), with the original
-preserved as dosage_underconstrained.dfy and two STP suites proving both
-directions. Gate C3 (vectors 1-3 of 4; vector 4 blocked) and Gates C1/C2
-were built earlier the same week. Nothing from Phase C is wired into
-build_matrix() or any generator yet — see
-payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
+Last updated: 2026-07-07 (Gate 2/C2-C4 wiring built: the first real
+Dafny-sourced PROVEN evidence ever to reach a live matrix row.
+traceability_matrix.formal.json (variant C's third partition, extending
+Gate 5's dual-matrix pattern) binds real dosage.dfy evidence to
+REQ-GIP-1-4-12/REQ-GIP-1-8-1, gated inside the binder by Z3 precondition
+satisfiability (Gate C3) and the false-zero guard (Gate C1); both
+requirements' intent_ok flips True for the first time since Phase A.
+Variants A/B are deliberately deferred - a named, tracked, temporary
+divergence, not silently permitted (evidence/reconcile.py::run_formal_check).
+Gate C4 (found and fixed a real spec gap) and Gates C1-C3 were built
+earlier the same week - see payloadguard-evidence-roadmap-phaseB-to-C.md
+and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
 new evidence source, schema change).
@@ -33,12 +35,24 @@ payloadguard-evidence/
 │   │                            (VerificationResult, RequirementBinding);
 │   │                            carries the Phase-B Dafny false-zero note
 │   ├── reconcile.py             Normalized fact extraction + cross-artifact
-│   │                            fact-equality gate (Turn 2.0 B2)
+│   │                            fact-equality gate (Turn 2.0 B2).
+│   │                            run_formal_check() (2026-07-07, Gate
+│   │                            2/C2-C4 wiring) is a SEPARATE, narrower
+│   │                            check for traceability_matrix.formal.json
+│   │                            (deliberately NOT in VARIANT_ARTIFACTS,
+│   │                            so run_gate() itself is unchanged) -
+│   │                            verifies the formal view's intent_ok
+│   │                            matches the A/B/symbolic/concrete
+│   │                            reference except a named, tracked set
+│   │                            (KNOWN_FORMAL_INTENT_DIVERGENCE), which
+│   │                            must specifically be True
 │   ├── conflict.py              Gate 2 CONFLICT rule, both ratified
 │   │                            sub-types: Type 1 (identity mismatch,
 │   │                            top-down metadata vs. bottom-up
-│   │                            evidence-store) and Type 2 (outcome
-│   │                            mismatch across manifests); Tier 1
+│   │                            evidence-store, now incl. dafny_binding_conflicts
+│   │                            for dafny evidence, 2026-07-07) and
+│   │                            Type 2 (outcome mismatch across
+│   │                            manifests); Tier 1
 │   ├── cli.py                   Gate 2 CLI (`python -m evidence.cli
 │   │                            build`): vocabulary-agnostic wrapper
 │   │                            around build_matrix() - takes metadata/
@@ -48,7 +62,9 @@ payloadguard-evidence/
 │   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12)
 │   │   ├── metadata.schema.a.json   T4-A: evidence[] per requirement
 │   │   ├── metadata.schema.b.json   T4-B: shadow ids + parent_requirement
-│   │   └── metadata.schema.c.json   T4-C: base shape, dual-matrix notes
+│   │   └── metadata.schema.c.json   T4-C: base shape, dual-matrix notes,
+│   │                            + dafny evidence entries (spec_target,
+│   │                            dafny_method required together), 2026-07-07
 │   └── render/
 │       ├── manual_matrix.py     Base binder/renderer (Phase A, hand-reviewed)
 │       └── matrix_variants.py   build_matrix() - Gate 2's vocabulary-
@@ -67,7 +83,19 @@ payloadguard-evidence/
 │                                functions and the test that checked
 │                                build_matrix() against them are deleted
 │                                (Step 4) - git history holds them if ever
-│                                needed again
+│                                needed again. dafny_record() (2026-07-07,
+│                                Gate 2/C2-C4 wiring) is the mechanism
+│                                that lets a real Dafny capture ever
+│                                satisfy R3 - gates PROVEN on Z3
+│                                precondition satisfiability AND the
+│                                false-zero guard inside the binder
+│                                itself, before assert_no_realized_proven
+│                                ever re-checks it. build_matrix() and
+│                                _bind_self_describing() both gained an
+│                                optional dafny_store parameter
+│                                (default None = "don't bind dafny
+│                                evidence at all", not "bind zero
+│                                captures" - is-not-None, not truthiness)
 │   ├── dafny_adapter.py         Gate C1 (+ C3 vector 3 hardening):
 │                                 parse_dafny_capture() - the false-zero
 │                                 guard, regex on the verifier's own
@@ -76,11 +104,14 @@ payloadguard-evidence/
 │                                 "out of resource"/"out of memory"/"timed
 │                                 out" marker in the summary tail (real
 │                                 finding, Gate C3) and on more than one
-│                                 summary line in a capture. NOT called
-│                                 from build_matrix() or any generator - no
-│                                 binder yet assembles a dafny-method
-│                                 record into a live matrix row, though R3
-│                                 (Gate C2) now permits one to exist there
+│                                 summary line in a capture. Called from
+│                                 build_matrix() as of 2026-07-07 (Gate
+│                                 2/C2-C4 wiring), via matrix_variants.py's
+│                                 dafny_record() - the "c-formal" variant
+│                                 key is what actually assembles a
+│                                 dafny-method record into a live matrix
+│                                 row today; every other variant_key is
+│                                 unaffected
 │   └── dafny_spec_lint.py       Gate C3 vectors 1-2: lints Dafny SOURCE
 │                                 TEXT (not captured output, that's
 │                                 dafny_adapter.py's job). vector 1 -
@@ -163,23 +194,41 @@ payloadguard-evidence/
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
-│   ├── metadata[.a|.b|.c].yaml  Authored metadata, base + variant shapes
+│   ├── metadata[.a|.b|.c].yaml  Authored metadata, base + variant shapes.
+│   │                            metadata.c.yaml declares dafny evidence
+│   │                            (2026-07-07) for REQ-GIP-1-4-12/
+│   │                            REQ-GIP-1-8-1 only - A/B unchanged
 │   ├── generate_matrix*.py      Generators (validate → bind → check →
 │   │                            render); each now calls
 │   │                            evidence.render.matrix_variants.build_matrix()
-│   │                            (2026-07-06 cutover)
+│   │                            (2026-07-06 cutover). generate_matrix_c.py
+│   │                            renders THREE artifacts as of 2026-07-07
+│   │                            (symbolic/concrete/formal), assembling
+│   │                            dafny_store from the real committed Gate
+│   │                            C1 capture - no re-running evidence
 │   ├── regenerate_all.py        Inner regeneration step: all variant
-│   │                            generators + fact-equality gate
+│   │                            generators + fact-equality gate +
+│   │                            run_formal_check() (2026-07-07)
 │   ├── generate_artifacts.py    End-to-end pipeline (Turn B4): schema
 │   │                            validation -> capture integrity ->
 │   │                            CONFLICT Type 1 (frozen base only - a/b/c
 │   │                            checked inside build_matrix() now) ->
 │   │                            CONFLICT Type 2 (whole-dataset, standalone)
-│   │                            -> regenerate_all -> PROVEN sweep ->
+│   │                            -> regenerate_all -> PROVEN sweep (now
+│   │                            incl. traceability_matrix.formal.json) ->
 │   │                            artifact_index.json
 │   ├── artifact_index.json      SHA-256 provenance: inputs -> outputs,
-│   │                            per-gate results, frozen evidence hashes
-│   ├── traceability_matrix.*    Generated artifacts (never hand-typed)
+│   │                            per-gate results, frozen evidence hashes.
+│   │                            dosage.dfy/raw_dafny_output.txt/
+│   │                            run_manifest_dafny.json added to INPUTS,
+│   │                            traceability_matrix.formal.* to OUTPUTS
+│   │                            (2026-07-07)
+│   ├── traceability_matrix.*    Generated artifacts (never hand-typed).
+│   │                            traceability_matrix.formal.json/.md
+│   │                            (2026-07-07): variant C's third
+│   │                            partition, real Dafny-sourced PROVEN
+│   │                            evidence - this repository's first ever
+│   │                            live rendered PROVEN row
 │   ├── README.md                Audit-trail record (citations, caveats,
 │   │                            amendments, exhibits, open questions)
 │   └── RECONCILIATION.md        Cross-variant same-facts note + findings
@@ -231,14 +280,28 @@ payloadguard-evidence/
     │                            forced exit_code=0 (defense in depth);
     │                            ambiguous multi-summary-line capture
     │                            refused; real clean capture unregressed
-    └── test_dafny_stp_suite.py  Gate C4: real committed STP captures -
-                                 underconstrained spec still verifies
-                                 alone; STP suite passes against the
-                                 fix; same suite fails against the
-                                 preserved weak spec; regression on the
-                                 50.0-vs-500.0 wrong-value mistake caught
-                                 mid-build; direct source-text checks for
-                                 the pinning clause present/absent
+    ├── test_dafny_stp_suite.py  Gate C4: real committed STP captures -
+    │                            underconstrained spec still verifies
+    │                            alone; STP suite passes against the
+    │                            fix; same suite fails against the
+    │                            preserved weak spec; regression on the
+    │                            50.0-vs-500.0 wrong-value mistake caught
+    │                            mid-build; direct source-text checks for
+    │                            the pinning clause present/absent
+    └── test_dafny_wiring.py     Gate 2/C2-C4 wiring (2026-07-07): real
+                                 formal artifact has exactly the two
+                                 expected PROVEN rows, passes
+                                 assert_no_realized_proven for real;
+                                 symbolic/concrete/A/B confirmed
+                                 completely unaffected; dafny_record()'s
+                                 two independent gates (Z3, false-zero)
+                                 each exercised; dafny_binding_conflicts
+                                 (mismatch/missing/None-is-a-noop);
+                                 run_formal_check passes on real
+                                 artifacts and rejects both an unnamed
+                                 and a wrong-direction divergence;
+                                 end-to-end build_matrix("c-formal", ...)
+                                 matches the committed artifact
 ```
 
 ## 3. Data flow (end to end)
@@ -429,4 +492,34 @@ regression test guarding against reintroducing it. 6 new tests
 suite is wired into `build_matrix()` or any generator — matches Gates
 C1–C3's scope discipline; this gate authored one STP suite for the one
 spec that exists, per its stated scope, not a generic STP-generation
-tool. Full findings: `KNOWN_LIMITATIONS.md`.
+tool.
+
+**Gate 2/C2-C4 wiring is also now built (2026-07-07) — the first real
+Dafny-sourced PROVEN evidence ever to reach a live matrix row.**
+Requested directly ("we need z3 integration and invocation in order to
+reach PROVEN status, in concurrence with gate 5 extension"), with three
+design decisions confirmed before building: scope is variant C only for
+now (A/B explicitly deferred — "post hoc verify A and B after C is
+proven"); the Z3 precondition-satisfiability gate lives inside the
+binder itself (`dafny_record()`); metadata declares the dafny evidence
+explicitly, cross-checked by a new CONFLICT Type 1 sub-check
+(`dafny_binding_conflicts`). `traceability_matrix.formal.json` (variant
+C's third partition, extending Gate 5's dual-matrix pattern to a triple)
+binds real `dosage.dfy` evidence to REQ-GIP-1-4-12 and REQ-GIP-1-8-1 —
+both flip `intent_ok` from False to True for the first time since Phase
+A, gated by two independent, real checks before any record is even
+constructed: Z3 precondition satisfiability (Gate C3) and
+`parse_dafny_capture`'s false-zero guard (Gate C1). `assert_no_realized_proven`'s
+ruling R3 (Gate C2) is exercised end to end for the first time, not just
+in isolation — the structural PROVEN sweep in `generate_artifacts.py`
+now explicitly checks the formal artifact too. Variants A/B's own
+`intent_ok` correctly stays False (they don't bind dafny evidence) — a
+real, temporary divergence from the formal view, named and tracked by a
+new, narrowly-scoped check, `evidence/reconcile.py::run_formal_check`
+(deliberately separate from the unchanged, still-strict `run_gate()`),
+rather than either silently permitted or used to weaken the existing
+gate. 15 new tests (`tests/test_dafny_wiring.py`); full suite now 93
+passed; full pipeline re-run end to end including the new formal-view
+check. Neither the CLI nor variants A/B were extended — explicitly
+deferred scope decisions, not oversights. Full findings:
+`KNOWN_LIMITATIONS.md`.

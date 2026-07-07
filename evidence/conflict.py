@@ -23,6 +23,17 @@ cross-check on that side; that gap is exactly what Gate 4's option 3
 (cross-checked dual-authorship) is meant to close once C also carries a
 declared binding.
 
+  - Dafny evidence (2026-07-07, Gate 2/C2-C4 wiring): metadata declares
+    `evidence: [{method: dafny, spec_target: "dosage.dfy", dafny_method:
+    "CalculateHourlyDose"}]`; the bottom-up counterpart is a `dafny_store`
+    dict (assembled by the calling script from a real committed Dafny
+    capture, keyed by `"{spec_target}::{dafny_method}"`) whose manifest
+    records what file was actually verified. `dafny_binding_conflicts`
+    is a no-op (returns no conflicts) when `dafny_store is None` — the
+    two symbolic/concrete-only variant-C views (which never pass a
+    dafny_store) must not be penalized for metadata that also happens to
+    declare dafny evidence meant for the third, formal view.
+
 Type 2 (outcome mismatch) is implemented below: two manifests that claim
 the identical verification act (same tool, same target, same
 per_condition_timeout) but report different outcomes (exit_code). No
@@ -105,6 +116,50 @@ def symbolic_binding_conflicts(metadata, manifest):
     return conflicts
 
 
+def dafny_binding_conflicts(metadata, dafny_store):
+    """Type 1 check for Dafny evidence: does the requirement's declared
+    spec_target agree with the file the captured Dafny manifest actually
+    verified? `dafny_store` keys are `"{spec_target}::{dafny_method}"`; a
+    declared key absent from the store is itself a conflict (the binding
+    points at evidence that doesn't exist). Deliberately a no-op when
+    `dafny_store is None` (not merely falsy/empty) — that means the
+    caller isn't binding dafny evidence in this call at all (the
+    symbolic/concrete variant-C views), as opposed to genuinely having
+    zero captures to check."""
+    if dafny_store is None:
+        return []
+    conflicts = []
+    for req in metadata["requirements"]:
+        for ev in req.get("evidence", []):
+            if ev.get("method") != "dafny":
+                continue
+            key = f"{ev['spec_target']}::{ev['dafny_method']}"
+            capture = dafny_store.get(key)
+            if capture is None:
+                conflicts.append(
+                    {
+                        "type": "identity_mismatch",
+                        "class": "dafny_binding",
+                        "requirement_id": req["id"],
+                        "declared_key": key,
+                        "evidence_store_owner": None,
+                    }
+                )
+                continue
+            manifest_target = capture["manifest"].get("target")
+            if manifest_target != ev["spec_target"]:
+                conflicts.append(
+                    {
+                        "type": "identity_mismatch",
+                        "class": "dafny_binding",
+                        "requirement_id": req["id"],
+                        "declared_target_file": ev["spec_target"],
+                        "manifest_target_file": manifest_target,
+                    }
+                )
+    return conflicts
+
+
 def _manifest_identity(manifest):
     """Identity key for Type 2: two manifests are claims about the SAME
     verification act iff they agree on tool, target, and the enforced
@@ -162,21 +217,40 @@ def run_outcome_gate(manifests):
     }
 
 
-def run_conflict_gate(metadata, concrete_store, manifest):
+def run_conflict_gate(metadata, concrete_store, manifest, dafny_store=None):
     """Type 1 CONFLICT gate. Raises AssertionError on any identity
     mismatch; returns a small summary dict on success. Tier 1
     (REVIEW_PROTOCOL.md): a real conflict stops generation, it is never
-    rendered as a soft warning or fixed by editing a generated artifact."""
-    conflicts = concrete_binding_conflicts(
-        metadata, concrete_store
-    ) + symbolic_binding_conflicts(metadata, manifest)
+    rendered as a soft warning or fixed by editing a generated artifact.
+    `dafny_store` defaults to None (skips the dafny check entirely) for
+    backward compatibility with every call site that predates Gate 2/C2-
+    C4 wiring (the frozen base matrix, variants A/B, and variant C's own
+    symbolic/concrete sub-views, none of which bind dafny evidence)."""
+    conflicts = (
+        concrete_binding_conflicts(metadata, concrete_store)
+        + symbolic_binding_conflicts(metadata, manifest)
+        + dafny_binding_conflicts(metadata, dafny_store)
+    )
     if conflicts:
         raise AssertionError(
             f"CONFLICT gate failed (Type 1, identity mismatch): {conflicts}"
         )
-    checked = sum(1 for _ in _declared_concrete_bindings(metadata)) + sum(
-        1
-        for req in metadata["requirements"]
-        if req.get("parent_requirement") is None and req.get("implementation")
+    checked = (
+        sum(1 for _ in _declared_concrete_bindings(metadata))
+        + sum(
+            1
+            for req in metadata["requirements"]
+            if req.get("parent_requirement") is None and req.get("implementation")
+        )
+        + (
+            sum(
+                1
+                for req in metadata["requirements"]
+                for ev in req.get("evidence", [])
+                if ev.get("method") == "dafny"
+            )
+            if dafny_store is not None
+            else 0
+        )
     )
     return {"bindings_checked": checked, "conflicts": 0}
