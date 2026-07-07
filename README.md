@@ -109,6 +109,25 @@ records Steven's sign-off on the generated summary for
 `dosage.dfy::CalculateHourlyDose` ("it's good for the spec as is"), plus
 a next-phase item he explicitly scoped out as separate follow-up work.
 
+**Gate C5 (mutation testing) is also now built for v1 scope, and found
+2 real survivors.** `evidence/dafny_mutate.py` generates ROR/LOR/AOR/COI
+mutants against `dosage.dfy`'s requires/ensures clauses;
+[`examples/dosage_calculator/run_mutation_suite.py`](examples/dosage_calculator/run_mutation_suite.py)
+real-verifies every one against the installed Dafny binary. Real run: 39
+mutants — 29 killed, 4 filtered as statically trivial, **2 survived**
+(`infusionRateMlPerHr >= 0.0 || dose == 0.0` weakened at its first
+disjunct still verifies, because real multiplication by exactly `0.0`
+already makes `dose == 0.0` hold at that boundary — a real, understood
+looseness in REQ-GIP-1-8-1's postcondition, **reported to Steven for a
+decision, not silently changed** in the spec he'd just signed off on in
+Gate C6), **4 unclassifiable** (a real gap in the mutation engine, not
+the spec: mutating one side of a chained comparison to a descending
+operator is a genuine Dafny parse error). AOR/SOR/HOR stay out of v1
+scope, checked not assumed — see
+[`examples/dosage_calculator/mutation_report.md`](examples/dosage_calculator/mutation_report.md)
+for the full per-mutant outcome and `KNOWN_LIMITATIONS.md` for complete
+detail.
+
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
 [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) (two-tier review: machine gates

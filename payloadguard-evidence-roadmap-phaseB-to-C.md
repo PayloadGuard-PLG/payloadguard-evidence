@@ -61,6 +61,21 @@ explanation of downstream analysis by different software, for a
 regulatory submission) as separate follow-up work, out of scope for this
 gate.
 
+**Gate C5 (mutation testing) is now built for v1 scope (2026-07-07)**,
+same day as its own scoping session, on direct instruction ("build it and
+be careful with Dafny... we can consider floating points later, it's a
+known but solvable issue"): `evidence/dafny_mutate.py` generates
+ROR/LOR/AOR/COI mutants against `dosage.dfy`'s requires/ensures clauses;
+`examples/dosage_calculator/run_mutation_suite.py` real-verifies every
+one. Real run: 39 mutants, 29 killed, 4 filtered as statically trivial,
+**2 survived** (a real, understood looseness in REQ-GIP-1-8-1's
+postcondition at the `infusionRateMlPerHr == 0.0` boundary — reported to
+Steven for a decision, not silently changed in a spec he already signed
+off on in Gate C6), **4 unclassifiable** (a real gap in the mutation
+engine, not the spec: mutating one side of a chained comparison to a
+descending operator produces a Dafny parse error, not a semantic test).
+AOR/SOR/HOR stay out of v1 scope, checked not assumed. Full detail below.
+
 ## Where we are
 
 - Phase A closed (R1–R3).
@@ -96,6 +111,12 @@ gate.
   summary; `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`
   records Steven's sign-off on it for `dosage.dfy::CalculateHourlyDose`.
   See below.
+- Phase C Gate C5 (mutation testing) — BUILT for v1 scope 2026-07-07:
+  `evidence/dafny_mutate.py` + `run_mutation_suite.py`. 39 mutants
+  against `dosage.dfy::CalculateHourlyDose`: 29 killed, 4 filtered
+  static, 2 survived (real REQ-GIP-1-8-1 looseness, reported not fixed),
+  4 unclassifiable (real mutation-engine gap: chain-direction parse
+  errors). AOR/SOR/HOR out of v1 scope, checked not assumed. See below.
 
 ## Guiding principle (unchanged)
 
@@ -731,7 +752,7 @@ C-formal - now reports `intent_ok: true` for both requirements.
 `run_gate()`'s facts count is 9, not 7. Full suite: **98 passed** (93
 prior + updates). Full pipeline re-run end to end.
 
-### Gate C5 — Mutation testing (MutDafny-style) — SCOPED (2026-07-07), not yet built
+### Gate C5 — Mutation testing (MutDafny-style) — BUILT for v1 scope (2026-07-07)
 
 **Purpose, stated precisely:** Gates C1/C4 prove `dosage.dfy`'s postconditions
 hold. Neither proves those postconditions are *tight* — that each boundary
@@ -743,11 +764,31 @@ re-run the real verifier. If it still passes, that boundary was never
 proven in the first place — a real finding, not a tooling gap, and it gets
 named and reported exactly like Gate C4's spec gap was, not smoothed over.
 
-This is scoped now, not built now: per the roadmap's own original note,
-it's the largest single piece of Gate C, and per this repo's build
-discipline (Gate 2's CONFLICT rule, Gate C4's STPs), a piece this size
-gets a written sub-plan and explicit go-ahead before code, not a
-same-pass build. What follows is that sub-plan.
+**Build result summary (2026-07-07), full detail in `KNOWN_LIMITATIONS.md`:**
+built same day as the scoping session below, on direct instruction
+("build it and be careful with Dafny... we can consider floating points
+later, it's a known but solvable issue" — read as: build ROR/LOR/COI on
+clauses now, defer the AOR/division-by-zero risk named below). Real run
+against `dosage.dfy::CalculateHourlyDose`: 39 mutants — 29 killed, 4
+filtered as statically trivial, **2 survived** (`infusionRateMlPerHr >=
+0.0 || dose == 0.0` weakened to `!=` or `>` at the first disjunct both
+still verify, because real multiplication by exactly `0.0` already makes
+`dose == 0.0` hold at that boundary regardless of the first disjunct's
+operator — a real, understood REQ-GIP-1-8-1 postcondition looseness,
+**reported to Steven for a decision, not silently changed** in a spec
+already signed off in Gate C6), **4 unclassifiable** (mutating one side
+of the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending
+operator is a genuine Dafny *parse* error — a real gap in the mutation
+engine's understanding of chain-direction compatibility, not a spec
+finding). AOR/SOR/HOR stayed out of v1 scope exactly as scoped below,
+checked not assumed (SOR/HOR: no set/heap syntax anywhere in the spec,
+confirmed by test; AOR: implemented and exercised, correctly returns
+zero mutants since its one site lives in a function body, out of
+clause-mutation scope). 16 new tests; full suite 121 passed.
+
+What follows is the original same-day sub-plan this build actually
+followed — kept as the architectural record, not superseded by the
+summary above.
 
 #### Operator applicability audit against the real spec (not generic — checked against `dosage.dfy` as it exists today)
 
@@ -862,33 +903,65 @@ surviving mutant is a named, reported finding — a real gap in what the
 proof establishes — exactly as Gate C4's STP finding was handled: fixed if
 fixable, or recorded as a scoped, known limitation if not.
 
-#### Build order (own multi-step sub-plan, not a single pass)
+#### Build order (own multi-step sub-plan, not a single pass) — steps 1-4 and 6 done, step 5 done in reduced form
 
-1. Span-preserving tokenizer extension (small, additive, on top of
-   `dafny_spec_lint.py`'s existing grammar).
-2. ROR/AOR/LOR mutant generator + the static weaker-mutant filter (pass 1).
-3. Vacuity filter (pass 2), wired directly to
+1. **Done.** Span-preserving tokenizer extension (small, additive, on top
+   of `dafny_spec_lint.py`'s existing grammar — plus one addition beyond
+   what was scoped here: a COMMA token, needed for the pinning clause's
+   function-call syntax).
+2. **Done.** ROR/LOR mutant generator + the static weaker-mutant filter
+   (pass 1). AOR's generator is also built (for engine symmetry/future
+   specs) but correctly produces zero mutants against this spec's
+   clauses — see the v1 scope cut below.
+3. **Done.** Vacuity filter (pass 2), wired directly to
    `check_precondition_satisfiability`.
-4. Re-verification harness (pass 3), mirroring `run_verify_dafny.py` and
-   reusing `dafny_adapter.py`'s parser, with explicit failure-reason
-   attribution (not just pass/fail).
-5. COI's separate negation-and-reverify check (distinct question from
-   1-4, built after the ROR/AOR/LOR pipeline is proven out, since it
-   reuses the same re-verification harness from step 4).
-6. A committed report enumerating every mutant generated, its operator
-   class, target clause, and outcome (killed-for-the-right-reason /
-   killed-for-the-wrong-reason / survived / filtered-as-vacuous /
-   filtered-as-statically-weaker) — same "real capture, not smoothed
-   over" discipline as the STP suites' committed output.
+4. **Done.** Re-verification harness (pass 3),
+   `examples/dosage_calculator/run_mutation_suite.py`, mirroring
+   `run_verify_dafny.py` and reusing `dafny_adapter.py`'s parser.
+   Failure-reason attribution turned out to matter even without AOR: a
+   non-(0,4) exit code (a genuine Dafny parse error, observed for real on
+   4 mutants) is relayed with Dafny's own error line rather than being
+   folded into "killed" or "survived" — see the unclassifiable findings
+   above.
+5. **Done.** COI's negation-and-reverify check, built alongside ROR/LOR
+   rather than strictly after (the codebase was small enough that
+   sequencing this after didn't add safety).
+6. **Done.** `mutation_report.json`/`.md` + `run_manifest_mutation.json`,
+   enumerating every one of the 39 mutants with its real outcome.
+   Simplified from the originally-scoped killed-for-the-right-reason vs.
+   killed-for-the-wrong-reason split: that distinction was scoped
+   specifically for AOR's division-by-zero risk, which doesn't arise in
+   v1 (no AOR mutants generated against this spec's clauses) — v1 uses a
+   flatter killed/survived/filtered_static/filtered_vacuous/unclassifiable
+   taxonomy instead, with the *unclassifiable* bucket catching exactly
+   the "wrong reason" case (a real, non-postcondition parse error) that
+   did occur, so the safety property (never mislabel a wrong-reason
+   result as a real kill) held even without building the finer split.
 
-#### Explicit non-goals
+#### v1 scope cut, named explicitly (not silently narrower than scoped)
+
+AOR/SOR/HOR are out of scope for this build, per direct guidance ("be
+careful with Dafny... we can consider floating points later, it's a
+known but solvable issue"): AOR's one site
+(`infusionRateMlPerHr * concentrationMgPerMl`) lives in `ExpectedDose`'s
+function body, not a requires/ensures clause, so mutating it needs a
+function-body extractor this build didn't scope in — deferred alongside
+the division-by-zero attribution risk this same guidance flagged.
+Follow-up guidance recorded for whenever that work is picked up: bound
+any future real-valued mutant/comparison to the accuracy the dosage
+calculation actually requires (e.g. an input on the order of 1e10 needs
+no more precision than that), rather than treating Dafny's exact
+arbitrary-precision `real` as demanding unbounded exactness. SOR/HOR
+were never in scope (no sets or heap state anywhere in this spec, now
+confirmed by a real test rather than only audited by inspection).
+
+#### Explicit non-goals — held
 
 Not a generic, Dafny-spec-agnostic mutation tool — like Gates C1-C4, this
 builds one mutation suite for the one real spec that exists, per the
 roadmap's own stated scope for this gate. Not wired into `build_matrix()`
 or any generator — a pre-trust check run before relying on a PROVEN claim,
-not part of the artifact-generation pipeline. SOR/HOR are out of scope
-until a future spec actually uses sets or heap state.
+not part of the artifact-generation pipeline.
 
 ### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early) — BUILT and SIGNED OFF (2026-07-07)
 

@@ -1,0 +1,388 @@
+[
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl <= 0.0",
+    "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> <=",
+    "outcome": "killed",
+    "detail": "0 verified, 2 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl >= 0.0",
+    "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> >=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl == 0.0",
+    "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> ==",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl != 0.0",
+    "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> !=",
+    "outcome": "killed",
+    "detail": "0 verified, 2 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl < 0.0",
+    "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> <",
+    "outcome": "killed",
+    "detail": "0 verified, 2 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr <= 0.0",
+    "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> <=",
+    "outcome": "killed",
+    "detail": "0 verified, 3 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr >= 0.0",
+    "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> >=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr == 0.0",
+    "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> ==",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr != 0.0",
+    "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> !=",
+    "outcome": "killed",
+    "detail": "0 verified, 3 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr < 0.0",
+    "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> <",
+    "outcome": "killed",
+    "detail": "0 verified, 3 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "dose <= ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "dose >= ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "dose != ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "dose < ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "dose > ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 >= dose <= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >=",
+    "outcome": "unclassifiable",
+    "detail": "<mutant>.dfy(68,22): Error: this operator chain cannot continue with an ascending operator",
+    "exit_code": 2
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 == dose <= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> ==",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 != dose <= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 < dose <= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 > dose <= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >",
+    "outcome": "unclassifiable",
+    "detail": "<mutant>.dfy(68,21): Error: this operator chain cannot continue with an ascending operator",
+    "exit_code": 2
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 <= dose >= maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >=",
+    "outcome": "unclassifiable",
+    "detail": "<mutant>.dfy(68,22): Error: this operator chain cannot continue with a descending operator",
+    "exit_code": 2
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 <= dose == maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> ==",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 <= dose != maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 <= dose < maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.0 <= dose > maxSafeDoseMgPerHr",
+    "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> >",
+    "outcome": "unclassifiable",
+    "detail": "<mutant>.dfy(68,22): Error: this operator chain cannot continue with a descending operator",
+    "exit_code": 2
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr <= 0.0 || dose == 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': >= -> <=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr == 0.0 || dose == 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': >= -> ==",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr != 0.0 || dose == 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': >= -> !=",
+    "outcome": "survived",
+    "detail": "2 verified, 0 errors",
+    "exit_code": 0
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr < 0.0 || dose == 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': >= -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': >= -> >",
+    "outcome": "survived",
+    "detail": "2 verified, 0 errors",
+    "exit_code": 0
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 || dose <= 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 || dose >= 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 || dose != 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 || dose < 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 || dose > 0.0",
+    "description": "ROR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr >= 0.0 && dose == 0.0",
+    "description": "LOR on ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0': || -> &&",
+    "outcome": "killed",
+    "detail": "1 verified, 2 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "!(dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr))",
+    "description": "COI: negate ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)'",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "!(0.0 <= dose <= maxSafeDoseMgPerHr)",
+    "description": "COI: negate ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr'",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr >= 0.0 || dose == 0.0",
+    "mutated_clause": "!(infusionRateMlPerHr >= 0.0 || dose == 0.0)",
+    "description": "COI: negate ensures clause 'infusionRateMlPerHr >= 0.0 || dose == 0.0'",
+    "outcome": "killed",
+    "detail": "1 verified, 2 errors",
+    "exit_code": 4
+  }
+]

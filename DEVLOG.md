@@ -6,6 +6,89 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5: built for v1 scope, 2 real survivors found
+
+Requested directly, same day as the scoping session: "build it and be
+careful with Dafny. just. we can consider floating points later..it's a
+known but solvable issue." Read as: build the core (ROR/LOR/COI on
+requires/ensures clauses) now, defer the AOR/division-by-zero risk named
+in the scoping doc. A later message added guidance for that follow-up:
+"we can consider bounding floating points within the terms of accuracy.
+if we're dealing with an integer 1*10^10, then we don't have to be any
+more accurate that accuracy requires" — recorded, not acted on in this
+build.
+
+- **`evidence/dafny_mutate.py`** — `generate_ror/lor/aor/coi_mutants()` +
+  `generate_mutants()`. Reuses `dafny_nl_summary._CLAUSE_LINE_RE` (Gate
+  C6's single-line clause convention) and `dafny_spec_lint._find_method_header`.
+  A local span-preserving tokenizer extends `dafny_spec_lint`'s token
+  grammar with one addition (a COMMA token, needed for the pinning
+  clause's `ExpectedDose(a, b, c)` function-call syntax) - safe here
+  specifically because mutation only relocates operator TEXT, it never
+  needs to understand what an expression means the way Z3 translation
+  does, so tolerating syntax the Z3 translator correctly refuses can't
+  mistranslate anything.
+- **Pass-1 static filter, the design point most likely to be silently
+  wrong in one direction:** a mutant is skipped when a fixed relational-
+  implication table proves it's guaranteed uninteresting - but the
+  trivial DIRECTION flips by clause role. Weakening is trivial for
+  `ensures` (whatever satisfies the original satisfies a logically
+  weaker consequence too); *strengthening* is trivial for `requires`
+  (the original proof still applies under a narrower hypothesis) - the
+  informative direction for `requires` is weakening it. Verified against
+  a synthetic spec independent of `dosage.dfy`'s specific content
+  (`test_ror_polarity_flips_between_requires_and_ensures`), since this
+  is the one place getting the direction backwards would silently filter
+  out exactly the mutants worth testing.
+- **Passes 2-3 reused directly, as scoped:** pass 2 (vacuity filtering
+  for `requires` mutants) calls `dafny_spec_lint.check_precondition_satisfiability`
+  against the mutated source with no new Z3 code. Pass 3
+  (`examples/dosage_calculator/run_mutation_suite.py`) mirrors
+  `run_verify_dafny.py`'s capture discipline and reuses `dafny_adapter`'s
+  `_SUMMARY_RE`/`_INCOMPLETE_MARKERS` per mutant.
+- **Real run: 39 mutants against `dosage.dfy::CalculateHourlyDose`** - 29
+  killed, 4 filtered as statically trivial, **2 survived**, **4
+  unclassifiable**. Mutant `.dfy` files are not committed individually
+  (mechanically derived, unlike the STP suites' hand-authored artifacts);
+  the real per-mutant outcome is `mutation_report.json`/`.md` +
+  `run_manifest_mutation.json`.
+- **The 2 survivors - a real finding, reported not silently fixed.**
+  `infusionRateMlPerHr >= 0.0 || dose == 0.0` with the first disjunct's
+  `>=` mutated to `!=` or `>` both still verify (`2 verified, 0 errors`,
+  confirmed by direct re-run). Root cause worked out and checked: at
+  `infusionRateMlPerHr == 0.0` exactly, real multiplication makes
+  `rawDose == 0.0` exactly, so `dose == 0.0` already holds at that
+  boundary independent of the first disjunct's operator - a real
+  looseness in REQ-GIP-1-8-1's postcondition. **`dosage.dfy` is the spec
+  Steven signed off on in Gate C6 the same day** - this finding is
+  reported for his decision (tighten vs. accept-and-document), not
+  unilaterally changed.
+- **The 4 unclassifiable results - a real mutation-engine gap, not a
+  spec finding.** All 4 come from mutating one side of the chained
+  `0.0 <= dose <= maxSafeDoseMgPerHr` clause to a descending operator
+  (e.g. `0.0 >= dose <= maxSafeDoseMgPerHr`); confirmed by direct re-run
+  that Dafny's own PARSER rejects this (`this operator chain cannot
+  continue with an ascending/descending operator`, exit code 2) - a real
+  Dafny language rule the engine doesn't yet model. Correctly refused
+  (Tier 1) rather than misclassified: `_classify` only accepts exit
+  codes 0/4, relays Dafny's own error line (temp filename scrubbed for
+  report determinism) as detail. Named as a real, scoped follow-up, not
+  fixed in this pass.
+- **AOR/SOR/HOR out of v1 scope, checked not assumed.** SOR/HOR aren't
+  implemented at all - `test_sor_and_hor_not_applicable_confirmed_by_absence_of_syntax`
+  greps `dosage.dfy` for set/heap syntax and asserts none present. AOR
+  is implemented and exercised (asserted `== []` against the real spec,
+  not just left untested) - its one site lives in `ExpectedDose`'s
+  function body, out of clause-mutation scope, deferred with the
+  division-by-zero risk per the guidance above.
+- **Tests:** `tests/test_dafny_mutate.py` (11, pure generation/filter
+  logic, no Dafny invocations) + `tests/test_mutation_report.py` (5,
+  validates the committed real capture rather than re-running 39 Dafny
+  invocations per test pass - the two survivors and four unclassifiable
+  entries are pinned by exact description so a regeneration can't
+  silently lose or gain one). Full suite: **121 passed** (105 prior +
+  16 new).
+
 ## 2026-07-07 — Gate C5: mutation testing, scoped (not built)
 
 Requested directly: "scope out C5 please."

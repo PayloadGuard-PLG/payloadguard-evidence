@@ -1,13 +1,25 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Gate C6, NL-dialogue confirmation, BUILT and
-SIGNED OFF: evidence/dafny_nl_summary.py mechanically summarizes a Dafny
-method's requires/ensures clauses in plain English, cross-checked against
-dafny_spec_lint's canonical extractor and refusing on any multi-line
-clause it can't safely associate a citation with. The gate's actual
-deliverable, examples/dosage_calculator/nl_confirmation_dosage_dfy.md,
-records Steven's sign-off on the generated summary for
-CalculateHourlyDose. 7 new tests; full suite now 105 passed. Earlier the
+Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT for v1 scope
+- ROR/LOR/COI on requires/ensures clauses - via evidence/dafny_mutate.py
++ examples/dosage_calculator/run_mutation_suite.py. Real run against
+dosage.dfy::CalculateHourlyDose: 39 mutants, 29 killed, 4 filtered as
+statically trivial, 2 genuinely SURVIVED (a real, understood REQ-GIP-
+1-8-1 postcondition looseness at the infusionRateMlPerHr==0.0 boundary,
+reported to Steven for a decision rather than silently altered - the
+spec he already signed off on in Gate C6), 4 UNCLASSIFIABLE (a real
+mutation-engine gap, not a spec finding: mutating one side of a chained
+comparison to a descending operator produces a Dafny parse error).
+AOR/SOR/HOR explicitly out of v1 scope, checked not assumed. 16 new
+tests; full suite now 121 passed. Earlier the same week: Gate C6,
+NL-dialogue confirmation, BUILT and SIGNED OFF: evidence/dafny_nl_summary.py
+mechanically summarizes a Dafny method's requires/ensures clauses in
+plain English, cross-checked against dafny_spec_lint's canonical
+extractor and refusing on any multi-line clause it can't safely
+associate a citation with. The gate's actual deliverable,
+examples/dosage_calculator/nl_confirmation_dosage_dfy.md, records
+Steven's sign-off on the generated summary for CalculateHourlyDose. 7
+new tests; full suite was 105 passed at that point. Earlier the
 same week: Gate 2/C2-C4 wiring EXTENDED TO VARIANTS A/B - every schema
 variant now binds the same real Dafny evidence for
 REQ-GIP-1-4-12/REQ-GIP-1-8-1 - metadata.a.yaml's evidence list,
@@ -183,6 +195,30 @@ payloadguard-evidence/
 │                                 Not wired into the capture/generation
 │                                 pipeline - a process habit, not an
 │                                 automated gate
+│   └── dafny_mutate.py          Gate C5: mutation testing (mutant
+│                                 generation only - real re-verification
+│                                 lives in the capture script below).
+│                                 generate_ror/lor/aor/coi_mutants() +
+│                                 generate_mutants(). Reuses
+│                                 dafny_nl_summary's clause-line regex +
+│                                 dafny_spec_lint's header-finder; a
+│                                 local, span-preserving tokenizer extends
+│                                 dafny_spec_lint's grammar with one
+│                                 addition (commas, for function-call
+│                                 clauses like the pinning ensures
+│                                 clause). Pass-1 static filter (skip
+│                                 mutants a fixed relational-implication
+│                                 table proves uninteresting) flips
+│                                 direction by clause role - weakening is
+│                                 trivial for ensures, strengthening is
+│                                 trivial for requires - tested against a
+│                                 synthetic spec independent of dosage.dfy.
+│                                 SOR/HOR not implemented (no set/heap
+│                                 syntax in this spec, confirmed by test);
+│                                 AOR implemented but returns [] against
+│                                 this spec (its one arithmetic operator
+│                                 lives in a function body, out of v1's
+│                                 clause-mutation scope - named, deferred)
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -256,6 +292,29 @@ payloadguard-evidence/
 │   │                            is", 2026-07-07) and a next-phase item
 │   │                            he explicitly scoped out as separate
 │   │                            follow-up work
+│   ├── run_mutation_suite.py    Gate C5: real re-verification harness.
+│   │                            Generates every mutant via
+│   │                            evidence/dafny_mutate.py, filters
+│   │                            statically-trivial (pass 1) and vacuous-
+│   │                            precondition (pass 2, reusing
+│   │                            dafny_spec_lint.check_precondition_
+│   │                            satisfiability) mutants, real-verifies
+│   │                            every survivor against the installed
+│   │                            Dafny binary (pass 3). Mutant .dfy files
+│   │                            are NOT committed individually
+│   │                            (mechanically derived); writes
+│   │                            mutation_report.json/.md +
+│   │                            run_manifest_mutation.json instead
+│   ├── mutation_report.json/.md  Gate C5: real captured outcome of all
+│   │                            39 mutants against dosage.dfy::
+│   │                            CalculateHourlyDose - 29 killed, 4
+│   │                            filtered_static, 2 survived (a real,
+│   │                            reported REQ-GIP-1-8-1 looseness,
+│   │                            decision pending), 4 unclassifiable (a
+│   │                            real mutation-engine gap: chained-
+│   │                            comparison direction incompatibility
+│   │                            produces a Dafny parse error, not a
+│   │                            semantic test)
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
@@ -376,6 +435,27 @@ payloadguard-evidence/
     │                            regression (the self-caught count-vs-
     │                            content bug); no-clauses case; output
     │                            determinism
+    ├── test_dafny_mutate.py     Gate C5: pure generation/filter logic,
+    │                            no Dafny invocations - real-spec ROR/
+    │                            LOR/AOR/COI counts and filtering;
+    │                            SOR/HOR non-applicability confirmed by
+    │                            grepping dosage.dfy for set/heap syntax
+    │                            (checked, not assumed); a byte-level
+    │                            check that a mutation changes exactly
+    │                            the targeted operator; the requires-vs-
+    │                            ensures static-filter polarity flip
+    │                            (tested on a synthetic spec, the least
+    │                            obvious part of the design); tokenizer
+    │                            function-call/unknown-syntax handling
+    ├── test_mutation_report.py  Gate C5: validates the COMMITTED real
+    │                            capture (39 mutants; 29 killed, 4
+    │                            filtered_static, 2 survived, 4
+    │                            unclassifiable) rather than re-running
+    │                            Dafny 39 times per test pass; the two
+    │                            named survivors and four chain-direction
+    │                            parse errors are pinned by exact
+    │                            description so a regeneration can't
+    │                            silently lose or gain one
     └── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
                                  then extended to A/B (2026-07-07): real
                                  formal artifact + real A/B artifacts all
@@ -662,3 +742,47 @@ Every variant artifact now reports `intent_ok: true` for both
 REQ-GIP-1-4-12 and REQ-GIP-1-8-1; `run_gate()`'s facts count is 9, not
 7. Full suite now 98 passed; full pipeline re-run end to end. Full
 findings: `KNOWN_LIMITATIONS.md`.
+
+**Gate C5 (mutation testing) is now built for v1 scope (2026-07-07),
+following the same-day scoping session, and found 2 real survivors.**
+`evidence/dafny_mutate.py` generates ROR/LOR/AOR/COI mutants against
+`dosage.dfy`'s requires/ensures clauses; `examples/dosage_calculator/run_mutation_suite.py`
+real-verifies every one against the installed Dafny 4.11.0 binary,
+mirroring `run_verify_dafny.py`'s capture discipline and reusing
+`dafny_adapter`'s summary-line parsing rigor per mutant. The design's
+least obvious point: a fixed relational-implication table filters out
+mutants that are provably uninteresting before spending a real Dafny
+invocation on them (pass 1), but the trivial DIRECTION flips by clause
+role — weakening is trivial for `ensures` (whatever already satisfies
+the original satisfies a logically weaker consequence too), while
+*strengthening* is trivial for `requires` (the original proof still
+applies under a narrower hypothesis) — verified against a synthetic spec
+independent of `dosage.dfy`, not just the one real spec, since getting
+this backwards would silently filter out the informative mutants
+instead of the uninteresting ones. Real run: 39 mutants, 29 killed, 4
+filtered as statically trivial, **2 survived** — `infusionRateMlPerHr >=
+0.0 || dose == 0.0`'s `>=` weakened to `!=` or `>` both still verify,
+because real multiplication by exactly `0.0` makes `dose == 0.0` already
+hold at that boundary independent of the first disjunct's operator; a
+real, understood looseness in REQ-GIP-1-8-1's postcondition, reported to
+Steven for a decision rather than silently changed in a spec he already
+signed off on in Gate C6 — **4 unclassifiable** — mutating one side of
+the chained `0.0 <= dose <= maxSafeDoseMgPerHr` to a descending operator
+produces a genuine Dafny *parse* error (chained comparisons must stay
+direction-consistent), a real gap in the mutation engine, not the spec,
+confirmed by direct re-run and correctly refused rather than
+misclassified. AOR/SOR/HOR explicitly out of v1 scope: SOR/HOR aren't
+implemented at all (no set or heap syntax anywhere in `dosage.dfy`,
+confirmed by test, not assumed); AOR is implemented and exercised but
+returns `[]` against this spec (its one arithmetic operator lives in
+`ExpectedDose`'s function body, outside clause-mutation scope) — deferred
+per direct guidance ("be careful with Dafny... we can consider floating
+points later, it's a known but solvable issue"; later refined to bound
+any future real-valued mutant to the accuracy the dosage calculation
+actually requires, not Dafny's unbounded exact-`real` precision). 16 new
+tests (`tests/test_dafny_mutate.py`, pure generation logic;
+`tests/test_mutation_report.py`, validates the committed real capture).
+Mutant `.dfy` files are not committed individually (mechanically
+derived); the real per-mutant outcome is `mutation_report.json`/`.md` +
+`run_manifest_mutation.json`. Full suite now 121 passed. Full findings:
+`KNOWN_LIMITATIONS.md`.
