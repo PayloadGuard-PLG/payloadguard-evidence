@@ -141,12 +141,25 @@ restriction is applied directly (`_ar_group_incompatible`): the one `*`
 operator's candidates are `+`/`-` (both real-verified, both genuinely
 killed - confirming `*` is load-bearing) and `/` (filtered before
 verification, never risking a division-by-zero false-kill). **Not
-built:** the ≥0.01 mL/hr clinical-precision floor has no application
-yet - it bounds literal-value-replacement (LVR) mutants specifically
-(a *magnitude* concept), and Gate C5's scope was always
+built at the time:** the ≥0.01 mL/hr clinical-precision floor had no
+application yet - it bounds literal-value-replacement (LVR) mutants
+specifically (a *magnitude* concept), and Gate C5's scope was always
 ROR/LOR/AOR/SOR/HOR/COI, never LVR. Named rather than forced onto AOR,
-which mutates operators, not literal magnitudes. Worth revisiting only
-if LVR mutation is ever added to this module's scope.
+which mutates operators, not literal magnitudes.
+
+**LVR built (2026-07-07), same day, via its own scoped sub-plan**
+(`payloadguard-evidence-roadmap-phaseB-to-C.md`'s "Gate C5 LVR
+extension" section): the ≥0.01 mL/hr floor found its actual application.
+All 7 numeric literals in this spec are exactly `0.0`; each mutated to
+`± 0.01`. `_lvr_trivial` generalizes ROR's requires/ensures polarity
+principle to literal magnitude. Real run matched a fully hand-derived
+prediction exactly: 14 mutants, 4 filtered, 10 real-verified, all 10
+genuinely killed - zero survivors. The clinical-floor-vs-exact-zero-
+safety-requirement tension named in the LVR scoping session (whether
+±0.01 is the right test for REQ-GIP-1-8-1 specifically, vs. a threshold
+requirement like the max-dose ceiling) didn't need resolving to get a
+clean result here, but is still an open judgment call, not decided by
+this outcome.
 
 ## Full response and sources
 

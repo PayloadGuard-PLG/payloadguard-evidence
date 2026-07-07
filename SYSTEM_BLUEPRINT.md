@@ -1,27 +1,31 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT then EXTENDED
-same day from external research findings: evidence/dafny_mutate.py +
-examples/dosage_calculator/run_mutation_suite.py. v1 build (ROR/LOR/COI
-on requires/ensures clauses) found 2 real REQ-GIP-1-8-1 survivors,
-reported to and FIXED by Steven ("go ahead and tighten REQ-GIP-1-8-1 to
->") rather than silently changed, plus 4 unclassifiable chain-direction
-parse errors. External research (gate_c5_mutation_testing_research_
-findings.md) then produced a correction - Gate C5 was mislabeled
-"MutDafny/IronSpec-style," corrected to MutDafny-style, IronSpec's own
-mutation technique is a different, directional approach - and two
-concrete follow-ups, both built same day on "build both": chain-
-direction-aware ROR (restricts each chained-comparison link's mutation
-candidates to direction-compatible operators, eliminating the 4
-unclassifiable mutants by construction - ahead of what MutDafny itself
-does) and function-body AOR on ExpectedDose (MutDafny's own +/-/*
-<-> /,% group restriction means a mutation can never introduce / where
-the original had none, eliminating the division-by-zero false-kill risk
-by construction). Final real run: 42 mutants - 31 killed, 6
-filtered_static, 4 filtered_chain_incompatible, 1
-filtered_ar_group_incompatible - zero survived, zero unclassifiable. 26
-new tests across both builds; full suite 131 passed. Earlier the same
-week: Gate C6,
+TWICE same day: evidence/dafny_mutate.py + examples/dosage_calculator/
+run_mutation_suite.py. v1 build (ROR/LOR/COI on requires/ensures
+clauses) found 2 real REQ-GIP-1-8-1 survivors, FIXED by Steven ("go
+ahead and tighten REQ-GIP-1-8-1 to >") rather than silently changed,
+plus 4 unclassifiable chain-direction parse errors. External research
+(gate_c5_mutation_testing_research_findings.md) produced a correction
+(mislabeled "MutDafny/IronSpec-style," corrected to MutDafny-style) and
+two follow-ups on "build both": chain-direction-aware ROR (eliminates
+the 4 unclassifiable mutants by construction) and function-body AOR on
+ExpectedDose (MutDafny's own +/-/* <-> /,% group restriction eliminates
+the division-by-zero false-kill risk by construction) - 42 mutants,
+zero survived, zero unclassifiable at that point. Then, on "scope out
+Gate C5's LVR extension" followed by "go": LVR (Literal Value
+Replacement) - every numeric literal in the spec is exactly 0.0 (7
+sites, audited empirically), mutated to +/-0.01 (the clinical-precision
+floor from the same research, finally applied). A new magnitude-
+implication filter generalizes ROR's requires/ensures polarity
+principle. Real run matched the scoping session's hand-derived
+prediction exactly: 14 mutants, 4 filtered, 10 real-verified, all 10
+genuinely killed. **Final combined real run across all five operator
+classes: 56 mutants - 41 killed, 6 filtered_static, 4
+filtered_chain_incompatible, 1 filtered_ar_group_incompatible, 4
+filtered_magnitude_implied - zero survived, zero unclassifiable.** 33
+new tests across all three builds; full suite 138 passed. Earlier the
+same week: Gate C6,
 NL-dialogue confirmation, BUILT and SIGNED OFF: evidence/dafny_nl_summary.py
 mechanically summarizes a Dafny method's requires/ensures clauses in
 plain English, cross-checked against dafny_spec_lint's canonical
@@ -243,7 +247,18 @@ payloadguard-evidence/
 │                                 implementation), restricted to MutDafny's
 │                                 own +/-/* <-> /,% group rule so a
 │                                 mutation never introduces `/` where the
-│                                 original had none
+│                                 original had none. LVR
+│                                 (generate_lvr_mutants/_lvr_trivial/
+│                                 _locate_clause_numeric_literal_sites/
+│                                 _locate_function_body_numeric_literal_sites,
+│                                 2026-07-07): mutates every numeric
+│                                 literal (all 7 in this spec are exactly
+│                                 0.0) to +/-0.01, the clinical-precision
+│                                 floor; _lvr_trivial generalizes ROR's
+│                                 requires/ensures polarity from operator-
+│                                 to magnitude-implication for LT/LE/GT/
+│                                 GE-adjacent literals; EQ/NE and
+│                                 function-body literals unfiltered
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -337,13 +352,15 @@ payloadguard-evidence/
 │   │                            mutation_report.json/.md +
 │   │                            run_manifest_mutation.json instead
 │   ├── mutation_report.json/.md  Gate C5: real captured outcome of all
-│   │                            42 mutants against dosage.dfy::
+│   │                            56 mutants against dosage.dfy::
 │   │                            CalculateHourlyDose (+ExpectedDose's
-│   │                            function body), post REQ-GIP-1-8-1 fix
-│   │                            AND the chain-direction/function-body-AOR
-│   │                            extension - 31 killed, 6 filtered_static,
-│   │                            4 filtered_chain_incompatible, 1
-│   │                            filtered_ar_group_incompatible, ZERO
+│   │                            function body), across all five
+│   │                            operator classes (ROR/LOR/AOR/LVR/COI)
+│   │                            after every same-day fix and extension -
+│   │                            41 killed, 6 filtered_static, 4
+│   │                            filtered_chain_incompatible, 1
+│   │                            filtered_ar_group_incompatible, 4
+│   │                            filtered_magnitude_implied, ZERO
 │   │                            survived, ZERO unclassifiable. History:
 │   │                            2 real survivors found and fixed same day
 │   │                            (REQ-GIP-1-8-1's `>=` tightened to `>` on
@@ -351,7 +368,10 @@ payloadguard-evidence/
 │   │                            chain-direction parse errors then closed
 │   │                            by teaching the generator Dafny's own
 │   │                            chaining rule (now filtered_chain_
-│   │                            incompatible, never reach Dafny at all)
+│   │                            incompatible, never reach Dafny at all);
+│   │                            LVR extension then added and matched its
+│   │                            own hand-derived prediction exactly (all
+│   │                            10 real-verified candidates killed)
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
@@ -492,21 +512,35 @@ payloadguard-evidence/
     │                            AOR generation and its division-free
     │                            restriction; ASSIGN/SEMI tokenizer
     │                            support; _locate_function_body_arithmetic_sites
-    │                            finds exactly the one `*`
+    │                            finds exactly the one `*`. LVR extension
+    │                            (25 tests, up from 19): literal-site
+    │                            location with correct comparison-operand/
+    │                            side tracking on the real spec; refusal
+    │                            test for a hypothetical non-adjacent
+    │                            literal; function-body literal-site
+    │                            location; direct unit test of
+    │                            _lvr_trivial against hand-derived cases;
+    │                            a check that the generation-time half of
+    │                            the prediction (14 raw, 4 filtered)
+    │                            matches; byte-level check on the
+    │                            targeted-literal splice
     ├── test_mutation_report.py  Gate C5: validates the COMMITTED real
-    │                            capture (42 mutants; 31 killed, 6
+    │                            capture (56 mutants; 41 killed, 6
     │                            filtered_static, 4
     │                            filtered_chain_incompatible, 1
-    │                            filtered_ar_group_incompatible, ZERO
+    │                            filtered_ar_group_incompatible, 4
+    │                            filtered_magnitude_implied, ZERO
     │                            survived, ZERO unclassifiable, as of the
-    │                            2026-07-07 extension - 7 tests, up from
-    │                            5) rather than re-running Dafny 42 times
-    │                            per test pass; the reverse-flow clause's
-    │                            filtered (formerly-survivor) mutations
-    │                            and the chain-incompatible (formerly-
-    │                            unclassifiable) mutations are pinned by
-    │                            exact description so a regeneration
-    │                            can't silently reintroduce either
+    │                            LVR extension - 8 tests, up from 5)
+    │                            rather than re-running Dafny 56 times per
+    │                            test pass; the reverse-flow clause's
+    │                            filtered (formerly-survivor) mutations,
+    │                            the chain-incompatible (formerly-
+    │                            unclassifiable) mutations, and the LVR
+    │                            real-verification half of the prediction
+    │                            (all 10 killed) are each pinned so a
+    │                            regeneration can't silently reintroduce
+    │                            a survivor or drift from the prediction
     └── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
                                  then extended to A/B (2026-07-07): real
                                  formal artifact + real A/B artifacts all
@@ -882,4 +916,31 @@ filtered_ar_group_incompatible — zero survived, zero unclassifiable.**
 The 2 new real-verified function-body mutants (`* -> +`, `* -> -`) are
 both genuinely killed, confirming `*` is load-bearing. 10 more tests (19
 total in `tests/test_dafny_mutate.py`, 7 in `tests/test_mutation_report.py`);
-full suite now **131 passed**. Full findings: `KNOWN_LIMITATIONS.md`.
+full suite was 131 passed at that point.
+
+**Gate C5's LVR extension (Literal Value Replacement) was then scoped
+and built the same day** ("scope out Gate C5's LVR extension", then
+"go"). Tests whether a comparison's LITERAL CONSTANT is load-bearing,
+not just its operator or the arithmetic combining it. Every numeric
+literal in `dosage.dfy`'s requires/ensures clauses and `ExpectedDose`'s
+function body was enumerated by running the real tokenizer: **all 7 are
+exactly `0.0`** — no other constant exists anywhere in the spec. Value
+strategy: exactly `original ± 0.01` per site — the clinical-precision
+floor from the earlier research, finally applied (it was always scoped
+to literal perturbation specifically, a class Gate C5 hadn't built).
+`_lvr_trivial` generalizes ROR's requires/ensures polarity principle
+from operator-implication to magnitude-implication for LT/LE/GT/GE-
+adjacent literals; EQ/NE-adjacent and all function-body literals have no
+such filter, sent straight to real verification. **Real run matched the
+scoping session's hand-derived prediction exactly, site by site: 14
+mutants, 4 filtered as `filtered_magnitude_implied`, 10 real-verified,
+all 10 genuinely killed — zero survivors.** The one named, unresolved
+tension from scoping (whether the clinical floor is the right test for
+REQ-GIP-1-8-1's exact-zero safety requirement) didn't need resolving to
+get a clean result here, but remains open as a judgment call. **Final
+combined real run across all five operator classes: 56 mutants — 41
+killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible, 4 filtered_magnitude_implied — zero
+survived, zero unclassifiable.** 7 more tests (25 total in
+`tests/test_dafny_mutate.py`, 8 in `tests/test_mutation_report.py`); full
+suite now **138 passed**. Full findings: `KNOWN_LIMITATIONS.md`.

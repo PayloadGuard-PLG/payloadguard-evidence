@@ -6,6 +6,76 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C5 LVR extension built: matched its own prediction exactly
+
+Requested directly: "go" - following through on the scoping session
+from the previous entry.
+
+- **`evidence/dafny_mutate.py`**: `generate_lvr_mutants` (+ the
+  function-body companion `_generate_function_body_lvr_mutants`).
+  `_locate_clause_numeric_literal_sites` finds every `NUM`-kind token in
+  a clause and pairs it with its adjacent comparison operator and which
+  side it's on (refuses, Tier 1, if a literal is ever found NOT adjacent
+  to a comparison - doesn't arise in this repo's real clauses, tested).
+  `_locate_function_body_numeric_literal_sites` reuses a new shared
+  `_function_body_tokens` helper (factored out of the existing AOR
+  function-body locator, so the `//`-comment safety check lives in
+  exactly one place for both AOR and LVR).
+- **`_lvr_trivial`** generalizes ROR's requires/ensures polarity
+  principle from operator-implication (a fixed lookup table) to
+  magnitude-implication (a numeric comparison between original and
+  mutant literal values): normalizes every comparison to whether
+  increasing the literal narrows or widens the constraint, then applies
+  the same requires-widens-informative / ensures-narrows-informative
+  rule ROR already established. EQ/NE literals have no such
+  relationship at all (changing an equality's target is neither a
+  superset nor subset of the original in either direction) - always
+  sent to verification. Function-body literals have no requires/ensures
+  role to apply the principle to at all - sent straight to verification
+  unfiltered too, mirroring the AOR function-body precedent.
+- **Real run matched the scoping session's hand-derived prediction
+  exactly, before verification even confirmed it:** generation alone
+  produced 14 raw mutants, 4 filtered (`filtered_magnitude_implied`) -
+  matching the predicted count and, checked individually, the predicted
+  direction at every one of the 4 sites.
+- **Real re-verification: all 10 real-verified candidates genuinely
+  killed, zero survivors** - confirmed examples: widening
+  `concentrationMgPerMl > 0.0` to `> -0.01` is killed via
+  `ExpectedDose`'s own unchanged `requires > 0.0` at the pinning
+  clause's call site (a precondition-call violation, not a
+  postcondition failure - still a correct, real kill, worth naming
+  since it's a different failure shape than most of this repo's other
+  kills); both function-body literal mutants (the `< 0.0` threshold and
+  the bare `then 0.0` return value) are killed because any mismatch
+  between `ExpectedDose`'s mutated definition and the method body's
+  unchanged, actual computation breaks the pinning clause for some input
+  in the perturbed range.
+- **The one named, unresolved tension from scoping** (whether the
+  clinical-precision floor is the right test for REQ-GIP-1-8-1's
+  exact-zero safety requirement specifically) didn't need resolving to
+  get a clean result here - the function-body zero-literal mutant was
+  killed at the ±0.01 granularity regardless - but the underlying
+  judgment call is still open, not silently closed by this result.
+- **Combined final state across all five Gate C5 operator classes: 56
+  mutants - 41 killed, 6 filtered_static, 4
+  filtered_chain_incompatible, 1 filtered_ar_group_incompatible, 4
+  filtered_magnitude_implied - zero survived, zero unclassifiable.**
+- **Tests:** `tests/test_dafny_mutate.py` grew from 19 to 25 (literal-
+  site location with correct operand/side tracking on the real spec, a
+  refusal test for a hypothetical non-adjacent literal, function-body
+  literal-site location, a direct unit test of `_lvr_trivial` against
+  hand-derived cases independent of the real spec, a check that the
+  generation-time half of the prediction matches, a byte-level check on
+  the targeted-literal splice). `tests/test_mutation_report.py` grew
+  from 7 to 8 (locks in the real-verification half of the prediction -
+  all 10 real-verified LVR candidates killed - against the committed
+  capture). Full suite: **138 passed** (131 prior + 7 new). No leftover
+  temp files (verified).
+- Full documentation set updated to match (`KNOWN_LIMITATIONS.md`,
+  `SYSTEM_BLUEPRINT.md`, the roadmap doc, this entry, README.md, the
+  example's own README). `generate_artifacts.py` re-run as a sanity
+  check: no observable change beyond timestamps, as expected.
+
 ## 2026-07-07 — Gate C5 LVR extension scoped (not built)
 
 Requested directly: "scope out Gate C5's LVR extension." Full sub-plan

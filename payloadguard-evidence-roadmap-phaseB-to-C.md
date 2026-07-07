@@ -99,7 +99,21 @@ been just MutDafny-style — IronSpec's own mutation technique is a
 different, directional approach. Final real run: **42 mutants — 31
 killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
 filtered_ar_group_incompatible — zero survived, zero unclassifiable.**
-Full detail below.
+
+**Gate C5's LVR (Literal Value Replacement) extension was then scoped
+and built, same day** ("scope out Gate C5's LVR extension", then "go").
+Every numeric literal in `dosage.dfy`'s requires/ensures clauses and
+`ExpectedDose`'s function body is exactly `0.0` (7 sites, audited
+empirically); each mutated to `± 0.01`, the clinical-precision floor
+from the research findings above, finally applied. A new
+magnitude-implication filter generalizes ROR's requires/ensures
+polarity principle. **Real run matched the scoping session's
+hand-derived prediction exactly, site by site: 14 mutants, 4 filtered,
+10 real-verified, all 10 genuinely killed — zero survivors.** **Final
+combined real run across all five operator classes: 56 mutants — 41
+killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible, 4 filtered_magnitude_implied — zero
+survived, zero unclassifiable.** Full detail below.
 
 ## Where we are
 
@@ -136,20 +150,26 @@ Full detail below.
   summary; `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`
   records Steven's sign-off on it for `dosage.dfy::CalculateHourlyDose`.
   See below.
-- Phase C Gate C5 (mutation testing) — BUILT then EXTENDED same day from
-  research findings, 2026-07-07: `evidence/dafny_mutate.py` +
-  `run_mutation_suite.py`. v1's 39 mutants against
-  `dosage.dfy::CalculateHourlyDose` found 2 real REQ-GIP-1-8-1
-  survivors, FIXED same day (tightened `>=` to `>` on Steven's decision),
-  plus 4 unclassifiable chain-direction parse errors. External research
-  then produced a correction (mislabeled "MutDafny/IronSpec-style";
-  IronSpec's own mutation technique is different) and two more builds on
-  "build both": chain-direction-aware ROR and function-body AOR
-  (MutDafny's own restriction, eliminating the division-by-zero
-  false-kill risk by construction). Final: 42 mutants — 31 killed, 6
+- Phase C Gate C5 (mutation testing) — BUILT then EXTENDED TWICE same
+  day, 2026-07-07: `evidence/dafny_mutate.py` + `run_mutation_suite.py`.
+  v1's 39 mutants against `dosage.dfy::CalculateHourlyDose` found 2 real
+  REQ-GIP-1-8-1 survivors, FIXED same day (tightened `>=` to `>` on
+  Steven's decision), plus 4 unclassifiable chain-direction parse
+  errors. External research produced a correction (mislabeled
+  "MutDafny/IronSpec-style"; IronSpec's own mutation technique is
+  different) and two more builds on "build both": chain-direction-aware
+  ROR and function-body AOR (MutDafny's own restriction, eliminating the
+  division-by-zero false-kill risk by construction) — 42 mutants, zero
+  survived, zero unclassifiable at that point. Then LVR (Literal Value
+  Replacement), scoped ("scope out Gate C5's LVR extension") then built
+  ("go") the same day: every numeric literal in the spec is exactly 0.0
+  (7 sites), mutated to ±0.01 (the clinical-precision floor, finally
+  applied). Real run matched the scoping session's hand-derived
+  prediction exactly: 14 mutants, 4 filtered, 10 real-verified, all 10
+  genuinely killed. **Final combined: 56 mutants — 41 killed, 6
   filtered_static, 4 filtered_chain_incompatible, 1
-  filtered_ar_group_incompatible — zero survived, zero unclassifiable.
-  See below.
+  filtered_ar_group_incompatible, 4 filtered_magnitude_implied — zero
+  survived, zero unclassifiable.** See below.
 
 ## Guiding principle (unchanged)
 
@@ -1040,7 +1060,19 @@ roadmap's own stated scope for this gate. Not wired into `build_matrix()`
 or any generator — a pre-trust check run before relying on a PROVEN claim,
 not part of the artifact-generation pipeline.
 
-### Gate C5 LVR extension — Literal Value Replacement — SCOPED (2026-07-07), not yet built
+### Gate C5 LVR extension — Literal Value Replacement — BUILT (2026-07-07), matched its own prediction exactly
+
+**Build result summary, full detail in `KNOWN_LIMITATIONS.md`:** built
+the same day as this sub-plan, on "go." Real run: 14 mutants (7 sites ×
+2 candidates), 4 filtered as `filtered_magnitude_implied`, 10 sent to
+real verification — **all 10 genuinely killed, zero survivors, exactly
+matching every prediction below, site by site.** Combined with the rest
+of Gate C5: **56 mutants total — 41 killed, 6 filtered_static, 4
+filtered_chain_incompatible, 1 filtered_ar_group_incompatible, 4
+filtered_magnitude_implied — zero survived, zero unclassifiable.** 7 new
+tests (25 total in `test_dafny_mutate.py`, 8 in `test_mutation_report.py`);
+full suite now 138 passed. What follows is the original sub-plan this
+build followed — kept as the architectural record.
 
 **Purpose.** ROR tests whether a comparison's *operator* is load-bearing;
 AOR tests whether an *arithmetic operator* is load-bearing. Neither
@@ -1157,6 +1189,11 @@ each), 10 sent to real verification, all 10 predicted killed — zero
 survivors predicted.** If the real run disagrees with this prediction
 anywhere, that disagreement is itself the finding worth reporting, not
 a bug in the prediction to quietly fix.
+
+**Confirmed exactly, real run 2026-07-07: 14 raw, 4 filtered, 10
+real-verified, all 10 genuinely killed, zero survivors — no
+disagreement anywhere.** See `KNOWN_LIMITATIONS.md` for the real,
+per-site outcomes.
 
 #### Architecture: reuse, no new extraction machinery needed
 

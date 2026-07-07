@@ -72,14 +72,23 @@ above:
    was originally deferred is resolved by construction, not by post-hoc
    failure-reason attribution.
 
-Not built in this pass: literal-value-replacement (LVR) mutation, the
-class the research's clinical-precision-floor guidance (round to the
-delivery device's actual precision, e.g. no clinically meaningful
-mutant differs from the original by less than 0.01 mL/hr for a syringe
-pump) would actually bound - Gate C5's six-operator scope was always
-ROR/LOR/AOR/SOR/HOR/COI, never LVR, so that guidance has no application
-yet; named here rather than forced onto AOR, which doesn't have a
-"magnitude."
+3. **LVR (Literal Value Replacement), built 2026-07-07 from a scoped
+   sub-plan** (full derivation in
+   payloadguard-evidence-roadmap-phaseB-to-C.md's "Gate C5 LVR
+   extension" section): tests whether a comparison's LITERAL CONSTANT is
+   load-bearing, not just its operator. Every numeric literal in this
+   spec's requires/ensures clauses and `ExpectedDose`'s function body is
+   exactly `0.0` (audited empirically, not assumed) - mutated to
+   `original +/- 0.01`, the clinical-precision-floor guidance from the
+   research findings above finally applied (it was always scoped to
+   literal perturbation specifically). `_lvr_trivial` generalizes ROR's
+   requires/ensures polarity principle from operator-implication to
+   magnitude-implication for LT/LE/GT/GE-adjacent literals; EQ/NE
+   literals have no such filter (changing an equality's target is
+   neither a superset nor subset of the original in either direction);
+   function-body literals have no requires/ensures role to filter by at
+   all, so those go straight to real verification unfiltered, mirroring
+   AOR's function-body precedent.
 """
 
 import re
@@ -176,6 +185,13 @@ _CHAIN_BOUNDARY_KINDS = {"AND", "OR", "IMP", "EQIMP", "NOT", "LPAREN", "RPAREN"}
 # here at all - never generated as a candidate that reaches Dafny).
 _AR_GROUPS = ({"PLUS", "MINUS", "STAR"}, {"SLASH"})
 
+# LVR's clinical-precision-floor guidance
+# (gate_c5_mutation_testing_research_findings.md): the smallest
+# clinically-distinguishable perturbation for a syringe-pump mL/hr
+# value, sourced from pharmacy/nursing device-rounding practice - not a
+# formal regulatory standard, but a defensible, cited cutoff.
+_LVR_DELTA = 0.01
+
 
 def _chain_group_ids(tokens):
     """Parallel array: a group id per token in `tokens`, where a group is
@@ -219,6 +235,43 @@ def _ar_group_incompatible(kind, mutant_kind):
         if kind in group:
             return mutant_kind not in group
     return True  # unknown kind - refuse rather than guess
+
+
+def _lvr_trivial(keyword, op_kind, literal_is_lhs, delta):
+    """Generalizes ROR's requires/ensures polarity principle (see
+    _CMP_IMPLIES's docstring and the roadmap's LVR sub-plan for the full
+    derivation) from operator-implication to magnitude-implication.
+
+    Normalize every comparison to whether increasing the literal
+    NARROWS the set of values that satisfy it (a stricter constraint) or
+    WIDENS it (a looser one): `expr > literal`/`expr >= literal`
+    (literal on the right) narrows as the literal increases; so does
+    `literal <= expr`/`literal < expr` (literal on the left, an
+    equivalent "expr >= literal"-shaped constraint). The other two
+    operator/side combinations widen as the literal increases. From
+    there, the same rule ROR already established applies: for a
+    REQUIRES clause, narrowing (strengthening the precondition) is
+    trivial - the original proof still applies under the narrower
+    hypothesis - so the informative direction is widening (admitting
+    inputs the original proof never had to handle). For an ENSURES
+    clause it's the opposite: widening (weakening the guarantee) is
+    trivial - whatever already satisfies the original satisfies a looser
+    consequence too - so the informative direction is narrowing (a
+    stronger claim not already implied by the original).
+
+    EQ/NE have no such relationship at all: changing an equality's
+    target value is neither a superset nor a subset of the original in
+    either direction (`dose == 0.0` doesn't imply, or get implied by,
+    `dose == 0.01`) - every EQ/NE literal mutation is always sent to
+    real verification, never statically filtered."""
+    if op_kind in ("EQ", "NE"):
+        return False
+    ascending = op_kind in (("LT", "LE") if literal_is_lhs else ("GT", "GE"))
+    increased = delta > 0
+    narrows = ascending == increased
+    if keyword == "ensures":
+        return not narrows
+    return narrows
 
 
 def _tokenize_with_spans(expr):
@@ -300,25 +353,48 @@ def _find_function_body_span(source, function_name):
     )
 
 
-def _locate_function_body_arithmetic_sites(source, function_name):
-    """Every arithmetic-operator token (+,-,*,/) within function_name's
-    BODY, as (abs_start, abs_end, kind) tuples. Refuses (rather than
-    silently misaligning offsets) if the body contains a `//` comment:
-    stripping it would shift character positions, and a `//` also
-    lexically collides with SLASH in the tokenizer - this repo's real
-    body (ExpectedDose's) has neither, checked, not assumed."""
+def _function_body_tokens(source, function_name):
+    """(body_start, tokens) for function_name's BODY, tokenized with
+    spans. Refuses (rather than silently misaligning offsets) if the
+    body contains a `//` comment: stripping it would shift character
+    positions, and a `//` also lexically collides with SLASH in the
+    tokenizer - this repo's real body (ExpectedDose's) has neither,
+    checked, not assumed. Shared by every function-body mutation class
+    (AOR, LVR) so the comment-safety check lives in exactly one place."""
     body_start, _body_end, body = _find_function_body_span(source, function_name)
     if "//" in body:
         raise SystemExit(
             f"dafny_mutate: {function_name!r}'s body contains a `//` comment - "
-            "refusing to locate arithmetic sites rather than risk a "
+            "refusing to locate mutation sites rather than risk a "
             "misaligned offset or a comment slash mistaken for division"
         )
-    sites = []
-    for kind, _value, tstart, tend in _tokenize_with_spans(body):
-        if kind in _AR_TEXT:
-            sites.append((body_start + tstart, body_start + tend, kind))
-    return sites
+    return body_start, _tokenize_with_spans(body)
+
+
+def _locate_function_body_arithmetic_sites(source, function_name):
+    """Every arithmetic-operator token (+,-,*,/) within function_name's
+    BODY, as (abs_start, abs_end, kind) tuples."""
+    body_start, tokens = _function_body_tokens(source, function_name)
+    return [
+        (body_start + tstart, body_start + tend, kind)
+        for kind, _value, tstart, tend in tokens
+        if kind in _AR_TEXT
+    ]
+
+
+def _locate_function_body_numeric_literal_sites(source, function_name):
+    """Every NUM-kind token within function_name's BODY, as
+    (abs_start, abs_end, value) tuples - used by LVR. No comparison-
+    operand/side information is tracked here (unlike the clause-level
+    LVR locator) because function-body literals have no requires/ensures
+    role to apply the magnitude-implication filter to at all - see
+    generate_lvr_mutants."""
+    body_start, tokens = _function_body_tokens(source, function_name)
+    return [
+        (body_start + tstart, body_start + tend, value)
+        for kind, value, tstart, tend in tokens
+        if kind == "NUM"
+    ]
 
 
 def _locate_clause_sites(source, method_name, keyword):
@@ -339,6 +415,41 @@ def _locate_clause_sites(source, method_name, keyword):
             sites.append((abs_start, abs_end, source[abs_start:abs_end]))
         offset += len(line)
     return sites
+
+
+def _locate_clause_numeric_literal_sites(code_text):
+    """Every NUM-kind token in one clause's text, paired with the
+    comparison operator kind it's an operand of and which side it's on
+    (needed by _lvr_trivial to determine narrowing vs widening).
+    Every literal in this repo's real clauses sits immediately adjacent
+    to a comparison operator in the flat token stream - no literal is
+    buried inside a nested arithmetic sub-expression. Refuses (Tier 1)
+    rather than guess a role if that assumption ever breaks, instead of
+    silently treating an arithmetic-embedded literal as a bare
+    comparison operand."""
+    tokens = _tokenize_with_spans(code_text)
+    sites = []
+    for i, (kind, value, tstart, tend) in enumerate(tokens):
+        if kind != "NUM":
+            continue
+        if i + 1 < len(tokens) and tokens[i + 1][0] in _CMP_TEXT:
+            sites.append((tstart, tend, value, tokens[i + 1][0], True))
+        elif i > 0 and tokens[i - 1][0] in _CMP_TEXT:
+            sites.append((tstart, tend, value, tokens[i - 1][0], False))
+        else:
+            raise SystemExit(
+                f"dafny_mutate: literal {value!r} in {code_text!r} is not "
+                "adjacent to a comparison operator - refusing to guess its "
+                "role rather than risk mutating an unrelated literal"
+            )
+    return sites
+
+
+def _format_real_literal(value):
+    """Dafny real literals always show a decimal point; two decimal
+    places matches this module's +/-0.01 perturbation of literals that
+    all start as the integer-valued real 0.0 in this repo's real spec."""
+    return f"{value:.2f}"
 
 
 def _generate_token_mutants(
@@ -454,6 +565,78 @@ def _generate_function_body_aor_mutants(source, function_name):
     return mutants
 
 
+def generate_lvr_mutants(source, method_name, function_name=None):
+    """LVR: is a comparison's LITERAL CONSTANT load-bearing, not just its
+    operator (ROR) or the arithmetic combining it (AOR)? Every numeric
+    literal in this repo's real spec is exactly 0.0 (requires/ensures
+    clauses plus, when `function_name` is given, that companion
+    function's body); each is mutated to `original +/- _LVR_DELTA`, the
+    clinical-precision floor from
+    gate_c5_mutation_testing_research_findings.md. Clause-level literals
+    adjacent to LT/LE/GT/GE are filtered per _lvr_trivial's magnitude-
+    implication principle; EQ/NE-adjacent and all function-body literals
+    are never filtered (see _lvr_trivial and
+    _locate_function_body_numeric_literal_sites' docstrings)."""
+    mutants = []
+    for keyword in ("requires", "ensures"):
+        for code_start, _code_end, code_text in _locate_clause_sites(source, method_name, keyword):
+            for tstart, tend, value, op_kind, literal_is_lhs in _locate_clause_numeric_literal_sites(
+                code_text
+            ):
+                original_value = float(value)
+                abs_start = code_start + tstart
+                abs_end = code_start + tend
+                for delta in (-_LVR_DELTA, _LVR_DELTA):
+                    mutant_text = _format_real_literal(original_value + delta)
+                    mutated_clause = code_text[:tstart] + mutant_text + code_text[tend:]
+                    mutated_source = source[:abs_start] + mutant_text + source[abs_end:]
+                    trivial = _lvr_trivial(keyword, op_kind, literal_is_lhs, delta)
+                    mutants.append(
+                        Mutant(
+                            operator="LVR",
+                            keyword=keyword,
+                            original_clause=code_text,
+                            mutated_clause=mutated_clause,
+                            description=(
+                                f"LVR on {keyword} clause {code_text!r}: "
+                                f"{value} -> {mutant_text}"
+                            ),
+                            mutated_source=mutated_source,
+                            filtered_reason=(
+                                f"magnitude-implied ({keyword})" if trivial else None
+                            ),
+                        )
+                    )
+    if function_name is not None:
+        mutants += _generate_function_body_lvr_mutants(source, function_name)
+    return mutants
+
+
+def _generate_function_body_lvr_mutants(source, function_name):
+    mutants = []
+    for abs_start, abs_end, value in _locate_function_body_numeric_literal_sites(
+        source, function_name
+    ):
+        original_value = float(value)
+        for delta in (-_LVR_DELTA, _LVR_DELTA):
+            mutant_text = _format_real_literal(original_value + delta)
+            mutated_source = source[:abs_start] + mutant_text + source[abs_end:]
+            mutants.append(
+                Mutant(
+                    operator="LVR",
+                    keyword="function_body",
+                    original_clause=f"{function_name} body literal {value!r}",
+                    mutated_clause=f"{function_name} body literal {mutant_text!r}",
+                    description=(
+                        f"LVR on {function_name}'s function body: {value} -> {mutant_text}"
+                    ),
+                    mutated_source=mutated_source,
+                    filtered_reason=None,
+                )
+            )
+    return mutants
+
+
 def generate_coi_mutants(source, method_name):
     """Negate-and-reverify: a different question than ROR/LOR/AOR ask.
     Those ask "is this specific boundary load-bearing"; COI asks "does
@@ -480,14 +663,15 @@ def generate_coi_mutants(source, method_name):
 
 def generate_mutants(source, method_name, function_name=None):
     """Every mutant this module can generate for method_name, across all
-    four implemented operator classes. SOR/HOR contribute nothing (not
+    five implemented operator classes. SOR/HOR contribute nothing (not
     implemented - see module docstring). `function_name`, when given,
-    extends AOR to that companion function's body (see
-    generate_aor_mutants) - dosage.dfy's real caller passes
-    "ExpectedDose" here."""
+    extends AOR and LVR to that companion function's body (see
+    generate_aor_mutants/generate_lvr_mutants) - dosage.dfy's real
+    caller passes "ExpectedDose" here."""
     return (
         generate_ror_mutants(source, method_name)
         + generate_lor_mutants(source, method_name)
         + generate_aor_mutants(source, method_name, function_name=function_name)
+        + generate_lvr_mutants(source, method_name, function_name=function_name)
         + generate_coi_mutants(source, method_name)
     )

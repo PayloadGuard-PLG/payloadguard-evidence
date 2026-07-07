@@ -395,7 +395,52 @@ both"):
   candidates (`* -> +`, `* -> -`) are both genuinely killed, confirming
   `*` is load-bearing.
 
-**Final real run: 42 mutants — 31 killed, 6 filtered_static, 4
-filtered_chain_incompatible, 1 filtered_ar_group_incompatible, 0
+**Final real run at this point: 42 mutants — 31 killed, 6
+filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible, 0 survived, 0 unclassifiable.** See the
+next amendment for the LVR extension that added 14 more.
+
+## Amendment 2026-07-07 — Gate C5 LVR extension: matched its own prediction exactly
+
+Recorded per the audit-trail discipline in `sources/README.md`.
+
+Requested directly ("scope out Gate C5's LVR extension", then "go"):
+tests whether a comparison's LITERAL CONSTANT is load-bearing, not just
+its operator or the arithmetic combining it. Every numeric literal in
+this spec's requires/ensures clauses and `ExpectedDose`'s function body
+was audited empirically — **all 7 are exactly `0.0`**, no other numeric
+constant exists anywhere in the spec.
+
+Each is mutated to `original ± 0.01` — the clinical-precision floor from
+the earlier research, finally applied (it was always scoped to literal
+perturbation specifically). A new filter generalizes ROR's
+requires/ensures polarity principle from operator-implication to
+magnitude-implication: 4 of the 14 raw mutants are filtered as
+`filtered_magnitude_implied` (the narrowing/weakening direction, per
+clause role); EQ-adjacent literals and function-body literals have no
+such filter and always go to real verification.
+
+**The real run matched the scoping session's hand-derived prediction
+exactly, site by site: 10 real-verified candidates, all 10 genuinely
+killed, zero survivors.** For example, widening
+`concentrationMgPerMl > 0.0` to `> -0.01` is killed via `ExpectedDose`'s
+own unchanged precondition at the pinning clause's call site; both
+function-body literal mutants (the `< 0.0` threshold and the bare
+`then 0.0` return value) are killed because any mismatch between
+`ExpectedDose`'s mutated definition and the method body's unchanged,
+actual computation breaks the pinning clause for some input in the
+perturbed range.
+
+The scoping session flagged one unresolved tension: whether the
+clinical-precision floor is the right test for REQ-GIP-1-8-1's
+*exact-zero* safety requirement specifically, since a regulator could
+reasonably view any nonzero delivery as a real hazard rather than
+negligible noise. This result didn't need to resolve that tension to
+come out clean (the zero-literal mutant was killed at the ±0.01
+granularity regardless), but the underlying judgment call remains open.
+
+**Final combined real run across all five operator classes: 56 mutants
+— 41 killed, 6 filtered_static, 4 filtered_chain_incompatible, 1
+filtered_ar_group_incompatible, 4 filtered_magnitude_implied, 0
 survived, 0 unclassifiable.** `mutation_report.json`/`.md` and
 `run_manifest_mutation.json` reflect this final state.

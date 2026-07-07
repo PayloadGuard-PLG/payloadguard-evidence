@@ -1,7 +1,7 @@
 """Phase C, Gate C5: validates the COMMITTED mutation report - the real,
 captured outcome of every mutant against the real installed Dafny binary
 (run_mutation_suite.py). Does not re-invoke Dafny (that capture is real
-and already made; re-running 42 verifications on every test pass would
+and already made; re-running 56 verifications on every test pass would
 be slow and would let a regenerated report silently drift without a
 human noticing) - reads mutation_report.json exactly the way
 tests/test_dafny_stp_suite.py and friends read other committed captures.
@@ -20,15 +20,16 @@ def _report():
 
 def test_report_total_and_outcome_counts():
     records = _report()
-    assert len(records) == 42
+    assert len(records) == 56
     counts = {}
     for r in records:
         counts[r["outcome"]] = counts.get(r["outcome"], 0) + 1
     assert counts == {
-        "killed": 31,
+        "killed": 41,
         "filtered_static": 6,
         "filtered_chain_incompatible": 4,
         "filtered_ar_group_incompatible": 1,
+        "filtered_magnitude_implied": 4,
     }
 
 
@@ -95,13 +96,31 @@ def test_function_body_aor_mutants_present_and_division_free_candidate_filtered(
     before verification, never risking Dafny's division-by-zero check
     producing a false "kill" for the wrong reason."""
     records = _report()
-    body_mutants = [r for r in records if r["keyword"] == "function_body"]
-    assert len(body_mutants) == 3
-    by_op = {r["description"].rsplit(" ", 1)[-1]: r for r in body_mutants}
+    body_aor = [r for r in records if r["keyword"] == "function_body" and r["operator"] == "AOR"]
+    assert len(body_aor) == 3
+    by_op = {r["description"].rsplit(" ", 1)[-1]: r for r in body_aor}
     assert by_op["+"]["outcome"] == "killed"
     assert by_op["-"]["outcome"] == "killed"
     assert by_op["/"]["outcome"] == "filtered_ar_group_incompatible"
     assert "group incompatible" in by_op["/"]["detail"]
+
+
+def test_lvr_mutants_present_and_all_real_verified_candidates_killed():
+    """Built 2026-07-07 from a scoped sub-plan (LVR extension): every
+    numeric literal in the spec is exactly 0.0, mutated to +/-0.01. 14
+    total (5 clause-level x2, 2 function-body x2); 4 filtered as
+    magnitude-implied (the trivial narrowing/weakening direction per
+    clause role); the remaining 10 were all hand-predicted killed in the
+    scoping session and are confirmed killed here, for real, not
+    assumed - zero LVR survivors."""
+    records = _report()
+    lvr = [r for r in records if r["operator"] == "LVR"]
+    assert len(lvr) == 14
+    filtered = [r for r in lvr if r["outcome"] == "filtered_magnitude_implied"]
+    assert len(filtered) == 4
+    real_verified = [r for r in lvr if r["outcome"] != "filtered_magnitude_implied"]
+    assert len(real_verified) == 10
+    assert all(r["outcome"] == "killed" for r in real_verified)
 
 
 def test_no_mutant_touches_the_calculatehourlydose_method_implementation_body():
@@ -118,10 +137,11 @@ def test_no_mutant_touches_the_calculatehourlydose_method_implementation_body():
 def test_run_manifest_records_real_dafny_version_and_matching_counts():
     manifest = json.loads((ART_DIR / "run_manifest_mutation.json").read_text())
     assert "4.11.0" in manifest["tool_version"]
-    assert manifest["total_mutants"] == 42
+    assert manifest["total_mutants"] == 56
     assert manifest["counts"] == {
-        "killed": 31,
+        "killed": 41,
         "filtered_static": 6,
         "filtered_chain_incompatible": 4,
         "filtered_ar_group_incompatible": 1,
+        "filtered_magnitude_implied": 4,
     }

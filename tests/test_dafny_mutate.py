@@ -16,11 +16,16 @@ from evidence.dafny_mutate import (  # noqa: E402
     generate_aor_mutants,
     generate_coi_mutants,
     generate_lor_mutants,
+    generate_lvr_mutants,
     generate_mutants,
     generate_ror_mutants,
     _ar_group_incompatible,
     _chain_incompatible,
+    _locate_clause_numeric_literal_sites,
+    _locate_clause_sites,
     _locate_function_body_arithmetic_sites,
+    _locate_function_body_numeric_literal_sites,
+    _lvr_trivial,
     _tokenize_with_spans,
 )
 
@@ -182,20 +187,21 @@ def test_mutated_source_changes_exactly_the_targeted_operator():
     assert diff_positions[-1] == diff_positions[0]
 
 
-def test_generate_mutants_aggregates_all_four_implemented_classes():
+def test_generate_mutants_aggregates_all_five_implemented_classes():
     source = _dosage_source()
     total = len(generate_mutants(source, "CalculateHourlyDose"))
     ror = len(generate_ror_mutants(source, "CalculateHourlyDose"))
     lor = len(generate_lor_mutants(source, "CalculateHourlyDose"))
     aor = len(generate_aor_mutants(source, "CalculateHourlyDose"))
+    lvr = len(generate_lvr_mutants(source, "CalculateHourlyDose"))
     coi = len(generate_coi_mutants(source, "CalculateHourlyDose"))
-    assert total == ror + lor + aor + coi == 39
+    assert total == ror + lor + aor + lvr + coi == 49
 
 
-def test_generate_mutants_with_function_name_includes_body_aor():
+def test_generate_mutants_with_function_name_includes_body_aor_and_lvr():
     source = _dosage_source()
     total = len(generate_mutants(source, "CalculateHourlyDose", function_name="ExpectedDose"))
-    assert total == 39 + 3  # the 3 function-body AOR mutants added
+    assert total == 49 + 3 + 4  # +3 function-body AOR, +4 function-body LVR
 
 
 def test_tokenize_with_spans_handles_function_call_commas():
@@ -297,3 +303,89 @@ def test_ror_polarity_flips_between_requires_and_ensures():
     assert ens_to_gt.filtered_reason is None, (
         "ensures r>=0 -> r>0 is NOT implied by r>=0 (r could equal 0); must be tested"
     )
+
+
+def test_locate_clause_numeric_literal_sites_finds_every_zero_with_correct_role():
+    """Every literal in dosage.dfy's real clauses is exactly 0.0, at 5
+    sites, each immediately adjacent to a comparison operator - verified
+    directly against the real spec, not assumed."""
+    source = _dosage_source()
+    total_sites = 0
+    for keyword in ("requires", "ensures"):
+        for _start, _end, code_text in _locate_clause_sites(
+            source, "CalculateHourlyDose", keyword
+        ):
+            sites = _locate_clause_numeric_literal_sites(code_text)
+            for _tstart, _tend, value, op_kind, _is_lhs in sites:
+                assert value == "0.0"
+                assert op_kind in ("LE", "GT", "EQ")
+            total_sites += len(sites)
+    assert total_sites == 5
+
+
+def test_locate_clause_numeric_literal_sites_refuses_non_adjacent_literal():
+    with pytest.raises(SystemExit, match="not adjacent to a comparison operator"):
+        _locate_clause_numeric_literal_sites("x == y + 1.0")
+
+
+def test_locate_function_body_numeric_literal_sites_finds_both_zeros():
+    source = _dosage_source()
+    sites = _locate_function_body_numeric_literal_sites(source, "ExpectedDose")
+    assert len(sites) == 2
+    for abs_start, abs_end, value in sites:
+        assert value == "0.0"
+        assert source[abs_start:abs_end] == "0.0"
+
+
+def test_lvr_trivial_matches_the_magnitude_implication_principle():
+    """Direct unit test of the pure helper, independent of the real
+    spec. GT with the literal on the right (`x > L`): increasing L
+    narrows (trivial for requires, informative for ensures); decreasing
+    L widens (informative for requires, trivial for ensures). LE with
+    the literal on the left (`L <= x`, i.e. `x >= L`): same shape as GT.
+    EQ/NE: never trivial, regardless of direction or role."""
+    assert _lvr_trivial("requires", "GT", False, +0.01) is True  # narrows
+    assert _lvr_trivial("requires", "GT", False, -0.01) is False  # widens
+    assert _lvr_trivial("ensures", "GT", False, +0.01) is False  # narrows
+    assert _lvr_trivial("ensures", "GT", False, -0.01) is True  # widens
+
+    assert _lvr_trivial("ensures", "LE", True, +0.01) is False  # narrows
+    assert _lvr_trivial("ensures", "LE", True, -0.01) is True  # widens
+
+    assert _lvr_trivial("requires", "EQ", False, +0.01) is False
+    assert _lvr_trivial("ensures", "EQ", False, -0.01) is False
+    assert _lvr_trivial("requires", "NE", True, +0.01) is False
+
+
+def test_lvr_against_real_spec_matches_the_hand_derived_prediction():
+    """The scoping session's own hand-worked prediction (roadmap doc's
+    Gate C5 LVR sub-plan): 14 raw mutants (7 sites x 2 candidates), 4
+    filtered as magnitude-implied, 10 sent to real verification. This
+    test locks in the generation-time half of that prediction; the
+    real-verification half (all 10 predicted killed) is locked in by
+    tests/test_mutation_report.py against the committed real capture."""
+    source = _dosage_source()
+    mutants = generate_lvr_mutants(source, "CalculateHourlyDose", function_name="ExpectedDose")
+    assert len(mutants) == 14
+    filtered = [m for m in mutants if m.filtered_reason]
+    assert len(filtered) == 4
+    for m in filtered:
+        assert m.keyword in ("requires", "ensures")
+        assert "magnitude-implied" in m.filtered_reason
+
+
+def test_lvr_mutated_source_changes_exactly_the_targeted_literal():
+    source = _dosage_source()
+    mutants = generate_lvr_mutants(source, "CalculateHourlyDose")
+    m = next(
+        mm
+        for mm in mutants
+        if mm.keyword == "requires"
+        and mm.original_clause == "concentrationMgPerMl > 0.0"
+        and mm.description.endswith("-> -0.01")
+    )
+    assert m.mutated_source != source
+    assert "-0.01" in m.mutated_source
+    # exactly one occurrence changed: splicing "0.0" -> "-0.01" adds 2
+    # characters at exactly one place, nowhere else in the file.
+    assert len(m.mutated_source) == len(source) + 2

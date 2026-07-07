@@ -108,12 +108,14 @@ def _real_verify(mutated_source):
 
 def _filtered_outcome(reason):
     """Distinguish WHY a mutant was filtered before real verification -
-    three different reasons, three different outcome buckets, so a
-    reader never has to parse the detail text to know which applies."""
+    four different reasons, four different outcome buckets, so a reader
+    never has to parse the detail text to know which applies."""
     if reason.startswith("chain-direction incompatible"):
         return "filtered_chain_incompatible"
     if reason.startswith("arithmetic-operator group incompatible"):
         return "filtered_ar_group_incompatible"
+    if reason.startswith("magnitude-implied"):
+        return "filtered_magnitude_implied"
     return "filtered_static"
 
 
@@ -169,6 +171,11 @@ def main():
         "clause) + 3 against ExpectedDose's function body (its one `*` operator), restricted "
         "per MutDafny's own group rule (+/-/* freely interchange; never introduce `/`, "
         "eliminating the division-by-zero false-kill risk by construction).",
+        "LVR: every numeric literal in this spec is exactly `0.0` (7 sites: 5 clause-level, "
+        "2 in ExpectedDose's function body); each mutated to `+/- 0.01` (the clinical-"
+        "precision floor). Clause-level LT/LE/GT/GE-adjacent literals are filtered per the "
+        "requires/ensures magnitude-implication principle; EQ/NE-adjacent and all "
+        "function-body literals are never filtered.",
         "",
         "| Operator | Clause | Mutation | Outcome | Detail |",
         "|---|---|---|---|---|",

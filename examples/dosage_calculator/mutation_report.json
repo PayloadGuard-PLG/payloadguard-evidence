@@ -379,6 +379,142 @@
     "detail": "arithmetic-operator group incompatible (MutDafny's own restriction: never introduce / from +/-/*, avoiding a division-by-zero false-kill by construction)"
   },
   {
+    "operator": "LVR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl > -0.01",
+    "description": "LVR on requires clause 'concentrationMgPerMl > 0.0': 0.0 -> -0.01",
+    "outcome": "killed",
+    "detail": "0 verified, 2 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "requires",
+    "original_clause": "concentrationMgPerMl > 0.0",
+    "mutated_clause": "concentrationMgPerMl > 0.01",
+    "description": "LVR on requires clause 'concentrationMgPerMl > 0.0': 0.0 -> 0.01",
+    "outcome": "filtered_magnitude_implied",
+    "detail": "magnitude-implied (requires)"
+  },
+  {
+    "operator": "LVR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr > -0.01",
+    "description": "LVR on requires clause 'maxSafeDoseMgPerHr > 0.0': 0.0 -> -0.01",
+    "outcome": "killed",
+    "detail": "0 verified, 3 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "requires",
+    "original_clause": "maxSafeDoseMgPerHr > 0.0",
+    "mutated_clause": "maxSafeDoseMgPerHr > 0.01",
+    "description": "LVR on requires clause 'maxSafeDoseMgPerHr > 0.0': 0.0 -> 0.01",
+    "outcome": "filtered_magnitude_implied",
+    "detail": "magnitude-implied (requires)"
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "-0.01 <= dose <= maxSafeDoseMgPerHr",
+    "description": "LVR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': 0.0 -> -0.01",
+    "outcome": "filtered_magnitude_implied",
+    "detail": "magnitude-implied (ensures)"
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "0.01 <= dose <= maxSafeDoseMgPerHr",
+    "description": "LVR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': 0.0 -> 0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr > -0.01 || dose == 0.0",
+    "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> -0.01",
+    "outcome": "filtered_magnitude_implied",
+    "detail": "magnitude-implied (ensures)"
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr > 0.01 || dose == 0.0",
+    "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> 0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr > 0.0 || dose == -0.01",
+    "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> -0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "mutated_clause": "infusionRateMlPerHr > 0.0 || dose == 0.01",
+    "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> 0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body literal '0.0'",
+    "mutated_clause": "ExpectedDose body literal '-0.01'",
+    "description": "LVR on ExpectedDose's function body: 0.0 -> -0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body literal '0.0'",
+    "mutated_clause": "ExpectedDose body literal '0.01'",
+    "description": "LVR on ExpectedDose's function body: 0.0 -> 0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body literal '0.0'",
+    "mutated_clause": "ExpectedDose body literal '-0.01'",
+    "description": "LVR on ExpectedDose's function body: 0.0 -> -0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "operator": "LVR",
+    "keyword": "function_body",
+    "original_clause": "ExpectedDose body literal '0.0'",
+    "mutated_clause": "ExpectedDose body literal '0.01'",
+    "description": "LVR on ExpectedDose's function body: 0.0 -> 0.01",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
     "operator": "COI",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
