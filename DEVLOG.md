@@ -6,6 +6,68 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Gate C6: NL-dialogue confirmation, built and signed off
+
+Requested directly: "gate C6 first please" (choosing it over Gate C5,
+which was not requested).
+
+- **Built.** `evidence/dafny_nl_summary.py::summarize_method(source,
+  method_name)` — deliberately not a natural-language generator. Extracts
+  each requires/ensures clause verbatim (ground truth) plus any `REQ-ID`
+  cited in a trailing `//` comment, exactly as authored, alongside a
+  best-effort English gloss via a small fixed operator-substitution table
+  (`&&`/`||`/`==>`/`<==>`/comparisons → words) — explicitly a template,
+  not comprehension; the raw clause is always shown first. Reuses
+  `evidence/dafny_spec_lint.py`'s Gate C3 parsing surface
+  (`_find_method_header`, `_parse_params`, `extract_requires_clauses`,
+  `extract_ensures_clauses`) rather than reimplementing Dafny parsing.
+  Citation extraction needed a separate, comment-preserving line-based
+  scan (`_extract_annotated_clauses`), since the existing extractors
+  strip comments before this module sees the text.
+- **Scope boundary, checked not assumed.** Only single-line clauses are
+  supported. `summarize_method()` cross-checks its own line-based
+  extraction against `dafny_spec_lint`'s canonical, multi-line-capable
+  extractor and refuses (`SystemExit`, Tier 1) on any mismatch.
+- **Self-caught bug.** The first draft of that refusal check compared
+  clause *counts*, not content. Manual testing against a synthetic
+  multi-line `requires x > 0\n  && x < 100` clause found it didn't raise —
+  both extractors returned the same count (1) even though the line-based
+  scan had silently truncated to just `x > 0`, dropping the continuation,
+  while the canonical extractor correctly joined the whole clause. Same
+  count, silently wrong content. Fixed by comparing whitespace-normalized
+  clause text instead of counts; caught and corrected before the test
+  suite was even written, matching this repo's "verify empirically,
+  don't assume" discipline (e.g. Gate C4's self-caught 500.0-vs-50.0
+  wrong-value mistake).
+- **Tests.** 7 new tests in `tests/test_dafny_nl_summary.py`: real
+  `dosage.dfy` parameters/preconditions listed correctly; each
+  postcondition cites the right requirement, or explicitly "no
+  requirement cited" for the pinning clause (the load-bearing property —
+  a wrong citation is the exact defect class this gate exists to catch);
+  operator gloss; the multi-line refusal regression; a no-clauses method
+  still summarizes; output is byte-identical across repeated calls. Full
+  suite: **105 passed** (98 prior + 7 new).
+- **The sign-off itself — the gate's actual deliverable.** The generated
+  summary for `dosage.dfy::CalculateHourlyDose` was presented; the
+  `AskUserQuestion` tool failed with a stream error (this session turned
+  out to be non-interactive), so the question was asked as plain text
+  instead. Steven replied via a separate screenshot: "it's good for the
+  spec as is," confirming the summary matches intent, and flagged a
+  next-phase item (adapting the spec and explaining, for a regulatory
+  submission, how results get analyzed by downstream software) as
+  separate follow-up work, explicitly scoped out until "a defensible
+  artifact" exists. Recorded in
+  `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`, mirroring
+  `sources/req-gip-1-4-12-alarm-scope-decision.md`'s pattern.
+- **Explicitly not done.** Not wired into `build_matrix()` or any
+  generator — matches the roadmap's own framing of Gate C6 as a process
+  habit, not an automated check. The next-phase adaptation/regulatory-
+  analysis work Steven flagged is not started.
+
+Commits: `b6a5810` (generator + tests, pushed before sign-off arrived,
+since the code itself was fully verified and didn't need to wait on the
+human decision it feeds).
+
 ## 2026-07-07 — Gate 2/C2-C4 wiring extended to variants A and B
 
 Requested directly, same day as the variant-C-only wiring: "go ahead and

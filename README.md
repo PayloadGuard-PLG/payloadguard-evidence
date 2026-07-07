@@ -95,6 +95,20 @@ first time since Phase A that `intended_method: "PROVEN"` has been
 realized everywhere it's declared. See `KNOWN_LIMITATIONS.md` for the
 live gate ledger.
 
+**Gate C6 (NL-dialogue confirmation) is also now built and signed off.**
+`evidence/dafny_nl_summary.py::summarize_method` mechanically summarizes
+a Dafny method's requires/ensures clauses in plain English — the raw
+clause verbatim plus a best-effort operator-substitution gloss, labeled
+explicitly as a reading aid, not comprehension — cross-checked by content
+against `dafny_spec_lint`'s canonical extractor and refusing on any
+multi-line clause it can't safely associate a citation with. But the
+gate's actual deliverable, per its own definition, is not this code — it
+is the recorded human decision it feeds:
+[`examples/dosage_calculator/nl_confirmation_dosage_dfy.md`](examples/dosage_calculator/nl_confirmation_dosage_dfy.md)
+records Steven's sign-off on the generated summary for
+`dosage.dfy::CalculateHourlyDose` ("it's good for the spec as is"), plus
+a next-phase item he explicitly scoped out as separate follow-up work.
+
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),
 [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) (two-tier review: machine gates

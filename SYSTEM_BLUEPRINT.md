@@ -1,7 +1,15 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Gate 2/C2-C4 wiring EXTENDED TO VARIANTS A/B:
-every schema variant now binds the same real Dafny evidence for
+Last updated: 2026-07-07 (Gate C6, NL-dialogue confirmation, BUILT and
+SIGNED OFF: evidence/dafny_nl_summary.py mechanically summarizes a Dafny
+method's requires/ensures clauses in plain English, cross-checked against
+dafny_spec_lint's canonical extractor and refusing on any multi-line
+clause it can't safely associate a citation with. The gate's actual
+deliverable, examples/dosage_calculator/nl_confirmation_dosage_dfy.md,
+records Steven's sign-off on the generated summary for
+CalculateHourlyDose. 7 new tests; full suite now 105 passed. Earlier the
+same week: Gate 2/C2-C4 wiring EXTENDED TO VARIANTS A/B - every schema
+variant now binds the same real Dafny evidence for
 REQ-GIP-1-4-12/REQ-GIP-1-8-1 - metadata.a.yaml's evidence list,
 metadata.b.yaml's new .formal-N shadow rows, and
 traceability_matrix.formal.json (variant C's third partition, built
@@ -155,6 +163,26 @@ payloadguard-evidence/
 │                                 clauses without a matching <==>. Neither
 │                                 is wired into the capture/generation
 │                                 pipeline - standalone, tested modules
+│   └── dafny_nl_summary.py      Gate C6: NL-dialogue confirmation.
+│                                 summarize_method() mechanically extracts
+│                                 each requires/ensures clause verbatim
+│                                 plus any REQ-ID cited in a trailing
+│                                 comment, alongside a best-effort
+│                                 operator-substitution English gloss
+│                                 (template, not comprehension - the raw
+│                                 clause is always shown first). Reuses
+│                                 dafny_spec_lint.py's Gate C3 parsing
+│                                 surface. Only single-line clauses
+│                                 supported; cross-checks its own
+│                                 line-based extraction against
+│                                 dafny_spec_lint's canonical multi-line-
+│                                 capable extractor by CONTENT (not just
+│                                 count - an earlier count-only draft
+│                                 missed a real silently-truncated case)
+│                                 and refuses (SystemExit) on mismatch.
+│                                 Not wired into the capture/generation
+│                                 pipeline - a process habit, not an
+│                                 automated gate
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)
@@ -220,6 +248,14 @@ payloadguard-evidence/
 │   │                            tests a make_default_solver seed-override
 │   │                            patch; result documented in
 │   │                            KNOWN_LIMITATIONS.md, no capture changed
+│   ├── nl_confirmation_dosage_dfy.md  Gate C6: the actual deliverable -
+│   │                            a recorded human decision, not code. The
+│   │                            generated plain-English summary for
+│   │                            CalculateHourlyDose, plus Steven's
+│   │                            sign-off ("it's good for the spec as
+│   │                            is", 2026-07-07) and a next-phase item
+│   │                            he explicitly scoped out as separate
+│   │                            follow-up work
 │   ├── raw_*/run_manifest_*     Verbatim captures + command/exit manifests
 │   ├── concrete_results.json    Structured concrete evidence (T4-0)
 │   ├── exhibit_pin_*.json       Version/platform pins + mechanism attribution
@@ -329,6 +365,17 @@ payloadguard-evidence/
     │                            50.0-vs-500.0 wrong-value mistake caught
     │                            mid-build; direct source-text checks for
     │                            the pinning clause present/absent
+    ├── test_dafny_nl_summary.py  Gate C6: real dosage.dfy parameters/
+    │                            preconditions/postconditions rendered
+    │                            correctly; each postcondition cites the
+    │                            right requirement or explicitly "no
+    │                            requirement cited" (load-bearing -
+    │                            wrong citation is the exact defect class
+    │                            this gate exists to catch); operator
+    │                            gloss; multi-line-clause refusal
+    │                            regression (the self-caught count-vs-
+    │                            content bug); no-clauses case; output
+    │                            determinism
     └── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
                                  then extended to A/B (2026-07-07): real
                                  formal artifact + real A/B artifacts all
@@ -538,6 +585,32 @@ suite is wired into `build_matrix()` or any generator — matches Gates
 C1–C3's scope discipline; this gate authored one STP suite for the one
 spec that exists, per its stated scope, not a generic STP-generation
 tool.
+
+**Gate C6 (NL-dialogue confirmation) is also now built and signed off
+(2026-07-07).** Process-control gate aimed directly at recurrence of Gate
+1's original finding — a spec/requirement-text mismatch caught only at
+review time, not authoring time. `evidence/dafny_nl_summary.py::summarize_method`
+mechanically extracts each requires/ensures clause verbatim plus any
+`REQ-ID` cited in a trailing comment, alongside a best-effort operator-
+substitution gloss labeled explicitly as a reading aid, not
+comprehension — reusing Gate C3's parsing surface rather than
+reimplementing Dafny parsing. Only single-line clauses are supported;
+the function cross-checks its own extraction against `dafny_spec_lint`'s
+canonical multi-line-capable extractor and refuses on any content
+mismatch. A self-caught bug during this build: the first draft of that
+check compared clause *counts*, not content, and missed a real case — a
+synthetic multi-line clause produced the same count under both
+extractors while the line-based scan had silently truncated it, dropping
+the continuation. Fixed by comparing normalized clause text instead of
+counts, before the test suite was even written. 7 new tests
+(`tests/test_dafny_nl_summary.py`); full suite now 105 passed. The
+gate's actual deliverable is not the code but the recorded decision it
+feeds: `examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records
+Steven's sign-off on the generated summary for `CalculateHourlyDose`
+("it's good for the spec as is") plus a next-phase item he explicitly
+scoped out as separate follow-up work. Not wired into any generator —
+matches the roadmap's own framing of this gate as a process habit, not
+an automated check.
 
 **Gate 2/C2-C4 wiring is also now built (2026-07-07) — the first real
 Dafny-sourced PROVEN evidence ever to reach a live matrix row.**

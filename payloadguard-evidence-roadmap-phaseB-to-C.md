@@ -45,6 +45,21 @@ accommodate `formal.json` permanently lacking an opinion about
 REQ-DOSE-003. Both requirements' `intent_ok` is now `True` in EVERY
 variant artifact — the temporary A/B divergence tracked when C landed
 first is closed, and its carve-out mechanism retired — see below.
+**Gate C6 (NL-dialogue confirmation) is also now built and signed off
+(2026-07-07):** `evidence/dafny_nl_summary.py` mechanically summarizes a
+Dafny method's requires/ensures clauses in plain English (verbatim clause
+plus a best-effort gloss, citations pulled from trailing `// REQ-ID`
+comments), cross-checked by content against `dafny_spec_lint`'s canonical
+extractor and refusing on any multi-line clause it can't safely associate
+a citation with — a real bug in that refusal check (comparing counts
+instead of content) was self-caught before the test suite was written.
+The gate's actual deliverable — a recorded human decision, not the code —
+is `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`: Steven
+confirmed the generated summary for `CalculateHourlyDose` ("it's good for
+the spec as is") and flagged a next-phase item (spec adaptation plus an
+explanation of downstream analysis by different software, for a
+regulatory submission) as separate follow-up work, out of scope for this
+gate.
 
 ## Where we are
 
@@ -76,6 +91,11 @@ first is closed, and its carve-out mechanism retired — see below.
   real, rendered PROVEN rows, gated by Z3 + the false-zero guard inside
   the binder. Variants A/B deliberately deferred - a named, tracked
   divergence, not silently permitted. See below.
+- Phase C Gate C6 (NL-dialogue confirmation) — BUILT and SIGNED OFF
+  2026-07-07: `evidence/dafny_nl_summary.py` generates the plain-English
+  summary; `examples/dosage_calculator/nl_confirmation_dosage_dfy.md`
+  records Steven's sign-off on it for `dosage.dfy::CalculateHourlyDose`.
+  See below.
 
 ## Guiding principle (unchanged)
 
@@ -731,7 +751,7 @@ nothing — recommend treating it as its own multi-step sub-plan once
 Gates C1–C2 are stable, not attempted in one pass the way Gate 2's
 CONFLICT rule build was.
 
-### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early)
+### Gate C6 — NL-dialogue confirmation (process control, lightest gate, adopt early) — BUILT and SIGNED OFF (2026-07-07)
 
 Before the proof search runs: generate a plain-English summary of what
 the formal spec actually asserts, get explicit human sign-off that the
@@ -746,12 +766,33 @@ pattern), not a database entry. **No technical dependency on any other
 Gate C item** — recommend adopting it as a habit starting with the very
 first real Dafny spec, not deferring it behind C1–C5.
 
+**Built:** `evidence/dafny_nl_summary.py::summarize_method` — extracts
+each requires/ensures clause verbatim plus any REQ-ID cited in a trailing
+comment, alongside a best-effort operator-substitution English gloss
+(explicitly labeled as a template, not comprehension). Reuses
+`dafny_spec_lint.py`'s Gate C3 parsing surface. Only single-line clauses
+supported; cross-checks its own extraction against `dafny_spec_lint`'s
+canonical multi-line-capable extractor by content and refuses
+(`SystemExit`) on any mismatch — a self-caught bug during this build
+found the first draft of that check compared clause counts, not content,
+and missed a real silently-truncated multi-line case; fixed before the 7
+new tests (`tests/test_dafny_nl_summary.py`) were written. **Signed off:**
+`examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records
+Steven's confirmation of the generated summary for
+`dosage.dfy::CalculateHourlyDose` ("it's good for the spec as is",
+2026-07-07), plus a next-phase item (spec adaptation and an explanation
+of downstream analysis by different software, for a regulatory
+submission) he explicitly scoped out as separate follow-up work.
+
 ### Suggested build order
 
 1. **Environment decision** (which Dafny) — blocks C1 and everything
    downstream of it.
 2. **Gate C6** (process habit) — costs nothing to start now, no
-   technical blocker.
+   technical blocker. **BUILT and signed off 2026-07-07**, taken up after
+   C1–C4 and the Gate 2 wiring rather than first as suggested here — no
+   technical dependency was violated by that order, the suggestion above
+   was a recommendation, not a requirement.
 3. **Gate C1** (capture + minimal false-zero guard) — foundation.
 4. **Gate C2** (PROVEN exclusivity migration) — immediately after C1,
    before any real spec exists.

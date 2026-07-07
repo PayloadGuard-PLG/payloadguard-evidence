@@ -36,6 +36,7 @@ variant-C-only build is retired — no longer needed. Full detail below).
 | Phase C Gate C3 — Dafny output-parsing hardening | **BUILT for vectors 1–3 (2026-07-07); vector 4 BLOCKED, named** | **Vector 1 (vacuous preconditions):** `evidence/dafny_spec_lint.py::check_precondition_satisfiability` extracts a method's `requires` clauses and asks Z3 for real satisfiability, via a small hand-written expression translator (booleans, comparisons incl. chaining, arithmetic, real/int/nat/bool — anything else, e.g. quantifiers, refused outright). Proven against a real committed fixture, `examples/dosage_calculator/vacuous_precondition_probe.dfy`: Dafny itself reports a clean pass (`1 verified, 0 errors`) on a method whose precondition (`x > 0 && x < 0`) can never hold; the checker correctly reports `unsat`. **Vector 2 (weak postconditions, best-effort heuristic, not a proof):** `scan_weak_postconditions` flags `ensures` clauses using a one-way `==>` without a matching `<==>`, tested against a synthetic weak clause (flagged) and both the real dosage.dfy spec and a `<==>` clause (correctly not flagged). **Vector 3 (timeout/resource-limit masking):** real finding on the installed 4.11.0 binary — `dafny verify --resource-limit=1` on the real dosage.dfy spec produces `Dafny program verifier finished with 0 verified, 0 errors, 1 out of resource` — an "errors" count of 0 alongside an incomplete run. Confirmed the real capture's exit_code is 4 (nonzero), so Gate C1's exit-code check already refuses it (an earlier suspicion of an exit-0 false-zero here was a shell-piping artifact in this session's own probing, corrected before being reported as a finding); the summary-line parser in `evidence/dafny_adapter.py` was still hardened to refuse independently on `"out of resource"`/`"out of memory"`/`"timed out"` markers and on more than one summary line in a capture, as defense in depth. **Vector 4 (specification stripping): still BLOCKED, named** — the source material describing this fourth vector was cut off before detail was captured; needs a follow-up read of the original document before it can be scoped at all, not inferred from the name. |
 | Phase C interface: `verifier_completion_status` on VerificationResult | **RESOLVED via Gate C1 + C2** | The field exists on `VerificationResult` (`evidence/model.py`), is set by Gate C1's adapter, and is now load-bearing in Gate C2's R3 check — PROVEN requires it to equal `"completed"`, not just a matching method label. Strength-assignment stays adapter-scoped, so PROVEN remains structurally impossible for CrossHair/pytest-backed requirements. |
 | Phase C Gate C4 — Spec-Testing Proofs (STPs) | **BUILT 2026-07-07; found and fixed a real spec gap** | IronSpec methodology: prove specific input/output pairs are accepted or rejected by the SPECIFICATION alone, independent of any implementation. Applied to dosage.dfy, an STP lemma revealed the original postcondition (bounds + reverse-flow-zero only) never pinned `dose` to the actual clamped value — a wrong candidate value could not be proven excluded, meaning a broken implementation could have satisfied the spec undetected. **Fixed for real:** `dosage.dfy` gained an `ExpectedDose` function and a pinning `ensures dose == ExpectedDose(...)` clause; re-verified clean (`2 verified, 0 errors`); the real committed capture was re-run honestly (`raw_dafny_output.txt` / `run_manifest_dafny.json` now reflect the fixed spec). The original weak spec is preserved verbatim as `dosage_underconstrained.dfy` (an honesty exhibit, same rationale as `dosage_naive_widening.py`). Two STP suites prove both directions for real: `dosage_stp_suite.dfy` (6 lemmas across the 3 logical branches — normal in-range, ceiling-clamped, reverse-flow — `include`s the fixed spec, all verify: `10 verified, 0 errors`) and `dosage_stp_suite_against_underconstrained.dfy` (the 2 REJECT lemmas for the branches that actually had a gap, `include`s the preserved weak spec, both genuinely fail: `0 verified, 2 errors`, exit 4 — a real negative capture, not smoothed over). 6 new tests in `tests/test_dafny_stp_suite.py`, including a regression on a self-caught mistake (an early REJECT-lemma draft used an out-of-bounds wrong value that the weak spec already excluded trivially, giving a false pass that didn't test the real gap — caught and corrected before committing). Neither STP suite is wired into `build_matrix()` or any generator; matches Gates C1–C3's scope discipline. |
+| Phase C Gate C6 — NL-dialogue confirmation | **BUILT and SIGNED OFF 2026-07-07** | Process-control gate aimed directly at recurrence of Gate 1's original finding: a spec/requirement-text mismatch caught only at review, not at authoring time. `evidence/dafny_nl_summary.py::summarize_method` mechanically extracts each requires/ensures clause verbatim, plus any REQ-ID cited in a trailing comment, alongside a best-effort operator-substitution English gloss labeled as a reading aid, not comprehension — deliberately not a natural-language generator. Only single-line clauses are supported; the function cross-checks its own line-based, comment-preserving extraction against `dafny_spec_lint`'s canonical, already-tested multi-line-capable extractor and refuses (`SystemExit`) on any content mismatch. That refusal check's first draft compared clause counts, not content, and missed a real case — a synthetic multi-line clause produced the same count under both extractors while the line-based scan had silently truncated it, dropping the continuation; caught in manual testing before the test suite was even written, fixed by comparing normalized clause text instead of counts, with a regression test added. 7 tests in `tests/test_dafny_nl_summary.py`. The gate's actual deliverable is not this code but the recorded human decision it feeds: `examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records Steven's sign-off ("it's good for the spec as is") on the generated summary for `dosage.dfy::CalculateHourlyDose`, plus a next-phase item (adapting the spec and explaining downstream analysis by different software, for a regulatory submission) he explicitly scoped out as separate follow-up work, not part of this gate. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -993,6 +994,95 @@ one STP suite for the one spec that exists, per its stated scope ("every
 Dafny spec written for Phase C gets a small STP suite alongside it,
 authored by whoever writes the spec"), not a generic STP-generation
 tool.
+
+## Phase C Gate C6 — NL-dialogue confirmation: BUILT and SIGNED OFF (2026-07-07)
+
+### What this gate is for
+
+Per the roadmap, Gate C6 is a process-control fix aimed directly at
+recurrence of Gate 1's original finding: a spec/requirement-text mismatch
+that was caught only at review time, not authoring time. The fix is to
+generate a plain-English summary of what a Dafny method's contract
+actually asserts and get explicit human sign-off that the summary matches
+intent, at the time the spec is authored. The roadmap is explicit that
+"the actual artifact is a recorded decision... not a database entry" —
+the summary generator is a means to that end, not the deliverable itself.
+
+### What was built
+
+`evidence/dafny_nl_summary.py::summarize_method(source, method_name)`
+does two honest, mechanical things and nothing more:
+
+1. Extracts each requires/ensures clause verbatim (ground truth), plus
+   any `REQ-ID` cited in a trailing `//` comment, exactly as authored —
+   never inferred from the method name or surrounding prose.
+2. Produces a best-effort English "gloss" of each clause via a small,
+   fixed operator-substitution table (`&&`/`||`/`==>`/`<==>`/comparisons
+   → words). Labeled explicitly as a template, not comprehension — the
+   raw clause is always shown first and is the authoritative artifact.
+
+Reuses `evidence/dafny_spec_lint.py`'s existing, already-tested Gate C3
+parsing surface (`_find_method_header`, `_parse_params`,
+`extract_requires_clauses`, `extract_ensures_clauses`) rather than
+reimplementing Dafny parsing. Citation extraction needed a separate,
+comment-preserving line-based scan (`_extract_annotated_clauses`), since
+the existing extractors strip comments before this module ever sees the
+text.
+
+### Scope boundary, checked not assumed
+
+Only single-line requires/ensures clauses are supported — true of every
+real clause in this repo today. A multi-line clause would silently break
+the citation-association logic if unnoticed, so `summarize_method()`
+cross-checks its own line-based extraction against `dafny_spec_lint`'s
+canonical, multi-line-capable extractor and refuses (`SystemExit`, Tier
+1) on any mismatch, rather than risk a dropped or misattributed citation.
+
+**Self-caught bug:** the first draft of that refusal check compared
+clause *counts* between the two extractors, not content. Manual testing
+against a synthetic multi-line `requires x > 0\n  && x < 100` clause
+found this didn't raise — both extractors happened to return the same
+count (1) even though the line-based scan had silently truncated to just
+`x > 0`, dropping the `&& x < 100` continuation, while the canonical
+extractor correctly joined the whole clause. Same count, silently wrong
+content. Fixed by comparing whitespace-normalized clause text instead of
+counts; re-verified the multi-line case now raises correctly and the real
+`dosage.dfy` spec still summarizes correctly. Caught and corrected before
+the test suite was even written, matching this repo's established
+"verify empirically, don't assume" discipline (e.g. Gate C4's self-caught
+500.0-vs-50.0 wrong-value mistake).
+
+### Tests and verification
+
+`tests/test_dafny_nl_summary.py` — 7 tests: parameters and preconditions
+listed correctly against the real `dosage.dfy` spec; each postcondition
+cites the right requirement (or explicitly "no requirement cited" for the
+pinning clause, which cites none) — the load-bearing property, since a
+wrong citation here is exactly the defect class this gate exists to
+catch; common operators glossed to words; the multi-line refusal
+regression described above; a method with no requires/ensures still
+summarizes cleanly; and output is byte-identical across repeated calls
+(no timestamps or randomness, since this feeds a committed artifact).
+Full suite after this gate: **105 passed** (98 prior + 7 new).
+
+### The sign-off itself
+
+`examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records the
+actual deliverable: the generated summary for
+`dosage.dfy::CalculateHourlyDose` was presented to Steven, who confirmed
+it 2026-07-07 ("it's good for the spec as is"). He also flagged a
+next-phase item at sign-off time — adapting the spec and explaining, for
+a regulatory submission, how results get analyzed by downstream software
+— which he explicitly scoped out as separate follow-up work, not part of
+this gate's deliverable.
+
+**Explicitly not done here:** this gate is not wired into
+`build_matrix()`, `generate_artifacts.py`, or any other generator, and no
+automated mechanism forces future Dafny specs through it — it is a
+process habit applied by whoever authors a spec, matching the roadmap's
+own framing ("no technical dependency on any other Gate C item... adopt
+it as a habit"). The next-phase adaptation/regulatory-analysis work
+Steven flagged is not started and is not part of this gate.
 
 ## Gate 2 / C2-C4 wiring — real Dafny evidence reaches a live matrix row (2026-07-07)
 
