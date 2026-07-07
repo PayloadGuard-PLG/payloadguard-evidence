@@ -58,11 +58,25 @@ after a real finding on the installed binary — a resource-starved run
 (`dafny verify --resource-limit=1`) can report `0 errors` alongside an
 `"N out of resource"` marker (the real capture's exit code is confirmed
 nonzero, so already caught; hardened independently anyway). Vector 4
-(specification stripping) stays BLOCKED, named. None of Gates C1/C2/C3
-is wired into `build_matrix()` or any generator yet — no binder
-assembles a Dafny-sourced record into a live matrix row, so no committed
-artifact's rendered content has changed. See `KNOWN_LIMITATIONS.md` for
-the live gate ledger.
+(specification stripping) stays BLOCKED, named. **Gate C4 (Spec-Testing
+Proofs) is also now built, and found a real gap on its first
+application:** a Dafny lemma trying to prove a wrong candidate dose
+value impossible for `dosage.dfy`'s original postcondition failed to
+verify — the spec bounded `dose` but never pinned it to the actual
+clamped value, so a broken implementation could have satisfied it
+undetected. Fixed for real: `dosage.dfy` gained a `function
+ExpectedDose(...)` and a pinning `ensures dose == ExpectedDose(...)`
+clause, re-verified clean (`2 verified, 0 errors`, up from `1 verified`
+— the real committed capture was re-run honestly to match). The
+original is preserved byte-for-byte as `dosage_underconstrained.dfy`
+(same rationale as `dosage_naive_widening.py`); two STP suites
+(`dosage_stp_suite.dfy`, `dosage_stp_suite_against_underconstrained.dfy`)
+mechanically prove both directions for real — six lemmas pass against
+the fix, the same two REJECT lemmas genuinely fail against the preserved
+original. None of Gates C1–C4 is wired into `build_matrix()` or any
+generator yet — no binder assembles a Dafny-sourced record into a live
+matrix row, so no committed artifact's rendered content has changed. See
+`KNOWN_LIMITATIONS.md` for the live gate ledger.
 
 Companion documents: [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) (structure
 and data flow), [`DEVLOG.md`](DEVLOG.md) (dated session log),

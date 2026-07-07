@@ -1,14 +1,13 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Phase C Gate C3 built for 3 of 4 named vectors:
-evidence/dafny_spec_lint.py adds a real Z3-based vacuous-precondition
-check (vector 1, proven against a real committed Dafny fixture that
-verifies clean despite an unsatisfiable precondition) and a best-effort
-weak-postcondition heuristic (vector 2); evidence/dafny_adapter.py's
-summary-line parser is hardened against a real "N out of resource"
-false-zero-adjacent finding on the installed binary (vector 3). Vector 4
-(specification stripping) stays BLOCKED, named. Gates C1/C2 (built
-earlier the same week) are unchanged. Nothing from Phase C is wired into
+Last updated: 2026-07-07 (Phase C Gate C4 built: Spec-Testing Proofs
+found dosage.dfy's original postcondition never pinned the dose value
+(bounds-only, a wrong implementation could have satisfied it) - confirmed
+mechanically via a failing Dafny lemma, then fixed for real (an
+ExpectedDose function + a pinning ensures clause), with the original
+preserved as dosage_underconstrained.dfy and two STP suites proving both
+directions. Gate C3 (vectors 1-3 of 4; vector 4 blocked) and Gates C1/C2
+were built earlier the same week. Nothing from Phase C is wired into
 build_matrix() or any generator yet — see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
 Derived from the codebase; when in doubt, the code wins. Update this file in
@@ -104,12 +103,33 @@ payloadguard-evidence/
 │   │                            order; documents why ordering is load-bearing)
 │   ├── dosage.dfy               Gate C1: real Dafny spec of the dosage
 │   │                            kernel's clamping shape; verifies clean
-│   │                            (1 verified, 0 errors). REQ-DOSE-003
-│   │                            excluded by name (Dafny real has no IEEE
-│   │                            overflow concept - confirmed empirically)
+│   │                            (2 verified, 0 errors - an ExpectedDose
+│   │                            function + the method, since Gate C4's
+│   │                            fix pinned dose == ExpectedDose(...)).
+│   │                            REQ-DOSE-003 excluded by name (Dafny
+│   │                            real has no IEEE overflow concept -
+│   │                            confirmed empirically)
 │   ├── dosage_broken.dfy        Gate C1: Sample-B-equivalent broken variant
 │   │                            (clamp removed); fails for real (0 verified,
 │   │                            2 errors, exit code 4)
+│   ├── dosage_underconstrained.dfy  Gate C4 honesty exhibit: Gate C1's
+│   │                            ORIGINAL dosage.dfy postcondition,
+│   │                            byte-for-byte, before the ExpectedDose
+│   │                            fix - verifies clean on its own (the bug
+│   │                            is a spec weakness, not a verification
+│   │                            failure); same rationale as
+│   │                            dosage_naive_widening.py
+│   ├── dosage_stp_suite.dfy     Gate C4: 6 Spec-Testing Proof lemmas
+│   │                            (IronSpec methodology) against the FIXED
+│   │                            dosage.dfy (include'd) - ACCEPT + REJECT
+│   │                            pairs for the normal/ceiling-clamped
+│   │                            branches, ACCEPT-only for reverse-flow;
+│   │                            all verify (10 verified, 0 errors)
+│   ├── dosage_stp_suite_against_underconstrained.dfy  Gate C4: the same
+│   │                            2 REJECT lemmas, include'ing the
+│   │                            preserved weak spec instead - both
+│   │                            genuinely FAIL (0 verified, 2 errors,
+│   │                            exit 4), the mechanized "before" proof
 │   ├── vacuous_precondition_probe.dfy  Gate C3 vector 1 fixture: a real,
 │   │                            committed Dafny file with an
 │   │                            unsatisfiable precondition
@@ -129,6 +149,12 @@ payloadguard-evidence/
 │   │                            "0 verified, 0 errors, 1 out of resource"
 │   │                            finding (exit_code=4, already caught by
 │   │                            the exit-code check; hardened anyway)
+│   ├── run_verify_dafny_underconstrained.py  Gate C4: real capture of
+│   │                            dosage_underconstrained.dfy standalone
+│   ├── run_verify_dafny_stp_suite(_against_underconstrained).py  Gate
+│   │                            C4: real captures of the two STP
+│   │                            suites (fixed spec passes; weak spec
+│   │                            genuinely fails)
 │   ├── gate3_seed_patch_test.py Gate 3 investigation script (not part of
 │   │                            the evidence-capture path): behaviorally
 │   │                            tests a make_default_solver seed-override
@@ -198,13 +224,21 @@ payloadguard-evidence/
     │                            refusal; nat implicit >=0; weak-
     │                            postcondition heuristic flagged/not-
     │                            flagged cases
-    └── test_dafny_timeout_masking.py  Gate C3 vector 3: real resource-
-                                 limited capture refused (exit code);
-                                 synthetic out-of-resource/out-of-memory/
-                                 timed-out markers refused even with a
-                                 forced exit_code=0 (defense in depth);
-                                 ambiguous multi-summary-line capture
-                                 refused; real clean capture unregressed
+    ├── test_dafny_timeout_masking.py  Gate C3 vector 3: real resource-
+    │                            limited capture refused (exit code);
+    │                            synthetic out-of-resource/out-of-memory/
+    │                            timed-out markers refused even with a
+    │                            forced exit_code=0 (defense in depth);
+    │                            ambiguous multi-summary-line capture
+    │                            refused; real clean capture unregressed
+    └── test_dafny_stp_suite.py  Gate C4: real committed STP captures -
+                                 underconstrained spec still verifies
+                                 alone; STP suite passes against the
+                                 fix; same suite fails against the
+                                 preserved weak spec; regression on the
+                                 50.0-vs-500.0 wrong-value mistake caught
+                                 mid-build; direct source-text checks for
+                                 the pinning clause present/absent
 ```
 
 ## 3. Data flow (end to end)
@@ -365,6 +399,34 @@ ambiguous multi-summary-line captures. Vector 4 (specification
 stripping) remains BLOCKED, named — no new source material surfaced.
 None of Gate C3's mechanisms are wired into the capture or generation
 pipeline either — standalone, tested modules, same scope discipline as
-Gates C1/C2. That wiring belongs alongside Gate C4 (STPs, "alongside the
-first real spec") per the roadmap's suggested build order. Full
-findings: `KNOWN_LIMITATIONS.md`.
+Gates C1/C2.
+
+**Gate C4 (Spec-Testing Proofs) is also now built (2026-07-07), and
+found a real spec gap on its first application:** IronSpec's
+methodology — prove a specific input/output pair is accepted or
+rejected by the SPECIFICATION itself, independent of any implementation
+— revealed that `dosage.dfy`'s original postcondition (bounds +
+reverse-flow-zero only) never pinned `dose` to the actual clamped value:
+a Dafny lemma trying to prove a wrong candidate value impossible
+**failed to verify**, meaning a broken implementation that always
+returned `0.0` would have satisfied the exact same spec Gate C1 verified
+clean. Fixed for real: `dosage.dfy` gained a `function ExpectedDose(...)`
+and a pinning `ensures dose == ExpectedDose(...)` clause, re-verified
+clean (`2 verified, 0 errors` — the count changed from Gate C1's
+original `1 verified`, and the real committed capture was re-run
+honestly to match, not patched). The original weak spec is preserved
+byte-for-byte as `dosage_underconstrained.dfy` (same rationale as
+`dosage_naive_widening.py`); two STP suites (`dosage_stp_suite.dfy`,
+`dosage_stp_suite_against_underconstrained.dfy`, each `include`-ing the
+relevant spec rather than duplicating it) mechanically prove both
+directions — six lemmas pass against the fix, the same two REJECT
+lemmas genuinely fail against the preserved original. A self-caught
+mistake during this build (an early wrong-value choice, `500.0`, was
+already excluded by the weak spec's own bounds for an unrelated reason,
+giving a false pass) was corrected to `50.0` before committing, with a
+regression test guarding against reintroducing it. 6 new tests
+(`tests/test_dafny_stp_suite.py`); full suite now 78 passed. Neither STP
+suite is wired into `build_matrix()` or any generator — matches Gates
+C1–C3's scope discipline; this gate authored one STP suite for the one
+spec that exists, per its stated scope, not a generic STP-generation
+tool. Full findings: `KNOWN_LIMITATIONS.md`.

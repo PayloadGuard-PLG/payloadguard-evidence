@@ -22,10 +22,16 @@ weak-postcondition heuristic (vector 2); `evidence/dafny_adapter.py`'s
 summary-line parser is hardened (vector 3) after a real finding on the
 installed binary — a resource-starved run can report `"0 errors"`
 alongside an `"N out of resource"` marker. Vector 4 (specification
-stripping) stays BLOCKED, named — see below. None of C1/C2/C3's
-mechanisms are wired into `build_matrix()` or any generator yet; that
-wiring belongs alongside Gate C4 (STPs), per the suggested build order
-below.
+stripping) stays BLOCKED, named. **Gate C4 (Spec-Testing Proofs) is also
+now built (2026-07-07), and found a real gap on its first use:**
+`dosage.dfy`'s original postcondition only bounded `dose`, never pinned
+it to the actual clamped value — confirmed by a Dafny lemma that failed
+to prove a wrong candidate value impossible. Fixed for real (an
+`ExpectedDose` function + a pinning ensures clause, re-verified clean,
+real capture re-run to match); the original preserved as
+`dosage_underconstrained.dfy`; two STP suites mechanically prove both
+directions — see below. None of C1–C4's mechanisms are wired into
+`build_matrix()` or any generator yet.
 
 ## Where we are
 
@@ -49,8 +55,11 @@ below.
   vectors 1–3 (Z3 vacuous-precondition check, weak-postcondition
   heuristic, hardened summary-line parser after a real "out of resource"
   finding); vector 4 (specification stripping) stays BLOCKED, named.
-  None of C1/C2/C3 is wired into the live matrix pipeline yet — no
-  binder assembles a Dafny record into a matrix row. See below.
+- Phase C Gate C4 (Spec-Testing Proofs) — BUILT 2026-07-07: found and
+  fixed a real gap in dosage.dfy's postcondition (bounds-only, never
+  pinned the dose value); two STP suites prove both directions for real.
+  None of C1–C4 is wired into the live matrix pipeline yet — no binder
+  assembles a Dafny record into a matrix row. See below.
 
 ## Guiding principle (unchanged)
 
@@ -484,7 +493,7 @@ scope discipline as Gate C1. Wiring them into the capture workflow so
 every future Dafny spec gets both checks run as a matter of course is a
 natural follow-up but wasn't asked for here.
 
-### Gate C4 — Spec-Testing Proofs (STPs)
+### Gate C4 — Spec-Testing Proofs (STPs) — BUILT (2026-07-07), found and fixed a real gap
 
 IronSpec's methodology: prove that specific, manually chosen input/output
 pairs are correctly accepted or rejected *by the specification itself*,
@@ -492,11 +501,80 @@ independent of whether the implementation satisfies it. Direct,
 mechanized fix for the exact class of bug Gate 1 found by hand
 (REQ-GIP-1-4-12's spec/evidence not matching its text) — an STP would
 have caught that the "alarm" spec only encoded clamping before any proof
-was attempted.
+was attempted. Applied to Gate C1's `dosage.dfy` — the only Dafny spec
+that exists in this repo — it found the *same class of bug recurring*,
+independently, on its first real application.
 
-**Scope:** every Dafny spec written for Phase C gets a small STP suite
-alongside it, authored by whoever writes the spec, checked in as part of
-the evidence chain — starting with whatever Gate C1's first real spec is.
+**The finding, confirmed mechanically, not by inspection:** the original
+`CalculateHourlyDose` postcondition — `0.0 <= dose <= maxSafeDoseMgPerHr`
+and `infusionRateMlPerHr >= 0.0 || dose == 0.0` — bounds `dose` and
+forces it to `0` on reverse flow, but never relates it to the actual
+product of rate and concentration otherwise. A Dafny lemma stating "for
+these fixed inputs, if `dose` satisfies both ensures clauses, then `dose`
+must equal the one correct clamped value" **failed to verify** — the
+postcondition genuinely does not force it. A method that always returned
+`0.0` for any non-negative-rate input would have satisfied the exact
+same spec Gate C1 verified clean.
+
+**The fix:** `dosage.dfy` gained `function ExpectedDose(concentrationMgPerMl,
+infusionRateMlPerHr, maxSafeDoseMgPerHr): real` — the same three-way
+clamping logic as the method body — and a new
+`ensures dose == ExpectedDose(...)` clause pinning the output exactly.
+The two original ensures clauses stay, unchanged, for direct
+per-requirement traceability. Re-verified clean: `2 verified, 0 errors`
+(the function plus the method — the count changed from Gate C1's
+original `1 verified`). **The real committed capture was re-run
+honestly, not patched:** `raw_dafny_output.txt` / `run_manifest_dafny.json`
+now reflect the fixed spec; `tests/test_dafny_adapter.py`'s exact
+`raw_status` assertion was updated to match, with a comment explaining
+why.
+
+**The preserved exhibit and the two-sided mechanized proof:**
+`dosage_underconstrained.dfy` preserves the original weak spec
+byte-for-byte (same rationale as `dosage_naive_widening.py`) — it still
+verifies cleanly on its own (`1 verified, 0 errors`); the bug is a spec
+weakness, not a verification failure. Two STP suites, each `include`-ing
+the relevant spec rather than duplicating it, prove both directions for
+real:
+- `dosage_stp_suite.dfy` (`include "dosage.dfy"`): six lemmas across the
+  three logical branches (normal in-range, ceiling-clamped, reverse-flow)
+  — ACCEPT + REJECT pairs for the first two, ACCEPT-only for the third
+  (never a gap — `infusionRateMlPerHr >= 0.0 || dose == 0.0` already
+  pins `dose` to `0` there, even in the weak spec). All six verify:
+  `10 verified, 0 errors`, exit 0.
+- `dosage_stp_suite_against_underconstrained.dfy` (`include
+  "dosage_underconstrained.dfy"`): the same two REJECT lemmas, run
+  against the weak spec instead. Both **genuinely fail**: `0 verified,
+  2 errors`, exit 4 — a real negative capture, not smoothed over, same
+  discipline as `dosage_broken.dfy`. This is the mechanized proof the
+  gap was real: the identical lemma succeeds against the fix and fails
+  against the original.
+
+**A mistake caught during this build, before committing:** an early
+draft of the ceiling-clamped REJECT lemma used the raw unclamped product
+(`500.0`) as the "wrong" value. That lemma verified even against the
+**weak** spec — not because the weak spec pins the correct value, but
+because `500.0` already violates the weak spec's own `0.0 <= dose <=
+maxSafeDoseMgPerHr` bound directly, so excluding it proves nothing about
+the real gap. Caught by checking the lemma's actual behavior against the
+weak spec rather than assuming the chosen value was a good test;
+corrected to `50.0` (in-bounds, still wrong) in both suites, with a
+regression test guarding against silently reintroducing the weaker
+value.
+
+**Tests:** `tests/test_dafny_stp_suite.py`, 6 tests, checking the real
+committed captures directly (not via `evidence.dafny_adapter.py`, since
+an STP suite's capture is a proof about the spec's tightness, not a
+requirement's verification evidence). Full suite: **78 passed** (72
+prior + 6 new). Full `generate_artifacts.py` pipeline re-run: zero
+observable change beyond `generated_utc` timestamps.
+
+**Scope, as built (not expanded beyond what was asked):** every Dafny
+spec written for Phase C gets a small STP suite alongside it, authored
+by whoever writes the spec — this gate authored one STP suite for the
+one spec that exists (`dosage.dfy`), not a generic STP-generation tool
+or an automated gate that runs on every future spec. Neither STP suite
+is wired into `build_matrix()` or any generator.
 
 ### Gate C5 — Mutation testing (MutDafny-style) — largest single piece, its own sub-plan
 
@@ -547,11 +625,12 @@ first real Dafny spec, not deferring it behind C1–C5.
    before trusting any PROVEN claim in earnest.
 7. **Gate C5** (mutation testing) — largest, last, its own sub-plan.
 
-**Actual order taken (2026-07-07):** C1 → C2 → C3, each built on
-explicit direction ("start gate C2" / "start gate c3"), ahead of C4 —
-a deviation from the order suggested above, but not a problem: C3's
-vectors 1–3 don't depend on a real spec existing beyond the one Gate C1
-already built, and C4 (STPs) was never blocked on C3 landing first.
+**Actual order taken (2026-07-07):** C1 → C2 → C3 → C4, each built on
+explicit direction ("start gate C2" / "start gate c3" / "start gate C4"),
+matching the order suggested above from C3 onward (C4 was suggested
+before C3, but nothing about C4 was ever blocked on C3 landing first, so
+the swap cost nothing). C4 turned out to matter more than a checklist
+item: it found and fixed a real gap in Gate C1's own spec.
 
 ### PROVEN's exclusivity today (R3 landed 2026-07-07; still no realized PROVEN in any live artifact)
 
@@ -612,8 +691,23 @@ parser is hardened after a real "N out of resource" finding on the
 installed binary (a resource-starved run can report a 0 errors count
 while incomplete — confirmed the real capture's exit code is nonzero,
 already caught, hardened anyway as defense in depth). Vector 4
-(specification stripping) stays BLOCKED, named. None of C1/C2/C3 is
-wired into `build_matrix()` or any generator — no binder assembles a
-Dafny-sourced record into a live matrix row yet, so no committed
-artifact's rendered content has changed. Gate C4 (STPs, alongside the
-first real spec) is next in the suggested build order.
+(specification stripping) stays BLOCKED, named. **Gate C4 (Spec-Testing
+Proofs) is also now built (2026-07-07), and found a real gap on its
+first application, not a synthetic one:** a Dafny lemma trying to prove
+a wrong candidate dose value impossible for `dosage.dfy`'s original
+postcondition failed to verify — the spec bounded `dose` but never
+pinned it, so a broken implementation could have satisfied it
+undetected. Fixed for real: an `ExpectedDose` function and a pinning
+ensures clause, re-verified clean (`2 verified, 0 errors`, up from
+Gate C1's original `1 verified`), the real committed capture re-run
+honestly to match. The original is preserved as
+`dosage_underconstrained.dfy`; two STP suites
+(`dosage_stp_suite.dfy`, `dosage_stp_suite_against_underconstrained.dfy`)
+mechanically prove both directions — six lemmas pass against the fix,
+the same two REJECT lemmas genuinely fail against the preserved
+original. A self-caught mistake (an out-of-bounds wrong-value choice
+that gave a false pass for an unrelated reason) was corrected before
+committing, with a regression test guarding against it recurring. None
+of C1–C4 is wired into `build_matrix()` or any generator — no binder
+assembles a Dafny-sourced record into a live matrix row yet, so no
+committed artifact's rendered content has changed.

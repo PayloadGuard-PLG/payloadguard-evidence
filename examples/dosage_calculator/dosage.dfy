@@ -24,6 +24,38 @@
 // precondition-only guard (reserved for a future weight-based ceiling),
 // never referenced by either postcondition — dropping it changes nothing
 // about what is or isn't proved.
+//
+// Gate C4 finding and fix (2026-07-07): the ORIGINAL two ensures clauses
+// below (bounds + reverse-flow-zero) verified cleanly but never pinned
+// `dose` to the actual clamped product of rate and concentration — a
+// method that always returned 0.0 for any non-negative rate would have
+// satisfied that spec too. Confirmed mechanically, not by inspection: a
+// Spec-Testing Proof (IronSpec methodology) trying to prove a wrong
+// candidate dose value impossible FAILED to verify against the original
+// spec, and SUCCEEDS against this fixed one. The original is preserved
+// verbatim as dosage_underconstrained.dfy (an honesty exhibit, same
+// rationale as dosage_naive_widening.py); the STP suites proving both
+// directions are dosage_stp_suite.dfy (passes against this fixed spec)
+// and dosage_stp_suite_against_underconstrained.dfy (fails against the
+// preserved original). ExpectedDose below is the fix: a function
+// computing the exact clamped value, referenced by a new ensures clause
+// that pins `dose` to it exactly — the two original ensures clauses stay,
+// unchanged, for direct per-requirement traceability (REQ-GIP-1-4-12,
+// REQ-GIP-1-8-1), now implied by (not contradicting) the pinning clause.
+
+function ExpectedDose(
+  concentrationMgPerMl: real,
+  infusionRateMlPerHr: real,
+  maxSafeDoseMgPerHr: real
+): real
+  requires concentrationMgPerMl > 0.0
+  requires maxSafeDoseMgPerHr > 0.0
+{
+  var rawDose := infusionRateMlPerHr * concentrationMgPerMl;
+  if rawDose < 0.0 then 0.0
+  else if rawDose > maxSafeDoseMgPerHr then maxSafeDoseMgPerHr
+  else rawDose
+}
 
 method CalculateHourlyDose(
   concentrationMgPerMl: real,
@@ -32,6 +64,7 @@ method CalculateHourlyDose(
 ) returns (dose: real)
   requires concentrationMgPerMl > 0.0
   requires maxSafeDoseMgPerHr > 0.0
+  ensures dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)
   ensures 0.0 <= dose <= maxSafeDoseMgPerHr        // REQ-GIP-1-4-12, kernel_scope
   ensures infusionRateMlPerHr >= 0.0 || dose == 0.0 // REQ-GIP-1-8-1
 {

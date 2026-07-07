@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant C: concrete evidence)
 
-Generated (UTC): 2026-07-07T10:34:53.801040+00:00
+Generated (UTC): 2026-07-07T10:49:49.831230+00:00
 Tool versions: {'crosshair': 'crosshair-tool 0.0.107'}
 Declared bounds (intended envelope): {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1}
 Effective bounds (demonstrated by capture): {'per_condition_timeout_s': 30}

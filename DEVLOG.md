@@ -6,6 +6,86 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-07 — Phase C Gate C4 built: Spec-Testing Proofs found and fixed a real gap in dosage.dfy
+
+Requested directly: "start gate C4." Applied IronSpec's methodology -
+prove a specific input/output pair is accepted or rejected by the
+SPECIFICATION itself, independent of any implementation - to the one
+Dafny spec that exists in this repo (`dosage.dfy`, Gate C1). It found a
+real gap on the first attempt, not a synthetic demonstration.
+
+- **The finding, confirmed mechanically:** `CalculateHourlyDose`'s
+  original two ensures clauses (`0.0 <= dose <= maxSafeDoseMgPerHr` and
+  `infusionRateMlPerHr >= 0.0 || dose == 0.0`) bound `dose` and force it
+  to 0 on reverse flow, but never relate it to the actual product of
+  rate and concentration otherwise. A Dafny lemma stating "for these
+  fixed inputs, if dose satisfies both ensures clauses, dose must equal
+  the one correct clamped value" **failed to verify** - Dafny could not
+  prove it, because the postcondition genuinely doesn't force it. A
+  method that always returned `0.0` for any non-negative-rate input
+  would have satisfied the exact spec Gate C1 verified clean. The same
+  bug class Gate 1 found by hand for REQ-GIP-1-4-12 (spec/evidence not
+  matching the requirement text), recurring independently in this
+  session's own new Dafny spec - caught mechanically this time.
+- **Fixed for real:** `examples/dosage_calculator/dosage.dfy` gained
+  `function ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr,
+  maxSafeDoseMgPerHr): real` (the same three-way clamping logic as the
+  method body) and a new `ensures dose == ExpectedDose(...)` clause
+  pinning the output exactly. The two original ensures clauses stay,
+  unchanged, for direct per-requirement traceability. Re-verified clean:
+  `2 verified, 0 errors` (the function plus the method - up from `1
+  verified`). **The real committed capture was re-run honestly, not
+  patched:** `raw_dafny_output.txt` / `run_manifest_dafny.json` now
+  reflect the fixed spec; `tests/test_dafny_adapter.py`'s exact
+  `raw_status` assertion was updated to match, with a comment.
+- **Preserved exhibit:** `examples/dosage_calculator/dosage_underconstrained.dfy`
+  keeps the original weak spec byte-for-byte (same rationale as
+  `dosage_naive_widening.py`) - it still verifies cleanly on its own (`1
+  verified, 0 errors`); the bug is a spec weakness, not a verification
+  failure.
+- **Two STP suites, mechanically proving both directions, each
+  `include`-ing the relevant spec rather than duplicating it:**
+  - `dosage_stp_suite.dfy` (`include "dosage.dfy"`): six lemmas across
+    the three logical branches of `CalculateHourlyDose` - normal
+    in-range, ceiling-clamped, reverse-flow. ACCEPT + REJECT pairs for
+    the first two; ACCEPT-only for reverse-flow (never a gap -
+    `infusionRateMlPerHr >= 0.0 || dose == 0.0` already pins dose to 0
+    there, even in the weak spec). All six verify: `10 verified, 0
+    errors`, exit 0.
+  - `dosage_stp_suite_against_underconstrained.dfy` (`include
+    "dosage_underconstrained.dfy"`): the same two REJECT lemmas, run
+    against the weak spec instead. Both **genuinely fail**: `0
+    verified, 2 errors`, exit 4 - a real negative capture, not smoothed
+    over, same discipline as `dosage_broken.dfy`.
+- **A mistake caught during this build, before committing:** an early
+  draft of the ceiling-clamped REJECT lemma used the raw unclamped
+  product (`500.0`) as the "wrong" value. That lemma verified even
+  against the weak spec - not because the weak spec pins the correct
+  value, but because `500.0` already violates the weak spec's own
+  `0.0 <= dose <= maxSafeDoseMgPerHr` bound directly, so excluding it
+  proved nothing about the real gap. Caught by checking the lemma's
+  actual behavior against the weak spec directly rather than assuming
+  the chosen value was a good test; corrected to `50.0` (in-bounds,
+  still wrong) in both suites, re-verified, and a regression test added
+  (`test_reject_lemmas_target_in_bounds_wrong_values_not_out_of_bounds_ones`)
+  guarding against silently reintroducing the weaker value.
+- **New capture runners:** `run_verify_dafny_underconstrained.py`,
+  `run_verify_dafny_stp_suite.py`,
+  `run_verify_dafny_stp_suite_against_underconstrained.py` - all
+  mirroring `run_verify_dafny.py`'s discipline, producing genuine
+  committed captures, no fabricated output.
+- **Tests:** `tests/test_dafny_stp_suite.py`, 6 tests, checking the real
+  committed captures directly (not via `evidence.dafny_adapter.py`,
+  since an STP suite's capture is a proof about the spec's tightness,
+  not itself a requirement's verification evidence). Full suite: **78
+  passed** (72 prior + 6 new). Full `generate_artifacts.py` pipeline
+  re-run: zero observable change beyond `generated_utc` timestamps.
+- **Explicitly not done, and not this gate's job:** neither STP suite is
+  wired into `build_matrix()` or any generator, and no automated
+  mechanism runs STPs against future Dafny specs as a matter of course -
+  this gate authored one STP suite for the one spec that exists, per
+  its stated scope, not a generic STP-generation tool.
+
 ## 2026-07-07 — Phase C Gate C3 built (vectors 1-3): Z3 precondition check, weak-postcondition heuristic, timeout/resource-limit masking hardened
 
 Requested directly: "start gate c3." Four vectors were named in the

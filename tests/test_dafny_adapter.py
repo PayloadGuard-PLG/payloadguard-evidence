@@ -33,7 +33,11 @@ def test_parses_real_committed_clean_capture():
     assert result.method == "dafny"
     assert result.code_location == "dosage.dfy"
     assert result.verifier_completion_status == "completed"
-    assert result.raw_status == "1 verified, 0 errors"
+    # 2 verified (the ExpectedDose function + the method), not 1 - the
+    # spec grew a pinning function as part of Gate C4's STP fix
+    # (2026-07-07); see dosage.dfy's header comment and
+    # dosage_stp_suite.dfy for why.
+    assert result.raw_status == "2 verified, 0 errors"
 
 
 def test_refuses_real_committed_broken_capture():

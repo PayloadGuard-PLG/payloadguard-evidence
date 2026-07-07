@@ -1,0 +1,22 @@
+dosage_stp_suite_against_underconstrained.dfy(28,0): Error: a postcondition could not be proved on this return path
+   |
+28 | {}
+   | ^
+
+dosage_stp_suite_against_underconstrained.dfy(27,10): Related location: this is the postcondition that could not be proved
+   |
+27 |   ensures false
+   |           ^^^^^
+
+dosage_stp_suite_against_underconstrained.dfy(43,0): Error: a postcondition could not be proved on this return path
+   |
+43 | {}
+   | ^
+
+dosage_stp_suite_against_underconstrained.dfy(42,10): Related location: this is the postcondition that could not be proved
+   |
+42 |   ensures false
+   |           ^^^^^
+
+
+Dafny program verifier finished with 0 verified, 2 errors
