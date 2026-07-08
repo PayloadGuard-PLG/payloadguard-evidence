@@ -6,6 +6,57 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Audit of this session's work: one real code bug found and fixed, plus stale documentation
+
+Asked directly to audit everything built this session and fix any
+errors found. Re-verified rather than re-read: re-ran the full test
+suite, re-ran `dafny verify` on all four renal-adjustment `.dfy` files
+and all four `dosage_calculator` `.dfy` files from scratch (all matched
+their documented outcomes exactly - `5 verified`/`44 verified`/`0
+verified, 4 errors` etc., no drift), re-ran the mutation suite (56
+mutants, same breakdown, confirming the shared-engine regex changes
+didn't regress `dosage_calculator`), and re-generated the Gate C6 NL
+summaries to diff against the committed sign-off document (exact
+match, no drift).
+
+**Found one real code bug**, in the citation gate built earlier this
+session — found by deliberately testing it against its own motivating
+scenario rather than assuming it worked: `evidence/citation_gate.py`'s
+normalization strips all punctuation for whitespace-robustness, which
+means a claim citing "Recommendation 1.1.2" would falsely CONFIRM
+against source text reading "Recommendation 1.1.2.1" (a different
+recommendation with different content) - "112" is a genuine substring
+of "1121" after normalization. This is the exact class of error the
+module exists to catch, and it was sitting inside the module itself,
+undetected until audited directly rather than trusted because it
+passed its own test suite. Fixed with `_find_bounded_match`: a
+digit-adjacency boundary check applied only to numeric matches (not
+letters, since this repo's own PDF extraction has been observed to
+glue adjacent words together with no boundary at all - enforcing
+letter boundaries would trade a real bug for a worse one). Two new
+regression tests confirm the fix and confirm it didn't overcorrect
+(an exact numeric match still confirms).
+
+**Found stale documentation**, not code bugs: `README.md` and
+`OPERATIONS_MANUAL.md` both still said "142 tests" after the citation
+gate had already brought the real count to 152/154 - these are
+current-state documents, not dated history entries, so unlike
+`KNOWN_LIMITATIONS.md`/`DEVLOG.md`'s "as of" framing, a stale number in
+them is actually wrong, not historically accurate. Also found
+`OPERATIONS_MANUAL.md`'s component map and README's "what's in this
+repository" list never mentioned `citation_gate.py` at all - it was
+built after both documents were written and neither was updated
+afterward. Fixed both, and added `OPERATIONS_MANUAL.md` §4.7
+documenting the citation gate at the same level of detail as the other
+gates.
+
+154 tests passing (152 + 2 new regression tests from the audit itself).
+No other errors found in the Dafny specs, captures, or cross-document
+citation numbering (REQ-RENAL-7/8's renumbering was checked for
+consistency across all four files that reference it - clean).
+
+---
+
 ## 2026-07-09 — Built the citation gate: mechanical citation verification, from a "thinking out loud" idea
 
 Steven floated a larger idea (automating contract drafting from natural-

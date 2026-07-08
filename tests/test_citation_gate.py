@@ -135,6 +135,37 @@ def test_does_not_false_positive_on_an_unrelated_short_phrase():
     assert verdict.verdict == "NOT_FOUND"
 
 
+def test_does_not_false_positive_a_short_recommendation_number_inside_a_longer_one():
+    """Real bug, found auditing this module against its own motivating
+    case: normalization strips all punctuation for whitespace-
+    robustness, so "1.1.2" normalizes to "112" - which is a genuine
+    substring of "1.1.2.1" normalized ("1121"). Before the fix, a
+    citation claiming "Recommendation 1.1.2" would have falsely
+    CONFIRMED against KDIGO's real "Recommendation 1.1.2.1" - a
+    DIFFERENT recommendation with different content (see
+    KDIGO_RECOMMENDATION_1_1_2_1_REAL above). Exactly the shape of
+    error this module exists to catch, caught in itself."""
+    claim = CitationClaim(
+        label="1.1.2 should not match inside 1.1.2.1",
+        claimed_quote="1.1.2",
+        source_text="Recommendation 1.1.2.1: we recommend using eGFRcr.",
+    )
+    verdict = verify_citation(claim)
+    assert verdict.verdict == "NOT_FOUND"
+
+
+def test_exact_recommendation_number_still_confirms():
+    """The fix above must not overcorrect into never matching numbers -
+    an exact numeric identifier, with a real boundary, still confirms."""
+    claim = CitationClaim(
+        label="exact match",
+        claimed_quote="1.1.2",
+        source_text="Recommendation 1.1.2: we recommend using eGFRcr.",
+    )
+    verdict = verify_citation(claim)
+    assert verdict.verdict == "CONFIRMED"
+
+
 def test_refuses_a_vacuous_empty_claim():
     claim = CitationClaim(label="empty", claimed_quote="   ", source_text="anything")
     with pytest.raises(ValueError, match="vacuous"):

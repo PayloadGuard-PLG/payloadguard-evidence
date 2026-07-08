@@ -69,9 +69,10 @@ traceable, and — critically — impossible to fake or round up.
 ## What's in this repository
 
 - **`evidence/`** — the reusable engine: schema validation, evidence
-  binding, the traceability-matrix generator, and the Dafny toolchain
+  binding, the traceability-matrix generator, the Dafny toolchain
   integration (proof capture, mutation testing, spec linting, and a
-  human-in-the-loop plain-English confirmation step).
+  human-in-the-loop plain-English confirmation step), and a mechanical
+  citation-verification check for source claims.
 - **`examples/dosage_calculator/`** — a complete, worked proof-of-concept:
   an IV infusion pump's dose-clamping logic, with requirements sourced
   from a published infusion-pump hazard analysis, taken all the way
@@ -86,7 +87,7 @@ traceable, and — critically — impossible to fake or round up.
   requirement traces back to, archived so a claim can always be checked
   against the actual document, not a paraphrase of it.
 - **`tests/`** — the automated regression suite protecting every rule
-  above (142 tests as of this writing).
+  above (152 tests as of this writing).
 
 ## Quick start
 

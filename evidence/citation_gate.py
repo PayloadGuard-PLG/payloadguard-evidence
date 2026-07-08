@@ -44,6 +44,19 @@ Strength vocabulary (evidence/model.py) rather than a plain pass/fail:
                  is fabricated - never presented as certain proof
                  either way, in either direction.
 
+Self-audit finding, 2026-07-09 (see _find_bounded_match): the original
+version of this module had a real false-positive bug of its own,
+directly in the KDIGO scenario it was built to catch - normalizing away
+all punctuation meant a claim citing "Recommendation 1.1.2" would have
+falsely CONFIRMED against source text reading "Recommendation 1.1.2.1"
+(a different recommendation), since "112" is a substring of "1121"
+after normalization. Fixed with a digit-adjacency boundary check,
+applied only to numeric matches - letter-boundary precision is
+deliberately NOT enforced the same way, since this repo's own PDF
+extraction has been observed to glue adjacent words together with no
+boundary at all, and enforcing letter boundaries would turn that real
+extraction noise into false NOT_FOUND verdicts instead.
+
 Both of the real fabrication cases above are used as regression fixtures
 in tests/test_citation_gate.py - not synthetic examples, the actual
 claims and the actual source text this session verified them against.
@@ -129,8 +142,7 @@ def verify_citation(claim: CitationClaim) -> CitationVerdict:
     if not normalized_quote:
         raise ValueError("claimed_quote is empty after normalization; refusing to check a vacuous claim")
 
-    idx = normalized_source.find(normalized_quote)
-    if idx == -1:
+    if _find_bounded_match(normalized_source, normalized_quote) == -1:
         return CitationVerdict(
             label=claim.label,
             verdict="NOT_FOUND",
@@ -145,6 +157,41 @@ def verify_citation(claim: CitationClaim) -> CitationVerdict:
         context=context,
         caveat=_CONFIRMED_CAVEAT,
     )
+
+
+def _find_bounded_match(normalized_source: str, normalized_quote: str) -> int:
+    """Like str.find(), but rejects a match that splices into a longer
+    number - real bug, found by auditing this module against its own
+    motivating case: stripping all punctuation for whitespace-robustness
+    (see _normalize's docstring) means "1.1.2" normalizes to "112",
+    which is a genuine substring of "1.1.2.1" normalized ("1121") - so a
+    citation claiming "Recommendation 1.1.2" would have falsely
+    CONFIRMED against KDIGO's real "Recommendation 1.1.2.1", which is a
+    DIFFERENT recommendation with different content. Only digit
+    adjacency is checked (not letter adjacency): letter-boundary
+    precision is deliberately NOT enforced, since this repo's own PDF
+    extraction has been observed to glue adjacent words together with no
+    boundary at all - enforcing it there would turn real extraction
+    noise into false NOT_FOUND verdicts, the opposite failure mode.
+    Numeric identifiers don't have that excuse; a citation number is
+    either exactly right or it's citing something else.
+
+    Scans all occurrences, not just the first - a later occurrence of
+    the same normalized substring may be a legitimate, boundary-clean
+    match even if an earlier one isn't."""
+    start = 0
+    while True:
+        idx = normalized_source.find(normalized_quote, start)
+        if idx == -1:
+            return -1
+        before_ok = idx == 0 or not (normalized_quote[0].isdigit() and normalized_source[idx - 1].isdigit())
+        after_idx = idx + len(normalized_quote)
+        after_ok = after_idx == len(normalized_source) or not (
+            normalized_quote[-1].isdigit() and normalized_source[after_idx].isdigit()
+        )
+        if before_ok and after_ok:
+            return idx
+        start = idx + 1
 
 
 def _extract_context(source_text: str, claimed_quote: str) -> str:
