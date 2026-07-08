@@ -49,7 +49,21 @@ character class silently truncated `REQ-RENAL-1a` to `REQ-RENAL-1` (no
 lowercase letters in its pattern) — a real citation-accuracy bug, not
 hypothetical, since `dosage.dfy`'s REQ-IDs never had a lowercase suffix
 to expose it (fixed, regression-tested). 142 tests passing (up from
-138).
+138). A direct review of Gate C6's sign-off then caught a separate,
+self-contradictory sourcing overclaim in `RoundHalfUp`'s round-half-up
+tie-break rule (documentation-only fix, no code change) — see
+`sources/kdigo-2024-gfr-staging.md`'s 2026-07-09 amendment.
+
+**Gate C4 scoped, not yet built** — see
+`examples/renal_adjustment/gate_c4_stp_plan.md`. Hand-derived, before
+writing any STP lemma: two real, predicted gaps. `ComposedCeiling`'s
+two `<=` bounds don't pin the result to `min(existingCeiling,
+renalCeiling)` exactly (a wrong candidate value like `0.0` isn't
+excluded by the spec) — the same class of under-constrained postcondition
+`dosage.dfy`'s own original Gate C4 finding caught. `AssessRenalFunction`
+pins which constructor the result uses but not the value inside it (a
+wrong G-stage isn't excluded). Both predicted, not yet confirmed by a
+real Dafny run — building the STP suite is the next concrete step.
 
 ## Objective
 

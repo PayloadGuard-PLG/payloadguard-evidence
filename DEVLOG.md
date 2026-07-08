@@ -6,6 +6,41 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Scoped Gate C4 (STPs) for renal_adjustment.dfy; two real gaps predicted before building
+
+Asked to plan the next phase after Gate C6. Wrote
+`examples/renal_adjustment/gate_c4_stp_plan.md` — a scoping document,
+not a build, per this repo's standing "scope first" discipline.
+
+Read all five functions' `ensures` clauses specifically asking whether
+each pins its exact output or only bounds/shapes it, before writing any
+STP lemma (same hand-derivation discipline the LVR extension used).
+Two real, predictable gaps stood out, both the same defect class as
+`dosage.dfy`'s own original Gate C4 finding:
+
+- `ComposedCeiling`'s two `<=` bounds don't force the result to equal
+  `min(existingCeiling, renalCeiling)` — a wrong candidate value (e.g.
+  always returning `0.0`) isn't excluded by the spec as written.
+- `AssessRenalFunction` pins which constructor the result uses
+  (`EGFRAssessment` vs. `CrClAssessment`, Gate 1c Finding 2's actual
+  target) but not the value inside it — a wrong G-stage or wrong
+  rounded CrCl value isn't excluded either.
+
+Both are predictions, not yet confirmed by a real Dafny run - recorded
+as hypotheses before building, per the LVR extension's own precedent,
+so if either turns out wrong that gets reported honestly rather than
+silently reconciled. The other three functions (`RoundHalfUp`, `GStage`,
+`SelectFormula`) look genuinely tight by inspection - also a prediction,
+not yet confirmed. The plan lays out the full per-function STP lemma
+table (using the 16-row test-vector table already in `PHASE1_PLAN.md`
+for ACCEPT lemmas) and the predicted pinning-clause fixes for the two
+gaps, mirroring `ExpectedDose`'s role in `dosage.dfy`'s own fix.
+
+No code changed - `renal_adjustment.dfy` is untouched, this is scoping
+only. 142 tests still passing.
+
+---
+
 ## 2026-07-09 — Caught and corrected a self-contradictory sourcing overclaim in RoundHalfUp's tie-break rule
 
 Reviewing the Gate C6 sign-off, asked three direct questions: where
