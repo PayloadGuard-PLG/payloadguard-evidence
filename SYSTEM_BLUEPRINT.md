@@ -259,6 +259,30 @@ payloadguard-evidence/
 │                                 to magnitude-implication for LT/LE/GT/
 │                                 GE-adjacent literals; EQ/NE and
 │                                 function-body literals unfiltered
+│   └── citation_gate.py         Citation gate (2026-07-09): mechanical,
+│                                 deterministic check that a claimed
+│                                 quote appears in a source document's
+│                                 text - normalized substring matching,
+│                                 not an LLM judgment call, so an
+│                                 automated citation drafter and its
+│                                 checker can't share the same failure
+│                                 mode. verify_citation()/
+│                                 verify_citations() return a
+│                                 CONFIRMED/NOT_FOUND verdict (asymmetric
+│                                 by design, mirroring evidence/model.py's
+│                                 Strength vocabulary: NOT_FOUND is never
+│                                 presented as proof of fabrication,
+│                                 since PDF extraction can be lossy).
+│                                 Domain-free, not wired into the
+│                                 generation pipeline - a standalone tool,
+│                                 same scope discipline as the Gate C3/C5/
+│                                 C6 modules. Regression-tested against
+│                                 two real fabricated citations this
+│                                 session caught by hand (a NICE NG203
+│                                 misquote repeated across two supplied
+│                                 documents, and a KDIGO recommendation
+│                                 cited with the wrong number and wrong
+│                                 content) - not synthetic fixtures
 ├── examples/dosage_calculator/  Worked example + all committed evidence
 │   ├── dosage.py                Kernel under verification (contracts in
 │   │                            docstring; negative rate = fault model)

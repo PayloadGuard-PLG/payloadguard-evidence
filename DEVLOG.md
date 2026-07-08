@@ -6,6 +6,55 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Built the citation gate: mechanical citation verification, from a "thinking out loud" idea
+
+Steven floated a larger idea (automating contract drafting from natural-
+language specs via "vericoding," to reduce the need for a specialist to
+hand-author every Dafny contract). Talked through what this session's
+own history actually shows about that: the process was reverse-
+engineered into what's mechanical (drafting Dafny syntax, generating NL
+summaries, generating mutants - already automated in this repo) versus
+what only worked because a person was holding independent context
+(citation verification, spotting silently-resolved ambiguities, judging
+whether a postcondition means what it looks like it means). Identified
+the citation-verification piece as the one immediately buildable, since
+it's exactly what's already been done by hand, repeatedly, this session.
+
+Built `evidence/citation_gate.py`: `verify_citation()`/
+`verify_citations()`, mechanical normalized-substring matching between a
+claimed quote and source text - deliberately not an LLM judgment call,
+so a system that drafts a citation and a system that checks it can't
+share the same failure mode. Verdict vocabulary is CONFIRMED/NOT_FOUND,
+asymmetric by design (mirroring `evidence/model.py`'s Strength
+vocabulary): NOT_FOUND is explicitly never presented as proof of
+fabrication, since this repo's own PDF extraction has already been
+observed to drop text at some boundaries - a NOT_FOUND verdict says
+"couldn't confirm automatically, check the raw source," not "this is
+fake."
+
+Regression tests (`tests/test_citation_gate.py`) are built from the two
+real fabrication events this session actually caught by hand, not
+synthetic examples: a NICE NG203 misquote (claimed Recommendation 1.1.2
+"mandates the 2009 equation" and 1.1.4 bars ethnicity-based eGFR
+adjustment; neither is real, and the same misquote was repeated
+verbatim across two separately-supplied "research findings" documents)
+and a KDIGO misquote (claimed "Recommendation 1.1.2" states "the
+explicit shift to the 2021 race-free equation"; the real recommendation
+is numbered 1.1.2.1 and is actually about the eGFRcr-vs-eGFRcr-cys
+choice). Caught two real fixture typos while building the tests
+themselves (a claim that dropped the word "to," a claim that used
+"estimated glomerular filtration rate" when the real source text
+abbreviates it "GFRcreatinine") - both caused genuine NOT_FOUND
+verdicts against real source text, exactly the gate doing its job, not
+a bug; fixed the test fixtures to match the real source text rather
+than loosen the matching logic.
+
+10 new tests, all passing; 152 total (up from 142). Not wired into any
+generation pipeline - a standalone, domain-free tool, same scope
+discipline as the Gate C3/C5/C6 modules.
+
+---
+
 ## 2026-07-09 — Rewrote README.md for a non-expert audience; added OPERATIONS_MANUAL.md
 
 `README.md` had accumulated a full gate-by-gate build history (every
