@@ -6,6 +6,41 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Rewrote README.md for a non-expert audience; added OPERATIONS_MANUAL.md
+
+`README.md` had accumulated a full gate-by-gate build history (every
+Gate C1-C6 finding, every mutation-testing operator count, every
+extension) directly in the repository's front door — accurate, but
+unreadable by someone evaluating whether to use the system rather than
+already deep in its build log. Rewrote it as a plain-English overview:
+what problem this solves, the core vocabulary (requirement / evidence /
+strength / traceability matrix) explained without jargon, what's in the
+repository, a quick start, and a status summary — no emojis, no gate
+history, technical depth pushed out to linked documents instead of
+inlined.
+
+Added `OPERATIONS_MANUAL.md` as the "definitive manual... at a high
+technical level" - the destination for that technical depth. Covers:
+architecture and data flow, the Strength vocabulary and its enforced
+invariants, the full evidence pipeline (author/capture/generate), all
+six Dafny verification gates (C1-C6) explained by mechanism and purpose
+rather than by chronological finding, a complete command reference, a
+worked "how to add a new example" section distilled from the
+renal-adjustment build (including the honest note that extending the
+system to a second example found and fixed two real gaps in shared
+tooling - not glossed over as if everything generalized cleanly on the
+first try), testing discipline, the review protocol summary, and a
+troubleshooting section.
+
+Both documents cross-reference the existing detailed records
+(`SYSTEM_BLUEPRINT.md`, `DEVLOG.md`, `KNOWN_LIMITATIONS.md`,
+`REVIEW_PROTOCOL.md`) rather than duplicating them - the new manual
+synthesizes current-state understanding; the existing docs remain the
+dated, append-only record of how it got there. 142 tests unaffected
+(documentation only).
+
+---
+
 ## 2026-07-09 — Built Gate C4 for real: both predictions confirmed, both real gaps fixed properly
 
 Instructed explicitly: solve any real problems found, don't skip or
