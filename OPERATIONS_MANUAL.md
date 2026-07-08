@@ -30,12 +30,13 @@ payloadguard-evidence/
 │   ├── dafny_adapter.py       Parses real Dafny verifier output safely
 │   ├── dafny_spec_lint.py     Checks a Dafny spec's TEXT for weaknesses
 │   ├── dafny_nl_summary.py    Plain-English summary of a Dafny contract
-│   └── dafny_mutate.py        Mutation-testing engine for Dafny specs
+│   ├── dafny_mutate.py        Mutation-testing engine for Dafny specs
+│   └── citation_gate.py       Mechanical citation verification (§4.7)
 ├── examples/
 │   ├── dosage_calculator/     Worked example 1 (complete)
 │   └── renal_adjustment/      Worked example 2 (in progress)
 ├── sources/                   Primary source documents, archived verbatim
-└── tests/                     Regression suite (142 tests)
+└── tests/                     Regression suite (152 tests)
 ```
 
 `evidence/` is deliberately vocabulary-agnostic: nothing in it knows
@@ -372,6 +373,34 @@ matches intent") or correction, dated and attributed. If a later change
 touches a function that was already signed off, the document gets a
 dated **amendment**, not a silent edit — the original decision stays on
 the record alongside what changed and why.
+
+### 4.7 Citation gate — mechanical citation verification
+
+Not one of the numbered Dafny gates (it's not Dafny-specific at all),
+but built for the same reason: this session caught two real, fabricated
+citations by hand — a NICE NG203 misquote repeated verbatim across two
+separately-supplied "research findings" documents, and a KDIGO misquote
+with both the wrong recommendation number and the wrong content. Both
+were caught only by fetching the actual primary source and reading it
+directly. `evidence/citation_gate.py::verify_citation` mechanizes that
+same check: normalized substring matching between a claimed quote and
+source text the caller already has, returning `CONFIRMED` or
+`NOT_FOUND` — deliberately not an LLM judgment call, so a system that
+drafts a citation and a system that checks it can't share the same
+failure mode.
+
+`NOT_FOUND` is never presented as proof of fabrication — source-text
+extraction (particularly from PDFs) can be lossy, so a `NOT_FOUND`
+verdict means "could not confirm automatically, check the raw source,"
+mirroring how `BOUNDED_CHECKED` is never presented as a proof (§2.1).
+The matcher also guards against a real false-positive the module's own
+audit found in itself: normalizing away punctuation means a naive
+substring check would let a claim citing "Recommendation 1.1.2" falsely
+confirm against source text reading "Recommendation 1.1.2.1" (a
+different recommendation) — fixed with a digit-adjacency boundary check
+specific to numeric matches. Not wired into any generation pipeline — a
+standalone tool, called directly (`evidence.citation_gate.verify_citation`
+/ `verify_citations`), same scope discipline as the other Gate modules.
 
 ---
 
