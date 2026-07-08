@@ -172,3 +172,66 @@ are both closed under named, provisional fallback assumptions per
 Per this gate's own purpose, the summary above needs an explicit human
 check against intent before it counts as signed off, the same standard
 `dosage.dfy`'s Gate C6 sign-off was held to.
+
+## Amendment 2026-07-09 — Gate C4 found and fixed two real gaps in `ComposedCeiling` and `AssessRenalFunction`
+
+Gate C4's STP suite (`gate_c4_stp_plan.md`'s hand-derived predictions,
+built and run for real — see `DEVLOG.md`) confirmed both predicted
+gaps mechanically: `ComposedCeiling`'s original two `<=` bounds and
+`AssessRenalFunction`'s original two variant-only clauses did not pin
+the exact result — REJECT lemmas assuming a wrong candidate value
+**failed to verify** against the original spec (preserved as
+`renal_adjustment_underconstrained.dfy`; the genuinely failing capture
+is `raw_dafny_output_stp_suite_against_underconstrained_renal.txt`,
+`0 verified, 4 errors`). Fixed by adding one pinning clause to
+`ComposedCeiling` and two to `AssessRenalFunction`, mirroring
+`ExpectedDose`'s role in `dosage.dfy` exactly. Re-verified clean
+(`5 verified, 0 errors`, unchanged) and the full STP suite re-run to
+confirm the fix: all 44 lemmas (ACCEPT and REJECT) now pass —
+`raw_dafny_output_stp_suite_renal.txt`.
+
+Since this touched two functions already signed off above, this is
+reported as an amendment rather than a silent edit, per the same
+discipline `dosage.dfy`'s own REQ-GIP-1-8-1 tightening amendment used.
+
+### Re-generated summaries (`evidence/dafny_nl_summary.py`, 2026-07-09, post-fix)
+
+```
+# Plain-English summary: `ComposedCeiling`
+
+## Parameters
+- `existingCeiling`: real
+- `renalCeiling`: real
+
+## Preconditions (must hold before the method runs)
+1. `existingCeiling > 0.0` — existingCeiling is greater than 0.0
+2. `renalCeiling > 0.0` — renalCeiling is greater than 0.0
+
+## Postconditions (guaranteed to hold on return)
+1. `ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling` — ComposedCeiling(existingCeiling, renalCeiling) is at most existingCeiling **[REQ-RENAL-5]**
+2. `ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling` — ComposedCeiling(existingCeiling, renalCeiling) is at most renalCeiling **[REQ-RENAL-5]**
+3. `ComposedCeiling(existingCeiling, renalCeiling) == existingCeiling || ComposedCeiling(existingCeiling, renalCeiling) == renalCeiling` — ComposedCeiling(existingCeiling, renalCeiling) equals existingCeiling or ComposedCeiling(existingCeiling, renalCeiling) equals renalCeiling **[REQ-RENAL-5]**
+```
+
+```
+# Plain-English summary: `AssessRenalFunction`
+
+## Parameters
+- `formula`: Formula
+- `renalFunctionValue`: real
+
+## Preconditions (must hold before the method runs)
+1. `renalFunctionValue >= 0.0` — renalFunctionValue is at least 0.0
+
+## Postconditions (guaranteed to hold on return)
+1. `formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment?` — formula equals EGFRFormula implies AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment? **[REQ-RENAL-1, REQ-RENAL-2]**
+2. `formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue).CrClAssessment?` — formula equals CockcroftGaultFormula implies AssessRenalFunction(formula, renalFunctionValue).CrClAssessment? **[REQ-RENAL-1, REQ-RENAL-2]**
+3. `formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue) == EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))` — formula equals EGFRFormula implies AssessRenalFunction(formula, renalFunctionValue) equals EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue))) **[REQ-RENAL-1, REQ-RENAL-2]**
+4. `formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue) == CrClAssessment(RoundHalfUp(renalFunctionValue))` — formula equals CockcroftGaultFormula implies AssessRenalFunction(formula, renalFunctionValue) equals CrClAssessment(RoundHalfUp(renalFunctionValue)) **[REQ-RENAL-1, REQ-RENAL-2]**
+```
+
+Only these two functions changed (one new clause on `ComposedCeiling`,
+two new clauses on `AssessRenalFunction`); `RoundHalfUp`, `GStage`, and
+`SelectFormula` are untouched. Presented for confirmation alongside the
+original summary above — the whole document, not just this amendment,
+is what's pending sign-off.

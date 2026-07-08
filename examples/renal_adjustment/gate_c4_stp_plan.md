@@ -1,10 +1,21 @@
 # Gate C4 plan: Spec-Testing Proofs for `renal_adjustment.dfy`
 
-Status: **plan only, not built.** Per this repo's standing discipline
-("scope out X" produces a written plan first, built on explicit
-follow-up instruction), this document scopes Gate C4 before writing
-`renal_adjustment_stp_suite.dfy`. Nothing in `renal_adjustment.dfy`
-itself has changed.
+Status: **built 2026-07-09; both predicted gaps confirmed for real, then
+fixed for real.** `renal_adjustment_stp_suite.dfy` was run against the
+original spec first — the two predicted REJECT lemmas (`ComposedCeiling`,
+`AssessRenalFunction`) genuinely failed to verify (`0 verified, 4
+errors`, preserved as `renal_adjustment_stp_suite_against_underconstrained.dfy`
+against `renal_adjustment_underconstrained.dfy`), confirming both
+predictions empirically before any fix was applied. Fixed with proper
+pinning `ensures` clauses (not a loosened test or a partial constraint —
+the same self-referential pattern `ExpectedDose` uses in `dosage.dfy`).
+Re-verified: `renal_adjustment.dfy` still `5 verified, 0 errors`; the
+full STP suite now `44 verified, 0 errors`. The three functions
+predicted to already be tight (`RoundHalfUp`, `GStage`, `SelectFormula`)
+were also confirmed for real — all their ACCEPT/uniqueness/totality
+lemmas passed on the first run, no fix needed. See `DEVLOG.md` for the
+full build narrative and `nl_confirmation_renal_adjustment_dfy.md`'s
+amendment for the re-presented, re-cited postconditions.
 
 ## What an STP actually tests, and why it matters here specifically
 

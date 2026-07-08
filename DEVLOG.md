@@ -6,6 +6,74 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Built Gate C4 for real: both predictions confirmed, both real gaps fixed properly
+
+Instructed explicitly: solve any real problems found, don't skip or
+apply a flimsy workaround. Built `renal_adjustment_stp_suite.dfy`
+(44 lemmas: ACCEPT, REJECT, uniqueness, and totality checks across all
+five functions, using the 16-row test-vector table from
+`PHASE1_PLAN.md`) and ran it against the spec exactly as it stood,
+before touching anything.
+
+Both `gate_c4_stp_plan.md` predictions confirmed empirically, not just
+by inspection: the four REJECT lemmas assuming a wrong candidate value
+for `ComposedCeiling` (0.0 instead of the correct minimum) and
+`AssessRenalFunction` (wrong G-stage / wrong CrCl value) genuinely
+**failed to verify** - `0 verified, 4 errors`, a real Dafny run, not a
+hypothetical. `RoundHalfUp`, `GStage`, and `SelectFormula`'s
+ACCEPT/uniqueness/totality lemmas all passed on the same first run - the
+predicted "these three are already tight" also confirmed for real.
+
+Preserved the pre-fix state as an honesty exhibit before fixing anything,
+mirroring `dosage_underconstrained.dfy`'s exact pattern: copied the
+current file to `renal_adjustment_underconstrained.dfy`, and split the
+four failing REJECT lemmas into their own file,
+`renal_adjustment_stp_suite_against_underconstrained.dfy`, confirmed to
+fail against the preserved original for real (`0 verified, 4 errors`,
+captured verbatim, not smoothed over).
+
+Fixed `renal_adjustment.dfy` itself with proper pinning `ensures`
+clauses, not a workaround: `ComposedCeiling` gained
+`ensures ComposedCeiling(...) == existingCeiling || ComposedCeiling(...) == renalCeiling`,
+which combined with the existing two `<=` bounds forces the result to
+equal `min(existingCeiling, renalCeiling)` exactly (if it equals
+existingCeiling, the renalCeiling bound forces existingCeiling to BE the
+minimum, and symmetrically). `AssessRenalFunction` gained two clauses
+referencing its own composition directly
+(`== EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))` and the
+CrCl-path equivalent) - the same self-referential pattern `ExpectedDose`
+uses in `dosage.dfy`, not an ad hoc constraint chosen to make Dafny
+happy without genuinely narrowing the postcondition.
+
+Re-verified `renal_adjustment.dfy`: still `5 verified, 0 errors` -
+neither function's body needed to change, only its stated contract.
+Discovered on the first re-run of the STP suite that the REJECT lemmas
+still failed even after the fix - not because the fix was wrong, but
+because the lemmas' own `requires` clauses were manually restating the
+OLD two/two-clause postconditions and hadn't picked up the new pinning
+clauses automatically. Fixed the lemmas to restate all of each
+function's CURRENT ensures clauses (a real, separate small mistake,
+caught before reporting success) - re-ran, and the full suite passed:
+`44 verified, 0 errors`.
+
+Wrote `run_verify_dafny_stp_suite_renal.py` and
+`run_verify_dafny_stp_suite_against_underconstrained_renal.py`,
+mirroring `dosage.dfy`'s exact capture-runner pattern; ran both for
+real, plus re-ran `run_verify_renal.py` since the main file changed.
+All three captures match predictions exactly: main spec exit 0 (5
+verified), STP suite exit 0 (44 verified), against-underconstrained
+exit 4 (0 verified, 4 errors, preserved as the honest negative result).
+
+Amended `nl_confirmation_renal_adjustment_dfy.md` with the two changed
+functions' re-generated, re-cited postconditions, since this touched
+functions already presented for Gate C6 sign-off - reported as an
+amendment, not a silent edit, per `dosage.dfy`'s own amendment
+precedent. 142 tests still passing; the new Dafny files aren't
+Python-tested (matching `dosage_stp_suite.dfy`'s own precedent - real
+Dafny captures are the evidence, not a pytest wrapper around them).
+
+---
+
 ## 2026-07-09 — Scoped Gate C4 (STPs) for renal_adjustment.dfy; two real gaps predicted before building
 
 Asked to plan the next phase after Gate C6. Wrote

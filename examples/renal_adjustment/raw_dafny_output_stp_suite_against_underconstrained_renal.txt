@@ -1,0 +1,42 @@
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(29,0): Error: a postcondition could not be proved on this return path
+   |
+29 | {}
+   | ^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(28,10): Related location: this is the postcondition that could not be proved
+   |
+28 |   ensures false
+   |           ^^^^^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(36,0): Error: a postcondition could not be proved on this return path
+   |
+36 | {}
+   | ^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(35,10): Related location: this is the postcondition that could not be proved
+   |
+35 |   ensures false
+   |           ^^^^^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(44,0): Error: a postcondition could not be proved on this return path
+   |
+44 | {}
+   | ^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(43,10): Related location: this is the postcondition that could not be proved
+   |
+43 |   ensures false
+   |           ^^^^^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(52,0): Error: a postcondition could not be proved on this return path
+   |
+52 | {}
+   | ^
+
+examples/renal_adjustment/renal_adjustment_stp_suite_against_underconstrained.dfy(51,10): Related location: this is the postcondition that could not be proved
+   |
+51 |   ensures false
+   |           ^^^^^
+
+
+Dafny program verifier finished with 0 verified, 4 errors

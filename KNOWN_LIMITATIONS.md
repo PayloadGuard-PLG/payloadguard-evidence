@@ -1785,6 +1785,32 @@ own software). Corrected in `sources/kdigo-2024-gfr-staging.md`,
 `PHASE1_PLAN.md`'s requirements table — no code change, `RoundHalfUp`'s
 body is unchanged and still verifies (`5 verified, 0 errors`); only the
 sourcing claim was wrong.
+
+**Gate C4 built 2026-07-09 (Spec-Testing Proofs) — both hand-derived
+predictions confirmed for real, then fixed for real, not worked
+around.** `renal_adjustment_stp_suite.dfy` was run against the original
+spec first: REJECT lemmas assuming a wrong candidate value for
+`ComposedCeiling` and `AssessRenalFunction` genuinely **failed** to
+verify (`0 verified, 4 errors`), confirming both predicted gaps
+mechanically — the same under-constrained-postcondition defect class as
+`dosage.dfy`'s own original Gate C4 finding. The original spec is
+preserved as `renal_adjustment_underconstrained.dfy`; the genuinely
+failing capture is
+`renal_adjustment_stp_suite_against_underconstrained.dfy`
+(`raw_dafny_output_stp_suite_against_underconstrained_renal.txt`),
+mirroring `dosage_stp_suite_against_underconstrained.dfy`'s honesty-
+exhibit pattern exactly. Fixed with proper pinning `ensures` clauses —
+`ComposedCeiling` gained a clause forcing its result to equal one of
+its two inputs (which, combined with the existing `<=` bounds, pins it
+to their minimum exactly); `AssessRenalFunction` gained two clauses
+referencing its own composition (`GStage(RoundHalfUp(...))` /
+`RoundHalfUp(...)`), the same self-referential pattern `ExpectedDose`
+uses in `dosage.dfy`. Re-verified: `renal_adjustment.dfy` still `5
+verified, 0 errors`; the full STP suite now `44 verified, 0 errors`.
+`RoundHalfUp`, `GStage`, and `SelectFormula` were confirmed genuinely
+tight on the first run — no fix needed for those three. Gate C6's
+sign-off document amended for the two changed functions'
+postconditions.
 Named limitations/exclusions and open gaps, per this repo's "name it,
 don't guess it" discipline:
 

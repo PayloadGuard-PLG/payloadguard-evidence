@@ -1,3 +1,24 @@
+// Preserved review artifact — Gate C4 (Phase 2) honesty exhibit, same
+// rationale as dosage_underconstrained.dfy: this is renal_adjustment.dfy
+// byte-for-byte as it was first verified and committed (2026-07-08),
+// before Gate C4's Spec-Testing Proofs found two of its five functions
+// under-constrained.
+//
+// THE GAP, confirmed mechanically (renal_adjustment_stp_suite_against_underconstrained.dfy),
+// not by inspection alone: `ComposedCeiling`'s two `<=` bounds never
+// pinned the result to `min(existingCeiling, renalCeiling)` - a
+// function that always returned 0.0 would have satisfied this exact
+// spec just as well as the real "smaller of the two" implementation.
+// `AssessRenalFunction`'s two ensures clauses pinned only which
+// RenalAssessment constructor the result uses (the actual Gate 1c
+// Finding 2 target), never the value inside it - a function that always
+// returned `EGFRAssessment(G1)` on the eGFR path would have satisfied
+// this exact spec too. See renal_adjustment.dfy's current header for
+// the fix (two pinning ensures clauses added, mirroring ExpectedDose's
+// role in dosage.dfy).
+//
+// --- Original header, preserved for the record ---
+//
 // Dafny spec for renal-function dose adjustment — Gate C1 (Phase 2),
 // PayloadGuard-Evidence's second, independent proof-of-concept.
 //
@@ -98,31 +119,11 @@ function SelectFormula(
 // examples/dosage_calculator/dosage.dfy, not described from memory.
 // "The more conservative bound wins" is therefore a composition step
 // upstream of it, named here as its own proven function.
-//
-// Gate C4 finding and fix (2026-07-09): the original two `<=` ensures
-// clauses below verified cleanly but never pinned the result to
-// min(existingCeiling, renalCeiling) — a function that always returned
-// 0.0 would have satisfied them just as well as the real "smaller of
-// the two" implementation (confirmed mechanically, not by inspection:
-// an STP trying to prove a wrong candidate value impossible FAILED to
-// verify against the original spec — see
-// renal_adjustment_stp_suite_against_underconstrained.dfy). The third
-// ensures clause below is the fix: combined with the two `<=` bounds,
-// forcing the result to equal one of the two inputs exactly pins it to
-// their minimum (if it equals existingCeiling, the second bound forces
-// existingCeiling <= renalCeiling, so existingCeiling IS the minimum,
-// and symmetrically for the other disjunct). The original is preserved
-// verbatim as renal_adjustment_underconstrained.dfy; the STP suites
-// proving both directions are renal_adjustment_stp_suite.dfy (passes
-// against this fixed spec) and
-// renal_adjustment_stp_suite_against_underconstrained.dfy (fails
-// against the preserved original).
 function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
   requires existingCeiling > 0.0
   requires renalCeiling > 0.0
   ensures ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling // REQ-RENAL-5
   ensures ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling // REQ-RENAL-5
-  ensures ComposedCeiling(existingCeiling, renalCeiling) == existingCeiling || ComposedCeiling(existingCeiling, renalCeiling) == renalCeiling // REQ-RENAL-5, Gate C4 pinning fix
 {
   if renalCeiling < existingCeiling then renalCeiling else existingCeiling
 }
@@ -140,26 +141,10 @@ function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
 // assumption — see this file's header and PHASE1_PLAN.md): this
 // function dispatches, rounds, and stages; it does not compute
 // Cockcroft-Gault CrCl or CKD-EPI eGFR from raw patient data.
-//
-// Gate C4 finding and fix (2026-07-09): the original two ensures
-// clauses below pinned only which RenalAssessment CONSTRUCTOR the
-// result uses (Gate 1c Finding 2's actual target, and they still do
-// that correctly), never the VALUE inside it — a function that always
-// returned EGFRAssessment(G1) on the eGFR path would have satisfied
-// them just as well as the real staging logic (confirmed mechanically:
-// an STP trying to prove a wrong stage/CrCl value impossible FAILED to
-// verify against the original spec — see
-// renal_adjustment_stp_suite_against_underconstrained.dfy). The two
-// pinning clauses below are the fix, mirroring ExpectedDose's role in
-// dosage.dfy exactly: each ensures the result equals the function's own
-// composition, not just its shape. The original is preserved verbatim
-// as renal_adjustment_underconstrained.dfy.
 function AssessRenalFunction(formula: Formula, renalFunctionValue: real): RenalAssessment
   requires renalFunctionValue >= 0.0
   ensures formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment? // REQ-RENAL-1, REQ-RENAL-2
   ensures formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue).CrClAssessment? // REQ-RENAL-1, REQ-RENAL-2
-  ensures formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue) == EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue))) // REQ-RENAL-1, REQ-RENAL-2, Gate C4 pinning fix
-  ensures formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue) == CrClAssessment(RoundHalfUp(renalFunctionValue)) // REQ-RENAL-1, REQ-RENAL-2, Gate C4 pinning fix
 {
   if formula == EGFRFormula then
     EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))

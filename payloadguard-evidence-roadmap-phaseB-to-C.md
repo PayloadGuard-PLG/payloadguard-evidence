@@ -1507,6 +1507,33 @@ table: the base rounding requirement stays KDIGO-sourced, the tie-break
 choice is now documented as a named design decision, not a citation.
 No code changed — `RoundHalfUp`'s body is unchanged and still verifies.
 
+**Gate C4 (STPs) built next, 2026-07-09 — both hand-derived predictions
+confirmed for real, then fixed for real.** Instructed explicitly to
+solve any real problems found rather than skip or paper over them.
+`renal_adjustment_stp_suite.dfy` was run against the original,
+unmodified spec first: REJECT lemmas assuming a wrong candidate value
+for `ComposedCeiling` and `AssessRenalFunction` genuinely **failed to
+verify** (`0 verified, 4 errors`) — confirming both gaps predicted in
+`gate_c4_stp_plan.md` mechanically, the same under-constrained-
+postcondition defect class as `dosage.dfy`'s own original Gate C4
+finding. The original spec is preserved as
+`renal_adjustment_underconstrained.dfy`; the genuinely failing capture
+lives in `renal_adjustment_stp_suite_against_underconstrained.dfy`,
+mirroring `dosage_stp_suite_against_underconstrained.dfy`'s honesty-
+exhibit pattern exactly (a real negative result, not smoothed over).
+Fixed with proper pinning `ensures` clauses, not a loosened test:
+`ComposedCeiling` gained a clause forcing its result to equal one of
+its two inputs (which the existing `<=` bounds then pin to their exact
+minimum); `AssessRenalFunction` gained two clauses referencing its own
+composition directly (`GStage(RoundHalfUp(...))` and
+`RoundHalfUp(...)`), the same self-referential pattern `ExpectedDose`
+uses in `dosage.dfy`. Re-verified: `renal_adjustment.dfy` still `5
+verified, 0 errors`; the full STP suite (44 lemmas across all five
+functions — ACCEPT, REJECT, uniqueness, totality) now `44 verified, 0
+errors`. `RoundHalfUp`, `GStage`, and `SelectFormula` were confirmed
+genuinely tight on the very first run, no fix needed. Gate C6's
+sign-off document amended for the two changed functions' postconditions.
+
 ## What "done" looks like for this roadmap
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a

@@ -54,16 +54,25 @@ self-contradictory sourcing overclaim in `RoundHalfUp`'s round-half-up
 tie-break rule (documentation-only fix, no code change) — see
 `sources/kdigo-2024-gfr-staging.md`'s 2026-07-09 amendment.
 
-**Gate C4 scoped, not yet built** — see
-`examples/renal_adjustment/gate_c4_stp_plan.md`. Hand-derived, before
-writing any STP lemma: two real, predicted gaps. `ComposedCeiling`'s
-two `<=` bounds don't pin the result to `min(existingCeiling,
-renalCeiling)` exactly (a wrong candidate value like `0.0` isn't
-excluded by the spec) — the same class of under-constrained postcondition
-`dosage.dfy`'s own original Gate C4 finding caught. `AssessRenalFunction`
-pins which constructor the result uses but not the value inside it (a
-wrong G-stage isn't excluded). Both predicted, not yet confirmed by a
-real Dafny run — building the STP suite is the next concrete step.
+**Gate C4 built 2026-07-09 — both predicted gaps confirmed for real,
+then fixed for real** — see `examples/renal_adjustment/gate_c4_stp_plan.md`.
+`ComposedCeiling`'s original two `<=` bounds and `AssessRenalFunction`'s
+original two variant-only clauses genuinely did not pin their exact
+results: REJECT lemmas assuming a wrong candidate value **failed to
+verify** against the original spec (`0 verified, 4 errors`, preserved
+as `renal_adjustment_underconstrained.dfy` /
+`renal_adjustment_stp_suite_against_underconstrained.dfy` — a real,
+committed failing capture, not smoothed over). Fixed with proper
+pinning `ensures` clauses (the same self-referential pattern
+`ExpectedDose` uses in `dosage.dfy`) — not a loosened test, not a
+partial constraint. Re-verified: `renal_adjustment.dfy` still
+`5 verified, 0 errors`; the full STP suite (`renal_adjustment_stp_suite.dfy`,
+44 lemmas: ACCEPT, REJECT, uniqueness, and totality checks across all
+five functions) now `44 verified, 0 errors`. `RoundHalfUp`, `GStage`,
+and `SelectFormula` were confirmed genuinely tight on the first run, no
+fix needed. Gate C6's sign-off document amended to re-present the two
+changed functions' postconditions — see
+`nl_confirmation_renal_adjustment_dfy.md`'s 2026-07-09 amendment.
 
 ## Objective
 
