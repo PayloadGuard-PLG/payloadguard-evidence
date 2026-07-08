@@ -1443,23 +1443,33 @@ error a type-level impossibility rather than a calling convention to
 remember — verified against real Dafny, 11/11, 0 errors, including two
 explicit lemmas proving each direction of the impossibility. Finding 1
 — no function computes the actual Cockcroft-Gault CrCl or CKD-EPI eGFR
-numeric value, a genuine undefined-input-region gap — **remains open by
-explicit choice**, deferred on Steven's direction rather than decided.
-Steven then supplied a research-findings document proposing the exact
-2021 CKD-EPI equations plus a Dafny/Z3 lookup-table strategy; every
-checkable claim was independently verified
+numeric value, a genuine undefined-input-region gap. Steven then
+supplied a research-findings document proposing the exact 2021 CKD-EPI
+equations plus a Dafny/Z3 lookup-table strategy; every checkable claim
+was independently verified
 (`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`) — both
 CKD-EPI equations and the Cockcroft-Gault historical constants confirmed,
 a fabricated NICE NG203 citation caught and corrected, and the proposed
 LUT architecture found to relocate rather than eliminate CKD-EPI's trust
-boundary. Finding 1's build-vs-defer decision is unchanged but now rests
-on verified data. **Gate 1 is therefore still not formally closed**, now
-blocked on one finding instead of two. Phase 2 (the Gate
-C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
-`renal_adjustment.dfy` composing all five now-verified functions,
-infrastructure already scoped) remains blocked
-on Finding 1's scope decision plus the flag-provenance scoping pass. No
-committed Dafny code exists yet for this POC.
+boundary.
+
+**Gate 1 closed 2026-07-08 under two named, provisional fallback
+assumptions rather than permanent decisions** (per Steven's direction:
+"assumption I'll find the data"): CrCl/eGFR computation defaults to
+caller-supplied for both formulas in Phase 2 v1 (Cockcroft-Gault remains
+ready to add later as a pure extension); classification-flag provenance
+(`REQ-RENAL-8`) is reclassified as a Phase 3 integration concern rather
+than a Phase 2 proof blocker, since `SelectFormula`'s flags were always
+caller-supplied parameters. **Phase 2 has started:** `renal_adjustment.dfy`
+is committed with all five functions (`RoundHalfUp`, `GStage`,
+`SelectFormula`, `ComposedCeiling`, `AssessRenalFunction`) and verifies
+for real — `dafny verify`: `5 verified, 0 errors`, captured via
+`run_verify_renal.py` mirroring `dosage.dfy`'s own capture discipline.
+`evidence/dafny_adapter.py::parse_dafny_capture` confirmed to work
+unmodified against the new capture (`strength=PROVEN`,
+`verifier_completion_status='completed'`) — the infrastructure plan's
+first real end-to-end confirmation for this POC, not assumed from the
+code reading generic.
 
 ## What "done" looks like for this roadmap
 

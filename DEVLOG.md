@@ -6,6 +6,47 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal-adjustment Gate 1 closed under named fallbacks; Phase 2 started
+
+Asked what to suggest for an "easy fallback" so Phase 2 could start
+without waiting on Gate 1c's two remaining items. Recommended treating
+both as provisional defaults rather than resolved decisions: CrCl/eGFR
+computation defaults to caller-supplied for both formulas in Phase 2 v1
+(not a design change — `AssessRenalFunction` already takes
+`renalFunctionValue: real` as a parameter); classification-flag
+provenance (`REQ-RENAL-8`) is reclassified as a Phase 3 integration
+concern rather than a Phase 2 blocker, since `SelectFormula`'s flags
+were always caller-supplied parameters and the proof doesn't need to
+know who populates them. Steven approved ("Ok continue while I keep
+digging").
+
+Updated `PHASE1_PLAN.md` and `GATE_1C_AUDIT.md` to record both as named,
+dated, reversible defaults — not silently resolved. Gate 1 is now
+closed under these two documented assumptions.
+
+**Phase 2 started for real:** wrote `examples/renal_adjustment/renal_adjustment.dfy`,
+composing all five functions verified individually during Gate 1c's
+audit (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
+`AssessRenalFunction`) into one committed file — same bodies as the
+scratch checks, verbatim. Verified directly: `dafny verify` reports
+`5 verified, 0 errors`. Wrote `run_verify_renal.py`, mirroring
+`run_verify_dafny.py`'s capture discipline exactly (verbatim
+stdout+stderr, exact command argv, exit code, ISO-8601 timestamp); ran
+it for real, producing `raw_dafny_output_renal.txt` and
+`run_manifest_dafny_renal.json`. Confirmed
+`evidence/dafny_adapter.py::parse_dafny_capture` works unmodified
+against this new capture — not assumed from the infrastructure plan's
+prediction, actually run: `strength=PROVEN`,
+`verifier_completion_status='completed'`. This is the first real,
+empirical confirmation that the existing Gate C1/C2 machinery
+generalizes to a second spec, the whole point of this POC.
+
+138 tests still passing (no existing code touched); this is the first
+commit that adds real, verified Dafny code for the renal-adjustment
+POC rather than planning/sketch documents.
+
+---
+
 ## 2026-07-08 — Verified Steven's CKD-EPI 2021 research brief; caught one fabricated citation
 
 Steven asked for a precise, portable research prompt to close Gate 1c's

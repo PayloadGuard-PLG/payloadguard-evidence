@@ -1746,34 +1746,35 @@ Gate C1 signature sketches in `examples/renal_adjustment/gate_c1_sketch.md`,
 Gate 1c audit in `examples/renal_adjustment/GATE_1C_AUDIT.md`),
 demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
 clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
-Gate 1a and 1b are closed; **Gate 1c has been performed and found two
-real gaps — one now resolved, one deliberately deferred; Gate 1 is not
-yet formally closed.** Five core proof functions (`RoundHalfUp`,
-`GStage`, `SelectFormula`, `ComposedCeiling`, `AssessRenalFunction`)
-verify individually against the real, installed Dafny 4.11.0 toolchain;
-the composed boundary behavior (`GStage(RoundHalfUp(x))`) verifies
-across all ten boundary rows plus the NHS SPS example (24/24, 0 errors);
-`AssessRenalFunction`'s type-level proof that a CrCl value can never
-reach `GStage` verifies at 11/11, 0 errors — but none are yet composed
-into a committed `renal_adjustment.dfy`; Phase 2 has not started. Named
-limitations/exclusions and open gaps, per this repo's "name it, don't
-guess it" discipline:
+Gate 1a and 1b are closed; **Gate 1c performed, found two real gaps, and
+closed under two named fallback assumptions (2026-07-08) — Gate 1 is
+now closed and Phase 2 has started.** All five core proof functions
+(`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
+`AssessRenalFunction`) are committed to a real `renal_adjustment.dfy`
+(Gate C1 equivalent) and verify together for real: `dafny verify`
+reports `5 verified, 0 errors`, captured via
+`run_verify_renal.py`/`raw_dafny_output_renal.txt`/
+`run_manifest_dafny_renal.json` mirroring `dosage.dfy`'s own capture
+discipline exactly. `evidence/dafny_adapter.py::parse_dafny_capture`
+confirmed to work unmodified against this new capture (not assumed) —
+`strength=PROVEN`, `verifier_completion_status='completed'`, the
+infrastructure plan's first real end-to-end confirmation for this POC.
+Named limitations/exclusions and open gaps, per this repo's "name it,
+don't guess it" discipline:
 
 - **No function computes the actual Cockcroft-Gault CrCl or CKD-EPI
-  eGFR numeric value.** Found by Gate 1c's hand-trace, not assumed away:
-  the skeleton only stages/selects/composes an already-computed value.
-  The exact CKD-EPI 2021 equations and Cockcroft-Gault's historical
-  constants are now independently verified (see
-  `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`), and a
-  proposed Dafny/Z3 lookup-table workaround for CKD-EPI's fractional
-  exponents was evaluated and found to relocate rather than eliminate
-  the trust boundary (the LUT itself needs independent verification
-  against the formula). Needs a scope decision (Cockcroft-Gault in
-  Phase 2 — small, linear-arithmetic, low proof risk — vs. CKD-EPI
-  caller-supplied, given its genuine Dafny/Z3 expressiveness gap, not
-  just a performance concern) — see `GATE_1C_AUDIT.md`'s addenda.
-  **Deliberately deferred, not decided**, now backed by verified data
-  rather than an open question mark.
+  eGFR numeric value — `renal_adjustment.dfy` defaults both to
+  caller-supplied for Phase 2 v1.** Found by Gate 1c's hand-trace, not
+  assumed away; closed under a named, provisional fallback (2026-07-08),
+  not a permanent decision — see `PHASE1_PLAN.md`'s "Closed under named
+  fallback assumptions" section. The exact CKD-EPI 2021 equations and
+  Cockcroft-Gault's historical constants are independently verified
+  (`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`) and ready
+  to add later: Cockcroft-Gault as a pure extension (small,
+  linear-arithmetic, low proof risk); CKD-EPI eGFR has a genuine Dafny/Z3
+  expressiveness gap (real-valued fractional exponents on a variable
+  base) that a proposed lookup-table workaround doesn't actually
+  eliminate, only relocates — see `GATE_1C_AUDIT.md`'s addenda.
 - **`GStage` must not be applied to a Cockcroft-Gault CrCl value —
   RESOLVED 2026-07-08.** Its boundaries are derived from KDIGO's
   eGFR-specific G1–G5 table; CrCl isn't BSA-normalized and isn't staged

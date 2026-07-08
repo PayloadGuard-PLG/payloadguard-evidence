@@ -1,22 +1,38 @@
 # Renal Function Dose Adjustment — Phase 1 (Specification & Foundation)
 
-Status: **Gate 1a and Gate 1b closed. Gate 1c performed — see
-`examples/renal_adjustment/GATE_1C_AUDIT.md`.** Five core proof
-functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
-and the two-downstream-paths dispatcher `AssessRenalFunction`) verify
-cleanly against the real, installed Dafny 4.11.0 toolchain, including
-the composed boundary behavior (`GStage(RoundHalfUp(x))`, 24/24
-verified) and `AssessRenalFunction`'s type-level proof that a
-Cockcroft-Gault CrCl value can never reach `GStage` (11/11 verified) —
-not yet integrated into a committed `renal_adjustment.dfy`, but no
-longer unverified sketch. **Gate 1c's audit found two real gaps; one
-(`GStage` misapplication) is now resolved by `AssessRenalFunction`'s
-design, the other (no function computes the actual CrCl/eGFR numeric
-value) remains open by explicit choice, deferred rather than decided —
-see "Still open" below.** Phase 2 (the Gate C1/C6/C4/C3/C5 build
-pipeline, per `/root/.claude/plans/stateless-weaving-firefly.md`'s
-infrastructure plan) remains blocked on that deferred item plus
-classification-flag provenance.
+Status: **Gate 1 closed, under two named, documented fallback
+assumptions — Phase 2 started 2026-07-08.** Gate 1a and 1b closed; Gate
+1c performed (`examples/renal_adjustment/GATE_1C_AUDIT.md`) and found
+two real gaps, one resolved by redesign (`AssessRenalFunction`'s
+type-level fix for the `GStage`-misapplication finding), one closed by
+an explicit provisional default rather than a permanent decision:
+
+1. **CrCl/eGFR value computation (Finding 1): defaulted to
+   caller-supplied for both formulas in Phase 2 v1.** Not a design
+   change — `AssessRenalFunction` already takes `renalFunctionValue:
+   real` as a parameter regardless of who computes it. The verified
+   Cockcroft-Gault formula (`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`)
+   is ready to add as a pure extension (a new function feeding the same
+   parameter) whenever Steven decides to build it — this default does
+   not foreclose that, it just doesn't block starting on it.
+2. **Classification-flag provenance (`REQ-RENAL-8`): reclassified as a
+   Phase 3 integration concern, not a Phase 2 proof blocker.**
+   `SelectFormula`'s flags are already caller-supplied parameters — the
+   open question (clinician form vs. EHR lookup vs. static list) is
+   about who populates them operationally, which the proof itself
+   doesn't need resolved. Named here so it isn't silently dropped, not
+   silently promoted to a blocker it was never structurally being.
+
+Five core proof functions (`RoundHalfUp`, `GStage`, `SelectFormula`,
+`ComposedCeiling`, `AssessRenalFunction`) verify cleanly against the
+real, installed Dafny 4.11.0 toolchain, including the composed boundary
+behavior (`GStage(RoundHalfUp(x))`, 24/24 verified) and
+`AssessRenalFunction`'s type-level proof that a Cockcroft-Gault CrCl
+value can never reach `GStage` (11/11 verified). Phase 2 (the Gate
+C1/C6/C4/C3/C5 build pipeline, per
+`/root/.claude/plans/stateless-weaving-firefly.md`'s infrastructure
+plan) is now underway — see `examples/renal_adjustment/renal_adjustment.dfy`
+and its capture.
 
 ## Objective
 
@@ -240,69 +256,56 @@ a type-level impossibility rather than a convention to remember —
 verified against real Dafny, 11/11, 0 errors. Finding 1 remains open, by
 explicit choice (Steven's direction: defer it, resolve Finding 2 first).
 
-## Still open (named, not guessed)
+## Closed under named fallback assumptions (not silently, not permanently)
 
-1. **Classification-flag provenance (opened by REQ-RENAL-8).**
-   REQ-RENAL-8 settles *that* `SelectFormula`'s flags are caller-supplied
-   but not *who* sets them or by what process — a real, currently
-   unscoped item. Needs its own scoping pass before Phase 2 can treat
-   this trust boundary as fully closed, same shape as the Gate C6
-   next-phase blocker (audit first, name what can/can't be scoped, ask
-   directly). Candidates worth naming rather than guessing at later: a
-   clinician-facing form at the point of prescribing (mirrors the Gate
-   C6 NL-dialogue pattern); a lookup against the caller's own
-   EHR/prescribing system (an external-integration question, same shape
-   as the ALM/SOUP bridge scoping); or a static, versioned list
-   maintained outside the proof boundary and reviewed on a cadence.
-2. **CrCl/eGFR value computation scope (Gate 1c finding 1) — still
-   deferred, now with verified data behind it.** Steven supplied a
-   "research findings" document (external knowledge, explicitly flagged
-   by him as unverified) proposing the exact 2021 CKD-EPI equations and
-   a Dafny/Z3 "lookup-table" architecture. Every checkable claim was
-   independently verified — see
-   `sources/ckd-epi-2021-and-cockcroft-gault-verification.md` for full
-   detail. Confirmed: both the 2021 CKD-EPI creatinine-only and
-   creatinine-cystatin C equations exactly (independently checked
-   against the National Kidney Foundation's own published equations);
-   the original 1976 Cockcroft-Gault formula and the arithmetic behind
-   MHRA's rounded 1.23/1.04 constants. **Corrected: the document's claim
-   that UK practice mandates a "2009 equation, race modifier removed" is
-   wrong** — the cited NICE NG203 recommendation numbers and text don't
-   exist in the real guideline (verified by fetching it directly); an
-   independent 2024 UK study (Roy et al., *Nephron*, PMID 39342928)
-   shows UK lab practice is heterogeneous and in transition, not settled
-   on any one equation.
+~~1. Classification-flag provenance (opened by REQ-RENAL-8).~~
+**Reclassified 2026-07-08 as a Phase 3 concern, not a Phase 1/2
+blocker.** `SelectFormula`'s flags were always caller-supplied
+parameters — the open question is *who* populates them operationally
+(clinician form, EHR lookup, static versioned list), which is an
+external-integration decision the proof itself doesn't need resolved.
+Still a real, unscoped item — not dropped, just correctly placed in
+Phase 3 rather than treated as blocking Phase 2's proof work, which it
+never structurally was.
 
-   This reinforces rather than changes the original recommendation:
-   Cockcroft-Gault has no fractional-exponent term and is a small,
-   linear-arithmetic formula well within Dafny/Z3's proven capability
-   (same category as `RoundHalfUp`/`GStage`/`ComposedCeiling`). The
-   CKD-EPI equations (either version) use real-valued fractional
-   exponents on a variable base (`Scr^-1.200`, `Scr^-0.302`, etc.) —
-   Dafny has no native operator for this and Z3 has no decision
-   procedure for it; this is a genuine expressiveness gap, not a
-   performance/timeout issue. The supplied document's proposed
-   workaround (scale to bounded integers, precompute a lookup table, and
-   prove against the LUT) is a legitimate technique in principle but
-   **doesn't eliminate the CKD-EPI trust boundary — it relocates it**:
-   proving "the Dafny function matches this LUT" only pushes the real
-   question to "was the LUT correctly computed from the actual formula,"
-   an external, unverified computation. If CKD-EPI eGFR is ever pursued
-   as a proof target rather than staying caller-supplied, that LUT-
-   generation trust boundary needs its own explicit scoping — named
-   here, not assumed away. **Steven's call on whether to build
-   Cockcroft-Gault in Phase 2 and keep CKD-EPI caller-supplied,
-   deliberately not decided unilaterally here.**
+~~2. CrCl/eGFR value computation scope (Gate 1c finding 1).~~
+**Defaulted 2026-07-08 to caller-supplied for both formulas in Phase 2
+v1** — a provisional default, not a permanent decision, per Steven's
+explicit direction ("assumption I'll find the data"). Backed by
+verified data either way it eventually goes:
+`sources/ckd-epi-2021-and-cockcroft-gault-verification.md` confirms
+both 2021 CKD-EPI equations exactly (independently checked against the
+National Kidney Foundation's own published equations) and the original
+1976 Cockcroft-Gault formula/MHRA constant arithmetic; it also corrects
+a fabricated NICE NG203 citation from the supplied research document
+(claimed recommendation numbers/text that don't exist in the real
+guideline — UK lab practice is actually heterogeneous and in
+transition, per an independent 2024 UK study, Roy et al., *Nephron*,
+PMID 39342928, not settled on one equation).
+
+Cockcroft-Gault has no fractional-exponent term and is a small,
+linear-arithmetic formula well within Dafny/Z3's proven capability
+(same category as `RoundHalfUp`/`GStage`/`ComposedCeiling`) — ready to
+add as a pure extension (a new function feeding `AssessRenalFunction`'s
+existing `renalFunctionValue: real` parameter) whenever Steven decides
+to build it; this default doesn't foreclose that. CKD-EPI's real-valued
+fractional exponents on a variable base (`Scr^-1.200`, `Scr^-0.302`,
+etc.) are a genuine Dafny/Z3 expressiveness gap, not a performance
+issue — a proposed lookup-table workaround was evaluated and found to
+relocate, not eliminate, the trust boundary (the LUT itself would need
+independent verification against the formula), so CKD-EPI stays
+caller-supplied for longer than Cockcroft-Gault regardless of when this
+default gets revisited.
 
 ~~3. `GStage`'s eGFR-only applicability (Gate 1c finding 2).~~ **Resolved
 2026-07-08** — `AssessRenalFunction`'s tagged-union return type makes
 this a type-level impossibility. See Gate 1b above.
 
-**Gate 1 is not yet formally closed** — one finding resolved, one
-deliberately deferred. Per its own stated exit
-criteria, an audit that finds real gaps and names them, rather than
-rubber-stamping, is Gate 1c doing its job correctly. Phase 2 remains
-blocked until item 2 above (and item 1, flag provenance) are decided.
+**Gate 1 is closed, under the two documented fallback assumptions
+above.** Nothing was silently resolved: both remaining items are named,
+dated, and reversible — Phase 2 does not depend on either being decided
+permanently, only on the fallback being an honest, stated default.
+Phase 2 started 2026-07-08 — see `renal_adjustment.dfy`.
 
 ## Documentation set updated so far
 
