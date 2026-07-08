@@ -6,6 +6,68 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal Function Dose Adjustment POC: Gate 1a/1b closed, four proof functions verified against real Dafny
+
+Steven uploaded a "research findings" document proposing to resolve
+Phase 1's remaining open items: a BMI-boundary citation (NHS Tayside
+ADTC + two ClinicalTrials.gov PK studies), paediatric/cystatin-C
+decisions, a 16-row seed test-vector table, a decision that
+`SelectFormula`'s drug-classification flags are caller-supplied
+(proposed as `REQ-RENAL-7`), and a new `ComposedCeiling` function
+resolving `REQ-RENAL-5`'s bound-composition question against
+`dosage.dfy`'s actual (checked) signature.
+
+Verified every checkable factual claim independently rather than
+accepting the document on its word, per this repo's standing discipline:
+
+- `dosage.dfy`'s quoted signature matched the real file exactly.
+- MHRA's BMI threshold ("BMI <18 kg/m2 or >40 kg/m2," strict inequality)
+  confirmed by direct WebFetch of the primary MHRA page itself — a
+  stronger, simpler citation than the document proposed (NHS Tayside was
+  offered as the source; Tayside turned out to be a secondary
+  restatement of the same MHRA text, itself confirmed by pulling and
+  reading the actual Tayside PDF page image after WebFetch's
+  text-summarization pass initially missed the content inside a
+  bulleted table graphic — a real tool-reliability gap worth
+  remembering). The two ClinicalTrials.gov NCT citations (NCT02942810,
+  NCT02039817) checked via the Clinical Trials MCP: both real, both use
+  a similar BMI range, but as general PK-study eligibility screening,
+  not as validation of MHRA's specific rule — downgraded from "confirms"
+  to "corroborates" in the committed record.
+- Inker et al.'s 2021 NEJM cystatin-C equation citation (PMID 34554658)
+  checked via PubMed: exact title, journal, volume/issue/pages, and DOI
+  match.
+- `ComposedCeiling`, and (going further than the document itself did)
+  `RoundHalfUp`, `GStage`, and `SelectFormula` were each written to a
+  scratch `.dfy` file and run through the real, installed Dafny 4.11.0
+  toolchain (`dafny verify`) rather than accepted as hand-reasoned
+  contract shapes. All four verify cleanly, 1 verified / 0 errors each.
+
+One real conflict caught, not silently merged: the document's proposed
+`REQ-RENAL-7` (classification-flag provenance) collided with the
+`REQ-RENAL-7` already committed in this repo (BSA de-normalization, from
+KDIGO Practice Point 4.2.4, committed before the document arrived).
+Renumbered the new one to `REQ-RENAL-8` and recorded the collision and
+the fix explicitly in `PHASE1_PLAN.md` rather than overwriting silently.
+
+Folded all of this into `examples/renal_adjustment/PHASE1_PLAN.md`
+(closed requirements table through `REQ-RENAL-8`, settled the
+paediatric/cystatin-C/rounding decisions, added the 16-row Gate 1c
+test-vector table, the verified `ComposedCeiling` interaction contract)
+and `examples/renal_adjustment/gate_c1_sketch.md` (all four functions
+now marked verified with their checked candidate bodies), plus a new
+source file `sources/mhra-renal-formula-selection-2019.md`. Updated
+`sources/README.md`, `KNOWN_LIMITATIONS.md`, and this roadmap doc's
+status section to match.
+
+**Gate 1c's hand-trace write-up remains the one open item to formally
+close Gate 1** — the test-vector table it needs now exists, but the
+audit document itself hasn't been written. One new open item,
+`REQ-RENAL-8`'s classification-flag provenance (who sets the flags, by
+what process), needs its own scoping pass before Phase 2 can start.
+138 tests still passing; no code touched (Dafny checks were scratch
+files, not committed artifacts).
+
 ## 2026-07-08 — Renal Function Dose Adjustment POC: Phase 1 Gate 1a/1b, corrected against primary sources (dab4b29 and this commit)
 
 Steven proposed a second, independent proof-of-concept (renal-function

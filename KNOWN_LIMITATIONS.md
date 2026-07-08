@@ -1738,15 +1738,20 @@ as the four variant JSON artifacts (a / b / symbolic / concrete, each with
 its Markdown sibling); the base matrix remains the frozen legacy symbolic
 subset per ruling R2c, as the roadmap's own verified-state section records.
 
-## Renal Function Dose Adjustment POC — Phase 1 non-goals and exclusions (2026-07-08)
+## Renal Function Dose Adjustment POC — Phase 1 non-goals and exclusions (2026-07-08, updated same day)
 
 Second, independent proof-of-concept (`examples/renal_adjustment/`,
-Phase 1 plan committed as `examples/renal_adjustment/PHASE1_PLAN.md`),
+Phase 1 plan committed as `examples/renal_adjustment/PHASE1_PLAN.md`,
+Gate C1 signature sketches in `examples/renal_adjustment/gate_c1_sketch.md`),
 demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
 clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
-No Dafny code exists yet — Phase 1 (clinical source audit, spec skeleton,
-consistency audit) is still open. Named limitations/exclusions, per this
-repo's "name it, don't guess it" discipline:
+Gate 1a and 1b are closed; Gate 1c's hand-trace write-up is still open.
+All four core proof functions (`RoundHalfUp`, `GStage`, `SelectFormula`,
+`ComposedCeiling`) verify individually against the real, installed Dafny
+4.11.0 toolchain, but none are yet composed into a committed
+`renal_adjustment.dfy` — Phase 2 has not started. Named
+limitations/exclusions, per this repo's "name it, don't guess it"
+discipline:
 
 - **Per-drug numeric dose-reduction factors are not sourced or proven.**
   BNF/SPC/Renal Drug Handbook disagree at the individual-drug level.
@@ -1755,16 +1760,27 @@ repo's "name it, don't guess it" discipline:
   parameter, not a baked-in constant. The proof establishes correct,
   monotonic, bounded *application* of a supplied factor, not the
   clinical correctness of the factor's numeric value.
-- **Paediatric renal dosing is out of scope for v1** (assumed, pending
-  Steven's explicit confirmation — see `PHASE1_PLAN.md`'s "Still open"
-  section). Paediatric reference ranges differ entirely from the adult
-  ranges this spec targets.
-- **Combined creatinine-cystatin C eGFR (eGFRcr-cys) is not built.**
-  KDIGO 2024 prefers it where cystatin C is available; named as a
-  second, unbuilt branch rather than silently excluded, pending
-  Steven's scope decision.
+- **Paediatric renal dosing is out of scope for v1 — settled, not just
+  assumed.** No free UK paediatric renal-dosing standard exists at the
+  level of the adult sources used here; explicit adult-only precondition.
+- **Combined creatinine-cystatin C eGFR (eGFRcr-cys) is settled as named,
+  not built.** A closed-form 2021 CKD-EPI creatinine-cystatin-C equation
+  exists and is fully provable (Inker et al., *NEJM* 2021;385(19):1737–
+  1749, PMID 34554658, verified directly against PubMed) — not a
+  feasibility gap — but cystatin C isn't routinely measured in UK
+  practice, making the branch near-permanently unreachable with real
+  data. Documented as a future extension.
 - **`REQ-RENAL-3`'s original "unstable renal function" framing was never
   independently corroborated** by any source fetched, and has been
   merged into `REQ-RENAL-6` (AKI reassessment) rather than kept as a
   separately-sourced claim — see `sources/kdigo-2024-gfr-staging.md` and
   `PHASE1_PLAN.md`'s requirements table.
+- **New: `SelectFormula`'s drug-classification flags (`REQ-RENAL-8`) are
+  caller-supplied, and their provenance is explicitly unscoped.** The
+  proof establishes correct branching given the flags, not that a given
+  real-world drug was correctly classified — MHRA's own drug lists are
+  illustrative, not closed, so hardcoding them would embed a
+  false-completeness claim inside a formally "proven" artifact. Who sets
+  the flags and by what process is a named, deferred item needing its
+  own scoping pass before Phase 2 can treat this trust boundary as
+  closed — see `PHASE1_PLAN.md`'s "Still open" section.

@@ -49,6 +49,18 @@ requirements documents, standards excerpts) that ground the claims in
   new proposed requirement, REQ-RENAL-7, from Practice Point 4.2.4 (BSA
   de-normalization for narrow-therapeutic-index drugs), not present in
   the original scoping document.
+- `mhra-renal-formula-selection-2019.md` — added 2026-07-08. Per rule 2
+  above: this document **confirms** REQ-RENAL-2's five formula-selection
+  conditions directly against the primary MHRA page, and **upgrades**
+  the BMI-boundary citation for "extremes of muscle mass": MHRA's own
+  text states `BMI <18 kg/m2 or >40 kg/m2` verbatim (strict inequality),
+  verified directly rather than only via NHS Tayside's secondary
+  restatement of the same MHRA text. Also **names as weaker than
+  initially proposed** two ClinicalTrials.gov citations (NCT02942810,
+  NCT02039817) offered as independent corroboration — both are real,
+  verified trials using a similar BMI eligibility range, but for general
+  PK-study screening, not as a validation of MHRA's specific threshold;
+  recorded as corroborating, not confirming.
 
 ## Resolved questions
 

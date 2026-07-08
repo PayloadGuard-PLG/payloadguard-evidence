@@ -1,19 +1,28 @@
 # Gate C1 sketch: signatures and test vectors, before any implementation
 
-Status: **sketch only.** No Dafny toolchain has touched this — these are
-contract shapes (signature + `requires`/`ensures` intent), not verified
-code. Per Steven's instruction, test vectors are defined here *before*
-any function body is written, mirroring the discipline the Gate C5 LVR
-extension used (hand-derived prediction recorded before the real run).
-This does not start Phase 2 — Gate 1c (internal consistency audit) is
-still open, and these signatures are exactly what Gate 1c needs to be
-checked against, not a way around it.
+Status: **all four functions checked against the real Dafny 4.11.0
+toolchain (2026-07-08) and verify cleanly** — `RoundHalfUp`, `GStage`,
+`SelectFormula`, `ComposedCeiling`, each 1 verified / 0 errors in a
+scratch file, `ensures` clauses holding for real, not asserted. None of
+this is yet part of a committed `.dfy` file in `examples/renal_adjustment/`
+— the scratch check is a de-risking step, not a build step, and no
+mutation testing, STP suite, or Gate C3 lint has run against any of
+them. Per Steven's instruction, test vectors were defined before any
+body was written, mirroring the discipline the Gate C5 LVR extension
+used (hand-derived prediction recorded before the real run). This does
+not start Phase 2 — Gate 1c's hand-trace write-up is still open (see
+`PHASE1_PLAN.md`), and these signatures are exactly what Gate 1c needs
+to be checked against, not a way around it.
 
-Three logical operations, decomposed rather than inlined into one
-method (per the Gate C1 options discussion) — each becomes its own
+Four logical operations, decomposed rather than inlined into one or two
+methods (per the Gate C1 options discussion) — each becomes its own
 `function`, callable from one top-level `method`, the same shape that
 let Gate C5's AOR/LVR extensions target `dosage.dfy`'s companion
-function directly.
+function directly. The fourth, `ComposedCeiling`, was added after
+checking `dosage.dfy`'s actual signature directly (it takes a single
+`maxSafeDoseMgPerHr: real`, not a pair of bounds to intersect — REQ-
+RENAL-5's "more conservative bound wins" claim has to be a composition
+step upstream of it, not something provable inside `dosage.dfy` itself).
 
 ## 1. `RoundHalfUp` — REQ-RENAL-1a
 
@@ -82,19 +91,19 @@ function RoundHalfUp(x: real): int
   mutation-testing surface fivefold for a single, unchanging operation,
   and risks the boundaries drifting out of sync under a future edit.
 
-**Proof strategy — the actual verification risk, named up front rather
-than assumed clean:** the `ensures` clause is a direct algebraic
-consequence of the `Floor` body (`(x+0.5).Floor` satisfies
-`(x+0.5).Floor <= x + 0.5 < (x+0.5).Floor + 1` by `Floor`'s own
-definition, which rearranges to the stated `ensures`) — Z3 should
-discharge this without hinting, similar in difficulty to `dosage.dfy`'s
-own arithmetic postconditions. The one thing to actually check once
-Dafny is invoked (not assumed): whether Dafny's `real` literal `0.5` and
-`.Floor` interact with the SMT real-arithmetic theory cleanly, or
-whether Z3 needs a `assert` lemma step bridging `Floor`'s built-in axiom
-to the stated `ensures` — this is the kind of thing Gate C3's
-vacuous-precondition/weak-postcondition checks exist to catch if the
-proof goes through vacuously instead of for the right reason.
+**Proof strategy — checked against the real toolchain, not just
+hand-reasoned.** The candidate body above was written to a scratch file
+and run through the actual installed Dafny 4.11.0 (`dafny verify`,
+2026-07-08): **1 verified, 0 errors.** Z3 discharged the `ensures`
+clause directly from `Floor`'s built-in axiom with no hinting needed —
+the bridging `assert` step flagged as a risk above turned out to be
+unnecessary in practice. This was a scratch-file check
+(`/tmp/.../scratchpad/round_half_up_check.dfy`), not a committed build
+artifact — Gate C3's vacuous-precondition/weak-postcondition checks
+still need to run for real once this is part of a committed spec, since
+a scratch check confirms the proof goes through, not that it goes
+through *for the right reason* (that's exactly what Gate C3 and the STP
+suite are for).
 
 **Test-vector-to-STP mapping.** Every row in the table above becomes one
 Gate C4-equivalent STP lemma once Phase 2 starts (e.g. `lemma
@@ -126,6 +135,22 @@ Keeping the two functions separate means the STP suite (Gate C4
 equivalent) can prove the composition `GStage(RoundHalfUp(x))` pins
 89.5/59.5/44.5/29.5/14.5 correctly without `GStage` itself needing to
 know about rounding.
+
+**Candidate body, verified against real Dafny 4.11.0, 2026-07-08: 1
+verified, 0 errors** (straightforward cascading `if`, descending
+threshold order — Z3 discharged all six `ensures` clauses without
+hinting):
+
+```dafny
+{
+  if roundedEgfr >= 90 then G1
+  else if roundedEgfr >= 60 then G2
+  else if roundedEgfr >= 45 then G3a
+  else if roundedEgfr >= 30 then G3b
+  else if roundedEgfr >= 15 then G4
+  else G5
+}
+```
 
 **Test vectors:**
 
@@ -181,23 +206,73 @@ function SelectFormula(
 | false | false | 40 | 24.0 | false | EGFR (no condition holds) |
 | false | false | 80 | 24.0(implied) | false | CockcroftGault — NHS SPS worked example, age 80 |
 
-**Named precision gap, not yet resolved — flagging rather than
-guessing an operator:** the BMI boundary's exact inclusivity (`< 18.0`
-vs `<= 18.0`, `> 40.0` vs `>= 40.0` at BMI exactly 18.0/40.0) has not
-been independently verified against the MHRA source's literal wording
-the way the GFR/eGFR rounding boundary was. The signature above assumes
-strict inequality (`< 18.0`, `> 40.0`, i.e. exactly 18.0 and exactly
-40.0 are *not* "extremes") as the more conservative reading, but this
-is an assumption, not a citation — needs the same source-verification
-treatment KDIGO's Table 11 got before Gate 1c can close on it.
+**Precision gap resolved, 2026-07-08:** the BMI boundary's exact
+inclusivity has now been verified directly against the MHRA source's
+literal wording (not assumed) — `sources/mhra-renal-formula-selection-2019.md`
+records the verbatim quote: "patients at extremes of muscle mass (BMI
+<18 kg/m2 or >40 kg/m2)." Strict inequality confirmed: exactly 18.0 or
+40.0 is not itself "extreme." The signature above's `< 18.0`/`> 40.0` is
+now a cited fact, not an assumption.
+
+**Candidate body, verified against real Dafny 4.11.0, 2026-07-08: 1
+verified, 0 errors** (a single OR-guarded `if`, matching the `ensures`
+clauses' own condition exactly — no separate proof needed for the
+combinatorial case, since the OR is checked as one guard, not five
+independent branches):
+
+```dafny
+{
+  if isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75
+     || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug
+  then CockcroftGaultFormula
+  else EGFRFormula
+}
+```
+
+## 4. `ComposedCeiling` — REQ-RENAL-5
+
+```dafny
+function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
+  requires existingCeiling > 0.0
+  requires renalCeiling > 0.0
+  ensures ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling
+  ensures ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling
+{
+  if renalCeiling < existingCeiling then renalCeiling else existingCeiling
+}
+```
+
+Not decomposed further — this is already minimal (a `min` over two
+positive reals). Named as its own function, not inlined into
+`renal_adjustment.dfy`'s top-level method, because it's the composition
+bridge to `dosage.dfy`, not a `renal_adjustment.dfy`-internal concern;
+Phase 2 should give it its own Gate C1 capture and Gate C4 STP pair.
+
+**Verified against real Dafny 4.11.0, 2026-07-08: 1 verified, 0
+errors.** Both `ensures` clauses hold — the "more conservative bound
+wins" claim (REQ-RENAL-5) is proven for this function directly, not
+asserted in prose.
+
+**Test vectors:**
+
+| existingCeiling | renalCeiling | Expected result | Why |
+|---|---|---|---|
+| 10.0 | 6.0 | 6.0 | renal ceiling more conservative, wins |
+| 6.0 | 10.0 | 6.0 | existing ceiling more conservative, wins |
+| 8.0 | 8.0 | 8.0 | equal — either branch, same result |
 
 ## What happens next
 
 These signatures and test vectors are Gate 1c's actual raw material —
 Gate 1c is the hand-trace of `REQ-RENAL-*` and the NHS SPS example
 through exactly this skeleton (already partially done in the "NHS SPS
-worked example" rows above). Once Steven confirms the BMI-boundary
-citation and answers the three still-open Phase 1 questions
-(`PHASE1_PLAN.md`), Gate 1c can close and Phase 2 (writing the real,
-verified `renal_adjustment.dfy` body against this same signature shape)
-can begin.
+worked example" rows above, and now backed by the 16-row table in
+`PHASE1_PLAN.md`). All four functions now verify individually against
+the real Dafny toolchain; none of them have been composed together in
+one file, none have run through Gate C3's lint checks or a real Gate C5
+mutation suite, and none are yet part of a committed `.dfy` file. The
+next concrete step is writing up Gate 1c's actual hand-trace document
+(tracing each `REQ-RENAL-*` through this now-verified skeleton) and
+scoping classification-flag provenance (see `PHASE1_PLAN.md`'s "Still
+open" section), before Phase 2 (a real, committed `renal_adjustment.dfy`
+composing all four functions) begins.

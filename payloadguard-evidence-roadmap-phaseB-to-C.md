@@ -1403,16 +1403,39 @@ never corroborated by any source and has been merged into `REQ-RENAL-6`)
 and added a new requirement, `REQ-RENAL-7` (BSA de-normalization for
 narrow-therapeutic-index drugs), from KDIGO Practice Point 4.2.4.
 
-**Gate 1a (requirements table) and Gate 1b (spec skeleton) are built.**
-Gate 1c (internal consistency/completeness audit, hand-tracing every
-`REQ-RENAL-*` and the NHS SPS worked example through the skeleton) is
-not yet run — blocked on checking Gate 1b against `dosage.dfy`'s actual
-precondition structure, and on Steven's answers to three still-open
-questions (paediatric scope, combined creatinine-cystatin C eGFR, seed
-test cases beyond the NHS SPS example). Phase 2 (the Gate C1/C6-moved-
-earlier/C4/C3/C5 build pipeline against a new `renal_adjustment.dfy`,
-infrastructure already scoped) remains blocked on Phase 1 closing. No
-Dafny code exists yet for this POC.
+**Gate 1a and Gate 1b are now closed.** A follow-up "research findings"
+document from Steven proposed resolving the three open questions plus a
+BMI-boundary citation and a `ComposedCeiling` composition function; each
+factual claim in it was independently verified rather than accepted on
+its word (WebFetch against the primary MHRA page directly — confirms the
+verbatim `BMI <18 kg/m2 or >40 kg/m2` wording, strict inequality; two
+ClinicalTrials.gov NCT citations checked via the Clinical Trials API —
+real trials, but corroborating rather than confirming, since they're
+general PK-study eligibility ranges, not validations of MHRA's specific
+rule; the Inker et al. 2021 PMID checked via PubMed — exact match). One
+real conflict was caught and fixed rather than silently merged: the
+document's proposed `REQ-RENAL-7` (classification-flag provenance)
+collided with the `REQ-RENAL-7` already committed (BSA de-normalization)
+— renumbered to `REQ-RENAL-8`. `RoundHalfUp`, `GStage`, `SelectFormula`,
+and `ComposedCeiling` were all written to scratch files and verified
+against the real, installed Dafny 4.11.0 toolchain — all four verify
+cleanly (1 verified, 0 errors each), not yet composed into a committed
+`renal_adjustment.dfy`. Paediatric exclusion and the cystatin-C branch
+are now settled (excluded / named-not-built, respectively); seed test
+cases are a real 16-row table in `PHASE1_PLAN.md`. One new open item,
+not resolved: classification-flag provenance — `REQ-RENAL-8` settles the
+flags are caller-supplied but not who sets them or by what process,
+needing its own scoping pass.
+
+**Gate 1c (internal consistency/completeness audit, hand-tracing every
+`REQ-RENAL-*` through the now-verified skeleton) is the one remaining
+item to formally close Gate 1** — the 16-row test-vector table it needs
+is ready, but the audit write-up itself has not been produced. Phase 2
+(the Gate C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
+`renal_adjustment.dfy` and a separate `ComposedCeiling` proof unit,
+infrastructure already scoped) remains blocked on Gate 1c and the
+flag-provenance scoping pass. No committed Dafny code exists yet for
+this POC.
 
 ## What "done" looks like for this roadmap
 
