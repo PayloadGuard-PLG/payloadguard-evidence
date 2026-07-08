@@ -8,15 +8,19 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-09, after bringing `SYSTEM_BLUEPRINT.md` and
-`KNOWN_LIMITATIONS.md` current with the renal-adjustment build and the
-citation gate — both had drifted (a missing `examples/renal_adjustment/`
-component-map entry, stale "Last updated" stamps, stale test counts).
-That drift itself is worth remembering: **update this file, `README.md`,
+**Last updated:** 2026-07-09, after adding two `DEVLOG.md` entries that
+had gone missing (PR #4, HANDOFF.md/CLAUDE.md; PR #5, SYSTEM_BLUEPRINT.md/
+KNOWN_LIMITATIONS.md currency) — Steven caught this directly ("devlog in
+main is still 2 hours old"), not self-caught. That's a second, distinct
+staleness gap in the same session: the first was current-state docs
+(`SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`) drifting behind the code;
+this one was the append-only history itself drifting behind merged PRs.
+Both had the same root cause — a doc update treated as optional cleanup
+rather than part of finishing the change. **Update `DEVLOG.md` in the
+same commit as the change it records, and update this file, `README.md`,
 `OPERATIONS_MANUAL.md`, and `SYSTEM_BLUEPRINT.md`'s component map in the
-same session as any real change**, not just `DEVLOG.md` — DEVLOG's
-append-only history doesn't keep the current-state docs honest by
-itself, as this session found out.
+same session as any real change.** Neither direction keeps the other
+honest automatically — this session found that out twice.
 
 ## What this repo is, in one paragraph
 
