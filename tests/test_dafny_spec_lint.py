@@ -54,6 +54,17 @@ def test_requires_clause_extraction_matches_the_real_dosage_spec():
     assert "maxSafeDoseMgPerHr > 0.0" in joined
 
 
+def test_requires_clause_extraction_matches_a_function_not_just_a_method():
+    """Real gap surfaced by renal_adjustment.dfy (2026-07-08): every
+    Dafny declaration this module's _find_method_header had ever been
+    asked to locate before was a `method` (dosage.dfy's ExpectedDose
+    function was never passed to this extractor directly) - the regex
+    didn't match `function` at all until this fix."""
+    source = (REPO_ROOT / "examples" / "renal_adjustment" / "renal_adjustment.dfy").read_text()
+    clauses = extract_requires_clauses(source, "RoundHalfUp")
+    assert clauses == ["x >= 0.0"]
+
+
 def test_conjunction_of_satisfiable_clauses_is_satisfiable():
     source = """
     method Simple(x: int, y: int) returns (r: int)

@@ -45,7 +45,14 @@ from evidence.dafny_spec_lint import (
 )
 
 _CLAUSE_LINE_RE = re.compile(r"^\s*(requires|ensures)\s+(.*?)\s*(?://\s*(.*))?$")
-_REQ_ID_RE = re.compile(r"REQ-[A-Z0-9-]+")
+# [A-Za-z0-9-]: a real bug, not a hypothetical, surfaced by
+# renal_adjustment.dfy's REQ-RENAL-1a (2026-07-08) - the original
+# [A-Z0-9-] (no lowercase) silently truncated "REQ-RENAL-1a" to
+# "REQ-RENAL-1", misattributing the citation to a real but wrong
+# requirement ID rather than dropping it visibly. dosage.dfy's REQ-IDs
+# (REQ-GIP-1-4-12, REQ-GIP-1-8-1) never had a lowercase suffix, so this
+# never fired until a second spec actually exercised it.
+_REQ_ID_RE = re.compile(r"REQ-[A-Za-z0-9-]+")
 
 # Longest/most-specific operators first, so e.g. "<==>" is consumed
 # whole before "==>" or "<=" ever get a chance to match part of it.

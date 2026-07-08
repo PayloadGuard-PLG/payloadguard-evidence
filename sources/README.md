@@ -31,6 +31,61 @@ requirements documents, standards excerpts) that ground the claims in
   detection, not signal emission. It does not confirm, correct, or
   extend any other requirement, threat, or citation, and it does not
   resolve the FRN open question below.
+- `KDIGO-2024-CKD-Guideline.pdf` — added 2026-07-08. KDIGO 2024 Clinical
+  Practice Guideline for the Evaluation and Management of Chronic Kidney
+  Disease, *Kidney International* (2024) 105(Suppl 4S), S117–S314.
+  Primary clinical source for the renal-adjustment POC's Phase 1 (GFR
+  staging categories, eGFR reporting/rounding convention,
+  Cockcroft-Gault reliability limitations).
+- `kdigo-2024-gfr-staging.md` — added 2026-07-08. Per rule 2 above: this
+  document **confirms** the renal-adjustment scoping document's GFR
+  category boundaries (G1–G5) exactly, **extends** the boundary-
+  inclusivity question with KDIGO's own eGFR-rounding convention (the
+  effective continuous G1/G2 boundary is 89.5, not 90.0, once rounding
+  is accounted for — flagged as an open Gate 1b design decision, not
+  resolved here), and **partially resolves** REQ-RENAL-3's citation gap
+  (corroborates the obesity/oedema half via KDIGO rather than MHRA; the
+  "unstable renal function" half remains unresolved). Also surfaces a
+  new proposed requirement, REQ-RENAL-7, from Practice Point 4.2.4 (BSA
+  de-normalization for narrow-therapeutic-index drugs), not present in
+  the original scoping document. **Amended 2026-07-09** — the
+  round-half-up tie-break rule this document originally implied was
+  "KDIGO's own convention" was challenged directly and found
+  unsupported: KDIGO states no tie-breaking method at all, and an
+  authoritative implementation-guidance paper (Miller et al., *Clin
+  Chem* 2022;68(4):511-520, PMID 34918062) explicitly defers the tie
+  case to each laboratory's own information-system software. Corrected
+  in place; the base rounding requirement remains KDIGO-sourced, only
+  the tie-break specifically was overclaimed.
+- `mhra-renal-formula-selection-2019.md` — added 2026-07-08. Per rule 2
+  above: this document **confirms** REQ-RENAL-2's five formula-selection
+  conditions directly against the primary MHRA page, and **upgrades**
+  the BMI-boundary citation for "extremes of muscle mass": MHRA's own
+  text states `BMI <18 kg/m2 or >40 kg/m2` verbatim (strict inequality),
+  verified directly rather than only via NHS Tayside's secondary
+  restatement of the same MHRA text. Also **names as weaker than
+  initially proposed** two ClinicalTrials.gov citations (NCT02942810,
+  NCT02039817) offered as independent corroboration — both are real,
+  verified trials using a similar BMI eligibility range, but for general
+  PK-study screening, not as a validation of MHRA's specific threshold;
+  recorded as corroborating, not confirming.
+- `ckd-epi-2021-and-cockcroft-gault-verification.md` — added 2026-07-08.
+  Independently verifies a "research findings" document Steven supplied
+  (explicitly flagged by him as unverified external knowledge) proposing
+  data to close Gate 1c's Finding 1. Per rule 2 above: this document
+  **confirms** the 2021 CKD-EPI creatinine-only and creatinine-cystatin C
+  eGFR equations exactly (checked against the National Kidney
+  Foundation's own published equations, not the supplied document
+  alone), **confirms** the original 1976 Cockcroft-Gault formula and the
+  arithmetic behind MHRA's rounded 1.23/1.04 constants, and **corrects**
+  a fabricated citation: the supplied document's claimed NICE NG203
+  recommendation numbers and quoted text (1.1.2 mandating the 2009
+  equation, 1.1.4 barring ethnicity-based eGFR adjustment) do not exist
+  in the real guideline — verified directly by fetching NICE NG203's
+  actual recommendations list. The real picture, per an independent 2024
+  UK study (Roy et al., *Nephron*, PMID 39342928), is that UK lab
+  practice is heterogeneous and in transition, not settled on any single
+  equation version.
 
 ## Resolved questions
 

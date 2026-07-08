@@ -6,6 +6,543 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Rewrote README.md for a non-expert audience; added OPERATIONS_MANUAL.md
+
+`README.md` had accumulated a full gate-by-gate build history (every
+Gate C1-C6 finding, every mutation-testing operator count, every
+extension) directly in the repository's front door — accurate, but
+unreadable by someone evaluating whether to use the system rather than
+already deep in its build log. Rewrote it as a plain-English overview:
+what problem this solves, the core vocabulary (requirement / evidence /
+strength / traceability matrix) explained without jargon, what's in the
+repository, a quick start, and a status summary — no emojis, no gate
+history, technical depth pushed out to linked documents instead of
+inlined.
+
+Added `OPERATIONS_MANUAL.md` as the "definitive manual... at a high
+technical level" - the destination for that technical depth. Covers:
+architecture and data flow, the Strength vocabulary and its enforced
+invariants, the full evidence pipeline (author/capture/generate), all
+six Dafny verification gates (C1-C6) explained by mechanism and purpose
+rather than by chronological finding, a complete command reference, a
+worked "how to add a new example" section distilled from the
+renal-adjustment build (including the honest note that extending the
+system to a second example found and fixed two real gaps in shared
+tooling - not glossed over as if everything generalized cleanly on the
+first try), testing discipline, the review protocol summary, and a
+troubleshooting section.
+
+Both documents cross-reference the existing detailed records
+(`SYSTEM_BLUEPRINT.md`, `DEVLOG.md`, `KNOWN_LIMITATIONS.md`,
+`REVIEW_PROTOCOL.md`) rather than duplicating them - the new manual
+synthesizes current-state understanding; the existing docs remain the
+dated, append-only record of how it got there. 142 tests unaffected
+(documentation only).
+
+---
+
+## 2026-07-09 — Built Gate C4 for real: both predictions confirmed, both real gaps fixed properly
+
+Instructed explicitly: solve any real problems found, don't skip or
+apply a flimsy workaround. Built `renal_adjustment_stp_suite.dfy`
+(44 lemmas: ACCEPT, REJECT, uniqueness, and totality checks across all
+five functions, using the 16-row test-vector table from
+`PHASE1_PLAN.md`) and ran it against the spec exactly as it stood,
+before touching anything.
+
+Both `gate_c4_stp_plan.md` predictions confirmed empirically, not just
+by inspection: the four REJECT lemmas assuming a wrong candidate value
+for `ComposedCeiling` (0.0 instead of the correct minimum) and
+`AssessRenalFunction` (wrong G-stage / wrong CrCl value) genuinely
+**failed to verify** - `0 verified, 4 errors`, a real Dafny run, not a
+hypothetical. `RoundHalfUp`, `GStage`, and `SelectFormula`'s
+ACCEPT/uniqueness/totality lemmas all passed on the same first run - the
+predicted "these three are already tight" also confirmed for real.
+
+Preserved the pre-fix state as an honesty exhibit before fixing anything,
+mirroring `dosage_underconstrained.dfy`'s exact pattern: copied the
+current file to `renal_adjustment_underconstrained.dfy`, and split the
+four failing REJECT lemmas into their own file,
+`renal_adjustment_stp_suite_against_underconstrained.dfy`, confirmed to
+fail against the preserved original for real (`0 verified, 4 errors`,
+captured verbatim, not smoothed over).
+
+Fixed `renal_adjustment.dfy` itself with proper pinning `ensures`
+clauses, not a workaround: `ComposedCeiling` gained
+`ensures ComposedCeiling(...) == existingCeiling || ComposedCeiling(...) == renalCeiling`,
+which combined with the existing two `<=` bounds forces the result to
+equal `min(existingCeiling, renalCeiling)` exactly (if it equals
+existingCeiling, the renalCeiling bound forces existingCeiling to BE the
+minimum, and symmetrically). `AssessRenalFunction` gained two clauses
+referencing its own composition directly
+(`== EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))` and the
+CrCl-path equivalent) - the same self-referential pattern `ExpectedDose`
+uses in `dosage.dfy`, not an ad hoc constraint chosen to make Dafny
+happy without genuinely narrowing the postcondition.
+
+Re-verified `renal_adjustment.dfy`: still `5 verified, 0 errors` -
+neither function's body needed to change, only its stated contract.
+Discovered on the first re-run of the STP suite that the REJECT lemmas
+still failed even after the fix - not because the fix was wrong, but
+because the lemmas' own `requires` clauses were manually restating the
+OLD two/two-clause postconditions and hadn't picked up the new pinning
+clauses automatically. Fixed the lemmas to restate all of each
+function's CURRENT ensures clauses (a real, separate small mistake,
+caught before reporting success) - re-ran, and the full suite passed:
+`44 verified, 0 errors`.
+
+Wrote `run_verify_dafny_stp_suite_renal.py` and
+`run_verify_dafny_stp_suite_against_underconstrained_renal.py`,
+mirroring `dosage.dfy`'s exact capture-runner pattern; ran both for
+real, plus re-ran `run_verify_renal.py` since the main file changed.
+All three captures match predictions exactly: main spec exit 0 (5
+verified), STP suite exit 0 (44 verified), against-underconstrained
+exit 4 (0 verified, 4 errors, preserved as the honest negative result).
+
+Amended `nl_confirmation_renal_adjustment_dfy.md` with the two changed
+functions' re-generated, re-cited postconditions, since this touched
+functions already presented for Gate C6 sign-off - reported as an
+amendment, not a silent edit, per `dosage.dfy`'s own amendment
+precedent. 142 tests still passing; the new Dafny files aren't
+Python-tested (matching `dosage_stp_suite.dfy`'s own precedent - real
+Dafny captures are the evidence, not a pytest wrapper around them).
+
+---
+
+## 2026-07-09 — Scoped Gate C4 (STPs) for renal_adjustment.dfy; two real gaps predicted before building
+
+Asked to plan the next phase after Gate C6. Wrote
+`examples/renal_adjustment/gate_c4_stp_plan.md` — a scoping document,
+not a build, per this repo's standing "scope first" discipline.
+
+Read all five functions' `ensures` clauses specifically asking whether
+each pins its exact output or only bounds/shapes it, before writing any
+STP lemma (same hand-derivation discipline the LVR extension used).
+Two real, predictable gaps stood out, both the same defect class as
+`dosage.dfy`'s own original Gate C4 finding:
+
+- `ComposedCeiling`'s two `<=` bounds don't force the result to equal
+  `min(existingCeiling, renalCeiling)` — a wrong candidate value (e.g.
+  always returning `0.0`) isn't excluded by the spec as written.
+- `AssessRenalFunction` pins which constructor the result uses
+  (`EGFRAssessment` vs. `CrClAssessment`, Gate 1c Finding 2's actual
+  target) but not the value inside it — a wrong G-stage or wrong
+  rounded CrCl value isn't excluded either.
+
+Both are predictions, not yet confirmed by a real Dafny run - recorded
+as hypotheses before building, per the LVR extension's own precedent,
+so if either turns out wrong that gets reported honestly rather than
+silently reconciled. The other three functions (`RoundHalfUp`, `GStage`,
+`SelectFormula`) look genuinely tight by inspection - also a prediction,
+not yet confirmed. The plan lays out the full per-function STP lemma
+table (using the 16-row test-vector table already in `PHASE1_PLAN.md`
+for ACCEPT lemmas) and the predicted pinning-clause fixes for the two
+gaps, mirroring `ExpectedDose`'s role in `dosage.dfy`'s own fix.
+
+No code changed - `renal_adjustment.dfy` is untouched, this is scoping
+only. 142 tests still passing.
+
+---
+
+## 2026-07-09 — Caught and corrected a self-contradictory sourcing overclaim in RoundHalfUp's tie-break rule
+
+Reviewing the Gate C6 sign-off, asked three direct questions: where
+REQ-RENAL-3/4/6 live (answer: prose only, not yet Dafny signatures - no
+correction needed, already accurately stated); what `RoundHalfUp`'s NL
+summary cites as its source for the tie-break rule specifically, not
+just the base rounding requirement; and to see Gate 1c Finding 2's text
+verbatim (answer: quoted directly from `GATE_1C_AUDIT.md`, no issue
+found).
+
+The second question surfaced a real problem. `gate_c1_sketch.md` and
+`renal_adjustment.dfy`'s header comment both described round-half-up as
+"exactly KDIGO's own convention" in the same paragraph that also said
+"KDIGO's cited text says 'rounded to the nearest whole number' with no
+even/odd tie-breaking rule stated" — a direct self-contradiction that
+had gone unnoticed since these were written. The base rounding
+requirement (round to nearest whole number before staging) is genuinely
+KDIGO-sourced; the specific tie-break direction (round-half-up vs.
+round-half-even) was never sourced to anything and had been dressed in
+citation-adjacent language ("clinical dose-staging conventions...
+consistently read as round-half-up in practice") that named no actual
+authority.
+
+Searched for a real citation rather than just softening the claim.
+Found one, and it corrects the assumption rather than rescuing it:
+Miller WG, Kaufman HW, Levey AS, et al. "National Kidney Foundation
+Laboratory Engagement Working Group Recommendations for Implementing
+the CKD-EPI 2021 Race-Free Equations..." *Clinical Chemistry*.
+2022;68(4):511-520. PMID 34918062, DOI 10.1093/clinchem/hvab278 -
+confirmed via PubMed citation lookup, then fetched directly. States
+plainly: "the reported result should be rounded to the closest whole
+number based on the rounding logic of a laboratory information system"
+- explicitly deferring the tie-break rule to each lab's own software,
+confirming there is no single clinical standard for this specific
+question at all.
+
+Corrected in place across `sources/kdigo-2024-gfr-staging.md` (dated
+amendment, not a silent rewrite), `gate_c1_sketch.md`,
+`renal_adjustment.dfy`'s header comment, `PHASE1_PLAN.md`'s
+requirements table, `sources/README.md`'s Contents entry,
+`KNOWN_LIMITATIONS.md`, and this roadmap doc. No code changed -
+`RoundHalfUp`'s body is unchanged (round-half-up remains a reasonable,
+defensible design choice) and still verifies: `5 verified, 0 errors`,
+re-captured. Only the sourcing claim was wrong, and only because it was
+challenged directly rather than re-reviewed by the same process that
+wrote it.
+
+---
+
+## 2026-07-08 — Renal-adjustment Gate C6 built; found and fixed two real bugs in shared tooling
+
+Next step in the build order after Gate C1: Gate C6 (NL-dialogue
+confirmation), moved earlier per its own recommendation. Attempted to
+run `evidence/dafny_nl_summary.py::summarize_method` against
+`renal_adjustment.dfy`'s five functions — the infrastructure plan had
+predicted this "generalizes for free" since it's parameterized by
+`method_name`. Checked empirically rather than trusted, and the
+prediction was wrong in one respect.
+
+**Real bug 1:** `_find_method_header` (`evidence/dafny_spec_lint.py`,
+shared with `dafny_mutate.py` and `dafny_nl_summary.py`) only matched
+Dafny's `method` keyword via `\bmethod\s+`, never `function`.
+`renal_adjustment.dfy` is the first spec in this repo consisting
+entirely of `function`s — every earlier spec (`dosage.dfy`) paired a
+function with a method, and the method was always what got passed to
+this extractor, so the function-only case was untested until now. Fixed
+by widening the regex to `\b(?:method|function)\s+` in both
+`_find_method_header` and the duplicate lookup in
+`dafny_mutate.py::_method_header_span`. Two regression tests added
+(`test_dafny_nl_summary.py::test_summarizes_a_function_not_just_a_method`,
+`test_dafny_spec_lint.py::test_requires_clause_extraction_matches_a_function_not_just_a_method`).
+
+**Real bug 2, found in the same pass:** `_REQ_ID_RE`'s character class
+(`[A-Z0-9-]`) excluded lowercase letters, so `REQ-RENAL-1a` (this spec's
+own citation for `RoundHalfUp`'s rounding postcondition) was silently
+truncated to `REQ-RENAL-1` in generated summaries — a real citation-
+accuracy defect misattributing the postcondition to a related but wrong
+requirement ID, not a dropped citation that would have been obvious.
+`dosage.dfy`'s REQ-IDs (`REQ-GIP-1-4-12`, `REQ-GIP-1-8-1`) never had a
+lowercase suffix, so this never fired before. Fixed
+(`[A-Za-z0-9-]`), regression-tested.
+
+Also added missing `// REQ-RENAL-*` trailing citations to every
+`ensures` clause in `renal_adjustment.dfy` itself (they were absent
+entirely, which would have made every postcondition read "no
+requirement cited" — understating real traceability, not reflecting an
+actual gap) and reformatted `SelectFormula`'s two `ensures` clauses onto
+single physical lines each (Gate C6's summarizer only supports
+single-line clauses, matching `dosage.dfy`'s own convention — a correct
+refusal on the first attempt, not a bug, fixed by reformatting rather
+than working around the tool). Re-verified after both changes: `dafny
+verify` still `5 verified, 0 errors`; re-captured the real Gate C1
+output since the file changed.
+
+Generated and committed the actual sign-off document,
+`nl_confirmation_renal_adjustment_dfy.md`, presenting all five
+functions' summaries with correct citations. Left the "Decision" section
+explicitly pending Steven's confirmation rather than self-signing —
+Gate C6's whole purpose is a human check against intent, the same
+standard `dosage.dfy`'s own sign-off was held to.
+
+142 tests passing (up from 138 - four new regression tests, two real
+bugs fixed).
+
+---
+
+## 2026-07-08 — Renal-adjustment Gate 1 closed under named fallbacks; Phase 2 started
+
+Asked what to suggest for an "easy fallback" so Phase 2 could start
+without waiting on Gate 1c's two remaining items. Recommended treating
+both as provisional defaults rather than resolved decisions: CrCl/eGFR
+computation defaults to caller-supplied for both formulas in Phase 2 v1
+(not a design change — `AssessRenalFunction` already takes
+`renalFunctionValue: real` as a parameter); classification-flag
+provenance (`REQ-RENAL-8`) is reclassified as a Phase 3 integration
+concern rather than a Phase 2 blocker, since `SelectFormula`'s flags
+were always caller-supplied parameters and the proof doesn't need to
+know who populates them. Steven approved ("Ok continue while I keep
+digging").
+
+Updated `PHASE1_PLAN.md` and `GATE_1C_AUDIT.md` to record both as named,
+dated, reversible defaults — not silently resolved. Gate 1 is now
+closed under these two documented assumptions.
+
+**Phase 2 started for real:** wrote `examples/renal_adjustment/renal_adjustment.dfy`,
+composing all five functions verified individually during Gate 1c's
+audit (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
+`AssessRenalFunction`) into one committed file — same bodies as the
+scratch checks, verbatim. Verified directly: `dafny verify` reports
+`5 verified, 0 errors`. Wrote `run_verify_renal.py`, mirroring
+`run_verify_dafny.py`'s capture discipline exactly (verbatim
+stdout+stderr, exact command argv, exit code, ISO-8601 timestamp); ran
+it for real, producing `raw_dafny_output_renal.txt` and
+`run_manifest_dafny_renal.json`. Confirmed
+`evidence/dafny_adapter.py::parse_dafny_capture` works unmodified
+against this new capture — not assumed from the infrastructure plan's
+prediction, actually run: `strength=PROVEN`,
+`verifier_completion_status='completed'`. This is the first real,
+empirical confirmation that the existing Gate C1/C2 machinery
+generalizes to a second spec, the whole point of this POC.
+
+138 tests still passing (no existing code touched); this is the first
+commit that adds real, verified Dafny code for the renal-adjustment
+POC rather than planning/sketch documents.
+
+---
+
+## 2026-07-08 — Verified Steven's CKD-EPI 2021 research brief; caught one fabricated citation
+
+Steven asked for a precise, portable research prompt to close Gate 1c's
+Finding 1 (no function computes the actual CrCl/eGFR numeric value) and
+supplied it to an external research tool himself. He returned with a
+"research findings" document — explicitly flagged by him as unverified
+external knowledge — proposing the exact 2021 CKD-EPI creatinine-only
+and creatinine-cystatin C equations, a UK-vs-US practice comparison, a
+Cockcroft-Gault 1976 historical derivation, and a Dafny/Z3 lookup-table
+architecture strategy.
+
+Verified every checkable claim independently before accepting any of it:
+
+- Both CKD-EPI 2021 equations checked against the National Kidney
+  Foundation's own published equations directly (not just the supplied
+  document) — matched exactly, all constants confirmed.
+- The original 1976 Cockcroft-Gault formula confirmed via PubMed (PMID
+  1244564, the correct paper) plus an independent secondary source; the
+  88.4/72 unit-conversion arithmetic behind MHRA's rounded 1.23/1.04
+  constants checks out.
+- **Caught a fabricated citation:** the document claimed NICE NG203
+  "Recommendation 1.1.2 mandates the 2009 equation" and "1.1.4 states
+  do not use ethnicity to adjust eGFR." Fetched NICE NG203's actual
+  recommendations list directly — neither claim is real. The real 1.1.4
+  is about not eating meat before a blood test; the real
+  ethnicity-related recommendation (1.1.24) is about screening risk
+  factors, not equation selection; 1.1.2 doesn't specify an equation
+  version at all. An independent, directly on-point 2024 UK study (Roy
+  et al., *Nephron*, PMID 39342928, PMC11878410) confirmed the real
+  picture: UK lab practice is heterogeneous and in transition (one major
+  NHS hospital's own standard result was still MDRD), not settled on any
+  single equation — a plausible-sounding but incorrect synthesis, caught
+  by fetching the primary source rather than trusting the summary.
+- Evaluated the proposed Dafny/Z3 lookup-table architecture on its own
+  technical merits: the core diagnosis (Dafny/Z3 can't natively handle
+  CKD-EPI's fractional-exponent real power terms — an expressiveness
+  gap, not a performance/timeout issue) is correct and reinforces the
+  existing recommendation to keep CKD-EPI caller-supplied. But the LUT
+  proposal doesn't eliminate the trust boundary, it relocates it — the
+  LUT itself would need independent verification against the formula,
+  an unaddressed gap in the supplied strategy.
+
+Committed `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`
+(full verification record) and folded the confirmed data plus the
+corrected UK-practice picture into `PHASE1_PLAN.md`'s Finding 1 entry,
+`GATE_1C_AUDIT.md` (addendum), `KNOWN_LIMITATIONS.md`, and this roadmap
+doc's status section. Finding 1's actual scope decision (build
+Cockcroft-Gault in Phase 2, keep CKD-EPI caller-supplied) remains
+Steven's call — not decided here, now backed by verified data instead of
+an open question mark. 138 tests still passing; no code touched.
+
+---
+
+## 2026-07-08 — Renal-adjustment Gate 1c Finding 2 resolved by redesign; Finding 1 deferred
+
+Steven's direction: defer Gate 1c's Finding 1 (CrCl/eGFR value
+computation scope) and instead design Gate 1b's skeleton to resolve
+Finding 2 (the two-downstream-paths gap — `GStage` misapplied to a
+Cockcroft-Gault CrCl value), then verify.
+
+Added a dispatcher function, `AssessRenalFunction(formula: Formula,
+renalFunctionValue: real): RenalAssessment`, where `RenalAssessment` is
+a tagged union (`EGFRAssessment(stage: GStageCategory) |
+CrClAssessment(roundedCrClMlPerMin: int)`). This makes the bug Finding 2
+described — a KDIGO G-stage label ending up on a raw CrCl number, or
+vice versa — a type-level impossibility rather than a convention a
+future caller has to remember: `GStage` can only be reached inside the
+`EGFRFormula` branch. Verified against the real, installed Dafny 4.11.0
+toolchain: 11 verified, 0 errors, including two explicit lemmas
+(`EgfrPathNeverProducesCrClAssessment`,
+`CrClPathNeverProducesEGFRAssessment`) proving the impossibility
+directly rather than relying on the `ensures` clauses' shape alone. The
+NHS SPS worked example was re-derived through the new dispatcher and
+matches Gate 1c's original hand-trace exactly (eGFR 53 → `G3a`; CrCl
+36.9 → rounds to 37).
+
+Folded into `gate_c1_sketch.md` (new section 5), `PHASE1_PLAN.md` (Gate
+1b's staging postconditions, "Still open" list — item 3 struck through
+and marked resolved), `GATE_1C_AUDIT.md` (dated addendum, not a silent
+rewrite of the original findings), `KNOWN_LIMITATIONS.md`, and this
+roadmap doc's status section.
+
+**Gate 1 is still not formally closed** — Finding 1 (CrCl/eGFR
+computation scope) remains open by explicit choice, and
+classification-flag provenance (`REQ-RENAL-8`) is still unscoped. Both
+block Phase 2. 138 tests still passing; no code touched (all Dafny
+checks were scratch files, not committed artifacts).
+
+---
+
+## 2026-07-08 — Renal-adjustment Gate 1c performed: two real gaps found, Gate 1 not yet closed
+
+Wrote `examples/renal_adjustment/GATE_1C_AUDIT.md`, the hand-trace audit
+using the 16-row test-vector table as raw material, per Gate 1c's stated
+purpose (catch conceptual gaps at the cheapest possible point, before
+any Dafny code exists).
+
+Confirmed total coverage for all four sketched functions, then went
+further than a prose argument: wrote the composition
+`GStage(RoundHalfUp(x))` as eleven Dafny lemmas (the ten boundary-tie/
+just-under pairs plus the NHS SPS eGFR value) and verified them against
+the real, installed Dafny 4.11.0 toolchain — 24 verified, 0 errors.
+Hand-traced the NHS SPS worked example end to end, including the raw
+Cockcroft-Gault arithmetic by hand: `(140-80) x 60 x 1.23 / 120 = 36.9`,
+rounds to 37 — matches the published 37 mL/min exactly, cross-checked
+with Python before trusting the mental arithmetic.
+
+The audit found two real gaps, not zero — an audit that always finds
+nothing is not doing its job:
+
+1. **No function computes the actual CrCl/eGFR numeric value.** The
+   skeleton's four functions stage/select/compose an already-computed
+   value; nothing calculates it from raw inputs. This fell out silently
+   from decomposing the skeleton into separate functions and was never
+   an explicit scope decision until this audit surfaced it.
+2. **`GStage` is eGFR-specific and must not be applied to a
+   Cockcroft-Gault CrCl value** — found concretely while hand-tracing
+   NHS SPS: `SelectFormula` correctly picks Cockcroft-Gault (age 80),
+   but running its output (37) through `GStage` would report "G3a,"
+   an eGFR-scale label on a CrCl-scale number, when the real eGFR (53)
+   is what should be staged. The eventual top-level method needs two
+   distinct downstream paths, not one unconditional `GStage` call.
+
+Both are named in the audit document and folded into `PHASE1_PLAN.md`'s
+"Still open" list, `KNOWN_LIMITATIONS.md`, and the roadmap doc's status
+section, with a recommendation (not a decision) on gap 1: build
+Cockcroft-Gault's own compute function in Phase 2 (small, fully
+specified, low proof risk), treat CKD-EPI eGFR as caller-supplied like
+the classification flags (too large a proof undertaking to justify for
+this POC's actual purpose). **Gate 1 is not yet formally closed** — per
+its own exit criteria, finding and naming real gaps is Gate 1c working
+correctly, not a failure to complete it. 138 tests still passing; no
+code touched (all Dafny checks were scratch files).
+
+---
+
+## 2026-07-08 — Renal Function Dose Adjustment POC: Gate 1a/1b closed, four proof functions verified against real Dafny
+
+Steven uploaded a "research findings" document proposing to resolve
+Phase 1's remaining open items: a BMI-boundary citation (NHS Tayside
+ADTC + two ClinicalTrials.gov PK studies), paediatric/cystatin-C
+decisions, a 16-row seed test-vector table, a decision that
+`SelectFormula`'s drug-classification flags are caller-supplied
+(proposed as `REQ-RENAL-7`), and a new `ComposedCeiling` function
+resolving `REQ-RENAL-5`'s bound-composition question against
+`dosage.dfy`'s actual (checked) signature.
+
+Verified every checkable factual claim independently rather than
+accepting the document on its word, per this repo's standing discipline:
+
+- `dosage.dfy`'s quoted signature matched the real file exactly.
+- MHRA's BMI threshold ("BMI <18 kg/m2 or >40 kg/m2," strict inequality)
+  confirmed by direct WebFetch of the primary MHRA page itself — a
+  stronger, simpler citation than the document proposed (NHS Tayside was
+  offered as the source; Tayside turned out to be a secondary
+  restatement of the same MHRA text, itself confirmed by pulling and
+  reading the actual Tayside PDF page image after WebFetch's
+  text-summarization pass initially missed the content inside a
+  bulleted table graphic — a real tool-reliability gap worth
+  remembering). The two ClinicalTrials.gov NCT citations (NCT02942810,
+  NCT02039817) checked via the Clinical Trials MCP: both real, both use
+  a similar BMI range, but as general PK-study eligibility screening,
+  not as validation of MHRA's specific rule — downgraded from "confirms"
+  to "corroborates" in the committed record.
+- Inker et al.'s 2021 NEJM cystatin-C equation citation (PMID 34554658)
+  checked via PubMed: exact title, journal, volume/issue/pages, and DOI
+  match.
+- `ComposedCeiling`, and (going further than the document itself did)
+  `RoundHalfUp`, `GStage`, and `SelectFormula` were each written to a
+  scratch `.dfy` file and run through the real, installed Dafny 4.11.0
+  toolchain (`dafny verify`) rather than accepted as hand-reasoned
+  contract shapes. All four verify cleanly, 1 verified / 0 errors each.
+
+One real conflict caught, not silently merged: the document's proposed
+`REQ-RENAL-7` (classification-flag provenance) collided with the
+`REQ-RENAL-7` already committed in this repo (BSA de-normalization, from
+KDIGO Practice Point 4.2.4, committed before the document arrived).
+Renumbered the new one to `REQ-RENAL-8` and recorded the collision and
+the fix explicitly in `PHASE1_PLAN.md` rather than overwriting silently.
+
+Folded all of this into `examples/renal_adjustment/PHASE1_PLAN.md`
+(closed requirements table through `REQ-RENAL-8`, settled the
+paediatric/cystatin-C/rounding decisions, added the 16-row Gate 1c
+test-vector table, the verified `ComposedCeiling` interaction contract)
+and `examples/renal_adjustment/gate_c1_sketch.md` (all four functions
+now marked verified with their checked candidate bodies), plus a new
+source file `sources/mhra-renal-formula-selection-2019.md`. Updated
+`sources/README.md`, `KNOWN_LIMITATIONS.md`, and this roadmap doc's
+status section to match.
+
+**Gate 1c's hand-trace write-up remains the one open item to formally
+close Gate 1** — the test-vector table it needs now exists, but the
+audit document itself hasn't been written. One new open item,
+`REQ-RENAL-8`'s classification-flag provenance (who sets the flags, by
+what process), needs its own scoping pass before Phase 2 can start.
+138 tests still passing; no code touched (Dafny checks were scratch
+files, not committed artifacts).
+
+## 2026-07-08 — Renal Function Dose Adjustment POC: Phase 1 Gate 1a/1b, corrected against primary sources (dab4b29 and this commit)
+
+Steven proposed a second, independent proof-of-concept (renal-function
+dose adjustment) as a final POC for submission consideration, uploading
+a detailed Phase 1 scoping document. Division of labor: Steven sources
+external documents, Claude plans/builds infrastructure.
+
+Verified three concrete unknowns against the actual primary sources
+rather than trusting the scoping document's summary:
+
+- MHRA Drug Safety Update (vol. 13, issue 3, Oct 2019): reachable, mostly
+  corroborated; one correction — "extremes of muscle mass" is an exact
+  BMI <18/>40 threshold, not a fuzzy judgment call.
+- NICE NG203: reachable, fully corroborated.
+- KDIGO 2024 CKD Guideline: initially blocked (HTTP 403 from this
+  environment on both listed URLs). Steven committed the PDF directly to
+  the repo (`908dca5`). No PDF-rendering tool was installed here, so a
+  stdlib-only (`re`+`zlib`) content-stream text extractor was written to
+  recover the text without installing anything. Found: the GFR category
+  table confirmed exactly as scoped; a genuinely new nuance — KDIGO's
+  Table 11 rounds eGFR to the nearest whole number *before* staging,
+  shifting the effective continuous G1/G2 boundary to 89.5, not the
+  naive 90.0 (and similarly at every other boundary); partial resolution
+  of `REQ-RENAL-3`'s citation gap (obesity/oedema corroborated by KDIGO,
+  not MHRA as originally attributed; "unstable renal function" half
+  never corroborated by any source, merged into `REQ-RENAL-6` instead);
+  and a new candidate requirement, `REQ-RENAL-7`, from Practice Point
+  4.2.4 (BSA de-normalization for narrow-therapeutic-index drugs).
+
+Committed `sources/KDIGO-2024-CKD-Guideline.pdf`,
+`sources/kdigo-2024-gfr-staging.md` (focused citation-extraction,
+following the `req-gip-1-4-12` template rather than a full reformatting,
+since only specific sections of a ~200-page guideline are relevant), and
+updated `sources/README.md`'s Contents list (`dab4b29`).
+
+This session: wrote `examples/renal_adjustment/PHASE1_PLAN.md`, the
+formal Gate 1a/1b document — full corrected requirements table
+(`REQ-RENAL-1` through `REQ-RENAL-7`), the Gate 1b spec skeleton
+(preconditions, formula-selection proof target, staging/monotonicity/
+fail-safe postconditions, `dosage.dfy` interaction contract), and a
+decision on the rounding-then-staging design question (accept real-valued
+input, prove the rounding step explicitly — not accept pre-rounded
+integer input, since the former is more faithful and is exactly what
+Gate C4's STPs exist to pin down). Gate 1c (internal consistency audit)
+not yet run — blocked on checking Gate 1b against `dosage.dfy`'s actual
+precondition structure and on Steven's answers to the still-open
+questions (paediatric scope, combined creatinine-cystatin C eGFR, seed
+test cases beyond the NHS SPS worked example). Updated
+`KNOWN_LIMITATIONS.md` with the per-drug-factors/paediatric/cystatin-C/
+REQ-RENAL-3 exclusions. No Dafny code exists yet; Phase 2 remains blocked
+on Phase 1 (Gate 1c) closing, per the infrastructure plan already scoped
+in `/root/.claude/plans/stateless-weaving-firefly.md`. 138 tests still
+passing — no code changed, only source/doc/planning files added.
+
 ## 2026-07-07 — Gate C6 next-phase adaptation work: scoped as far as possible, then blocked and asked
 
 Requested directly: "scope out Gate C6's next phase adaptation work."

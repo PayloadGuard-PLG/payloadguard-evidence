@@ -86,13 +86,21 @@ _TYPE_MAP = {
 # --------------------------------------------------------------- extraction
 
 def _find_method_header(source, method_name):
-    """Return the source text from `method <name>(` up to (not including)
-    the method body's opening brace - the region requires/ensures/etc.
-    clauses live in. Refuses if the method or its body brace can't be
-    found, rather than guessing at a truncated header."""
-    m = re.search(rf"\bmethod\s+{re.escape(method_name)}\s*\(", source)
+    """Return the source text from `method <name>(` or `function <name>(`
+    up to (not including) the body's opening brace - the region
+    requires/ensures/etc. clauses live in. Matches either keyword since a
+    Dafny `function`'s header (requires/ensures/params) has the same shape
+    as a `method`'s for the purposes of every caller of this helper -
+    Gate C6's renal-adjustment functions surfaced this gap empirically
+    (2026-07-08): every earlier caller of this module only ever ran
+    against dosage.dfy's one `method`, so the `function`-only case was
+    untested until then. Refuses if neither keyword's declaration or its
+    body brace can be found, rather than guessing at a truncated header."""
+    m = re.search(rf"\b(?:method|function)\s+{re.escape(method_name)}\s*\(", source)
     if not m:
-        raise SystemExit(f"no method named {method_name!r} found in Dafny source")
+        raise SystemExit(
+            f"no method or function named {method_name!r} found in Dafny source"
+        )
     depth = 0
     i = m.end() - 1
     while i < len(source):
