@@ -31,6 +31,24 @@ requirements documents, standards excerpts) that ground the claims in
   detection, not signal emission. It does not confirm, correct, or
   extend any other requirement, threat, or citation, and it does not
   resolve the FRN open question below.
+- `KDIGO-2024-CKD-Guideline.pdf` — added 2026-07-08. KDIGO 2024 Clinical
+  Practice Guideline for the Evaluation and Management of Chronic Kidney
+  Disease, *Kidney International* (2024) 105(Suppl 4S), S117–S314.
+  Primary clinical source for the renal-adjustment POC's Phase 1 (GFR
+  staging categories, eGFR reporting/rounding convention,
+  Cockcroft-Gault reliability limitations).
+- `kdigo-2024-gfr-staging.md` — added 2026-07-08. Per rule 2 above: this
+  document **confirms** the renal-adjustment scoping document's GFR
+  category boundaries (G1–G5) exactly, **extends** the boundary-
+  inclusivity question with KDIGO's own eGFR-rounding convention (the
+  effective continuous G1/G2 boundary is 89.5, not 90.0, once rounding
+  is accounted for — flagged as an open Gate 1b design decision, not
+  resolved here), and **partially resolves** REQ-RENAL-3's citation gap
+  (corroborates the obesity/oedema half via KDIGO rather than MHRA; the
+  "unstable renal function" half remains unresolved). Also surfaces a
+  new proposed requirement, REQ-RENAL-7, from Practice Point 4.2.4 (BSA
+  de-normalization for narrow-therapeutic-index drugs), not present in
+  the original scoping document.
 
 ## Resolved questions
 
