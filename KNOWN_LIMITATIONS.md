@@ -1742,16 +1742,34 @@ subset per ruling R2c, as the roadmap's own verified-state section records.
 
 Second, independent proof-of-concept (`examples/renal_adjustment/`,
 Phase 1 plan committed as `examples/renal_adjustment/PHASE1_PLAN.md`,
-Gate C1 signature sketches in `examples/renal_adjustment/gate_c1_sketch.md`),
+Gate C1 signature sketches in `examples/renal_adjustment/gate_c1_sketch.md`,
+Gate 1c audit in `examples/renal_adjustment/GATE_1C_AUDIT.md`),
 demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
 clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
-Gate 1a and 1b are closed; Gate 1c's hand-trace write-up is still open.
-All four core proof functions (`RoundHalfUp`, `GStage`, `SelectFormula`,
-`ComposedCeiling`) verify individually against the real, installed Dafny
-4.11.0 toolchain, but none are yet composed into a committed
-`renal_adjustment.dfy` — Phase 2 has not started. Named
-limitations/exclusions, per this repo's "name it, don't guess it"
-discipline:
+Gate 1a and 1b are closed; **Gate 1c has been performed and found two
+real gaps — Gate 1 is not yet formally closed.** All four core proof
+functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`)
+verify individually against the real, installed Dafny 4.11.0 toolchain,
+and the composed boundary behavior (`GStage(RoundHalfUp(x))`) verifies
+across all ten boundary rows plus the NHS SPS example (24/24, 0 errors)
+— but none are yet composed into a committed `renal_adjustment.dfy`;
+Phase 2 has not started. Named limitations/exclusions and open gaps, per
+this repo's "name it, don't guess it" discipline:
+
+- **No function computes the actual Cockcroft-Gault CrCl or CKD-EPI
+  eGFR numeric value.** Found by Gate 1c's hand-trace, not assumed away:
+  the skeleton only stages/selects/composes an already-computed value.
+  Needs a scope decision (in-scope for Phase 2, at least for
+  Cockcroft-Gault's small formula, vs. caller-supplied like the
+  classification flags — recommended for CKD-EPI eGFR specifically,
+  given its much larger proof surface) — see `GATE_1C_AUDIT.md`.
+- **`GStage` must not be applied to a Cockcroft-Gault CrCl value** — its
+  boundaries are derived from KDIGO's eGFR-specific G1–G5 table; CrCl
+  isn't BSA-normalized and isn't staged the same way clinically. The
+  eventual top-level method needs two distinct downstream paths, not one
+  unconditional `GStage` call — found via hand-tracing the NHS SPS
+  example (CrCl 37 vs. eGFR 53, the same divergence that motivates
+  REQ-RENAL-2's formula-selection branch in the first place).
 
 - **Per-drug numeric dose-reduction factors are not sourced or proven.**
   BNF/SPC/Renal Drug Handbook disagree at the individual-drug level.

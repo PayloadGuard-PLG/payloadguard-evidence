@@ -6,6 +6,52 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal-adjustment Gate 1c performed: two real gaps found, Gate 1 not yet closed
+
+Wrote `examples/renal_adjustment/GATE_1C_AUDIT.md`, the hand-trace audit
+using the 16-row test-vector table as raw material, per Gate 1c's stated
+purpose (catch conceptual gaps at the cheapest possible point, before
+any Dafny code exists).
+
+Confirmed total coverage for all four sketched functions, then went
+further than a prose argument: wrote the composition
+`GStage(RoundHalfUp(x))` as eleven Dafny lemmas (the ten boundary-tie/
+just-under pairs plus the NHS SPS eGFR value) and verified them against
+the real, installed Dafny 4.11.0 toolchain — 24 verified, 0 errors.
+Hand-traced the NHS SPS worked example end to end, including the raw
+Cockcroft-Gault arithmetic by hand: `(140-80) x 60 x 1.23 / 120 = 36.9`,
+rounds to 37 — matches the published 37 mL/min exactly, cross-checked
+with Python before trusting the mental arithmetic.
+
+The audit found two real gaps, not zero — an audit that always finds
+nothing is not doing its job:
+
+1. **No function computes the actual CrCl/eGFR numeric value.** The
+   skeleton's four functions stage/select/compose an already-computed
+   value; nothing calculates it from raw inputs. This fell out silently
+   from decomposing the skeleton into separate functions and was never
+   an explicit scope decision until this audit surfaced it.
+2. **`GStage` is eGFR-specific and must not be applied to a
+   Cockcroft-Gault CrCl value** — found concretely while hand-tracing
+   NHS SPS: `SelectFormula` correctly picks Cockcroft-Gault (age 80),
+   but running its output (37) through `GStage` would report "G3a,"
+   an eGFR-scale label on a CrCl-scale number, when the real eGFR (53)
+   is what should be staged. The eventual top-level method needs two
+   distinct downstream paths, not one unconditional `GStage` call.
+
+Both are named in the audit document and folded into `PHASE1_PLAN.md`'s
+"Still open" list, `KNOWN_LIMITATIONS.md`, and the roadmap doc's status
+section, with a recommendation (not a decision) on gap 1: build
+Cockcroft-Gault's own compute function in Phase 2 (small, fully
+specified, low proof risk), treat CKD-EPI eGFR as caller-supplied like
+the classification flags (too large a proof undertaking to justify for
+this POC's actual purpose). **Gate 1 is not yet formally closed** — per
+its own exit criteria, finding and naming real gaps is Gate 1c working
+correctly, not a failure to complete it. 138 tests still passing; no
+code touched (all Dafny checks were scratch files).
+
+---
+
 ## 2026-07-08 — Renal Function Dose Adjustment POC: Gate 1a/1b closed, four proof functions verified against real Dafny
 
 Steven uploaded a "research findings" document proposing to resolve

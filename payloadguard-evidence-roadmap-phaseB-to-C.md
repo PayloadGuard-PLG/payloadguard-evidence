@@ -1427,15 +1427,26 @@ not resolved: classification-flag provenance — `REQ-RENAL-8` settles the
 flags are caller-supplied but not who sets them or by what process,
 needing its own scoping pass.
 
-**Gate 1c (internal consistency/completeness audit, hand-tracing every
-`REQ-RENAL-*` through the now-verified skeleton) is the one remaining
-item to formally close Gate 1** — the 16-row test-vector table it needs
-is ready, but the audit write-up itself has not been produced. Phase 2
-(the Gate C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
+**Gate 1c has been performed** (`examples/renal_adjustment/GATE_1C_AUDIT.md`)
+— total coverage confirmed for all four sketched functions, and the
+composed boundary behavior (`GStage(RoundHalfUp(x))`) verified for real
+against Dafny across all ten boundary rows plus the NHS SPS example
+(24/24 verified, 0 errors). **The audit found two real gaps, not zero,
+consistent with an audit doing its actual job rather than rubber-
+stamping:** (1) no function computes the actual Cockcroft-Gault CrCl or
+CKD-EPI eGFR numeric value — the skeleton only stages/selects/composes
+an already-computed value, a genuine undefined-input-region gap Gate 1c
+exists to catch; (2) `GStage`'s KDIGO-derived boundaries are eGFR-
+specific and must not be applied to a Cockcroft-Gault CrCl value (found
+by hand-tracing the NHS SPS worked example itself: CrCl 37 vs. eGFR 53,
+the same divergence REQ-RENAL-2 exists to catch) — the top-level method
+needs two distinct downstream paths, not one unconditional `GStage`
+call. **Gate 1 is therefore not yet formally closed.** Phase 2 (the Gate
+C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
 `renal_adjustment.dfy` and a separate `ComposedCeiling` proof unit,
-infrastructure already scoped) remains blocked on Gate 1c and the
-flag-provenance scoping pass. No committed Dafny code exists yet for
-this POC.
+infrastructure already scoped) remains blocked on these two findings
+plus the flag-provenance scoping pass. No committed Dafny code exists
+yet for this POC.
 
 ## What "done" looks like for this roadmap
 

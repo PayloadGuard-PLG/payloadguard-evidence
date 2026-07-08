@@ -1,14 +1,19 @@
 # Renal Function Dose Adjustment — Phase 1 (Specification & Foundation)
 
-Status: **Gate 1a and Gate 1b closed. Gate 1c (hand-trace audit) still to
-be written up as its own deliverable** — see "Still open" at the end.
-Two of the four core proof functions (`RoundHalfUp`, `ComposedCeiling`)
-have been checked against the real, installed Dafny 4.11.0 toolchain and
-verify cleanly — not yet integrated into `renal_adjustment.dfy` itself,
-but no longer unverified sketch. Phase 2 (the Gate C1/C6/C4/C3/C5 build
-pipeline, per `/root/.claude/plans/stateless-weaving-firefly.md`'s
-infrastructure plan) remains blocked on Gate 1c's write-up and on one new
-named open item (classification-flag provenance, see below).
+Status: **Gate 1a and Gate 1b closed. Gate 1c performed — see
+`examples/renal_adjustment/GATE_1C_AUDIT.md`.** All four core proof
+functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`)
+verify cleanly against the real, installed Dafny 4.11.0 toolchain,
+including the composed boundary behavior
+(`GStage(RoundHalfUp(x))`, 24/24 verified) — not yet integrated into a
+committed `renal_adjustment.dfy`, but no longer unverified sketch.
+**Gate 1 is not yet fully closeable: the Gate 1c audit found two real
+gaps** (no function computes the actual CrCl/eGFR numeric value; `GStage`
+is eGFR-specific and must not be applied to a Cockcroft-Gault CrCl
+value) — see "Still open" below and the audit document for full detail.
+Phase 2 (the Gate C1/C6/C4/C3/C5 build pipeline, per
+`/root/.claude/plans/stateless-weaving-firefly.md`'s infrastructure
+plan) remains blocked on these plus classification-flag provenance.
 
 ## Objective
 
@@ -197,13 +202,22 @@ Rows 2–6 use `89.499999` etc. rather than the previously-drafted
 `89.999` — corrected to match REQ-RENAL-1a's actual rounding shift
 (the boundary is 89.5, not 89.999/90).
 
-**Still not yet performed: the hand-trace itself.** This table is the
-input Gate 1c needs, not the audit — the actual deliverable (tracing
-every `REQ-RENAL-*` through the Gate 1b skeleton, row by row, and
-recording the result) has not been written up as its own document. That
-write-up, plus final confirmation of the interaction-contract check
-against `dosage.dfy` (done, see Gate 1b above) is what remains to
-formally close Gate 1.
+**Performed 2026-07-08 — see `examples/renal_adjustment/GATE_1C_AUDIT.md`
+for the full hand-trace.** Total coverage confirmed for all four sketched
+functions; the composed boundary behavior (`GStage(RoundHalfUp(x))`) was
+verified for real against Dafny across all ten boundary rows above plus
+the NHS SPS eGFR value (24/24 verified, 0 errors); the NHS SPS example
+was hand-traced end to end, including the raw Cockcroft-Gault arithmetic
+(36.9, rounds to 37 — matches the published figure exactly). **The audit
+found two real gaps, not zero:** (1) no function computes the actual
+Cockcroft-Gault CrCl or CKD-EPI eGFR numeric value from raw inputs — the
+skeleton only stages/selects/composes an already-computed value; (2)
+`GStage`'s KDIGO-derived boundaries are specific to eGFR and must not be
+applied to a Cockcroft-Gault CrCl value (a category error — CrCl isn't
+BSA-normalized and isn't clinically staged via G1–G5), which means the
+top-level method needs two distinct downstream paths, not one
+unconditional `GStage` call. Both are named in full in the audit
+document rather than resolved implicitly.
 
 ## Still open (named, not guessed)
 
@@ -219,23 +233,31 @@ formally close Gate 1.
    EHR/prescribing system (an external-integration question, same shape
    as the ALM/SOUP bridge scoping); or a static, versioned list
    maintained outside the proof boundary and reviewed on a cadence.
-2. **Gate 1c's hand-trace write-up itself** — the 16-row table above is
-   ready; the actual audit document tracing each `REQ-RENAL-*` through it
-   has not been written yet. This is the remaining work needed to
-   formally close Gate 1.
+2. **CrCl/eGFR value computation scope (Gate 1c finding 1).** In scope
+   for Phase 2 (at least for Cockcroft-Gault, which has a small, fully
+   specified formula) or caller-supplied like the classification flags
+   (recommended for CKD-EPI eGFR, a much larger proof undertaking) — see
+   the audit document's recommendation. Steven's call, not decided here.
+3. **`GStage`'s eGFR-only applicability (Gate 1c finding 2).** Needs to
+   become an explicit two-path branch in the eventual top-level method's
+   design — see the audit document.
+
+**Gate 1 is not yet formally closed** — per its own stated exit
+criteria, an audit that finds real gaps and names them, rather than
+rubber-stamping, is Gate 1c doing its job correctly. Phase 2 remains
+blocked until items 2 and 3 above are decided.
 
 ## Documentation set updated so far
 
 - `sources/KDIGO-2024-CKD-Guideline.pdf`, `sources/kdigo-2024-gfr-staging.md`,
   `sources/mhra-renal-formula-selection-2019.md`, `sources/README.md` —
   committed.
-- This file (`examples/renal_adjustment/PHASE1_PLAN.md`) and
-  `examples/renal_adjustment/gate_c1_sketch.md` — committed.
-- Still to do: `payloadguard-evidence-roadmap-phaseB-to-C.md` (status
-  section update), `KNOWN_LIMITATIONS.md` (pointer row update for the now-
-  settled paediatric/cystatin-C decisions and the new classification-flag-
-  provenance item), `DEVLOG.md` (dated entry), Gate 1c's own hand-trace
-  write-up (see above — not yet written).
+- This file (`examples/renal_adjustment/PHASE1_PLAN.md`),
+  `examples/renal_adjustment/gate_c1_sketch.md`, and
+  `examples/renal_adjustment/GATE_1C_AUDIT.md` — committed.
+- Still to do: `payloadguard-evidence-roadmap-phaseB-to-C.md` and
+  `KNOWN_LIMITATIONS.md` (both need updating for Gate 1c's two findings),
+  `DEVLOG.md` (dated entry).
 
 ## Verification
 
