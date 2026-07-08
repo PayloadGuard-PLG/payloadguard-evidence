@@ -36,7 +36,7 @@ payloadguard-evidence/
 │   ├── dosage_calculator/     Worked example 1 (complete)
 │   └── renal_adjustment/      Worked example 2 (in progress)
 ├── sources/                   Primary source documents, archived verbatim
-└── tests/                     Regression suite (152 tests)
+└── tests/                     Regression suite (154 tests)
 ```
 
 `evidence/` is deliberately vocabulary-agnostic: nothing in it knows

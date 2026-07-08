@@ -87,7 +87,7 @@ traceable, and — critically — impossible to fake or round up.
   requirement traces back to, archived so a claim can always be checked
   against the actual document, not a paraphrase of it.
 - **`tests/`** — the automated regression suite protecting every rule
-  above (152 tests as of this writing).
+  above (154 tests as of this writing).
 
 ## Quick start
 

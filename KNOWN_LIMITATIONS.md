@@ -4,24 +4,14 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-07 (Gate 2/C2-C4 WIRING EXTENDED TO VARIANTS A/B:
-every schema variant now binds the same real Dafny evidence.
-`metadata.a.yaml` declares it in REQ-GIP-1-4-12/REQ-GIP-1-8-1's
-`evidence` lists; `metadata.b.yaml` gained `.formal-N` shadow rows
-(e.g. `REQ-GIP-1-4-12.formal-1`); `traceability_matrix.formal.json`
-(variant C's third partition, built first and confirmed correct before
-this extension) is now a full peer in the fact-equality gate, not a
-tracked temporary divergence. `intent_ok` is `True` for BOTH requirements
-in EVERY variant artifact (A, B, C-symbolic, C-concrete, C-formal) — the
-first time since Phase A that `intended_method: "PROVEN"` has been
-realized everywhere it's declared, not just in one view. The
-fact-equality gate's intent comparison became subset-based (not strict
-dict equality) to accommodate `traceability_matrix.formal.json`
-permanently lacking an opinion about REQ-DOSE-003 (out of `dosage.dfy`'s
-scope by design). The CLI gained `--dafny-captures`, now required to
-build variant A/B at all via `evidence.cli`. The temporary
-`run_formal_check`/`KNOWN_FORMAL_INTENT_DIVERGENCE` carve-out from the
-variant-C-only build is retired — no longer needed. Full detail below).
+Last updated: 2026-07-09. Phase B/C entries below (Gate 2/C2-C4 wiring
+extended to variants A/B, etc.) date to 2026-07-07 and are historical,
+not stale — the ledger below is append-only and each entry is dated
+individually. The renal-adjustment second worked example (Phase D) has
+its own extensive entries further down this file, current as of the
+citation-gate audit on 2026-07-09. For current status rather than full
+history, see `HANDOFF.md`; for the dated build-by-build narrative, see
+`DEVLOG.md`.
 
 | Gate | Status | Summary |
 |---|---|---|
