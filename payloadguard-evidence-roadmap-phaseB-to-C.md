@@ -1369,6 +1369,51 @@ identical to R2's there.
 
 ---
 
+## Renal Function Dose Adjustment POC — Phase 1: Gate 1a/1b built, Gate 1c open (2026-07-08)
+
+A second, independent proof-of-concept, proposed by Steven as a final
+POC for submission consideration: renal-function dose adjustment,
+demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
+clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
+Structured as three phases mapping onto IEC 62304 Clause 5 (Phase 1 =
+development planning + requirements analysis + design, Phase 2 = unit
+implementation/verification via the existing Gate C1–C6 pipeline,
+Phase 3 = release + risk management + SOUP documentation). Full detail
+in `examples/renal_adjustment/PHASE1_PLAN.md`; source citations in
+`sources/kdigo-2024-gfr-staging.md` and `sources/README.md`.
+
+Division of labor: Steven sources external clinical documents, Claude
+plans/builds infrastructure. Three concrete unknowns were verified
+against primary sources rather than trusted from the scoping document's
+summary — MHRA Drug Safety Update (corroborated, one correction: BMI
+<18/>40 is exact, not fuzzy), NICE NG203 (fully corroborated), and KDIGO
+2024 (initially blocked by HTTP 403 in this environment; resolved once
+Steven committed the PDF directly and it was extracted with a
+stdlib-only zlib/content-stream text extractor, no tool installed).
+
+KDIGO yielded a genuinely important, non-obvious finding: eGFR is
+rounded to the nearest whole number *before* staging, so the effective
+continuous G1/G2 boundary for a real-valued Dafny model is 89.5, not the
+naive 90.0 (similarly at every other boundary) — decided that
+`renal_adjustment.dfy` will accept real-valued input and prove the
+rounding step explicitly, not accept pre-rounded integer input. Also
+corrected `REQ-RENAL-3`'s citation (obesity/oedema half is KDIGO's claim,
+not MHRA's as originally scoped; the "unstable renal function" half was
+never corroborated by any source and has been merged into `REQ-RENAL-6`)
+and added a new requirement, `REQ-RENAL-7` (BSA de-normalization for
+narrow-therapeutic-index drugs), from KDIGO Practice Point 4.2.4.
+
+**Gate 1a (requirements table) and Gate 1b (spec skeleton) are built.**
+Gate 1c (internal consistency/completeness audit, hand-tracing every
+`REQ-RENAL-*` and the NHS SPS worked example through the skeleton) is
+not yet run — blocked on checking Gate 1b against `dosage.dfy`'s actual
+precondition structure, and on Steven's answers to three still-open
+questions (paediatric scope, combined creatinine-cystatin C eGFR, seed
+test cases beyond the NHS SPS example). Phase 2 (the Gate C1/C6-moved-
+earlier/C4/C3/C5 build pipeline against a new `renal_adjustment.dfy`,
+infrastructure already scoped) remains blocked on Phase 1 closing. No
+Dafny code exists yet for this POC.
+
 ## What "done" looks like for this roadmap
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a

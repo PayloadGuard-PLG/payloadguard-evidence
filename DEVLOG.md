@@ -6,6 +6,60 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal Function Dose Adjustment POC: Phase 1 Gate 1a/1b, corrected against primary sources (dab4b29 and this commit)
+
+Steven proposed a second, independent proof-of-concept (renal-function
+dose adjustment) as a final POC for submission consideration, uploading
+a detailed Phase 1 scoping document. Division of labor: Steven sources
+external documents, Claude plans/builds infrastructure.
+
+Verified three concrete unknowns against the actual primary sources
+rather than trusting the scoping document's summary:
+
+- MHRA Drug Safety Update (vol. 13, issue 3, Oct 2019): reachable, mostly
+  corroborated; one correction — "extremes of muscle mass" is an exact
+  BMI <18/>40 threshold, not a fuzzy judgment call.
+- NICE NG203: reachable, fully corroborated.
+- KDIGO 2024 CKD Guideline: initially blocked (HTTP 403 from this
+  environment on both listed URLs). Steven committed the PDF directly to
+  the repo (`908dca5`). No PDF-rendering tool was installed here, so a
+  stdlib-only (`re`+`zlib`) content-stream text extractor was written to
+  recover the text without installing anything. Found: the GFR category
+  table confirmed exactly as scoped; a genuinely new nuance — KDIGO's
+  Table 11 rounds eGFR to the nearest whole number *before* staging,
+  shifting the effective continuous G1/G2 boundary to 89.5, not the
+  naive 90.0 (and similarly at every other boundary); partial resolution
+  of `REQ-RENAL-3`'s citation gap (obesity/oedema corroborated by KDIGO,
+  not MHRA as originally attributed; "unstable renal function" half
+  never corroborated by any source, merged into `REQ-RENAL-6` instead);
+  and a new candidate requirement, `REQ-RENAL-7`, from Practice Point
+  4.2.4 (BSA de-normalization for narrow-therapeutic-index drugs).
+
+Committed `sources/KDIGO-2024-CKD-Guideline.pdf`,
+`sources/kdigo-2024-gfr-staging.md` (focused citation-extraction,
+following the `req-gip-1-4-12` template rather than a full reformatting,
+since only specific sections of a ~200-page guideline are relevant), and
+updated `sources/README.md`'s Contents list (`dab4b29`).
+
+This session: wrote `examples/renal_adjustment/PHASE1_PLAN.md`, the
+formal Gate 1a/1b document — full corrected requirements table
+(`REQ-RENAL-1` through `REQ-RENAL-7`), the Gate 1b spec skeleton
+(preconditions, formula-selection proof target, staging/monotonicity/
+fail-safe postconditions, `dosage.dfy` interaction contract), and a
+decision on the rounding-then-staging design question (accept real-valued
+input, prove the rounding step explicitly — not accept pre-rounded
+integer input, since the former is more faithful and is exactly what
+Gate C4's STPs exist to pin down). Gate 1c (internal consistency audit)
+not yet run — blocked on checking Gate 1b against `dosage.dfy`'s actual
+precondition structure and on Steven's answers to the still-open
+questions (paediatric scope, combined creatinine-cystatin C eGFR, seed
+test cases beyond the NHS SPS worked example). Updated
+`KNOWN_LIMITATIONS.md` with the per-drug-factors/paediatric/cystatin-C/
+REQ-RENAL-3 exclusions. No Dafny code exists yet; Phase 2 remains blocked
+on Phase 1 (Gate 1c) closing, per the infrastructure plan already scoped
+in `/root/.claude/plans/stateless-weaving-firefly.md`. 138 tests still
+passing — no code changed, only source/doc/planning files added.
+
 ## 2026-07-07 — Gate C6 next-phase adaptation work: scoped as far as possible, then blocked and asked
 
 Requested directly: "scope out Gate C6's next phase adaptation work."

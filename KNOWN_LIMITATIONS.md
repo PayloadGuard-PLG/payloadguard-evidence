@@ -1737,3 +1737,34 @@ truth, reviewed by Steven before Gate 2 starts). "Four real files" is read
 as the four variant JSON artifacts (a / b / symbolic / concrete, each with
 its Markdown sibling); the base matrix remains the frozen legacy symbolic
 subset per ruling R2c, as the roadmap's own verified-state section records.
+
+## Renal Function Dose Adjustment POC — Phase 1 non-goals and exclusions (2026-07-08)
+
+Second, independent proof-of-concept (`examples/renal_adjustment/`,
+Phase 1 plan committed as `examples/renal_adjustment/PHASE1_PLAN.md`),
+demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
+clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
+No Dafny code exists yet — Phase 1 (clinical source audit, spec skeleton,
+consistency audit) is still open. Named limitations/exclusions, per this
+repo's "name it, don't guess it" discipline:
+
+- **Per-drug numeric dose-reduction factors are not sourced or proven.**
+  BNF/SPC/Renal Drug Handbook disagree at the individual-drug level.
+  Scoped as a versioned, human-signed-off configuration input (Gate
+  C6-style), mirroring how `dosage.dfy` treats `maxSafeDoseMgPerHr` as a
+  parameter, not a baked-in constant. The proof establishes correct,
+  monotonic, bounded *application* of a supplied factor, not the
+  clinical correctness of the factor's numeric value.
+- **Paediatric renal dosing is out of scope for v1** (assumed, pending
+  Steven's explicit confirmation — see `PHASE1_PLAN.md`'s "Still open"
+  section). Paediatric reference ranges differ entirely from the adult
+  ranges this spec targets.
+- **Combined creatinine-cystatin C eGFR (eGFRcr-cys) is not built.**
+  KDIGO 2024 prefers it where cystatin C is available; named as a
+  second, unbuilt branch rather than silently excluded, pending
+  Steven's scope decision.
+- **`REQ-RENAL-3`'s original "unstable renal function" framing was never
+  independently corroborated** by any source fetched, and has been
+  merged into `REQ-RENAL-6` (AKI reassessment) rather than kept as a
+  separately-sourced claim — see `sources/kdigo-2024-gfr-staging.md` and
+  `PHASE1_PLAN.md`'s requirements table.
