@@ -142,6 +142,7 @@ reference for operating this system.
 
 | Document | What it covers |
 |---|---|
+| [`HANDOFF.md`](HANDOFF.md) | Start here if you're picking this repo up fresh: current status, what's actually done vs. in progress, and the concrete next step. |
 | [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) | The full technical manual: architecture, every verification gate explained, complete command reference, how to add a new example. |
 | [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference, kept in sync with the code. |
 | [`DEVLOG.md`](DEVLOG.md) | Dated, append-only log of every real build session. |
