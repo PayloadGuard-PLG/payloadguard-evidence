@@ -8,8 +8,15 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-09, after merging PR #3 (citation-gate audit
-fixes) to `main`.
+**Last updated:** 2026-07-09, after bringing `SYSTEM_BLUEPRINT.md` and
+`KNOWN_LIMITATIONS.md` current with the renal-adjustment build and the
+citation gate — both had drifted (a missing `examples/renal_adjustment/`
+component-map entry, stale "Last updated" stamps, stale test counts).
+That drift itself is worth remembering: **update this file, `README.md`,
+`OPERATIONS_MANUAL.md`, and `SYSTEM_BLUEPRINT.md`'s component map in the
+same session as any real change**, not just `DEVLOG.md` — DEVLOG's
+append-only history doesn't keep the current-state docs honest by
+itself, as this session found out.
 
 ## What this repo is, in one paragraph
 

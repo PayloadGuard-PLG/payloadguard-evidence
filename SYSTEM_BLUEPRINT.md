@@ -1,6 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-07 (Gate C5, mutation testing, BUILT then EXTENDED
+Last updated: 2026-07-09 (Phase D component-map/status entries added —
+see Section 7 and the 2026-07-09 addendum a few lines below; original
+Gate C5 narrative preserved as history). Prior header, preserved: Last
+updated 2026-07-07 (Gate C5, mutation testing, BUILT then EXTENDED
 TWICE same day: evidence/dafny_mutate.py + examples/dosage_calculator/
 run_mutation_suite.py. v1 build (ROR/LOR/COI on requires/ensures
 clauses) found 2 real REQ-GIP-1-8-1 survivors, FIXED by Steven ("go
@@ -48,9 +51,26 @@ out of dosage.dfy's scope by design). evidence/cli.py gained
 --dafny-captures, now required to build variant A/B at all. Gate C4
 and Gates C1-C3 were built earlier the same week - see
 payloadguard-evidence-roadmap-phaseB-to-C.md and KNOWN_LIMITATIONS.md).
+
+**2026-07-09 addendum, kept deliberately short:** a second, independent
+worked example (`examples/renal_adjustment/`) was built after the above
+— see the new component-map entry below and Section 7 ("Phase D") for
+its current state. A citation-verification module
+(`evidence/citation_gate.py`) was also added. Full narrative for both
+lives in `DEVLOG.md` (dated, append-only) and `HANDOFF.md` (current
+status, cold-start summary) — **this header will not keep growing with
+full session narrative going forward**; that growth pattern (the
+paragraph above is a single week's worth of history retold inline) made
+this file worse at its actual job, which is describing current
+structure, not re-narrating how it got there. Component-map and
+data-flow sections below are kept current; historical detail is
+deliberately not duplicated here anymore.
+
 Derived from the codebase; when in doubt, the code wins. Update this file in
 the same commit as any structural change (new module, new generation path,
-new evidence source, schema change).
+new evidence source, schema change) — update the STRUCTURE sections
+(component map, data flow, invariants), not by appending another
+paragraph of narrative to this header.
 
 ## 1. Purpose
 
@@ -447,9 +467,61 @@ payloadguard-evidence/
 │   ├── README.md                Audit-trail record (citations, caveats,
 │   │                            amendments, exhibits, open questions)
 │   └── RECONCILIATION.md        Cross-variant same-facts note + findings
+├── examples/renal_adjustment/   Worked example 2 (Phase D, in progress -
+│   │                            see Section 7 below and
+│   │                            PHASE1_PLAN.md for current status; this
+│   │                            entry is a structural listing, not a
+│   │                            narrative - full detail lives in the
+│   │                            files themselves)
+│   ├── PHASE1_PLAN.md           Living status document for this example -
+│   │                            requirements table, closed/open scope
+│   │                            decisions, kept current per-session
+│   ├── GATE_1C_AUDIT.md         Internal consistency audit + two real
+│   │                            findings (one resolved by redesign, one
+│   │                            deferred by explicit choice)
+│   ├── gate_c1_sketch.md        Signature sketches for all 5 functions,
+│   │                            each individually verified before
+│   │                            composing into the committed spec
+│   ├── gate_c4_stp_plan.md      STP predictions, hand-derived before
+│   │                            building - both confirmed for real
+│   ├── renal_adjustment.dfy     The committed spec: RoundHalfUp, GStage,
+│   │                            SelectFormula, ComposedCeiling,
+│   │                            AssessRenalFunction - verifies clean
+│   │                            (5 verified, 0 errors)
+│   ├── renal_adjustment_underconstrained.dfy  Gate C4 honesty exhibit:
+│   │                            the pre-fix spec, preserved verbatim
+│   ├── renal_adjustment_stp_suite(_against_underconstrained).dfy  Gate
+│   │                            C4: 44 lemmas pass against the fix; the
+│   │                            same 4 REJECT lemmas genuinely fail
+│   │                            against the preserved original
+│   ├── nl_confirmation_renal_adjustment_dfy.md  Gate C6: generated
+│   │                            summary + amendment; sign-off PENDING,
+│   │                            not yet confirmed
+│   ├── run_verify_renal.py, run_verify_dafny_stp_suite(_against_underconstrained)_renal.py
+│   │                            Capture runners, mirroring
+│   │                            dosage_calculator's exact discipline
+│   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
-│   └── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
+│   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
+│   ├── req-gip-1-4-12-alarm-scope-decision.md  Focused citation extract,
+│   │                            dosage_calculator's REQ-GIP-1-4-12
+│   ├── KDIGO-2024-CKD-Guideline.pdf  Primary clinical source (Steven
+│   │                            committed directly; no PDF tool was
+│   │                            installed here, so a stdlib-only re+zlib
+│   │                            extractor was written to read it)
+│   ├── kdigo-2024-gfr-staging.md  Focused citation extract + a
+│   │                            self-correction (2026-07-09 amendment:
+│   │                            an earlier claim that round-half-up was
+│   │                            "KDIGO's own convention" was wrong -
+│   │                            KDIGO specifies no tie-break rule)
+│   ├── mhra-renal-formula-selection-2019.md  Focused citation extract,
+│   │                            the BMI-threshold formula-selection rule
+│   └── ckd-epi-2021-and-cockcroft-gault-verification.md  Independent
+│                                verification of externally-supplied
+│                                equation citations - confirms the real
+│                                ones, corrects a fabricated NICE NG203
+│                                citation
 └── tests/
     ├── conftest.py              Import-path plumbing
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
@@ -565,24 +637,37 @@ payloadguard-evidence/
     │                            (all 10 killed) are each pinned so a
     │                            regeneration can't silently reintroduce
     │                            a survivor or drift from the prediction
-    └── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
-                                 then extended to A/B (2026-07-07): real
-                                 formal artifact + real A/B artifacts all
-                                 carry the expected PROVEN rows and pass
-                                 assert_no_realized_proven for real;
-                                 dafny_record()'s two independent gates
-                                 (Z3, false-zero) each exercised;
-                                 dafny_binding_conflicts across all three
-                                 declaration shapes (A/C evidence list,
-                                 B's .dfy shadow rows); the full
-                                 fact-equality gate passes with intent
-                                 True everywhere; the subset-vs-strict-
-                                 equality fix is exercised directly; CLI
-                                 --dafny-captures round-trips for a/b and
-                                 the CLI's refusal without it is real, not
-                                 hypothetical; end-to-end
-                                 build_matrix("c-formal", ...) matches
-                                 the committed artifact
+    ├── test_dafny_wiring.py     Gate 2/C2-C4 wiring, built for variant C
+    │                            then extended to A/B (2026-07-07): real
+    │                            formal artifact + real A/B artifacts all
+    │                            carry the expected PROVEN rows and pass
+    │                            assert_no_realized_proven for real;
+    │                            dafny_record()'s two independent gates
+    │                            (Z3, false-zero) each exercised;
+    │                            dafny_binding_conflicts across all three
+    │                            declaration shapes (A/C evidence list,
+    │                            B's .dfy shadow rows); the full
+    │                            fact-equality gate passes with intent
+    │                            True everywhere; the subset-vs-strict-
+    │                            equality fix is exercised directly; CLI
+    │                            --dafny-captures round-trips for a/b and
+    │                            the CLI's refusal without it is real, not
+    │                            hypothetical; end-to-end
+    │                            build_matrix("c-formal", ...) matches
+    │                            the committed artifact
+    └── test_citation_gate.py    Citation gate (2026-07-09): regression
+                                 fixtures are the actual claims and
+                                 source text this session verified by
+                                 hand, not synthetic examples - a real
+                                 NICE NG203 misquote (repeated across two
+                                 separately-supplied documents) and a
+                                 real KDIGO misquote (wrong recommendation
+                                 number AND wrong content); a digit-
+                                 adjacency boundary-check regression
+                                 found by auditing the module against its
+                                 own motivating case ("1.1.2" was a false
+                                 substring match inside "1.1.2.1" before
+                                 the fix)
 ```
 
 ## 3. Data flow (end to end)
@@ -968,3 +1053,50 @@ filtered_ar_group_incompatible, 4 filtered_magnitude_implied — zero
 survived, zero unclassifiable.** 7 more tests (25 total in
 `tests/test_dafny_mutate.py`, 8 in `tests/test_mutation_report.py`); full
 suite now **138 passed**. Full findings: `KNOWN_LIMITATIONS.md`.
+
+## 7. Phase D — second worked example (`examples/renal_adjustment/`)
+
+Deliberately concise, per this file's 2026-07-09 addendum (Section
+header, above): this is a status pointer, not a narrative. Full detail
+lives in `examples/renal_adjustment/PHASE1_PLAN.md` (kept current
+per-session), `GATE_1C_AUDIT.md`, `gate_c4_stp_plan.md`, `DEVLOG.md`
+(full dated history), and `HANDOFF.md` (cold-start summary).
+
+**Objective:** prove the Gate C1–C6 pipeline generalizes beyond
+`dosage.dfy`'s arithmetic-clamping shape to lookup-table and
+conditional-branching logic, using a UK-jurisdiction clinical example
+(renal-function dose adjustment, sourced from MHRA/KDIGO/NICE).
+
+**Status as of 2026-07-09:**
+
+- Gate 1 (clinical sourcing, spec skeleton, consistency audit): closed,
+  under two named, deliberately provisional fallback assumptions — not
+  permanent decisions.
+- Gate C1 (spec + capture): built. `renal_adjustment.dfy` — five
+  functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
+  `AssessRenalFunction`) — verifies clean (`5 verified, 0 errors`).
+- Gate C6 (NL confirmation): built; sign-off document presented but
+  **pending actual confirmation**, not yet closed.
+- Gate C4 (STPs): built. Found and fixed two real under-constrained
+  postconditions (`ComposedCeiling`, `AssessRenalFunction`) — confirmed
+  failing against the preserved pre-fix spec, confirmed passing after a
+  proper pinning-clause fix, both for real, not asserted.
+- **Gate C3 (spec lint) and Gate C5 (mutation testing): not yet built
+  for this example.** This is the concrete next step.
+- Not wired into the metadata/capture/generate pipeline (no
+  `metadata.yaml`, no traceability matrix) — this example hasn't
+  reached that part of the system yet; Section 3's data-flow diagram
+  and Section 5's evidence inventory remain `dosage_calculator`-only
+  until it does.
+
+**Two decisions explicitly left open**, per `PHASE1_PLAN.md`: whether to
+build a real Cockcroft-Gault CrCl computation (Dafny/Z3-feasible, small)
+versus leaving both CrCl and eGFR caller-supplied (current state); and
+who sets `SelectFormula`'s caller-supplied classification flags, by what
+process (reclassified as a Phase 3 concern, not a Phase 2 blocker).
+
+**A citation-verification module, `evidence/citation_gate.py`, was also
+added this phase** (component map, above) — built after two real
+fabricated citations were caught by hand in externally-supplied
+"research findings" documents, one of which repeated the same
+fabrication after already being corrected once.
