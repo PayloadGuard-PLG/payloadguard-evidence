@@ -6,6 +6,73 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Brought SYSTEM_BLUEPRINT.md and KNOWN_LIMITATIONS.md current (PR #5, `2fc2d88`)
+
+Asked to continue and make sure the main docs (`SYSTEM_BLUEPRINT.md`
+especially) represented current state, not just `HANDOFF.md`/`README.md`.
+Real gap found: `SYSTEM_BLUEPRINT.md`'s component map had no entry at
+all for `examples/renal_adjustment/` - a whole second worked example,
+built earlier this session, structurally invisible in the one document
+whose stated job is "structure and data flow." Its `sources/` listing
+had 2 of the 6 real files; its `tests/` listing was missing
+`test_citation_gate.py`; its own top "Last updated" stamp still read
+2026-07-07 even though the file's own body already referenced a
+2026-07-09 citation-gate addition further down - internally
+inconsistent, not just outdated.
+
+Fixed all of it: a real (deliberately concise) component-map entry for
+`examples/renal_adjustment/`, the missing `sources/` files, the missing
+test file, and a new Section 7 ("Phase D") stating current status -
+Gate C1/C4/C6 built, Gate C3/C5 not yet started, the two scope
+decisions still explicitly open, the citation gate. Named the actual
+root cause in the header itself: prior updates kept appending full
+session narrative to the header rather than updating the structure
+sections, which is exactly why the drift happened and why it would keep
+happening - `DEVLOG.md`/`HANDOFF.md` now own the narrative, this file
+owns current structure only, going forward.
+
+`KNOWN_LIMITATIONS.md`'s top stamp had the same problem (stale date,
+current content) - fixed the stamp, clarified the append-only framing
+so a dated historical entry isn't mistaken for staleness again.
+`README.md`/`OPERATIONS_MANUAL.md` still said "152 tests" (real count:
+154, from the citation-gate audit's own regression tests) - fixed.
+
+**Then caught a second instance of the exact same failure mode while
+writing this entry**: neither this doc-currency PR nor the preceding
+`HANDOFF.md`/`CLAUDE.md` PR (below) had a `DEVLOG.md` entry at all until
+now - the top entry stayed frozen at the "Audit" session two PRs back,
+even though two more real, merged changes had happened since. Flagged
+by Steven directly ("devlog in main is still 2 hours old"), not
+self-caught. 154 tests unaffected (documentation only, both entries).
+
+## 2026-07-09 — Added HANDOFF.md and CLAUDE.md for cold-start session continuity (PR #4, `aa28992`)
+
+Asked for a handoff document referenced implicitly at session start, so
+a fresh session with no memory of this conversation can pick the repo
+up cold without Steven re-explaining status each time.
+
+Added `HANDOFF.md`: current state of both worked examples (dosage
+calculator complete; renal adjustment at Gate C1/C4/C6 done, C3/C5 not
+started - the actual next step), the two decisions left explicitly open
+(CrCl/eGFR computation scope, classification-flag provenance) with
+recommendations on record rather than silently resolved, and the
+working discipline this repo holds itself to (verify empirically before
+trusting a claim including this repo's own prior claims, hand-derive
+predictions before building, never hand-edit a generated artifact, use
+the citation gate before trusting an external source claim).
+
+Added `CLAUDE.md` - the file Claude Code loads automatically at session
+start - pointing every future session to `HANDOFF.md` first. This is
+what makes the reference implicit: not a process Steven has to invoke,
+just how a session in this repo starts by default. Also states the
+expectation that `HANDOFF.md` gets updated at the end of any session
+that changed something non-trivial - an expectation this same session
+failed to fully meet on its own next two PRs (see the entry above and
+`HANDOFF.md`'s own updated text), caught only when asked directly
+rather than self-caught. 154 tests unaffected (documentation only).
+
+---
+
 ## 2026-07-09 — Audit of this session's work: one real code bug found and fixed, plus stale documentation
 
 Asked directly to audit everything built this session and fix any
