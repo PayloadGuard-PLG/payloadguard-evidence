@@ -1488,6 +1488,25 @@ fixed and regression-tested (142 tests, up from 138). Sign-off document
 all five functions; pending Steven's confirmation, matching the standard
 `dosage.dfy`'s own Gate C6 sign-off was held to.
 
+**That sign-off review immediately caught a real sourcing overclaim,
+2026-07-09** — asked directly where REQ-RENAL-3/4/6 live, what
+`RoundHalfUp`'s NL summary actually cites for its tie-break rule, and to
+see Gate 1c Finding 2's source text verbatim. Answering honestly
+surfaced a self-contradiction: `gate_c1_sketch.md` and
+`renal_adjustment.dfy`'s header comment both called round-half-up
+"KDIGO's own convention" in the same breath as noting KDIGO specifies no
+tie-breaking rule. Searched for an authoritative citation rather than
+just softening the language — found the NKF Laboratory Engagement
+Working Group's implementation guidance (Miller et al., *Clin Chem*
+2022;68(4):511-520, PMID 34918062) explicitly defers the tie case to
+each lab's own information-system software, confirming there is no
+single clinical standard here at all. Corrected across
+`sources/kdigo-2024-gfr-staging.md`, `gate_c1_sketch.md`,
+`renal_adjustment.dfy`'s header, and `PHASE1_PLAN.md`'s requirements
+table: the base rounding requirement stays KDIGO-sourced, the tie-break
+choice is now documented as a named design decision, not a citation.
+No code changed — `RoundHalfUp`'s body is unchanged and still verifies.
+
 ## What "done" looks like for this roadmap
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a

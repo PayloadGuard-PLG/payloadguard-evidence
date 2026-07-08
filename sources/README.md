@@ -48,7 +48,15 @@ requirements documents, standards excerpts) that ground the claims in
   "unstable renal function" half remains unresolved). Also surfaces a
   new proposed requirement, REQ-RENAL-7, from Practice Point 4.2.4 (BSA
   de-normalization for narrow-therapeutic-index drugs), not present in
-  the original scoping document.
+  the original scoping document. **Amended 2026-07-09** — the
+  round-half-up tie-break rule this document originally implied was
+  "KDIGO's own convention" was challenged directly and found
+  unsupported: KDIGO states no tie-breaking method at all, and an
+  authoritative implementation-guidance paper (Miller et al., *Clin
+  Chem* 2022;68(4):511-520, PMID 34918062) explicitly defers the tie
+  case to each laboratory's own information-system software. Corrected
+  in place; the base rounding requirement remains KDIGO-sourced, only
+  the tie-break specifically was overclaimed.
 - `mhra-renal-formula-selection-2019.md` — added 2026-07-08. Per rule 2
   above: this document **confirms** REQ-RENAL-2's five formula-selection
   conditions directly against the primary MHRA page, and **upgrades**

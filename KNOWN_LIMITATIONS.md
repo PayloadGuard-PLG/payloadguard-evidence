@@ -1769,7 +1769,22 @@ and `dafny_nl_summary.py`) only matched `method`, never `function` —
 and `_REQ_ID_RE`'s character class silently truncated `REQ-RENAL-1a` to
 `REQ-RENAL-1` (no lowercase letters in its pattern), a real citation-
 accuracy defect. Both fixed, both regression-tested; 142 tests passing
-(up from 138).
+(up from 138). **Correction, 2026-07-09** — direct challenge on Gate
+C6's sign-off review surfaced a self-inconsistent overclaim: `RoundHalfUp`'s
+round-half-up tie-break rule had been presented as "KDIGO's own
+convention" in `gate_c1_sketch.md` and this spec's header comment, in
+the same paragraph that also stated KDIGO specifies no tie-breaking
+rule at all. KDIGO's base rounding requirement ("rounded to the nearest
+whole number") remains well-sourced; the tie-break choice specifically
+is a named, deliberate design decision, not a cited fact — an
+authoritative search found the opposite of support (NKF Laboratory
+Engagement Working Group guidance, Miller et al., *Clin Chem*
+2022;68(4):511-520, PMID 34918062, explicitly defers this to each lab's
+own software). Corrected in `sources/kdigo-2024-gfr-staging.md`,
+`gate_c1_sketch.md`, `renal_adjustment.dfy`'s header comment, and
+`PHASE1_PLAN.md`'s requirements table — no code change, `RoundHalfUp`'s
+body is unchanged and still verifies (`5 verified, 0 errors`); only the
+sourcing claim was wrong.
 Named limitations/exclusions and open gaps, per this repo's "name it,
 don't guess it" discipline:
 

@@ -6,6 +6,55 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Caught and corrected a self-contradictory sourcing overclaim in RoundHalfUp's tie-break rule
+
+Reviewing the Gate C6 sign-off, asked three direct questions: where
+REQ-RENAL-3/4/6 live (answer: prose only, not yet Dafny signatures - no
+correction needed, already accurately stated); what `RoundHalfUp`'s NL
+summary cites as its source for the tie-break rule specifically, not
+just the base rounding requirement; and to see Gate 1c Finding 2's text
+verbatim (answer: quoted directly from `GATE_1C_AUDIT.md`, no issue
+found).
+
+The second question surfaced a real problem. `gate_c1_sketch.md` and
+`renal_adjustment.dfy`'s header comment both described round-half-up as
+"exactly KDIGO's own convention" in the same paragraph that also said
+"KDIGO's cited text says 'rounded to the nearest whole number' with no
+even/odd tie-breaking rule stated" — a direct self-contradiction that
+had gone unnoticed since these were written. The base rounding
+requirement (round to nearest whole number before staging) is genuinely
+KDIGO-sourced; the specific tie-break direction (round-half-up vs.
+round-half-even) was never sourced to anything and had been dressed in
+citation-adjacent language ("clinical dose-staging conventions...
+consistently read as round-half-up in practice") that named no actual
+authority.
+
+Searched for a real citation rather than just softening the claim.
+Found one, and it corrects the assumption rather than rescuing it:
+Miller WG, Kaufman HW, Levey AS, et al. "National Kidney Foundation
+Laboratory Engagement Working Group Recommendations for Implementing
+the CKD-EPI 2021 Race-Free Equations..." *Clinical Chemistry*.
+2022;68(4):511-520. PMID 34918062, DOI 10.1093/clinchem/hvab278 -
+confirmed via PubMed citation lookup, then fetched directly. States
+plainly: "the reported result should be rounded to the closest whole
+number based on the rounding logic of a laboratory information system"
+- explicitly deferring the tie-break rule to each lab's own software,
+confirming there is no single clinical standard for this specific
+question at all.
+
+Corrected in place across `sources/kdigo-2024-gfr-staging.md` (dated
+amendment, not a silent rewrite), `gate_c1_sketch.md`,
+`renal_adjustment.dfy`'s header comment, `PHASE1_PLAN.md`'s
+requirements table, `sources/README.md`'s Contents entry,
+`KNOWN_LIMITATIONS.md`, and this roadmap doc. No code changed -
+`RoundHalfUp`'s body is unchanged (round-half-up remains a reasonable,
+defensible design choice) and still verifies: `5 verified, 0 errors`,
+re-captured. Only the sourcing claim was wrong, and only because it was
+challenged directly rather than re-reviewed by the same process that
+wrote it.
+
+---
+
 ## 2026-07-08 — Renal-adjustment Gate C6 built; found and fixed two real bugs in shared tooling
 
 Next step in the build order after Gate C1: Gate C6 (NL-dialogue

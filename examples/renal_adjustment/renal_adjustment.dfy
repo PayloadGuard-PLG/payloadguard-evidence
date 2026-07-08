@@ -31,7 +31,14 @@ datatype RenalAssessment =
 // REQ-RENAL-1a: KDIGO reports eGFR rounded to the nearest whole number
 // before staging (sources/kdigo-2024-gfr-staging.md, Table 11) — this
 // shifts the effective continuous G-stage boundaries to 89.5/59.5/44.5/
-// 29.5/14.5 (round-half-up), not the naive 90.0/60.0/45.0/30.0/15.0.
+// 29.5/14.5, not the naive 90.0/60.0/45.0/30.0/15.0. The base rounding
+// requirement is KDIGO-sourced; the round-half-up TIE-BREAK specifically
+// (89.5 -> 90, not 89) is a named, uncited design decision, NOT a KDIGO
+// rule - KDIGO states no tie-breaking method, and the NKF Laboratory
+// Engagement Working Group's implementation guidance (Miller et al.,
+// Clin Chem 2022;68(4):511-520, PMID 34918062) explicitly defers this to
+// "the rounding logic of a laboratory information system." See
+// sources/kdigo-2024-gfr-staging.md's 2026-07-09 amendment.
 function RoundHalfUp(x: real): int
   requires x >= 0.0
   ensures (RoundHalfUp(x) as real) - 0.5 <= x < (RoundHalfUp(x) as real) + 0.5 // REQ-RENAL-1a

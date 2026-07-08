@@ -79,14 +79,25 @@ function RoundHalfUp(x: real): int
   (4.11.0), not a new risk.
 - `(x + 0.5).Floor` is the standard round-half-up construction: for any
   non-negative `x`, adding `0.5` then flooring rounds every value in
-  `[n - 0.5, n + 0.5)` to `n`, and pushes an exact tie (`x = n - 0.5`)
-  up to `n` rather than down — which is exactly KDIGO's own convention
-  (see `sources/kdigo-2024-gfr-staging.md`), not an arbitrary choice
-  between round-half-up and round-half-even. Round-half-even (banker's
-  rounding) was considered and rejected: KDIGO's cited text says
-  "rounded to the nearest whole number" with no even/odd tie-breaking
-  rule stated, and clinical dose-staging conventions (and the NHS SPS
-  worked example) consistently read as round-half-up in practice.
+  `[n - 0.5, n + 0.5)` to `n`, and pushes an exact tie (`x = n - 0.5`) up
+  to `n` rather than down. **Correction, 2026-07-09 (this section
+  originally overclaimed the sourcing here — caught on direct
+  challenge, not self-caught):** this is *not* citable as "KDIGO's own
+  convention." KDIGO's text says only "rounded to the nearest whole
+  number," with no tie-breaking rule stated, and a direct search for an
+  authoritative tie-break citation found the opposite of support — the
+  NKF Laboratory Engagement Working Group's implementation guidance
+  (Miller et al., *Clin Chem* 2022;68(4):511-520, PMID 34918062)
+  explicitly defers rounding methodology to "the rounding logic of a
+  laboratory information system," meaning there is no single clinical
+  standard for this tie case at all. Round-half-up here is a **named,
+  deliberate design decision** (a common, reasonable convention, and
+  the more natural reading of "the reported value AT a threshold
+  belongs to the higher category"), not a sourced fact — see
+  `sources/kdigo-2024-gfr-staging.md`'s 2026-07-09 amendment for the
+  full correction. Round-half-even (banker's rounding) was considered
+  and rejected on the same reasoning (more natural reading of the
+  threshold language), not because KDIGO mandates it.
 - **Alternative rejected:** inlining `x + 0.5` then truncating at each
   of the five boundary comparisons inside `GStage` directly, instead of
   factoring out `RoundHalfUp`. Rejected for the reason already given

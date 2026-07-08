@@ -74,6 +74,48 @@ exist to pin down), or (b) accept an already-rounded integer eGFR as a
 precondition and push the rounding step outside the spec's scope
 entirely? Not decided here; flagged for Gate 1b.
 
+## Amendment 2026-07-09 — the round-half-up TIE-BREAK rule was never actually sourced; corrected here
+
+The passage above (originally written 2026-07-08) illustrated the
+89.5→90 boundary shift using "round-half-up" parenthetically, as if
+that were an established convention. On direct challenge, re-checked:
+**KDIGO's own quoted text above says only "rounded to the nearest whole
+number" — it does not specify a tie-breaking rule at all.** Round-half-up
+vs. round-half-even (banker's rounding) is genuinely unaddressed by this
+source. This was a real gap in this document's own rigor, not caught
+until asked directly.
+
+Searched for an authoritative tie-break citation rather than leaving it
+unresolved. Found one, but it corrects the assumption rather than
+supporting it: Miller WG, Kaufman HW, Levey AS, et al. "National Kidney
+Foundation Laboratory Engagement Working Group Recommendations for
+Implementing the CKD-EPI 2021 Race-Free Equations for Estimated
+Glomerular Filtration Rate: Practical Guidance for Clinical
+Laboratories." *Clinical Chemistry*. 2022;68(4):511-520. PMID 34918062,
+DOI [10.1093/clinchem/hvab278](https://doi.org/10.1093/clinchem/hvab278)
+— fetched directly. Quoted verbatim:
+
+> "The reported eGFR value should have whole numbers and no decimals.
+> When calculating eGFR, the reported result should be rounded to the
+> closest whole number based on the rounding logic of a laboratory
+> information system."
+
+**This explicitly defers the tie-break rule to each lab's own
+information-system software, not a fixed clinical constant.** There is
+no single authoritative source specifying round-half-up over
+round-half-even (or vice versa) for eGFR reporting. `renal_adjustment.dfy`'s
+`RoundHalfUp` function's specific tie-break choice is a **named,
+deliberate design decision** — round-half-up is a common, reasonable
+convention (and the direction KDIGO's own worked boundary language
+reads most naturally, since "89.5 is not 90 yet" would be an unusual
+way to describe a value AT the reported threshold), but it is not
+citable as KDIGO's or any single authority's mandated rule the way the
+base "rounded to the nearest whole number" requirement is. `REQ-RENAL-1a`
+should be read as covering the base rounding requirement (well-sourced)
+plus this named, uncited implementation choice for the tie case
+specifically (not well-sourced) — the two should not be conflated as
+equally well-supported.
+
 ## Confirms and partially resolves: `REQ-RENAL-3`'s citation gap
 
 The scoping document's `REQ-RENAL-3` ("Cockcroft-Gault reliability
