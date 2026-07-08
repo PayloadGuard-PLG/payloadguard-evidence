@@ -1445,10 +1445,19 @@ explicit lemmas proving each direction of the impossibility. Finding 1
 — no function computes the actual Cockcroft-Gault CrCl or CKD-EPI eGFR
 numeric value, a genuine undefined-input-region gap — **remains open by
 explicit choice**, deferred on Steven's direction rather than decided.
-**Gate 1 is therefore still not formally closed**, now blocked on one
-finding instead of two. Phase 2 (the Gate C1/C6-moved-earlier/C4/C3/C5
-build pipeline against a new `renal_adjustment.dfy` composing all five
-now-verified functions, infrastructure already scoped) remains blocked
+Steven then supplied a research-findings document proposing the exact
+2021 CKD-EPI equations plus a Dafny/Z3 lookup-table strategy; every
+checkable claim was independently verified
+(`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`) — both
+CKD-EPI equations and the Cockcroft-Gault historical constants confirmed,
+a fabricated NICE NG203 citation caught and corrected, and the proposed
+LUT architecture found to relocate rather than eliminate CKD-EPI's trust
+boundary. Finding 1's build-vs-defer decision is unchanged but now rests
+on verified data. **Gate 1 is therefore still not formally closed**, now
+blocked on one finding instead of two. Phase 2 (the Gate
+C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
+`renal_adjustment.dfy` composing all five now-verified functions,
+infrastructure already scoped) remains blocked
 on Finding 1's scope decision plus the flag-provenance scoping pass. No
 committed Dafny code exists yet for this POC.
 

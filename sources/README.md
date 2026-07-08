@@ -61,6 +61,23 @@ requirements documents, standards excerpts) that ground the claims in
   verified trials using a similar BMI eligibility range, but for general
   PK-study screening, not as a validation of MHRA's specific threshold;
   recorded as corroborating, not confirming.
+- `ckd-epi-2021-and-cockcroft-gault-verification.md` — added 2026-07-08.
+  Independently verifies a "research findings" document Steven supplied
+  (explicitly flagged by him as unverified external knowledge) proposing
+  data to close Gate 1c's Finding 1. Per rule 2 above: this document
+  **confirms** the 2021 CKD-EPI creatinine-only and creatinine-cystatin C
+  eGFR equations exactly (checked against the National Kidney
+  Foundation's own published equations, not the supplied document
+  alone), **confirms** the original 1976 Cockcroft-Gault formula and the
+  arithmetic behind MHRA's rounded 1.23/1.04 constants, and **corrects**
+  a fabricated citation: the supplied document's claimed NICE NG203
+  recommendation numbers and quoted text (1.1.2 mandating the 2009
+  equation, 1.1.4 barring ethnicity-based eGFR adjustment) do not exist
+  in the real guideline — verified directly by fetching NICE NG203's
+  actual recommendations list. The real picture, per an independent 2024
+  UK study (Roy et al., *Nephron*, PMID 39342928), is that UK lab
+  practice is heterogeneous and in transition, not settled on any single
+  equation version.
 
 ## Resolved questions
 

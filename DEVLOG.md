@@ -6,6 +6,59 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Verified Steven's CKD-EPI 2021 research brief; caught one fabricated citation
+
+Steven asked for a precise, portable research prompt to close Gate 1c's
+Finding 1 (no function computes the actual CrCl/eGFR numeric value) and
+supplied it to an external research tool himself. He returned with a
+"research findings" document — explicitly flagged by him as unverified
+external knowledge — proposing the exact 2021 CKD-EPI creatinine-only
+and creatinine-cystatin C equations, a UK-vs-US practice comparison, a
+Cockcroft-Gault 1976 historical derivation, and a Dafny/Z3 lookup-table
+architecture strategy.
+
+Verified every checkable claim independently before accepting any of it:
+
+- Both CKD-EPI 2021 equations checked against the National Kidney
+  Foundation's own published equations directly (not just the supplied
+  document) — matched exactly, all constants confirmed.
+- The original 1976 Cockcroft-Gault formula confirmed via PubMed (PMID
+  1244564, the correct paper) plus an independent secondary source; the
+  88.4/72 unit-conversion arithmetic behind MHRA's rounded 1.23/1.04
+  constants checks out.
+- **Caught a fabricated citation:** the document claimed NICE NG203
+  "Recommendation 1.1.2 mandates the 2009 equation" and "1.1.4 states
+  do not use ethnicity to adjust eGFR." Fetched NICE NG203's actual
+  recommendations list directly — neither claim is real. The real 1.1.4
+  is about not eating meat before a blood test; the real
+  ethnicity-related recommendation (1.1.24) is about screening risk
+  factors, not equation selection; 1.1.2 doesn't specify an equation
+  version at all. An independent, directly on-point 2024 UK study (Roy
+  et al., *Nephron*, PMID 39342928, PMC11878410) confirmed the real
+  picture: UK lab practice is heterogeneous and in transition (one major
+  NHS hospital's own standard result was still MDRD), not settled on any
+  single equation — a plausible-sounding but incorrect synthesis, caught
+  by fetching the primary source rather than trusting the summary.
+- Evaluated the proposed Dafny/Z3 lookup-table architecture on its own
+  technical merits: the core diagnosis (Dafny/Z3 can't natively handle
+  CKD-EPI's fractional-exponent real power terms — an expressiveness
+  gap, not a performance/timeout issue) is correct and reinforces the
+  existing recommendation to keep CKD-EPI caller-supplied. But the LUT
+  proposal doesn't eliminate the trust boundary, it relocates it — the
+  LUT itself would need independent verification against the formula,
+  an unaddressed gap in the supplied strategy.
+
+Committed `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`
+(full verification record) and folded the confirmed data plus the
+corrected UK-practice picture into `PHASE1_PLAN.md`'s Finding 1 entry,
+`GATE_1C_AUDIT.md` (addendum), `KNOWN_LIMITATIONS.md`, and this roadmap
+doc's status section. Finding 1's actual scope decision (build
+Cockcroft-Gault in Phase 2, keep CKD-EPI caller-supplied) remains
+Steven's call — not decided here, now backed by verified data instead of
+an open question mark. 138 tests still passing; no code touched.
+
+---
+
 ## 2026-07-08 — Renal-adjustment Gate 1c Finding 2 resolved by redesign; Finding 1 deferred
 
 Steven's direction: defer Gate 1c's Finding 1 (CrCl/eGFR value

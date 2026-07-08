@@ -1762,12 +1762,18 @@ guess it" discipline:
 - **No function computes the actual Cockcroft-Gault CrCl or CKD-EPI
   eGFR numeric value.** Found by Gate 1c's hand-trace, not assumed away:
   the skeleton only stages/selects/composes an already-computed value.
-  Needs a scope decision (in-scope for Phase 2, at least for
-  Cockcroft-Gault's small formula, vs. caller-supplied like the
-  classification flags — recommended for CKD-EPI eGFR specifically,
-  given its much larger proof surface) — see `GATE_1C_AUDIT.md`.
-  **Deliberately deferred, not decided**, per Steven's direction to
-  resolve the other finding first.
+  The exact CKD-EPI 2021 equations and Cockcroft-Gault's historical
+  constants are now independently verified (see
+  `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`), and a
+  proposed Dafny/Z3 lookup-table workaround for CKD-EPI's fractional
+  exponents was evaluated and found to relocate rather than eliminate
+  the trust boundary (the LUT itself needs independent verification
+  against the formula). Needs a scope decision (Cockcroft-Gault in
+  Phase 2 — small, linear-arithmetic, low proof risk — vs. CKD-EPI
+  caller-supplied, given its genuine Dafny/Z3 expressiveness gap, not
+  just a performance concern) — see `GATE_1C_AUDIT.md`'s addenda.
+  **Deliberately deferred, not decided**, now backed by verified data
+  rather than an open question mark.
 - **`GStage` must not be applied to a Cockcroft-Gault CrCl value —
   RESOLVED 2026-07-08.** Its boundaries are derived from KDIGO's
   eGFR-specific G1–G5 table; CrCl isn't BSA-normalized and isn't staged

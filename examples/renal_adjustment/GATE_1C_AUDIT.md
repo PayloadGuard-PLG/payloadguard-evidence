@@ -219,3 +219,20 @@ audit's original recommendation and is still Steven's call.
 of two. Finding 2 is closed. Finding 1 (CrCl/eGFR computation scope) and
 `REQ-RENAL-8`'s classification-flag provenance remain the two open items
 blocking Phase 2.
+
+## Addendum 2026-07-08 (second) — Finding 1's data now verified; scope decision still open
+
+Steven supplied a "research findings" document proposing the exact 2021
+CKD-EPI equations and a Dafny/Z3 lookup-table architecture to close
+Finding 1. Every checkable claim was independently verified — see
+`sources/ckd-epi-2021-and-cockcroft-gault-verification.md` and
+`PHASE1_PLAN.md`'s updated Finding-1 entry for full detail. Summary: both
+CKD-EPI 2021 equations and the Cockcroft-Gault historical constants
+confirmed; a fabricated NICE NG203 citation caught and corrected (the
+claimed "UK mandates 2009 equation" recommendation numbers don't exist in
+the real guideline). The proposed lookup-table architecture is
+technically sound in principle but was found to relocate, not eliminate,
+the CKD-EPI trust boundary (the LUT itself would need independent
+verification against the formula). Finding 1's scope decision (build
+Cockcroft-Gault, keep CKD-EPI caller-supplied) remains Steven's call,
+now backed by verified data rather than an open question mark.

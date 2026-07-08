@@ -255,11 +255,44 @@ explicit choice (Steven's direction: defer it, resolve Finding 2 first).
    as the ALM/SOUP bridge scoping); or a static, versioned list
    maintained outside the proof boundary and reviewed on a cadence.
 2. **CrCl/eGFR value computation scope (Gate 1c finding 1) — still
-   deferred.** In scope for Phase 2 (at least for Cockcroft-Gault, which
-   has a small, fully specified formula) or caller-supplied like the
-   classification flags (recommended for CKD-EPI eGFR, a much larger
-   proof undertaking) — see the audit document's recommendation.
-   Steven's call, deliberately not decided yet.
+   deferred, now with verified data behind it.** Steven supplied a
+   "research findings" document (external knowledge, explicitly flagged
+   by him as unverified) proposing the exact 2021 CKD-EPI equations and
+   a Dafny/Z3 "lookup-table" architecture. Every checkable claim was
+   independently verified — see
+   `sources/ckd-epi-2021-and-cockcroft-gault-verification.md` for full
+   detail. Confirmed: both the 2021 CKD-EPI creatinine-only and
+   creatinine-cystatin C equations exactly (independently checked
+   against the National Kidney Foundation's own published equations);
+   the original 1976 Cockcroft-Gault formula and the arithmetic behind
+   MHRA's rounded 1.23/1.04 constants. **Corrected: the document's claim
+   that UK practice mandates a "2009 equation, race modifier removed" is
+   wrong** — the cited NICE NG203 recommendation numbers and text don't
+   exist in the real guideline (verified by fetching it directly); an
+   independent 2024 UK study (Roy et al., *Nephron*, PMID 39342928)
+   shows UK lab practice is heterogeneous and in transition, not settled
+   on any one equation.
+
+   This reinforces rather than changes the original recommendation:
+   Cockcroft-Gault has no fractional-exponent term and is a small,
+   linear-arithmetic formula well within Dafny/Z3's proven capability
+   (same category as `RoundHalfUp`/`GStage`/`ComposedCeiling`). The
+   CKD-EPI equations (either version) use real-valued fractional
+   exponents on a variable base (`Scr^-1.200`, `Scr^-0.302`, etc.) —
+   Dafny has no native operator for this and Z3 has no decision
+   procedure for it; this is a genuine expressiveness gap, not a
+   performance/timeout issue. The supplied document's proposed
+   workaround (scale to bounded integers, precompute a lookup table, and
+   prove against the LUT) is a legitimate technique in principle but
+   **doesn't eliminate the CKD-EPI trust boundary — it relocates it**:
+   proving "the Dafny function matches this LUT" only pushes the real
+   question to "was the LUT correctly computed from the actual formula,"
+   an external, unverified computation. If CKD-EPI eGFR is ever pursued
+   as a proof target rather than staying caller-supplied, that LUT-
+   generation trust boundary needs its own explicit scoping — named
+   here, not assumed away. **Steven's call on whether to build
+   Cockcroft-Gault in Phase 2 and keep CKD-EPI caller-supplied,
+   deliberately not decided unilaterally here.**
 
 ~~3. `GStage`'s eGFR-only applicability (Gate 1c finding 2).~~ **Resolved
 2026-07-08** — `AssessRenalFunction`'s tagged-union return type makes
