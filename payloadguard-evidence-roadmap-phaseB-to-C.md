@@ -1433,20 +1433,24 @@ composed boundary behavior (`GStage(RoundHalfUp(x))`) verified for real
 against Dafny across all ten boundary rows plus the NHS SPS example
 (24/24 verified, 0 errors). **The audit found two real gaps, not zero,
 consistent with an audit doing its actual job rather than rubber-
-stamping:** (1) no function computes the actual Cockcroft-Gault CrCl or
-CKD-EPI eGFR numeric value — the skeleton only stages/selects/composes
-an already-computed value, a genuine undefined-input-region gap Gate 1c
-exists to catch; (2) `GStage`'s KDIGO-derived boundaries are eGFR-
+stamping.** Finding 2 — `GStage`'s KDIGO-derived boundaries are eGFR-
 specific and must not be applied to a Cockcroft-Gault CrCl value (found
 by hand-tracing the NHS SPS worked example itself: CrCl 37 vs. eGFR 53,
-the same divergence REQ-RENAL-2 exists to catch) — the top-level method
-needs two distinct downstream paths, not one unconditional `GStage`
-call. **Gate 1 is therefore not yet formally closed.** Phase 2 (the Gate
-C1/C6-moved-earlier/C4/C3/C5 build pipeline against a new
-`renal_adjustment.dfy` and a separate `ComposedCeiling` proof unit,
-infrastructure already scoped) remains blocked on these two findings
-plus the flag-provenance scoping pass. No committed Dafny code exists
-yet for this POC.
+the same divergence REQ-RENAL-2 exists to catch) — **is now resolved**:
+a new dispatcher function, `AssessRenalFunction`, with a tagged-union
+return type (`EGFRAssessment` vs. `CrClAssessment`), makes the category
+error a type-level impossibility rather than a calling convention to
+remember — verified against real Dafny, 11/11, 0 errors, including two
+explicit lemmas proving each direction of the impossibility. Finding 1
+— no function computes the actual Cockcroft-Gault CrCl or CKD-EPI eGFR
+numeric value, a genuine undefined-input-region gap — **remains open by
+explicit choice**, deferred on Steven's direction rather than decided.
+**Gate 1 is therefore still not formally closed**, now blocked on one
+finding instead of two. Phase 2 (the Gate C1/C6-moved-earlier/C4/C3/C5
+build pipeline against a new `renal_adjustment.dfy` composing all five
+now-verified functions, infrastructure already scoped) remains blocked
+on Finding 1's scope decision plus the flag-provenance scoping pass. No
+committed Dafny code exists yet for this POC.
 
 ## What "done" looks like for this roadmap
 

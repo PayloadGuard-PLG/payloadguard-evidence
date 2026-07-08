@@ -1,19 +1,22 @@
 # Renal Function Dose Adjustment — Phase 1 (Specification & Foundation)
 
 Status: **Gate 1a and Gate 1b closed. Gate 1c performed — see
-`examples/renal_adjustment/GATE_1C_AUDIT.md`.** All four core proof
-functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`)
-verify cleanly against the real, installed Dafny 4.11.0 toolchain,
-including the composed boundary behavior
-(`GStage(RoundHalfUp(x))`, 24/24 verified) — not yet integrated into a
-committed `renal_adjustment.dfy`, but no longer unverified sketch.
-**Gate 1 is not yet fully closeable: the Gate 1c audit found two real
-gaps** (no function computes the actual CrCl/eGFR numeric value; `GStage`
-is eGFR-specific and must not be applied to a Cockcroft-Gault CrCl
-value) — see "Still open" below and the audit document for full detail.
-Phase 2 (the Gate C1/C6/C4/C3/C5 build pipeline, per
-`/root/.claude/plans/stateless-weaving-firefly.md`'s infrastructure
-plan) remains blocked on these plus classification-flag provenance.
+`examples/renal_adjustment/GATE_1C_AUDIT.md`.** Five core proof
+functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
+and the two-downstream-paths dispatcher `AssessRenalFunction`) verify
+cleanly against the real, installed Dafny 4.11.0 toolchain, including
+the composed boundary behavior (`GStage(RoundHalfUp(x))`, 24/24
+verified) and `AssessRenalFunction`'s type-level proof that a
+Cockcroft-Gault CrCl value can never reach `GStage` (11/11 verified) —
+not yet integrated into a committed `renal_adjustment.dfy`, but no
+longer unverified sketch. **Gate 1c's audit found two real gaps; one
+(`GStage` misapplication) is now resolved by `AssessRenalFunction`'s
+design, the other (no function computes the actual CrCl/eGFR numeric
+value) remains open by explicit choice, deferred rather than decided —
+see "Still open" below.** Phase 2 (the Gate C1/C6/C4/C3/C5 build
+pipeline, per `/root/.claude/plans/stateless-weaving-firefly.md`'s
+infrastructure plan) remains blocked on that deferred item plus
+classification-flag provenance.
 
 ## Objective
 
@@ -118,7 +121,7 @@ documented, quantified consequence (NHS SPS worked example: CrCl 37
 mL/min vs. eGFR 53 mL/min/1.73m², ~30% relative difference, same patient).
 
 **Staging and lookup postconditions:**
-- Correct, total mapping from rounded eGFR/CrCl to KDIGO G-stage, proven
+- Correct, total mapping from rounded eGFR to KDIGO G-stage, proven
   exactly at each boundary (89.5/90, 59.5/60, 44.5/45, 29.5/30, 14.5/15
   — corrected boundary set per REQ-RENAL-1a, not the naive integers).
 - Monotonicity: assigned dose is non-increasing as renal function
@@ -126,6 +129,22 @@ mL/min vs. eGFR 53 mL/min/1.73m², ~30% relative difference, same patient).
 - Output bounds: renal-adjusted dose never exceeds the unadjusted dose,
   and lies within whatever licensed dose range is supplied as
   configuration.
+
+**Two separate downstream paths, settled by design (Gate 1c Finding 2,
+resolved).** `GStage`'s KDIGO-derived boundaries are eGFR-specific and
+must never be applied to a Cockcroft-Gault CrCl value — found by
+hand-tracing the NHS SPS example in Gate 1c (see
+`GATE_1C_AUDIT.md`'s addendum). Resolved by a dispatcher function,
+`AssessRenalFunction(formula: Formula, renalFunctionValue: real):
+RenalAssessment`, whose return type is a tagged union
+(`EGFRAssessment(stage: GStageCategory) | CrClAssessment(roundedCrClMlPerMin:
+int)`) — `GStage` can only be reached inside the `EGFRFormula` branch, so
+a raw CrCl number can never be mislabeled with a KDIGO G-stage, and an
+eGFR value can never skip staging. This is a type-level guarantee, not a
+calling convention: verified against real Dafny 4.11.0, 11/11 verified,
+0 errors, including two explicit lemmas proving each direction of the
+impossibility. Full signature and test vectors in `gate_c1_sketch.md`
+section 5.
 
 **Fail-safe and missing-data postconditions:**
 - Missing/invalid renal-function input fails safe (withhold, flag for
@@ -214,10 +233,12 @@ Cockcroft-Gault CrCl or CKD-EPI eGFR numeric value from raw inputs — the
 skeleton only stages/selects/composes an already-computed value; (2)
 `GStage`'s KDIGO-derived boundaries are specific to eGFR and must not be
 applied to a Cockcroft-Gault CrCl value (a category error — CrCl isn't
-BSA-normalized and isn't clinically staged via G1–G5), which means the
-top-level method needs two distinct downstream paths, not one
-unconditional `GStage` call. Both are named in full in the audit
-document rather than resolved implicitly.
+BSA-normalized and isn't clinically staged via G1–G5). **Finding 2 is
+now resolved** by the `AssessRenalFunction` dispatcher (see Gate 1b
+above and `gate_c1_sketch.md` section 5), which makes the category error
+a type-level impossibility rather than a convention to remember —
+verified against real Dafny, 11/11, 0 errors. Finding 1 remains open, by
+explicit choice (Steven's direction: defer it, resolve Finding 2 first).
 
 ## Still open (named, not guessed)
 
@@ -233,19 +254,22 @@ document rather than resolved implicitly.
    EHR/prescribing system (an external-integration question, same shape
    as the ALM/SOUP bridge scoping); or a static, versioned list
    maintained outside the proof boundary and reviewed on a cadence.
-2. **CrCl/eGFR value computation scope (Gate 1c finding 1).** In scope
-   for Phase 2 (at least for Cockcroft-Gault, which has a small, fully
-   specified formula) or caller-supplied like the classification flags
-   (recommended for CKD-EPI eGFR, a much larger proof undertaking) — see
-   the audit document's recommendation. Steven's call, not decided here.
-3. **`GStage`'s eGFR-only applicability (Gate 1c finding 2).** Needs to
-   become an explicit two-path branch in the eventual top-level method's
-   design — see the audit document.
+2. **CrCl/eGFR value computation scope (Gate 1c finding 1) — still
+   deferred.** In scope for Phase 2 (at least for Cockcroft-Gault, which
+   has a small, fully specified formula) or caller-supplied like the
+   classification flags (recommended for CKD-EPI eGFR, a much larger
+   proof undertaking) — see the audit document's recommendation.
+   Steven's call, deliberately not decided yet.
 
-**Gate 1 is not yet formally closed** — per its own stated exit
+~~3. `GStage`'s eGFR-only applicability (Gate 1c finding 2).~~ **Resolved
+2026-07-08** — `AssessRenalFunction`'s tagged-union return type makes
+this a type-level impossibility. See Gate 1b above.
+
+**Gate 1 is not yet formally closed** — one finding resolved, one
+deliberately deferred. Per its own stated exit
 criteria, an audit that finds real gaps and names them, rather than
 rubber-stamping, is Gate 1c doing its job correctly. Phase 2 remains
-blocked until items 2 and 3 above are decided.
+blocked until item 2 above (and item 1, flag provenance) are decided.
 
 ## Documentation set updated so far
 

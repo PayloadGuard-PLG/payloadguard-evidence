@@ -179,3 +179,43 @@ scope). Both are named, not resolved, per this repo's discipline. Phase
 2 remains blocked until Steven decides Finding 1's scope question and
 the method-design consequence of Finding 2 is incorporated into Gate
 1b's skeleton.
+
+## Addendum 2026-07-08 — Finding 2 resolved by redesign; Finding 1 explicitly deferred
+
+Steven's direction: defer Finding 1 (leave CrCl/eGFR computation
+caller-supplied for now, no scope decision forced yet) and design Gate
+1b's skeleton to structurally resolve Finding 2 (the two-downstream-
+paths gap), then verify.
+
+**Finding 2 is now resolved, not just named.** A new dispatcher
+function, `AssessRenalFunction`, was added to Gate 1b's skeleton
+(`gate_c1_sketch.md`, section 5) and its return type —
+`RenalAssessment = EGFRAssessment(stage: GStageCategory) |
+CrClAssessment(roundedCrClMlPerMin: int)` — makes the bug this finding
+described a **type-level impossibility**, not a convention a future
+caller has to remember correctly: `GStage` can only be reached inside
+`AssessRenalFunction`'s `EGFRFormula` branch, so a `CrClAssessment` can
+never carry a KDIGO G-stage label, and an `EGFRAssessment` can never
+carry a raw, un-staged CrCl number. Verified against real Dafny 4.11.0,
+2026-07-08: **11 verified, 0 errors**, including two explicit
+type-safety lemmas (`EgfrPathNeverProducesCrClAssessment`,
+`CrClPathNeverProducesEGFRAssessment`) proving the impossibility
+directly, not just relying on the `ensures` clauses' shape. The NHS SPS
+worked example was re-derived through the new dispatcher and matches
+this audit's original hand-trace exactly:
+`AssessRenalFunction(EGFRFormula, 53.0) == EGFRAssessment(G3a)` and
+`AssessRenalFunction(CockcroftGaultFormula, 36.9) == CrClAssessment(37)`,
+both proven as lemmas.
+
+**Finding 1 remains open, by explicit choice, not oversight.**
+`AssessRenalFunction` still takes `renalFunctionValue: real` as an
+already-computed input — it dispatches and stages/rounds, it does not
+compute Cockcroft-Gault CrCl or CKD-EPI eGFR from raw patient data. That
+scope question (build the Cockcroft-Gault computation in Phase 2 vs.
+treat both formulas' outputs as caller-supplied) is unchanged from this
+audit's original recommendation and is still Steven's call.
+
+**Gate 1 status: still not formally closed**, now for one reason instead
+of two. Finding 2 is closed. Finding 1 (CrCl/eGFR computation scope) and
+`REQ-RENAL-8`'s classification-flag provenance remain the two open items
+blocking Phase 2.

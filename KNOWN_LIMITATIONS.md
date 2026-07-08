@@ -1747,14 +1747,17 @@ Gate 1c audit in `examples/renal_adjustment/GATE_1C_AUDIT.md`),
 demonstrating the Gate C1–C6 pipeline generalizes from arithmetic
 clamping (`dosage.dfy`) to lookup-table and conditional-branching logic.
 Gate 1a and 1b are closed; **Gate 1c has been performed and found two
-real gaps — Gate 1 is not yet formally closed.** All four core proof
-functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`)
-verify individually against the real, installed Dafny 4.11.0 toolchain,
-and the composed boundary behavior (`GStage(RoundHalfUp(x))`) verifies
-across all ten boundary rows plus the NHS SPS example (24/24, 0 errors)
-— but none are yet composed into a committed `renal_adjustment.dfy`;
-Phase 2 has not started. Named limitations/exclusions and open gaps, per
-this repo's "name it, don't guess it" discipline:
+real gaps — one now resolved, one deliberately deferred; Gate 1 is not
+yet formally closed.** Five core proof functions (`RoundHalfUp`,
+`GStage`, `SelectFormula`, `ComposedCeiling`, `AssessRenalFunction`)
+verify individually against the real, installed Dafny 4.11.0 toolchain;
+the composed boundary behavior (`GStage(RoundHalfUp(x))`) verifies
+across all ten boundary rows plus the NHS SPS example (24/24, 0 errors);
+`AssessRenalFunction`'s type-level proof that a CrCl value can never
+reach `GStage` verifies at 11/11, 0 errors — but none are yet composed
+into a committed `renal_adjustment.dfy`; Phase 2 has not started. Named
+limitations/exclusions and open gaps, per this repo's "name it, don't
+guess it" discipline:
 
 - **No function computes the actual Cockcroft-Gault CrCl or CKD-EPI
   eGFR numeric value.** Found by Gate 1c's hand-trace, not assumed away:
@@ -1763,13 +1766,18 @@ this repo's "name it, don't guess it" discipline:
   Cockcroft-Gault's small formula, vs. caller-supplied like the
   classification flags — recommended for CKD-EPI eGFR specifically,
   given its much larger proof surface) — see `GATE_1C_AUDIT.md`.
-- **`GStage` must not be applied to a Cockcroft-Gault CrCl value** — its
-  boundaries are derived from KDIGO's eGFR-specific G1–G5 table; CrCl
-  isn't BSA-normalized and isn't staged the same way clinically. The
-  eventual top-level method needs two distinct downstream paths, not one
-  unconditional `GStage` call — found via hand-tracing the NHS SPS
-  example (CrCl 37 vs. eGFR 53, the same divergence that motivates
-  REQ-RENAL-2's formula-selection branch in the first place).
+  **Deliberately deferred, not decided**, per Steven's direction to
+  resolve the other finding first.
+- **`GStage` must not be applied to a Cockcroft-Gault CrCl value —
+  RESOLVED 2026-07-08.** Its boundaries are derived from KDIGO's
+  eGFR-specific G1–G5 table; CrCl isn't BSA-normalized and isn't staged
+  the same way clinically. Found via hand-tracing the NHS SPS example
+  (CrCl 37 vs. eGFR 53, the same divergence that motivates
+  REQ-RENAL-2's formula-selection branch). Fixed by a dispatcher
+  function, `AssessRenalFunction`, whose tagged-union return type
+  (`EGFRAssessment` vs. `CrClAssessment`) makes the category error a
+  type-level impossibility rather than a calling convention — see
+  `gate_c1_sketch.md` section 5 and `GATE_1C_AUDIT.md`'s addendum.
 
 - **Per-drug numeric dose-reduction factors are not sourced or proven.**
   BNF/SPC/Renal Drug Handbook disagree at the individual-drug level.

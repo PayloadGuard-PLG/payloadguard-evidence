@@ -1,21 +1,24 @@
 # Gate C1 sketch: signatures and test vectors, before any implementation
 
-Status: **all four functions checked against the real Dafny 4.11.0
-toolchain (2026-07-08) and verify cleanly** — `RoundHalfUp`, `GStage`,
-`SelectFormula`, `ComposedCeiling`, each 1 verified / 0 errors in a
-scratch file, `ensures` clauses holding for real, not asserted. None of
-this is yet part of a committed `.dfy` file in `examples/renal_adjustment/`
-— the scratch check is a de-risking step, not a build step, and no
-mutation testing, STP suite, or Gate C3 lint has run against any of
-them. Per Steven's instruction, test vectors were defined before any
-body was written, mirroring the discipline the Gate C5 LVR extension
-used (hand-derived prediction recorded before the real run). This does
-not start Phase 2 — Gate 1c's hand-trace write-up is still open (see
-`PHASE1_PLAN.md`), and these signatures are exactly what Gate 1c needs
-to be checked against, not a way around it.
+Status: **five functions checked against the real Dafny 4.11.0 toolchain
+(2026-07-08) and verify cleanly** — `RoundHalfUp`, `GStage`,
+`SelectFormula`, `ComposedCeiling`, and now `AssessRenalFunction`
+(section 5, added after Gate 1c's audit found `GStage` could otherwise
+be misapplied to a Cockcroft-Gault CrCl value), each verifying 0 errors
+in a scratch file, `ensures` clauses holding for real, not asserted.
+None of this is yet part of a committed `.dfy` file in
+`examples/renal_adjustment/` — the scratch check is a de-risking step,
+not a build step, and no mutation testing, STP suite, or Gate C3 lint
+has run against any of them. Per Steven's instruction, test vectors were
+defined before any body was written, mirroring the discipline the Gate
+C5 LVR extension used (hand-derived prediction recorded before the real
+run). This does not start Phase 2 — Gate 1c's audit found and this
+addendum resolved one of two remaining gaps (see `GATE_1C_AUDIT.md`),
+and these signatures are exactly what Gate 1c checks against, not a way
+around it.
 
-Four logical operations, decomposed rather than inlined into one or two
-methods (per the Gate C1 options discussion) — each becomes its own
+Five logical operations now, decomposed rather than inlined into one or
+two methods (per the Gate C1 options discussion) — each becomes its own
 `function`, callable from one top-level `method`, the same shape that
 let Gate C5's AOR/LVR extensions target `dosage.dfy`'s companion
 function directly. The fourth, `ComposedCeiling`, was added after
@@ -261,18 +264,67 @@ asserted in prose.
 | 6.0 | 10.0 | 6.0 | existing ceiling more conservative, wins |
 | 8.0 | 8.0 | 8.0 | equal — either branch, same result |
 
+## 5. `AssessRenalFunction` — the two-downstream-paths dispatcher (Gate 1c Finding 2, resolved)
+
+Gate 1c's hand-trace of the NHS SPS example found that `GStage`'s KDIGO-
+derived boundaries are eGFR-specific and would be a category error if
+applied to a Cockcroft-Gault CrCl value (see `GATE_1C_AUDIT.md`).
+Resolved by making the error structurally impossible rather than a
+convention: a tagged-union return type where the eGFR-staged and raw-
+CrCl branches are different constructors, so `GStage` can only ever be
+reached on the `EGFRFormula` path.
+
+```dafny
+datatype RenalAssessment =
+  | EGFRAssessment(stage: GStageCategory)
+  | CrClAssessment(roundedCrClMlPerMin: int)
+
+function AssessRenalFunction(formula: Formula, renalFunctionValue: real): RenalAssessment
+  requires renalFunctionValue >= 0.0
+  ensures formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment?
+  ensures formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue).CrClAssessment?
+{
+  if formula == EGFRFormula then
+    EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))
+  else
+    CrClAssessment(RoundHalfUp(renalFunctionValue))
+}
+```
+
+**Deliberately still takes `renalFunctionValue: real` as an
+already-computed input** — this function dispatches, rounds, and stages;
+it does not compute Cockcroft-Gault CrCl or CKD-EPI eGFR from raw
+patient data (Gate 1c Finding 1, still open by explicit choice — see
+`PHASE1_PLAN.md`'s "Still open" section).
+
+**Verified against real Dafny 4.11.0, 2026-07-08: 11 verified, 0
+errors**, across the function itself plus four lemmas:
+
+| Lemma | Proves |
+|---|---|
+| `NhsSps_EgfrPath_is_G3a` | `AssessRenalFunction(EGFRFormula, 53.0) == EGFRAssessment(G3a)` — NHS SPS eGFR path |
+| `NhsSps_CrClPath_is_37` | `AssessRenalFunction(CockcroftGaultFormula, 36.9) == CrClAssessment(37)` — NHS SPS CrCl path |
+| `EgfrPathNeverProducesCrClAssessment` | The eGFR path can never yield a raw, un-staged CrCl result |
+| `CrClPathNeverProducesEGFRAssessment` | The CrCl path can never yield a KDIGO G-stage label |
+
+The last two lemmas are the actual fix for Finding 2 — not just that the
+`ensures` clauses happen to hold, but that the specific bug the audit
+found (an eGFR-scale label on a CrCl-scale number) is proven impossible
+by construction.
+
 ## What happens next
 
 These signatures and test vectors are Gate 1c's actual raw material —
 Gate 1c is the hand-trace of `REQ-RENAL-*` and the NHS SPS example
 through exactly this skeleton (already partially done in the "NHS SPS
 worked example" rows above, and now backed by the 16-row table in
-`PHASE1_PLAN.md`). All four functions now verify individually against
+`PHASE1_PLAN.md`, plus `AssessRenalFunction`'s own re-derivation of the
+same values above). All five functions now verify individually against
 the real Dafny toolchain; none of them have been composed together in
 one file, none have run through Gate C3's lint checks or a real Gate C5
 mutation suite, and none are yet part of a committed `.dfy` file. The
-next concrete step is writing up Gate 1c's actual hand-trace document
-(tracing each `REQ-RENAL-*` through this now-verified skeleton) and
-scoping classification-flag provenance (see `PHASE1_PLAN.md`'s "Still
-open" section), before Phase 2 (a real, committed `renal_adjustment.dfy`
-composing all four functions) begins.
+next concrete step is deciding Gate 1c Finding 1's scope question (does
+Phase 2 build a real Cockcroft-Gault compute function, and is CKD-EPI
+eGFR caller-supplied) and scoping classification-flag provenance (see
+`PHASE1_PLAN.md`'s "Still open" section), before Phase 2 (a real,
+committed `renal_adjustment.dfy` composing all five functions) begins.

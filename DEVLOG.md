@@ -6,6 +6,43 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal-adjustment Gate 1c Finding 2 resolved by redesign; Finding 1 deferred
+
+Steven's direction: defer Gate 1c's Finding 1 (CrCl/eGFR value
+computation scope) and instead design Gate 1b's skeleton to resolve
+Finding 2 (the two-downstream-paths gap — `GStage` misapplied to a
+Cockcroft-Gault CrCl value), then verify.
+
+Added a dispatcher function, `AssessRenalFunction(formula: Formula,
+renalFunctionValue: real): RenalAssessment`, where `RenalAssessment` is
+a tagged union (`EGFRAssessment(stage: GStageCategory) |
+CrClAssessment(roundedCrClMlPerMin: int)`). This makes the bug Finding 2
+described — a KDIGO G-stage label ending up on a raw CrCl number, or
+vice versa — a type-level impossibility rather than a convention a
+future caller has to remember: `GStage` can only be reached inside the
+`EGFRFormula` branch. Verified against the real, installed Dafny 4.11.0
+toolchain: 11 verified, 0 errors, including two explicit lemmas
+(`EgfrPathNeverProducesCrClAssessment`,
+`CrClPathNeverProducesEGFRAssessment`) proving the impossibility
+directly rather than relying on the `ensures` clauses' shape alone. The
+NHS SPS worked example was re-derived through the new dispatcher and
+matches Gate 1c's original hand-trace exactly (eGFR 53 → `G3a`; CrCl
+36.9 → rounds to 37).
+
+Folded into `gate_c1_sketch.md` (new section 5), `PHASE1_PLAN.md` (Gate
+1b's staging postconditions, "Still open" list — item 3 struck through
+and marked resolved), `GATE_1C_AUDIT.md` (dated addendum, not a silent
+rewrite of the original findings), `KNOWN_LIMITATIONS.md`, and this
+roadmap doc's status section.
+
+**Gate 1 is still not formally closed** — Finding 1 (CrCl/eGFR
+computation scope) remains open by explicit choice, and
+classification-flag provenance (`REQ-RENAL-8`) is still unscoped. Both
+block Phase 2. 138 tests still passing; no code touched (all Dafny
+checks were scratch files, not committed artifacts).
+
+---
+
 ## 2026-07-08 — Renal-adjustment Gate 1c performed: two real gaps found, Gate 1 not yet closed
 
 Wrote `examples/renal_adjustment/GATE_1C_AUDIT.md`, the hand-trace audit
