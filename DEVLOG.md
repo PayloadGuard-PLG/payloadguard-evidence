@@ -6,6 +6,63 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-08 — Renal-adjustment Gate C6 built; found and fixed two real bugs in shared tooling
+
+Next step in the build order after Gate C1: Gate C6 (NL-dialogue
+confirmation), moved earlier per its own recommendation. Attempted to
+run `evidence/dafny_nl_summary.py::summarize_method` against
+`renal_adjustment.dfy`'s five functions — the infrastructure plan had
+predicted this "generalizes for free" since it's parameterized by
+`method_name`. Checked empirically rather than trusted, and the
+prediction was wrong in one respect.
+
+**Real bug 1:** `_find_method_header` (`evidence/dafny_spec_lint.py`,
+shared with `dafny_mutate.py` and `dafny_nl_summary.py`) only matched
+Dafny's `method` keyword via `\bmethod\s+`, never `function`.
+`renal_adjustment.dfy` is the first spec in this repo consisting
+entirely of `function`s — every earlier spec (`dosage.dfy`) paired a
+function with a method, and the method was always what got passed to
+this extractor, so the function-only case was untested until now. Fixed
+by widening the regex to `\b(?:method|function)\s+` in both
+`_find_method_header` and the duplicate lookup in
+`dafny_mutate.py::_method_header_span`. Two regression tests added
+(`test_dafny_nl_summary.py::test_summarizes_a_function_not_just_a_method`,
+`test_dafny_spec_lint.py::test_requires_clause_extraction_matches_a_function_not_just_a_method`).
+
+**Real bug 2, found in the same pass:** `_REQ_ID_RE`'s character class
+(`[A-Z0-9-]`) excluded lowercase letters, so `REQ-RENAL-1a` (this spec's
+own citation for `RoundHalfUp`'s rounding postcondition) was silently
+truncated to `REQ-RENAL-1` in generated summaries — a real citation-
+accuracy defect misattributing the postcondition to a related but wrong
+requirement ID, not a dropped citation that would have been obvious.
+`dosage.dfy`'s REQ-IDs (`REQ-GIP-1-4-12`, `REQ-GIP-1-8-1`) never had a
+lowercase suffix, so this never fired before. Fixed
+(`[A-Za-z0-9-]`), regression-tested.
+
+Also added missing `// REQ-RENAL-*` trailing citations to every
+`ensures` clause in `renal_adjustment.dfy` itself (they were absent
+entirely, which would have made every postcondition read "no
+requirement cited" — understating real traceability, not reflecting an
+actual gap) and reformatted `SelectFormula`'s two `ensures` clauses onto
+single physical lines each (Gate C6's summarizer only supports
+single-line clauses, matching `dosage.dfy`'s own convention — a correct
+refusal on the first attempt, not a bug, fixed by reformatting rather
+than working around the tool). Re-verified after both changes: `dafny
+verify` still `5 verified, 0 errors`; re-captured the real Gate C1
+output since the file changed.
+
+Generated and committed the actual sign-off document,
+`nl_confirmation_renal_adjustment_dfy.md`, presenting all five
+functions' summaries with correct citations. Left the "Decision" section
+explicitly pending Steven's confirmation rather than self-signing —
+Gate C6's whole purpose is a human check against intent, the same
+standard `dosage.dfy`'s own sign-off was held to.
+
+142 tests passing (up from 138 - four new regression tests, two real
+bugs fixed).
+
+---
+
 ## 2026-07-08 — Renal-adjustment Gate 1 closed under named fallbacks; Phase 2 started
 
 Asked what to suggest for an "easy fallback" so Phase 2 could start

@@ -98,3 +98,48 @@ def test_summary_is_deterministic():
     assert summarize_method(source, "CalculateHourlyDose") == summarize_method(
         source, "CalculateHourlyDose"
     )
+
+
+# --------------------------------------- function support (2026-07-08)
+# renal_adjustment.dfy's Gate C6 pass surfaced two real gaps in this
+# module that dosage.dfy's single method never exercised: it only
+# matched `method`, not `function` declarations, and its REQ-ID regex
+# silently truncated a lowercase-suffixed ID (REQ-RENAL-1a -> REQ-RENAL-1)
+# instead of citing it correctly. Both are fixed; these are the
+# regression tests for each.
+
+RENAL_ART_DIR = REPO_ROOT / "examples" / "renal_adjustment"
+
+
+def test_summarizes_a_function_not_just_a_method():
+    """The real gap: _find_method_header only matched `method` until
+    this fix - every real Dafny function in this repo before
+    renal_adjustment.dfy was a companion to a method (ExpectedDose next
+    to CalculateHourlyDose), so summarize_method was never actually
+    asked to summarize a function directly until now."""
+    source = (RENAL_ART_DIR / "renal_adjustment.dfy").read_text()
+    summary = summarize_method(source, "RoundHalfUp")
+    assert "`x`: real" in summary
+    assert "`x >= 0.0`" in summary
+
+
+def test_lowercase_suffixed_req_id_is_cited_in_full_not_truncated():
+    """The real bug: REQ-RENAL-1a was silently cited as REQ-RENAL-1
+    (the trailing lowercase 'a' dropped by the old [A-Z0-9-] character
+    class) before this fix - a genuine citation-accuracy defect, not a
+    hypothetical, caught by Gate C6 actually running against a second
+    real spec."""
+    source = (RENAL_ART_DIR / "renal_adjustment.dfy").read_text()
+    summary = summarize_method(source, "RoundHalfUp")
+    assert "REQ-RENAL-1a" in summary
+    assert "REQ-RENAL-1]" not in summary.replace("REQ-RENAL-1a]", "")
+
+
+def test_all_five_renal_functions_summarize_without_error():
+    """Every function in the real, committed renal_adjustment.dfy
+    summarizes cleanly - the concrete end-to-end confirmation for Gate
+    C6's own sign-off document, not just a synthetic fixture."""
+    source = (RENAL_ART_DIR / "renal_adjustment.dfy").read_text()
+    for name in ("RoundHalfUp", "GStage", "SelectFormula", "ComposedCeiling", "AssessRenalFunction"):
+        summary = summarize_method(source, name)
+        assert f"`{name}`" in summary

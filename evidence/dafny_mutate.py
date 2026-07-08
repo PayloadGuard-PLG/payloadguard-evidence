@@ -301,9 +301,15 @@ def _method_header_span(source, method_name):
     """Absolute (start, end, text) of method_name's header in `source`.
     Reuses dafny_spec_lint._find_method_header's exact matching regex so
     these offsets are guaranteed consistent with its already-tested
-    extraction, rather than re-deriving the header boundary logic here."""
+    extraction, rather than re-deriving the header boundary logic here.
+    Matches `method` or `function` (mirrors _find_method_header's own
+    keyword pair) so this stays consistent if ever called with a
+    function name - not currently exercised (ROR/LOR/COI generators
+    only ever call this with method_name, not function_name), but a
+    stale method-only regex here would otherwise silently diverge from
+    the header _find_method_header just successfully returned."""
     header = _find_method_header(source, method_name)
-    m = re.search(rf"\bmethod\s+{re.escape(method_name)}\s*\(", source)
+    m = re.search(rf"\b(?:method|function)\s+{re.escape(method_name)}\s*\(", source)
     return m.start(), m.start() + len(header), header
 
 

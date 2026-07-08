@@ -34,6 +34,23 @@ C1/C6/C4/C3/C5 build pipeline, per
 plan) is now underway — see `examples/renal_adjustment/renal_adjustment.dfy`
 and its capture.
 
+**Gate C1 built** (`renal_adjustment.dfy`, `run_verify_renal.py`,
+real capture: `5 verified, 0 errors`). **Gate C6 built** (NL-dialogue
+confirmation, moved earlier per its own recommendation) — see
+`examples/renal_adjustment/nl_confirmation_renal_adjustment_dfy.md`,
+pending Steven's sign-off. Building it surfaced two real bugs in shared
+tooling, caught rather than papered over: `evidence/dafny_nl_summary.py`
+and `evidence/dafny_spec_lint.py::_find_method_header` only matched
+Dafny's `method` keyword, never `function` — `renal_adjustment.dfy` is
+the first spec in this repo consisting entirely of functions, and the
+gap only surfaced when Gate C6 was actually pointed at it (fixed, small
+widened regex, two regression tests). Separately, `_REQ_ID_RE`'s
+character class silently truncated `REQ-RENAL-1a` to `REQ-RENAL-1` (no
+lowercase letters in its pattern) — a real citation-accuracy bug, not
+hypothetical, since `dosage.dfy`'s REQ-IDs never had a lowercase suffix
+to expose it (fixed, regression-tested). 142 tests passing (up from
+138).
+
 ## Objective
 
 A complete, internally consistent, clinically-grounded formal

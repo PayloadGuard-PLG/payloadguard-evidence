@@ -1759,6 +1759,17 @@ discipline exactly. `evidence/dafny_adapter.py::parse_dafny_capture`
 confirmed to work unmodified against this new capture (not assumed) —
 `strength=PROVEN`, `verifier_completion_status='completed'`, the
 infrastructure plan's first real end-to-end confirmation for this POC.
+**Gate C6 built** (NL-dialogue confirmation, moved earlier per its own
+recommendation — `nl_confirmation_renal_adjustment_dfy.md`, pending
+Steven's sign-off). Building it found and fixed two real bugs in shared
+tooling that dosage.dfy's one method/spec never exercised:
+`_find_method_header` (`dafny_spec_lint.py`, shared with `dafny_mutate.py`
+and `dafny_nl_summary.py`) only matched `method`, never `function` —
+`renal_adjustment.dfy` is the first all-function spec in this repo;
+and `_REQ_ID_RE`'s character class silently truncated `REQ-RENAL-1a` to
+`REQ-RENAL-1` (no lowercase letters in its pattern), a real citation-
+accuracy defect. Both fixed, both regression-tested; 142 tests passing
+(up from 138).
 Named limitations/exclusions and open gaps, per this repo's "name it,
 don't guess it" discipline:
 

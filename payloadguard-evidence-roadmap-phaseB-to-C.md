@@ -1471,6 +1471,23 @@ unmodified against the new capture (`strength=PROVEN`,
 first real end-to-end confirmation for this POC, not assumed from the
 code reading generic.
 
+**Gate C6 built next** (moved earlier than `dosage.dfy`'s own history,
+per its own recommendation) — but the infrastructure plan's claim that
+`dafny_nl_summary.py::summarize_method` "generalizes for free" turned
+out to be wrong in one respect, caught by actually running it rather
+than trusting the prediction: the shared `_find_method_header` helper
+(also used by Gate C3 and Gate C5) only ever matched Dafny's `method`
+keyword, never `function` — untested until `renal_adjustment.dfy`
+became the first all-function spec in this repo. Fixed with a small
+widened regex, not a redesign. The same pass caught a second, unrelated
+real bug: `_REQ_ID_RE`'s character class excluded lowercase letters,
+silently mis-citing `REQ-RENAL-1a` as `REQ-RENAL-1` — never exposed
+before because `dosage.dfy`'s REQ-IDs had no lowercase suffix. Both
+fixed and regression-tested (142 tests, up from 138). Sign-off document
+(`nl_confirmation_renal_adjustment_dfy.md`) generated and presented for
+all five functions; pending Steven's confirmation, matching the standard
+`dosage.dfy`'s own Gate C6 sign-off was held to.
+
 ## What "done" looks like for this roadmap
 
 Every gate resolved, blocked-and-named, or explicitly deferred with a

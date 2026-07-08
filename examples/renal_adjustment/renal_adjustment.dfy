@@ -34,7 +34,7 @@ datatype RenalAssessment =
 // 29.5/14.5 (round-half-up), not the naive 90.0/60.0/45.0/30.0/15.0.
 function RoundHalfUp(x: real): int
   requires x >= 0.0
-  ensures (RoundHalfUp(x) as real) - 0.5 <= x < (RoundHalfUp(x) as real) + 0.5
+  ensures (RoundHalfUp(x) as real) - 0.5 <= x < (RoundHalfUp(x) as real) + 0.5 // REQ-RENAL-1a
 {
   (x + 0.5).Floor
 }
@@ -46,12 +46,12 @@ function RoundHalfUp(x: real): int
 // correctly without GStage needing to know about rounding.
 function GStage(roundedEgfr: int): GStageCategory
   requires roundedEgfr >= 0
-  ensures roundedEgfr >= 90 ==> GStage(roundedEgfr) == G1
-  ensures 60 <= roundedEgfr <= 89 ==> GStage(roundedEgfr) == G2
-  ensures 45 <= roundedEgfr <= 59 ==> GStage(roundedEgfr) == G3a
-  ensures 30 <= roundedEgfr <= 44 ==> GStage(roundedEgfr) == G3b
-  ensures 15 <= roundedEgfr <= 29 ==> GStage(roundedEgfr) == G4
-  ensures roundedEgfr < 15 ==> GStage(roundedEgfr) == G5
+  ensures roundedEgfr >= 90 ==> GStage(roundedEgfr) == G1 // REQ-RENAL-1
+  ensures 60 <= roundedEgfr <= 89 ==> GStage(roundedEgfr) == G2 // REQ-RENAL-1
+  ensures 45 <= roundedEgfr <= 59 ==> GStage(roundedEgfr) == G3a // REQ-RENAL-1
+  ensures 30 <= roundedEgfr <= 44 ==> GStage(roundedEgfr) == G3b // REQ-RENAL-1
+  ensures 15 <= roundedEgfr <= 29 ==> GStage(roundedEgfr) == G4 // REQ-RENAL-1
+  ensures roundedEgfr < 15 ==> GStage(roundedEgfr) == G5 // REQ-RENAL-1
 {
   if roundedEgfr >= 90 then G1
   else if roundedEgfr >= 60 then G2
@@ -76,14 +76,8 @@ function SelectFormula(
 ): Formula
   requires ageYears >= 0
   requires bmi > 0.0
-  ensures (isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75
-           || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug)
-          ==> SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug,
-                             ageYears, bmi, isNarrowTherapeuticIndexDrug) == CockcroftGaultFormula
-  ensures !(isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75
-            || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug)
-          ==> SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug,
-                             ageYears, bmi, isNarrowTherapeuticIndexDrug) == EGFRFormula
+  ensures (isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75 || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug) ==> SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug) == CockcroftGaultFormula // REQ-RENAL-2
+  ensures !(isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75 || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug) ==> SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug) == EGFRFormula // REQ-RENAL-2
 {
   if isDirectActingOralAnticoagulant || isOnNephrotoxicDrug || ageYears >= 75
      || bmi < 18.0 || bmi > 40.0 || isNarrowTherapeuticIndexDrug
@@ -100,8 +94,8 @@ function SelectFormula(
 function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
   requires existingCeiling > 0.0
   requires renalCeiling > 0.0
-  ensures ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling
-  ensures ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling
+  ensures ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling // REQ-RENAL-5
+  ensures ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling // REQ-RENAL-5
 {
   if renalCeiling < existingCeiling then renalCeiling else existingCeiling
 }
@@ -121,8 +115,8 @@ function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
 // Cockcroft-Gault CrCl or CKD-EPI eGFR from raw patient data.
 function AssessRenalFunction(formula: Formula, renalFunctionValue: real): RenalAssessment
   requires renalFunctionValue >= 0.0
-  ensures formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment?
-  ensures formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue).CrClAssessment?
+  ensures formula == EGFRFormula ==> AssessRenalFunction(formula, renalFunctionValue).EGFRAssessment? // REQ-RENAL-1, REQ-RENAL-2
+  ensures formula == CockcroftGaultFormula ==> AssessRenalFunction(formula, renalFunctionValue).CrClAssessment? // REQ-RENAL-1, REQ-RENAL-2
 {
   if formula == EGFRFormula then
     EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))
