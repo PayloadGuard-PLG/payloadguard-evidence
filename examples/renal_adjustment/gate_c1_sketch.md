@@ -41,6 +41,70 @@ function RoundHalfUp(x: real): int
 | 53.0 | 53 | NHS SPS worked example (eGFR 53) |
 | 0.0 | 0 | lower boundary, not yet a rejection case |
 
+### `RoundHalfUp` implementation strategy (Gate C1 options, recommendation 2, mapped out)
+
+The signature above states *what* `RoundHalfUp` must satisfy; this maps
+out *how* it gets implemented and verified, so Gate C1's build has a
+concrete plan rather than starting from a blank function body.
+
+**Candidate body:**
+
+```
+function RoundHalfUp(x: real): int
+  requires x >= 0.0
+  ensures (RoundHalfUp(x) as real) - 0.5 <= x < (RoundHalfUp(x) as real) + 0.5
+{
+  (x + 0.5).Floor
+}
+```
+
+**Why this shape, not an alternative:**
+
+- Dafny's `real.Floor` is a built-in, total function on reals (`real ->
+  int`, always rounds toward negative infinity) — already used
+  implicitly wherever `dosage.dfy` does real-to-int-adjacent reasoning,
+  so it is a known-verifiable primitive in this repo's Dafny version
+  (4.11.0), not a new risk.
+- `(x + 0.5).Floor` is the standard round-half-up construction: for any
+  non-negative `x`, adding `0.5` then flooring rounds every value in
+  `[n - 0.5, n + 0.5)` to `n`, and pushes an exact tie (`x = n - 0.5`)
+  up to `n` rather than down — which is exactly KDIGO's own convention
+  (see `sources/kdigo-2024-gfr-staging.md`), not an arbitrary choice
+  between round-half-up and round-half-even. Round-half-even (banker's
+  rounding) was considered and rejected: KDIGO's cited text says
+  "rounded to the nearest whole number" with no even/odd tie-breaking
+  rule stated, and clinical dose-staging conventions (and the NHS SPS
+  worked example) consistently read as round-half-up in practice.
+- **Alternative rejected:** inlining `x + 0.5` then truncating at each
+  of the five boundary comparisons inside `GStage` directly, instead of
+  factoring out `RoundHalfUp`. Rejected for the reason already given
+  when this option was first raised — it multiplies the proof and
+  mutation-testing surface fivefold for a single, unchanging operation,
+  and risks the boundaries drifting out of sync under a future edit.
+
+**Proof strategy — the actual verification risk, named up front rather
+than assumed clean:** the `ensures` clause is a direct algebraic
+consequence of the `Floor` body (`(x+0.5).Floor` satisfies
+`(x+0.5).Floor <= x + 0.5 < (x+0.5).Floor + 1` by `Floor`'s own
+definition, which rearranges to the stated `ensures`) — Z3 should
+discharge this without hinting, similar in difficulty to `dosage.dfy`'s
+own arithmetic postconditions. The one thing to actually check once
+Dafny is invoked (not assumed): whether Dafny's `real` literal `0.5` and
+`.Floor` interact with the SMT real-arithmetic theory cleanly, or
+whether Z3 needs a `assert` lemma step bridging `Floor`'s built-in axiom
+to the stated `ensures` — this is the kind of thing Gate C3's
+vacuous-precondition/weak-postcondition checks exist to catch if the
+proof goes through vacuously instead of for the right reason.
+
+**Test-vector-to-STP mapping.** Every row in the table above becomes one
+Gate C4-equivalent STP lemma once Phase 2 starts (e.g. `lemma
+RoundHalfUp_89_5_rounds_up() ensures RoundHalfUp(89.5) == 90`), and the
+five tie rows collectively become the mutation-testing (Gate C5
+equivalent) target for LVR on the `0.5` literal — swapping it to `0.4`
+or `0.6` should flip exactly the tie-boundary test vectors and nothing
+else, which is the kind of exact, predicted mutant-kill pattern Gate C5
+has consistently produced on `dosage.dfy`.
+
 ## 2. `GStage` — REQ-RENAL-1
 
 ```
