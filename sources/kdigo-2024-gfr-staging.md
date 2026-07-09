@@ -100,6 +100,38 @@ DOI [10.1093/clinchem/hvab278](https://doi.org/10.1093/clinchem/hvab278)
 > closest whole number based on the rounding logic of a laboratory
 > information system."
 
+Re-confirmed 2026-07-09 via direct fetch of the published article page
+(academic.oup.com), including the full worked example this repo hadn't
+previously quoted: *"For example, a calculated eGFR of 59.7 mL/min/1.73m2
+will be reported as 60 mL/min/1.73m2."* Consistent with the quote above,
+no correction.
+
+## Amendment 2026-07-09 — Table 11's page citation was wrong elsewhere in this repo; corrected
+
+While independently checking a further "verified sources" document
+(Steven-supplied, checked rather than trusted), its flag about a
+"Table 2 vs Table 11" discrepancy for the p. S126 GFR-category table
+turned out not to be a real issue — this repo never cited a table
+*number* for that table, only its page (see "Confirms," above); the
+flag conflated it with a different table. But checking it directly
+against the committed PDF (`sources/KDIGO-2024-CKD-Guideline.pdf`,
+extracted with `pypdf`, not just re-reading prior extraction) surfaced a
+real, separate citation bug: `PHASE1_PLAN.md`'s REQ-RENAL-1a row cited
+"KDIGO 2024, p. S164, Table 11" — S164 is wrong. Table 11's quoted text
+above appears on the page whose footer reads S153 (in the "Summary of
+recommendation statements and practice points" section, referenced
+there as "Practice Point 1.2.3.1"); the table's full first appearance
+with its complete content is on the page footed S184 (Chapter 1 body).
+S164 belongs to a different citation entirely — REQ-RENAL-7's Practice
+Point 4.2.4, correctly cited at S164 elsewhere in the same table row set
+— and was apparently carried over by mistake. Fixed in `PHASE1_PLAN.md`
+to cite S153. Also confirmed while checking: the same GFR-category data
+at p. S126 (the CGA nomenclature figure, no table number in that
+location) reappears explicitly labeled "Table 2 | GFR categories in CKD"
+at p. S137 — a stronger, numbered citation available if ever needed, not
+currently required since p. S126's citation was never wrong, just
+unnumbered.
+
 **This explicitly defers the tie-break rule to each lab's own
 information-system software, not a fixed clinical constant.** There is
 no single authoritative source specifying round-half-up over
