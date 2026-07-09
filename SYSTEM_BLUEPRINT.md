@@ -473,12 +473,16 @@ payloadguard-evidence/
 │   │                            entry is a structural listing, not a
 │   │                            narrative - full detail lives in the
 │   │                            files themselves)
+│   ├── README.md                Audit-trail record (source citations,
+│   │                            interpretive-call caveats, dated
+│   │                            amendments) - mirrors dosage_calculator's
+│   │                            README.md; fixed record, not living status
 │   ├── PHASE1_PLAN.md           Living status document for this example -
 │   │                            requirements table, closed/open scope
 │   │                            decisions, kept current per-session
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit + two real
 │   │                            findings (one resolved by redesign, one
-│   │                            deferred by explicit choice)
+│   │                            closed for Cockcroft-Gault 2026-07-09)
 │   ├── gate_c1_sketch.md        Signature sketches for all 5 functions,
 │   │                            each individually verified before
 │   │                            composing into the committed spec
