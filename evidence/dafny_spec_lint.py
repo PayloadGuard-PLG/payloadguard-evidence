@@ -366,12 +366,29 @@ def check_precondition_satisfiability(source, method_name):
     """Gate C3 vector 1: extract every `requires` clause for method_name and
     ask Z3 whether their conjunction is satisfiable, independent of whatever
     Dafny itself reported. Returns (verdict, detail) with verdict one of
-    "sat" / "unsat" / "unknown"."""
+    "sat" / "unsat" / "unknown".
+
+    Only builds Z3 symbols for parameters actually referenced by a
+    `requires` clause - a parameter of an unsupported type (e.g. a Dafny
+    datatype like `Formula`) that no precondition mentions doesn't need a
+    Z3 representation to answer "is this conjunction satisfiable," and
+    refusing on it anyway would be refusing to check a clause that never
+    touches it. A referenced identifier of an unsupported type still
+    refuses, unchanged - this only narrows what counts as "referenced."
+    Found empirically: renal_adjustment.dfy's AssessRenalFunction takes a
+    `Formula`-typed parameter its one requires clause never mentions."""
     params = _parse_params(_find_method_header(source, method_name))
-    symbols, implicit = build_symbol_table(params)
     clauses = extract_requires_clauses(source, method_name)
     if not clauses:
         return "sat", "no requires clauses on this method - trivially satisfiable"
+
+    combined = " ".join(clauses)
+    referenced = {
+        name for name in params
+        if re.search(rf"\b{re.escape(name)}\b", combined)
+    }
+    relevant_params = {name: ty for name, ty in params.items() if name in referenced}
+    symbols, implicit = build_symbol_table(relevant_params)
 
     constraints = list(implicit)
     for idx, clause in enumerate(clauses):

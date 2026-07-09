@@ -21,6 +21,8 @@ from evidence.dafny_mutate import (  # noqa: E402
     generate_ror_mutants,
     _ar_group_incompatible,
     _chain_incompatible,
+    _format_literal_mutant,
+    _is_int_literal,
     _locate_clause_numeric_literal_sites,
     _locate_clause_sites,
     _locate_function_body_arithmetic_sites,
@@ -372,6 +374,37 @@ def test_lvr_against_real_spec_matches_the_hand_derived_prediction():
     for m in filtered:
         assert m.keyword in ("requires", "ensures")
         assert "magnitude-implied" in m.filtered_reason
+
+
+def test_int_literal_lvr_mutant_stays_int_typed():
+    """Real bug found applying this module to renal_adjustment.dfy
+    (2026-07-09): formatting an int-typed literal's LVR mutant as a
+    decimal (`90.01`) produces a genuine Dafny static type error
+    ('arguments to >= must have a common supertype (got int and real)'),
+    not a semantic verification result - dosage.dfy's own literals were
+    all already real-typed (`0.0`), so this never surfaced before an
+    int-typed spec was ever pointed at this module. An int literal's
+    mutant must stay an int literal (no decimal point), perturbed by
+    +/-1, not +/-0.01."""
+    assert _is_int_literal("90") is True
+    assert _is_int_literal("0.0") is False
+    assert _is_int_literal("18.0") is False
+    assert _format_literal_mutant("90", 1) == "91"
+    assert _format_literal_mutant("90", -1) == "89"
+    assert _format_literal_mutant("0.0", 1) == "0.01"
+    assert _format_literal_mutant("0.0", -1) == "-0.01"
+
+    source = """
+    function IntBoundary(roundedEgfr: int): bool
+      requires roundedEgfr >= 0
+      ensures roundedEgfr >= 90 ==> IntBoundary(roundedEgfr) == true
+    {
+      true
+    }
+    """
+    mutants = generate_lvr_mutants(source, "IntBoundary")
+    for m in mutants:
+        assert "." not in m.mutated_clause, m.mutated_clause
 
 
 def test_lvr_mutated_source_changes_exactly_the_targeted_literal():

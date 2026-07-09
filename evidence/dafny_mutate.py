@@ -112,15 +112,22 @@ Mutant = namedtuple(
 
 _WS_RE = re.compile(r"\s*")
 
-# Superset of dafny_spec_lint._TOKEN_RE's grammar: adds a COMMA token so
-# clauses containing a function call (e.g. the pinning clause's
-# `ExpectedDose(a, b, c)`) can be lexically scanned. This is safe here in
-# a way it would NOT be safe in dafny_spec_lint's Z3 translator: mutation
-# only ever locates and replaces an operator token's TEXT, it never needs
-# to understand what the expression MEANS the way Z3 translation does -
-# so tolerating syntax the Z3 translator correctly refuses (function
-# calls) does not risk mistranslating anything. An unrecognized character
-# still raises rather than being silently skipped.
+# Superset of dafny_spec_lint._TOKEN_RE's grammar: adds COMMA (so clauses
+# containing a function call, e.g. the pinning clause's
+# `ExpectedDose(a, b, c)`, can be lexically scanned), DOT (so a body
+# containing a built-in member-access call, e.g. renal_adjustment.dfy's
+# RoundHalfUp: `(x + 0.5).Floor`, can be scanned without erroring on the
+# unrelated `.Floor` suffix), and QUESTION (Dafny datatype discriminators,
+# e.g. renal_adjustment.dfy's AssessRenalFunction:
+# `AssessRenalFunction(...).EGFRAssessment?`) - all three found
+# empirically 2026-07-09, the first spec this module was ever pointed at
+# that uses any of them. All are safe here in a way they would NOT be
+# safe in dafny_spec_lint's Z3 translator: mutation only ever locates and
+# replaces an operator token's TEXT, it never needs to understand what
+# the expression MEANS the way Z3 translation does - so tolerating syntax
+# the Z3 translator correctly refuses (function/member calls, type
+# discriminators) does not risk mistranslating anything. An unrecognized
+# character still raises rather than being silently skipped.
 _TOKEN_SPAN_RE = re.compile(
     r"""
       (?P<EQIMP><==>)
@@ -145,6 +152,8 @@ _TOKEN_SPAN_RE = re.compile(
     | (?P<SEMI>;)
     | (?P<NUM>\d+\.\d+|\d+)
     | (?P<ID>[A-Za-z_][A-Za-z0-9_']*)
+    | (?P<DOT>\.)
+    | (?P<QUESTION>\?)
     """,
     re.VERBOSE,
 )
@@ -458,6 +467,35 @@ def _format_real_literal(value):
     return f"{value:.2f}"
 
 
+_LVR_INT_DELTA = 1  # smallest meaningful perturbation for an int-typed literal
+
+
+def _is_int_literal(value):
+    """A Dafny NUM token with no decimal point is an int literal, not a
+    real one - this is a lexical fact about the token itself (matches
+    dafny_spec_lint._TOKEN_RE's own NUM split: `\\d+\\.\\d+|\\d+`), not
+    something that needs the surrounding parameter's declared type."""
+    return "." not in value
+
+
+def _format_literal_mutant(value, direction):
+    """Format an LVR mutant preserving the ORIGINAL literal's Dafny type
+    (int vs real) - found empirically 2026-07-09 applying this module to
+    renal_adjustment.dfy's int-typed GFR-stage/age-boundary literals
+    (`roundedEgfr >= 90`, `ageYears < 140`, ...): formatting an int
+    literal's mutant as a decimal (`90.01`) produces a genuine Dafny
+    static type error ('arguments to >= must have a common supertype'),
+    not a semantic verification result - dosage.dfy's own literals were
+    all already real-typed (`0.0`), so this never surfaced before.
+    `direction` is a sign (-1 or +1); real literals keep the existing
+    +/-_LVR_DELTA clinical-precision-floor perturbation, int literals use
+    +/-_LVR_INT_DELTA (the smallest meaningful integer step) with no
+    decimal point."""
+    if _is_int_literal(value):
+        return str(int(value) + direction * _LVR_INT_DELTA)
+    return _format_real_literal(float(value) + direction * _LVR_DELTA)
+
+
 def _generate_token_mutants(
     source, method_name, operator_label, text_map, implies_table, chain_aware=False
 ):
@@ -589,14 +627,13 @@ def generate_lvr_mutants(source, method_name, function_name=None):
             for tstart, tend, value, op_kind, literal_is_lhs in _locate_clause_numeric_literal_sites(
                 code_text
             ):
-                original_value = float(value)
                 abs_start = code_start + tstart
                 abs_end = code_start + tend
-                for delta in (-_LVR_DELTA, _LVR_DELTA):
-                    mutant_text = _format_real_literal(original_value + delta)
+                for direction in (-1, 1):
+                    mutant_text = _format_literal_mutant(value, direction)
                     mutated_clause = code_text[:tstart] + mutant_text + code_text[tend:]
                     mutated_source = source[:abs_start] + mutant_text + source[abs_end:]
-                    trivial = _lvr_trivial(keyword, op_kind, literal_is_lhs, delta)
+                    trivial = _lvr_trivial(keyword, op_kind, literal_is_lhs, direction)
                     mutants.append(
                         Mutant(
                             operator="LVR",
@@ -623,9 +660,8 @@ def _generate_function_body_lvr_mutants(source, function_name):
     for abs_start, abs_end, value in _locate_function_body_numeric_literal_sites(
         source, function_name
     ):
-        original_value = float(value)
-        for delta in (-_LVR_DELTA, _LVR_DELTA):
-            mutant_text = _format_real_literal(original_value + delta)
+        for direction in (-1, 1):
+            mutant_text = _format_literal_mutant(value, direction)
             mutated_source = source[:abs_start] + mutant_text + source[abs_end:]
             mutants.append(
                 Mutant(

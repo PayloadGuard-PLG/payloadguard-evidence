@@ -508,6 +508,13 @@ payloadguard-evidence/
 │   ├── run_verify_renal.py, run_verify_dafny_stp_suite(_against_underconstrained)_renal.py
 │   │                            Capture runners, mirroring
 │   │                            dosage_calculator's exact discipline
+│   ├── run_mutation_suite_renal.py  Gate C5: 450 mutants across all 7
+│   │                            functions - 51 survivors, all explained/
+│   │                            categorized; 4 real engine gaps fixed,
+│   │                            2 named and deliberately left unfixed
+│   ├── mutation_report_renal.json/.md, run_manifest_mutation_renal.json
+│   │                            Gate C5: real, committed outcome of
+│   │                            every mutant
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
@@ -1093,8 +1100,30 @@ conditional-branching logic, using a UK-jurisdiction clinical example
   proper pinning-clause fix, both for real, not asserted. Extended
   2026-07-09 with real ACCEPT/REJECT lemma coverage for the two new
   functions below (`52 verified, 0 errors`, up from 44).
-- **Gate C3 (spec lint) and Gate C5 (mutation testing): not yet built
-  for this example.** This is the concrete next step.
+- **Gate C3 (spec lint): built 2026-07-09.** All seven functions pass
+  vector 1 (satisfiable preconditions); five have expected vector 2
+  warnings (one-way `==>` clauses used for exhaustive branch dispatch,
+  all independently STP-covered by Gate C4). Found and fixed a real gap:
+  the checker used to model every declared parameter regardless of use,
+  refusing on `AssessRenalFunction`'s unused `Formula`-typed parameter —
+  narrowed to only model referenced parameters.
+- **Gate C5 (mutation testing): built 2026-07-09.** 450 mutants across
+  all seven functions (no top-level `method` here, unlike `dosage.dfy` —
+  each function is its own independent proof target): 250 killed, 137
+  filtered pre-verification, 51 survived, 10 unclassifiable, 2 blocked.
+  All 51 survivors explained and categorized into three named classes
+  (structural blind spot of ROR/LVR against one-way `==>` antecedents;
+  requires-clause weakenings not load-bearing for the specific ensures
+  clauses proven; one coincidental numeric survivor on `RoundHalfUp`) —
+  see `examples/renal_adjustment/README.md`'s Gate C5 amendment and
+  `tests/test_renal_mutation_report.py`. Four real gaps in the shared
+  `evidence/dafny_mutate.py` engine found and fixed (missing DOT/QUESTION
+  tokenizer characters; LVR's int/real literal-type mismatch), two named
+  and deliberately left unfixed (a `||`-chain ambiguity; two
+  arithmetic-embedded LVR literals — real new engineering, and Gate C4's
+  STPs already cover what they'd add).
+- **Gate C6's sign-off is now the only thing left before this example's
+  Phase 2 is done.**
 - Not wired into the metadata/capture/generate pipeline (no
   `metadata.yaml`, no traceability matrix) — this example hasn't
   reached that part of the system yet; Section 3's data-flow diagram

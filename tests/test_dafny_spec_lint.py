@@ -108,6 +108,43 @@ def test_unknown_parameter_type_is_refused():
         check_precondition_satisfiability(source, "Weird")
 
 
+def test_unreferenced_unsupported_type_parameter_does_not_block_the_check():
+    """A parameter of an unsupported type (e.g. a Dafny datatype) that no
+    requires clause mentions must not force a refusal - only a clause that
+    actually references it should. Found empirically on
+    renal_adjustment.dfy's AssessRenalFunction(formula: Formula, ...),
+    whose one requires clause only constrains renalFunctionValue."""
+    source = """
+    datatype Formula = A | B
+    function UsesOnlyOneParam(formula: Formula, x: real): bool
+      requires x >= 0.0
+      ensures true
+    {
+      true
+    }
+    """
+    verdict, _ = check_precondition_satisfiability(source, "UsesOnlyOneParam")
+    assert verdict == "sat"
+
+
+def test_referenced_unsupported_type_parameter_still_refuses():
+    """The narrowing above must not swallow a real refusal - if the
+    unsupported-type parameter IS referenced by a requires clause, this
+    must still refuse exactly as before."""
+    source = """
+    datatype Formula = A | B
+    function UsesTheDatatypeParam(formula: Formula, x: real): bool
+      requires formula == A
+      requires x >= 0.0
+      ensures true
+    {
+      true
+    }
+    """
+    with pytest.raises(SystemExit, match="unsupported Dafny parameter type"):
+        check_precondition_satisfiability(source, "UsesTheDatatypeParam")
+
+
 def test_nat_parameter_gets_implicit_nonnegativity_constraint():
     """requires n < 0 on a nat parameter must be unsat - Dafny's own nat
     semantics (>= 0) are load-bearing for the satisfiability check, not
