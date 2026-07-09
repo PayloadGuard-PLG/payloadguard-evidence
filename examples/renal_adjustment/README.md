@@ -148,6 +148,89 @@ file's existing single-line convention (my own formatting slip, not a
 genuine spec need), not by extending the tool. Named as a permanent
 tooling constraint in `KNOWN_LIMITATIONS.md`.
 
+## Amendment 2026-07-09 — Gate C3 (spec lint) built: all seven functions pass vector 1, five have expected vector 2 warnings
+
+Applied `evidence/dafny_spec_lint.py`'s existing vectors 1-2 to every
+function. **Vector 1 (vacuous preconditions):** all seven `sat` — no
+function's `requires` clauses are vacuous. Found and fixed a real gap
+applying this: `check_precondition_satisfiability` used to build a Z3
+symbol for every declared parameter regardless of use, so
+`AssessRenalFunction(formula: Formula, renalFunctionValue: real)`
+refused outright on its `Formula`-typed parameter even though the one
+`requires` clause never mentions it. Fixed to only model referenced
+parameters — a referenced unsupported-type parameter still refuses,
+unchanged. **Vector 2 (weak postconditions, heuristic):** unlike
+`dosage.dfy` (zero warnings — its ensures clauses never use `==>`),
+five of seven functions here genuinely use one-way implications for
+exhaustive branch dispatch (16 warnings total) — expected, not a
+regression: every one of these clauses is independently STP-covered by
+Gate C4's ACCEPT/REJECT lemmas, a stronger, proof-based check than this
+heuristic lint provides alone. Full detail and exact counts:
+`tests/test_renal_adjustment_spec_lint.py`.
+
+## Amendment 2026-07-09 — Gate C5 (mutation testing) built: 450 mutants, 51 explained survivors, one named engine gap
+
+Ran the full ROR/LOR/AOR/LVR/COI suite independently against all seven
+functions (`examples/renal_adjustment/run_mutation_suite_renal.py`) —
+450 mutants, real-verified against Dafny 4.11.0: 250 killed, 137
+filtered before verification, 51 survived, 10 unclassifiable, 2 blocked.
+Four real gaps in the shared `evidence/dafny_mutate.py` engine surfaced
+applying it to this spec's different shape (no top-level `method`, seven
+independent proof targets, int-typed boundary literals, a datatype
+discriminator) — full detail in the runner script's module docstring:
+
+- **Fixed:** the lexical tokenizer had no `DOT` or `QUESTION` token, so
+  `RoundHalfUp`'s `.Floor` and `AssessRenalFunction`'s
+  `.EGFRAssessment?`/`.CrClAssessment?` raised "unsupported syntax" —
+  both added, the same class of extension as the existing COMMA/SEMI
+  tolerance.
+- **Fixed:** LVR always formatted a mutated literal as a decimal
+  (`90.01`), breaking Dafny's static typing on this spec's many
+  int-typed boundary literals (`roundedEgfr >= 90`, `ageYears < 140`)
+  — `dosage.dfy`'s literals were all already real-typed, so this never
+  surfaced before. A literal's own lexical form now determines whether
+  its mutant stays an int (+/-1) or a real (+/-0.01).
+- **Named, not fixed — RoundHalfUp and CockcroftGaultCrClMlPerMin's LVR
+  clause literals:** both have a literal embedded in arithmetic
+  (`... - 0.5 <= x`; `140`/`88.4`/`72.0` deep inside a pinning
+  equality's RHS) rather than directly adjacent to a comparison
+  operator — the LVR locator's documented Tier-1 scope boundary. Real
+  new design work, not a bounded fix (the narrowing/widening direction
+  of an arithmetic-embedded literal depends on the enclosing operator);
+  Gate C4's STP suite already independently proves both functions'
+  exact values, so this is a coverage overlap loss, not a proof gap.
+  Recorded as `blocked_lvr_clause_literal` (2 mutants).
+- **Named, not fixed — SelectFormula's flat `||` chain:** mutating any
+  one `||` to `&&` in its six-term, unparenthesized ensures antecedent
+  produces Dafny's own genuine "Ambiguous use of && and ||" parser
+  rejection. Unlike ROR's analogous, already-fixed chain-direction
+  problem, this needs real new engineering (grouping same-paren-depth
+  `&&`/`||` runs) that wasn't built here. Recorded as `unclassifiable`
+  (10 mutants, all SelectFormula/LOR).
+
+**All 51 survivors are explained, not an undifferentiated pile** — three
+named categories, each locked in by `tests/test_renal_mutation_report.py`:
+
+1. **33 survivors** — ROR/LVR mutations narrowing a one-way `==>`
+   clause's antecedent (e.g. `roundedEgfr >= 90` → `roundedEgfr == 90`).
+   A narrower antecedent's true-set is always a subset of the original's,
+   so these can *never* be killed regardless of whether the spec is
+   tight — a structural blind spot of this technique against
+   guard-style clauses, not a proof gap. Gate C4's STP suite is the tool
+   that actually pins these boundaries (dedicated lemmas at every
+   G-stage transition).
+2. **17 survivors** — `requires`-clause weakenings that Dafny can still
+   satisfy because the specific `ensures` clauses currently proven don't
+   depend on them (e.g. `ComposedCeiling`'s `<=`/pinning postconditions
+   hold for any real `existingCeiling`/`renalCeiling` pair, not just
+   positive ones). Not a defect: `> 0.0` still correctly documents a
+   real domain fact (dose ceilings and BMI are physically positive) —
+   it just isn't proof-necessary for what's currently established.
+3. **1 survivor** — `RoundHalfUp`'s self-referential ensures clause
+   survives an AOR `-` → `*` substitution for a coincidental numeric
+   reason specific to that one substitution; its exact integer output is
+   independently pinned by Gate C4's STP suite regardless.
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s discipline: every capture below is the
@@ -173,6 +256,9 @@ hand-typed.
   covers five amendments' worth of change (two Gate C4 fixes, two Gate
   1c Finding 1 additions, plus the original spec) under one outstanding
   decision.
+- **`run_mutation_suite_renal.py`** / **`mutation_report_renal.json`/`.md`**
+  / **`run_manifest_mutation_renal.json`** — Gate C5: capture runner and
+  the real, committed outcome of every one of the 450 mutants above.
 - **`gate_c1_sketch.md`**, **`gate_c4_stp_plan.md`**, **`GATE_1C_AUDIT.md`**
   — working documents: signature sketches individually verified before
   composition, hand-derived STP predictions checked before building,
@@ -195,5 +281,11 @@ Not resolved here — named, not guessed at, per this repo's discipline:
    verified lookup-table approach is built with its own independent
    verification against the formula (not assumed correct by
    construction).
-3. **Gate C3 (spec lint) and Gate C5 (mutation testing) have not been
-   built for this example.** The concrete next step — see `HANDOFF.md`.
+3. **Gate C5's two named engine gaps** (SelectFormula's `||`-chain
+   ambiguity; the two arithmetic-embedded LVR literals) are real,
+   documented tooling limitations, not spec defects — see the Gate C5
+   amendment above. Worth real engineering only if a future spec change
+   makes them load-bearing in a way Gate C4's STPs don't already cover.
+4. **Gate C6's sign-off is still pending** — the accumulated NL-summary
+   document now covers seven amendments' worth of change under one
+   outstanding decision. The concrete next step for this example.

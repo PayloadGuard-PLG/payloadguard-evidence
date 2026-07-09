@@ -6,6 +6,87 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Built Gate C3 and Gate C5 for renal_adjustment.dfy: the last two unbuilt gates, four real engine gaps found and fixed, two named and left unfixed
+
+"Build until sign-off, i will review." Applied the shared
+`evidence/dafny_spec_lint.py` (Gate C3) and `evidence/dafny_mutate.py`
+(Gate C5) engines to `renal_adjustment.dfy` for the first time — both
+had only ever been run against `dosage.dfy`'s different shape (one
+`method` plus one companion `function`, all real-typed literals, no
+member-access calls or datatype discriminators in any clause). Per this
+repo's standing discipline, treated "should work unmodified" as a claim
+to check empirically, not assume — it didn't, four times.
+
+**Gate C3:** all seven functions `sat` on vector 1 (no vacuous
+preconditions); five have expected vector 2 warnings (16 one-way `==>`
+clauses used for exhaustive branch dispatch — unlike `dosage.dfy`, which
+avoids `==>` entirely). Real gap found and fixed:
+`check_precondition_satisfiability` built a Z3 symbol for every declared
+parameter regardless of use, so `AssessRenalFunction(formula: Formula,
+renalFunctionValue: real)` refused outright on its unused `Formula`-typed
+parameter even though the one `requires` clause never mentions it — 
+narrowed to only model referenced parameters (two new regression tests
+confirm a referenced unsupported-type parameter still refuses,
+unchanged). New file: `tests/test_renal_adjustment_spec_lint.py`.
+
+**Gate C5:** ran ROR/LOR/AOR/LVR/COI independently against all seven
+functions (no single top-level `method` to target the way `dosage.dfy`
+has one) — 450 mutants, real-verified against the installed Dafny
+4.11.0 binary. Two real tokenizer gaps found and fixed on the first two
+attempts (`.Floor`'s DOT, `.EGFRAssessment?`'s QUESTION — both new
+inert-token extensions, same class as the existing COMMA/SEMI
+tolerance). A third run surfaced LVR formatting every mutated literal as
+a decimal, breaking Dafny's static typing on this spec's many int-typed
+boundary literals (`roundedEgfr >= 90`, `ageYears < 140`) — 16
+"unsupported syntax"/"unclassifiable" results collapsed to 0 once fixed
+(a literal's own lexical form now determines int vs. real formatting).
+
+Two further real gaps found and **named, not fixed** — real new
+engineering, not bounded extensions, and Gate C4's STP suite already
+independently proves what either would additionally cover:
+`RoundHalfUp` and `CockcroftGaultCrClMlPerMin` each have an ensures
+literal embedded in arithmetic rather than directly adjacent to a
+comparison operator (LVR's documented Tier-1 scope boundary — 2 mutants,
+recorded `blocked_lvr_clause_literal`); `SelectFormula`'s flat,
+unparenthesized six-term `||` chain makes any LOR `||`→`&&` mutation a
+genuine Dafny parser rejection (10 mutants, recorded `unclassifiable`).
+
+**Final run: 250 killed, 137 filtered pre-verification, 51 survived, 10
+unclassifiable, 2 blocked.** All 51 survivors explained into three named
+categories, not left as an undifferentiated pile — full derivation in
+`examples/renal_adjustment/README.md`'s Gate C5 amendment, locked in by
+`tests/test_renal_mutation_report.py`:
+
+1. **33 survivors** — ROR/LVR narrowing a one-way `==>` clause's
+   antecedent. Mathematically guaranteed to survive regardless of
+   whether the spec is tight (a narrower antecedent's true-set is always
+   a subset of the original's) — a structural blind spot of this
+   technique against guard-style dispatch clauses, not a proof gap.
+   Gate C4's STP suite is the tool that actually pins these boundaries.
+2. **17 survivors** — `requires`-clause weakenings Dafny can still
+   satisfy because the specific `ensures` clauses currently proven don't
+   depend on them (`ComposedCeiling`'s `<=`/pinning postconditions hold
+   for any real ceiling pair, not just positive ones). Not a defect —
+   the preconditions still correctly document real domain facts (dose
+   ceilings and BMI are physically positive); they just aren't
+   proof-necessary for what's currently established.
+3. **1 survivor** — `RoundHalfUp`'s self-referential postcondition
+   survives an AOR `-`→`*` substitution for a coincidental numeric
+   reason; its exact output is independently pinned by Gate C4 regardless.
+
+New files: `examples/renal_adjustment/run_mutation_suite_renal.py`,
+`mutation_report_renal.json`/`.md`, `run_manifest_mutation_renal.json`,
+`tests/test_renal_mutation_report.py`. `python -m pytest tests/ -q` —
+170 passed (up from 154). `renal_adjustment.dfy` and its STP suite
+re-verified unaffected (`7 verified, 0 errors`; `52 verified, 0
+errors`) — only `evidence/` and test/script files changed, no `.dfy`
+touched. Documentation brought current in the same change: `README.md`
+(new Gate C3/C5 amendments), `HANDOFF.md`, `SYSTEM_BLUEPRINT.md`,
+`KNOWN_LIMITATIONS.md`.
+
+**Gate C6's sign-off is now the only thing left before this example's
+Phase 2 is done** — every other gate is built.
+
 ## 2026-07-09 — Independently checked a "Gate C5 verified sources" document; its flag wasn't the bug, but checking it found a real one
 
 Steven supplied a document claiming to independently verify four

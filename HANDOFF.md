@@ -8,11 +8,16 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-09, after closing Gate 1c Finding 1 for
-Cockcroft-Gault (`CockcroftGaultCrClMlPerMin`/`AssessRenalFunctionFromInputs`,
-both built, verified, and STP-covered) and re-verifying the MHRA/NICE
-source URLs that closure depended on — see "One thing explicitly left
-open," below, for the full detail, and this file's prior entries for two
+**Last updated:** 2026-07-09, after building Gate C3 (spec lint) and
+Gate C5 (mutation testing) for `renal_adjustment.dfy` — the last two
+unbuilt gates for this example. Both found real gaps in the shared
+`evidence/dafny_spec_lint.py`/`evidence/dafny_mutate.py` engines
+(unreferenced-parameter refusal, missing tokenizer characters, int/real
+literal typing), fixed rather than worked around, plus two engine
+limitations named and deliberately left unfixed (real new engineering,
+not bounded fixes — see `examples/renal_adjustment/README.md`'s Gate C5
+amendment). **Gate C6's sign-off is now the only thing left before this
+example's Phase 2 is done.** This file's prior entries also record two
 earlier staleness gaps found the same session (current-state docs
 drifting behind code; `DEVLOG.md` drifting behind merged PRs). **Update
 `DEVLOG.md` in the same commit as the change it records, and update this
@@ -64,13 +69,24 @@ handoff file's example-agnostic summary. As of this writing:
   `_stp_suite_against_underconstrained` honesty-exhibit files. Extended
   2026-07-09 with real ACCEPT/REJECT lemma coverage for the two new
   functions below (`52 verified, 0 errors`, up from 44).
-- **Gate C3 (spec lint) and Gate C5 (mutation testing) have not been
-  built yet for this example.** This is the actual next concrete step
-  if picking this work back up — both should work largely unmodified
-  against `renal_adjustment.dfy` per the infrastructure plan, but that
-  claim needs checking empirically, not assumed (see "A standing
-  discipline," below — this exact assumption already failed once, for
-  Gate C6, and cost a real debugging detour).
+- **Gate C3 (spec lint) built 2026-07-09** — all seven functions pass
+  vector 1 (satisfiable preconditions); five have expected vector 2
+  warnings (one-way `==>` clauses, all STP-covered). Found and fixed a
+  real gap: the checker used to build a Z3 symbol for every declared
+  parameter regardless of use, refusing on `AssessRenalFunction`'s
+  unused `Formula`-typed parameter — narrowed to only model referenced
+  parameters.
+- **Gate C5 (mutation testing) built 2026-07-09** — 450 mutants across
+  all seven functions, 51 survivors, all explained and categorized (not
+  a proof gap — see `examples/renal_adjustment/README.md`'s Gate C5
+  amendment for the three named categories), plus two named engine
+  limitations (a `||`-chain ambiguity, two arithmetic-embedded LVR
+  literals) deliberately not fixed — real new engineering, and Gate C4's
+  STPs already cover what they'd add. Four real engine gaps found and
+  fixed along the way (missing tokenizer chars, int/real literal typing)
+  — see `run_mutation_suite_renal.py`'s module docstring.
+- **The only thing left before this example's Phase 2 is done: Gate
+  C6's sign-off.** Everything else is built.
 
 ## One thing explicitly left open, not forgotten
 

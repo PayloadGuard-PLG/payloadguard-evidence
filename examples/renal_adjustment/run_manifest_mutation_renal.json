@@ -1,0 +1,31 @@
+{
+  "tool": "dafny",
+  "tool_version": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2",
+  "command_template": [
+    "dafny",
+    "verify",
+    "<mutant>.dfy"
+  ],
+  "started_utc": "2026-07-09T22:45:58.885263+00:00",
+  "target": "renal_adjustment.dfy",
+  "functions": [
+    "RoundHalfUp",
+    "GStage",
+    "SelectFormula",
+    "ComposedCeiling",
+    "AssessRenalFunction",
+    "CockcroftGaultCrClMlPerMin",
+    "AssessRenalFunctionFromInputs"
+  ],
+  "total_mutants": 450,
+  "counts": {
+    "blocked_lvr_clause_literal": 2,
+    "killed": 250,
+    "filtered_static": 72,
+    "filtered_chain_incompatible": 28,
+    "survived": 51,
+    "filtered_ar_group_incompatible": 9,
+    "filtered_magnitude_implied": 28,
+    "unclassifiable": 10
+  }
+}

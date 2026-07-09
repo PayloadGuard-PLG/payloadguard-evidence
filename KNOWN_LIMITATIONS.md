@@ -1883,3 +1883,65 @@ don't guess it" discipline:
   the flags and by what process is a named, deferred item needing its
   own scoping pass before Phase 2 can treat this trust boundary as
   closed — see `PHASE1_PLAN.md`'s "Still open" section.
+
+## Phase D Gate C3/C5 — renal_adjustment.dfy spec lint and mutation testing (BUILT 2026-07-09)
+
+**Gate C3 (spec lint):** all seven functions `sat` on vector 1
+(satisfiable preconditions, no vacuous proofs); five have expected
+vector 2 warnings (one-way `==>` clauses used for exhaustive branch
+dispatch, all independently STP-covered by Gate C4). Found and fixed a
+real gap: `check_precondition_satisfiability` built a Z3 symbol for
+every declared parameter regardless of use, refusing on
+`AssessRenalFunction`'s unused `Formula`-typed parameter — narrowed to
+only model parameters actually referenced by a `requires` clause; a
+referenced unsupported-type parameter still refuses, unchanged. Full
+detail: `tests/test_renal_adjustment_spec_lint.py`.
+
+**Gate C5 (mutation testing):** 450 mutants across all seven functions
+(no single top-level `method` here, unlike `dosage.dfy` — each function
+is its own independent proof target) — 250 killed, 137 filtered
+pre-verification, 51 survived, 10 unclassifiable, 2 blocked. Four real
+gaps found and fixed in the shared `evidence/dafny_mutate.py` engine:
+(1) its lexical tokenizer had no `DOT`/`QUESTION` tokens, so
+`RoundHalfUp`'s `.Floor` and `AssessRenalFunction`'s
+`.EGFRAssessment?`/`.CrClAssessment?` raised "unsupported syntax" —
+fixed, the same class of extension as the existing COMMA/SEMI tolerance;
+(2) LVR always formatted mutated literals as decimals, breaking Dafny's
+static typing on this spec's many int-typed boundary literals
+(`roundedEgfr >= 90`, `ageYears < 140`) — `dosage.dfy`'s own literals
+were all already real-typed, so this never surfaced before; fixed so a
+literal's own lexical form (decimal point or not) determines whether its
+mutant stays int (+/-1) or real (+/-0.01).
+
+Two real engine gaps found and **named, deliberately not fixed**:
+`RoundHalfUp` and `CockcroftGaultCrClMlPerMin` each have an ensures
+clause literal embedded in arithmetic rather than directly adjacent to a
+comparison operator (the LVR clause-literal locator's documented Tier-1
+scope boundary) — recorded as `blocked_lvr_clause_literal` (2 mutants);
+`SelectFormula`'s flat, unparenthesized six-term `||` chain makes any
+`||`→`&&` LOR mutation a genuine Dafny "Ambiguous use of && and ||"
+parser rejection — recorded as `unclassifiable` (10 mutants). Both are
+real new engineering (chain-grouping for `&&`/`||`, arithmetic-aware
+literal-role inference), not bounded fixes, and Gate C4's STP suite
+already independently proves what either extension would additionally
+cover.
+
+**All 51 survivors are explained, not an undifferentiated pile** — three
+named categories (full derivation in
+`examples/renal_adjustment/README.md`'s Gate C5 amendment,
+locked in as regression assertions in
+`tests/test_renal_mutation_report.py`): (1) **33** ROR/LVR mutations
+narrowing a one-way `==>` clause's antecedent — mathematically
+guaranteed to survive regardless of spec correctness, a structural blind
+spot of this technique against guard-style clauses, not a proof gap; (2)
+**17** `requires`-clause weakenings Dafny can still satisfy because the
+specific `ensures` clauses currently proven don't depend on them (e.g.
+`ComposedCeiling`'s pinning postconditions hold for any real
+`existingCeiling`/`renalCeiling` pair, not just positive ones) — not a
+defect, the preconditions still correctly document real domain facts,
+just aren't proof-necessary for what's currently established; (3) **1**
+coincidental numeric survivor on `RoundHalfUp`'s self-referential
+postcondition, independently resolved by Gate C4's STP suite regardless.
+
+**Gate C6's sign-off is now the only thing left before this example's
+Phase 2 is done.**
