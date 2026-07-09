@@ -235,3 +235,97 @@ two new clauses on `AssessRenalFunction`); `RoundHalfUp`, `GStage`, and
 `SelectFormula` are untouched. Presented for confirmation alongside the
 original summary above — the whole document, not just this amendment,
 is what's pending sign-off.
+
+## Amendment 2026-07-09 — Gate 1c Finding 1 closed for Cockcroft-Gault; two new functions added
+
+Per Steven's scope decision (re-verified against real sources first —
+see `sources/mhra-renal-formula-selection-2019.md` and
+`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`), Cockcroft-
+Gault CrCl is now computed rather than caller-supplied; CKD-EPI eGFR
+stays caller-supplied because Dafny/Z3 cannot express its real-valued
+fractional exponents on a variable base — a toolchain limit, not a
+scope preference, so that half of the decision was not actually a
+choice. `renal_adjustment.dfy` re-verifies clean (`7 verified, 0
+errors`, up from 5); Gate C4's STP suite was extended with real
+ACCEPT/REJECT lemmas for both new functions using the same NHS SPS
+worked example as the rest of this suite (`52 verified, 0 errors`, up
+from 44) — not assumed exempt from Gate C4 just because their
+postconditions are already exact equalities.
+
+**A second real tooling gap found and fixed before this section could
+be generated:** `evidence/dafny_nl_summary.py` refused to summarize
+`AssessRenalFunctionFromInputs` on first attempt — its `ensures`
+clauses were the first multi-line ones in this file (every other
+function here uses single-line `ensures`, however long), and the tool
+correctly refuses to guess a citation association rather than risk a
+dropped or misattributed one, per the exact same discipline behind its
+first two fixes in this document. Not a tool bug: reformatted the two
+clauses to single-line, matching this file's existing convention,
+rather than extending the tool around a formatting choice that was
+mine, not a genuine spec need. Re-verified clean after reformatting
+(`7 verified, 0 errors`, unchanged). Recorded as a named tooling
+constraint (single-line `ensures`/`requires` only) in
+`KNOWN_LIMITATIONS.md`, not silently worked around.
+
+**Citation note:** neither new function's postconditions map to a
+numbered `REQ-RENAL-*` ID — Gate 1c's original REQ-by-REQ trace lists
+the CrCl/eGFR computation gap as unnumbered (`GATE_1C_AUDIT.md`), so
+`*(no requirement cited)*` below is accurate, not a citation gap.
+
+### Generated summaries (`evidence/dafny_nl_summary.py`, 2026-07-09)
+
+```
+# Plain-English summary: `CockcroftGaultCrClMlPerMin`
+
+## Parameters
+- `ageYears`: int
+- `weightKg`: real
+- `isFemale`: bool
+- `serumCreatinineUmolPerL`: real
+
+## Preconditions (must hold before the method runs)
+1. `0 <= ageYears < 140` — 0 is at most ageYears is less than 140
+2. `weightKg > 0.0` — weightKg is greater than 0.0
+3. `serumCreatinineUmolPerL > 0.0` — serumCreatinineUmolPerL is greater than 0.0
+
+## Postconditions (guaranteed to hold on return)
+1. `CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) > 0.0` — CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) is greater than 0.0 *(no requirement cited)*
+2. `!isFemale ==> CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) == ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL)` — !isFemale implies CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) equals ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL) *(no requirement cited)*
+3. `isFemale ==> CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) == ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL) * 0.85` — isFemale implies CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) equals ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL) * 0.85 *(no requirement cited)*
+```
+
+```
+# Plain-English summary: `AssessRenalFunctionFromInputs`
+
+## Parameters
+- `isDirectActingOralAnticoagulant`: bool
+- `isOnNephrotoxicDrug`: bool
+- `ageYears`: int
+- `bmi`: real
+- `isNarrowTherapeuticIndexDrug`: bool
+- `weightKg`: real
+- `isFemale`: bool
+- `serumCreatinineUmolPerL`: real
+- `callerSuppliedEgfr`: real
+
+## Preconditions (must hold before the method runs)
+1. `0 <= ageYears < 140` — 0 is at most ageYears is less than 140
+2. `bmi > 0.0` — bmi is greater than 0.0
+3. `weightKg > 0.0` — weightKg is greater than 0.0
+4. `serumCreatinineUmolPerL > 0.0` — serumCreatinineUmolPerL is greater than 0.0
+5. `callerSuppliedEgfr >= 0.0` — callerSuppliedEgfr is at least 0.0
+
+## Postconditions (guaranteed to hold on return)
+1. `SelectFormula(...) == CockcroftGaultFormula ==> AssessRenalFunctionFromInputs(...) == AssessRenalFunction(CockcroftGaultFormula, CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL))` — on the Cockcroft-Gault branch, the result equals calling `AssessRenalFunction` with a CrCl value computed from raw inputs, not caller-supplied *(no requirement cited)*
+2. `SelectFormula(...) == EGFRFormula ==> AssessRenalFunctionFromInputs(...) == AssessRenalFunction(EGFRFormula, callerSuppliedEgfr)` — on the eGFR branch, the result equals calling `AssessRenalFunction` with the caller-supplied eGFR value, unchanged from before this amendment *(no requirement cited)*
+```
+
+*(the repeated argument list inside `AssessRenalFunctionFromInputs(...)`
+above is abbreviated for readability in this document only, matching
+`SelectFormula`'s treatment above — see the raw capture for the full
+generated text.)*
+
+Presented for Steven's confirmation alongside the rest of this
+document — the intent, not just the mechanics: does "CrCl computed,
+eGFR still caller-supplied" match what was actually meant by closing
+Finding 1 "for Cockcroft-Gault only"?

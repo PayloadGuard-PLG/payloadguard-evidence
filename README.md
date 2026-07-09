@@ -119,9 +119,11 @@ reference for operating this system.
   tight, not just present), and a recorded human sign-off confirming the
   formal specification says what was intended.
 - **Renal-function dose adjustment**: in progress. Clinical sourcing and
-  the core formal specification are built and proof-checked; some
-  requirements are still deliberately left as open, named decisions
-  rather than guessed at.
+  the core formal specification are built and proof-checked, including a
+  proven Cockcroft-Gault CrCl computation from raw patient inputs; CKD-EPI
+  eGFR remains caller-supplied (a real Dafny/Z3 expressiveness gap, not a
+  choice). One requirement is still deliberately left open, a named
+  decision rather than guessed at.
 - Full, dated build history: [`DEVLOG.md`](DEVLOG.md). Current open
   items and known gaps: [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
 

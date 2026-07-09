@@ -77,7 +77,13 @@ requirements documents, standards excerpts) that ground the claims in
   eGFR equations exactly (checked against the National Kidney
   Foundation's own published equations, not the supplied document
   alone), **confirms** the original 1976 Cockcroft-Gault formula and the
-  arithmetic behind MHRA's rounded 1.23/1.04 constants, and **corrects**
+  standard unit-conversion arithmetic behind the commonly-used rounded
+  1.23/1.04 multiplier — **corrected 2026-07-09**: a direct re-fetch of
+  the MHRA source page found MHRA states no formula or constants at all;
+  1.23/1.04 was mischaracterized here as "MHRA's constants" when it's
+  just 88.4/72 (and ×0.85) applied to the sourced 1976 formula, not an
+  MHRA-specific number (see `mhra-renal-formula-selection-2019.md`'s
+  2026-07-09 amendment) — and **corrects**
   a fabricated citation: the supplied document's claimed NICE NG203
   recommendation numbers and quoted text (1.1.2 mandating the 2009
   equation, 1.1.4 barring ethnicity-based eGFR adjustment) do not exist

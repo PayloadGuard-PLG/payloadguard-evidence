@@ -70,4 +70,36 @@ provenance question (who sets `isDirectActingOralAnticoagulant` etc. and
 by what process) — MHRA's drug lists are illustrative ("such as
 vancomycin and amphotericin B"), not closed, which is itself part of why
 that flag-ownership question was scoped as caller-supplied rather than
-spec-owned.
+spec-owned. **Also not covered: the Cockcroft-Gault formula itself, or
+any numeric constant for it** — see the 2026-07-09 amendment below.
+
+## Amendment 2026-07-09 — re-fetched to close Gate 1c Finding 1 for Cockcroft-Gault; one correction
+
+Re-fetched directly (`WebFetch`) as part of implementing
+`CockcroftGaultCrClMlPerMin` (`renal_adjustment.dfy`). **Confirms:** the
+page's content is unchanged from the 2026-07-08 verification above — the
+same five formula-selection conditions, the same `BMI <18 kg/m2 or >40
+kg/m2` boundary text, verbatim.
+
+**Corrects an imprecise attribution used elsewhere in this repo:**
+`examples/renal_adjustment/GATE_1C_AUDIT.md`'s NHS SPS hand-trace and
+`sources/README.md` had both described the CrCl-formula multiplier
+1.23 (male) / 1.04 (female) as "MHRA's constants." Re-checked directly
+against this page's actual text — MHRA does **not** state the
+Cockcroft-Gault formula or any numeric constant anywhere on this page;
+it names Cockcroft-Gault as the required method and points to external
+calculators (e.g. MDCalc) for the calculation itself:
+
+> It is normal to calculate CrCl based on the Cockcroft-Gault formula
+> rather than measuring it via 24-hour urine collection. Applications
+> such as MDCalc provide the ability to use adjusted body weight, ideal
+> body weight, or actual bodyweight as appropriate when calculating the
+> Cockcroft-Gault CrCl value.
+
+The 1.23/1.04 figures are ordinary unit-conversion arithmetic — the
+standard mg/dL-based Cockcroft-Gault formula (Cockcroft & Gault, 1976)
+converted to µmol/L via the standard clinical-chemistry factor 88.4
+µmol/L per 1 mg/dL (88.4/72 = 1.2278 ≈ 1.23; ×0.85 = 1.0436 ≈ 1.04) —
+not a number MHRA itself publishes. `CockcroftGaultCrClMlPerMin` uses
+the unrounded exact fraction rather than repeating this attribution or
+baking in a rounding decision no source actually made.
