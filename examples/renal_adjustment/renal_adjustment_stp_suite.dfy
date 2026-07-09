@@ -353,3 +353,48 @@ lemma STP_Reject_AssessRenalFunction_CrClPath_WrongValueExcluded(r: RenalAssessm
                                    // excluded by the pinning clause
   ensures false
 {}
+
+// ============================================= CockcroftGaultCrClMlPerMin
+//
+// Gate 1c Finding 1, closed for Cockcroft-Gault (2026-07-09). NHS SPS
+// worked example: 80yo male, 60kg, serum creatinine 120 µmol/L -> the
+// exact unrounded fraction (140-80)*60*88.4/(72*120) = 36.8(3), which
+// RoundHalfUp takes to the published 37 mL/min (GATE_1C_AUDIT.md).
+
+lemma STP_Accept_CockcroftGaultCrClMlPerMin_NhsSps(c: real)
+  requires c > 0.0
+  requires c == ((140 - 80) as real) * 60.0 * 88.4 / (72.0 * 120.0)
+  ensures RoundHalfUp(c) == 37
+{}
+
+lemma STP_Reject_CockcroftGaultCrClMlPerMin_WrongValueExcluded(c: real)
+  requires c > 0.0
+  requires c == ((140 - 80) as real) * 60.0 * 88.4 / (72.0 * 120.0)
+  requires c == 40.0 // wrong: excluded by the pinning equality clause
+  ensures false
+{}
+
+// =========================================== AssessRenalFunctionFromInputs
+//
+// Same NHS SPS scenario, end to end: age 80 alone forces
+// CockcroftGaultFormula (REQ-RENAL-2's age condition), so the eGFR
+// branch's premise below is vacuous — included anyway to restate both of
+// the function's ensures clauses, matching this suite's convention.
+
+lemma STP_Accept_AssessRenalFunctionFromInputs_NhsSps(r: RenalAssessment)
+  requires SelectFormula(false, false, 80, 25.0, false) == CockcroftGaultFormula ==>
+    r == AssessRenalFunction(CockcroftGaultFormula, CockcroftGaultCrClMlPerMin(80, 60.0, false, 120.0))
+  requires SelectFormula(false, false, 80, 25.0, false) == EGFRFormula ==>
+    r == AssessRenalFunction(EGFRFormula, 53.0)
+  ensures r == CrClAssessment(37)
+{}
+
+lemma STP_Reject_AssessRenalFunctionFromInputs_WrongValueExcluded(r: RenalAssessment)
+  requires SelectFormula(false, false, 80, 25.0, false) == CockcroftGaultFormula ==>
+    r == AssessRenalFunction(CockcroftGaultFormula, CockcroftGaultCrClMlPerMin(80, 60.0, false, 120.0))
+  requires SelectFormula(false, false, 80, 25.0, false) == EGFRFormula ==>
+    r == AssessRenalFunction(EGFRFormula, 53.0)
+  requires r == EGFRAssessment(G3a) // wrong: NHS SPS forces Cockcroft-Gault
+                                     // (age 80 >= 75), never eGFR staging
+  ensures false
+{}

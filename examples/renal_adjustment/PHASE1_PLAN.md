@@ -7,14 +7,16 @@ two real gaps, one resolved by redesign (`AssessRenalFunction`'s
 type-level fix for the `GStage`-misapplication finding), one closed by
 an explicit provisional default rather than a permanent decision:
 
-1. **CrCl/eGFR value computation (Finding 1): defaulted to
-   caller-supplied for both formulas in Phase 2 v1.** Not a design
-   change — `AssessRenalFunction` already takes `renalFunctionValue:
-   real` as a parameter regardless of who computes it. The verified
-   Cockcroft-Gault formula (`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`)
-   is ready to add as a pure extension (a new function feeding the same
-   parameter) whenever Steven decides to build it — this default does
-   not foreclose that, it just doesn't block starting on it.
+1. **CrCl/eGFR value computation (Finding 1): closed for Cockcroft-Gault,
+   2026-07-09 — CKD-EPI eGFR remains caller-supplied.** No longer a
+   default awaiting a decision: `CockcroftGaultCrClMlPerMin` is built,
+   committed, and verified (`renal_adjustment.dfy`, `7 verified, 0
+   errors`; STP-covered, `52 verified, 0 errors`). CKD-EPI eGFR stays
+   caller-supplied not by preference but because Dafny/Z3 cannot express
+   its real-valued fractional exponents on a variable base — confirmed a
+   second time, not just carried over from the 2026-07-08 finding. See
+   `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and this document's
+   "Verification" section, below.
 2. **Classification-flag provenance (`REQ-RENAL-8`): reclassified as a
    Phase 3 integration concern, not a Phase 2 proof blocker.**
    `SelectFormula`'s flags are already caller-supplied parameters — the
@@ -337,6 +339,13 @@ independent verification against the formula), so CKD-EPI stays
 caller-supplied for longer than Cockcroft-Gault regardless of when this
 default gets revisited.
 
+**Superseded 2026-07-09** — the "provisional default" above is now a
+built proof for the Cockcroft-Gault half: `CockcroftGaultCrClMlPerMin`
+is committed, verified, and STP-covered (see this document's
+"Verification" section, below, and `GATE_1C_AUDIT.md`'s 2026-07-09
+addendum). The CKD-EPI half remains caller-supplied, now on confirmed
+toolchain grounds rather than a default awaiting revisit.
+
 ~~3. `GStage`'s eGFR-only applicability (Gate 1c finding 2).~~ **Resolved
 2026-07-08** — `AssessRenalFunction`'s tagged-union return type makes
 this a type-level impossibility. See Gate 1b above.
@@ -375,10 +384,24 @@ Phase 2 started 2026-07-08 — see `renal_adjustment.dfy`.
   ClinicalTrials.gov NCT02942810/NCT02039817 corroboration and the Inker
   et al. 2021 PMID 34554658 citation were independently checked against
   ClinicalTrials.gov and PubMed directly, not taken on trust.
-- Before Phase 2 begins: re-confirm the MHRA and NICE source URLs still
-  resolve and cite the same content.
 - Before `ComposedCeiling` is built for real inside a committed file:
   re-pull `dosage.dfy` once more immediately prior, in case other work
   has touched its signature since this check.
 - `python -m pytest tests/ -q` — 138 passed, unaffected (no code changed
   by this document).
+
+**Done, 2026-07-09** (closing this section's own open item above): the
+MHRA and NICE NG203 source URLs were re-fetched directly and confirmed
+to still resolve to the same content verified 2026-07-08 — no drift in
+the five formula-selection conditions, the `BMI <18 kg/m2 or >40 kg/m2`
+boundary text, or NICE recommendations 1.1.2/1.1.4/1.1.24. One
+correction surfaced by the re-fetch: MHRA's page does not itself state
+a Cockcroft-Gault formula or numeric constants (earlier notes had called
+the derived 1.23/1.04 figures "MHRA's constants" — imprecise; see
+`GATE_1C_AUDIT.md`'s 2026-07-09 addendum). Also closed: Gate 1c Finding
+1, for Cockcroft-Gault only — `CockcroftGaultCrClMlPerMin` and
+`AssessRenalFunctionFromInputs` are now committed in
+`renal_adjustment.dfy` (`7 verified, 0 errors`) and covered by Gate C4's
+STP suite (`52 verified, 0 errors`, up from 44). CKD-EPI eGFR remains
+caller-supplied — confirmed, not assumed, as a real Dafny/Z3
+expressiveness gap, not a scope preference.

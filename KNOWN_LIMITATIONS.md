@@ -1804,19 +1804,43 @@ postconditions.
 Named limitations/exclusions and open gaps, per this repo's "name it,
 don't guess it" discipline:
 
-- **No function computes the actual Cockcroft-Gault CrCl or CKD-EPI
-  eGFR numeric value — `renal_adjustment.dfy` defaults both to
-  caller-supplied for Phase 2 v1.** Found by Gate 1c's hand-trace, not
-  assumed away; closed under a named, provisional fallback (2026-07-08),
-  not a permanent decision — see `PHASE1_PLAN.md`'s "Closed under named
-  fallback assumptions" section. The exact CKD-EPI 2021 equations and
-  Cockcroft-Gault's historical constants are independently verified
-  (`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`) and ready
-  to add later: Cockcroft-Gault as a pure extension (small,
-  linear-arithmetic, low proof risk); CKD-EPI eGFR has a genuine Dafny/Z3
-  expressiveness gap (real-valued fractional exponents on a variable
-  base) that a proposed lookup-table workaround doesn't actually
-  eliminate, only relocates — see `GATE_1C_AUDIT.md`'s addenda.
+- **No function computes the actual CKD-EPI eGFR numeric value —
+  remains caller-supplied, confirmed as a toolchain limit, not a scope
+  preference.** Cockcroft-Gault CrCl, by contrast, is now computed:
+  **RESOLVED for Cockcroft-Gault, 2026-07-09** — `CockcroftGaultCrClMlPerMin`
+  and `AssessRenalFunctionFromInputs` are committed in
+  `renal_adjustment.dfy` (`7 verified, 0 errors`, up from 5) and STP-covered
+  (`52 verified, 0 errors`, up from 44) — see `GATE_1C_AUDIT.md`'s
+  2026-07-09 addendum and `PHASE1_PLAN.md`'s "Verification" section.
+  CKD-EPI eGFR stays caller-supplied because Dafny/Z3 cannot express its
+  real-valued fractional exponents on a variable base (`Scr^-1.200`,
+  `Scr^-0.302`, etc.) — a genuine toolchain expressiveness gap, checked
+  a second time on 2026-07-09 rather than carried over unquestioned; a
+  proposed lookup-table workaround doesn't eliminate the trust boundary,
+  only relocates it (the LUT itself would need independent verification
+  against the formula). Source re-verification for this closure also
+  caught a real, minor attribution error: earlier notes (this file's
+  prior entry, `GATE_1C_AUDIT.md`'s NHS SPS hand-trace, `sources/README.md`)
+  called the derived 1.23/1.04 multiplier "MHRA's constants" — a direct
+  re-fetch of the MHRA source page confirmed MHRA states no formula or
+  constant at all; the figures are standard unit-conversion arithmetic
+  (88.4 µmol/L per mg/dL) applied to the sourced 1976 Cockcroft-Gault
+  formula, not an MHRA-specific number.  `renal_adjustment.dfy` uses the
+  unrounded exact fraction, not the rounded 1.23/1.04, so no unsourced
+  rounding decision is baked into a proven artifact.
+- **`evidence/dafny_nl_summary.py` only supports single-line `requires`/
+  `ensures` clauses — a real, named tooling constraint, found 2026-07-09.**
+  Discovered when `AssessRenalFunctionFromInputs`'s first draft used
+  multi-line `ensures` (the only such clauses in this repo's Dafny
+  specs); the tool correctly refused to summarize rather than guess a
+  citation association, per the same discipline behind its two Gate C6
+  fixes on 2026-07-08 (`_find_method_header`, `_REQ_ID_RE`). Not fixed in
+  the tool — the function was reformatted to single-line `ensures` to
+  match every other function in this repo's spec files, which was
+  already the established convention this function had accidentally
+  broken from, not a genuine spec need for multi-line clauses. If a
+  future spec genuinely needs a multi-line clause, this constraint will
+  need real engineering, not another reformat.
 - **`GStage` must not be applied to a Cockcroft-Gault CrCl value —
   RESOLVED 2026-07-08.** Its boundaries are derived from KDIGO's
   eGFR-specific G1–G5 table; CrCl isn't BSA-normalized and isn't staged

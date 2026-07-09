@@ -122,6 +122,19 @@ a derived conversion constant. This doesn't change any number used in
 this repo's spec, but the original document's causal story for why "72"
 appears is not well-supported and shouldn't be repeated as fact.
 
+**Second correction, 2026-07-09:** the phrase "MHRA's rounded 1.23/1.04
+constants" used above (and in `sources/README.md`) is itself imprecise —
+a direct re-fetch of the MHRA source page (see
+`mhra-renal-formula-selection-2019.md`'s 2026-07-09 amendment) confirmed
+MHRA states no Cockcroft-Gault formula or numeric constant at all. The
+1.23/1.04 figures are this document's own arithmetic check (88.4/72,
+×0.85) applied to the independently-sourced 1976 formula — correct
+arithmetic, mislabeled source. `renal_adjustment.dfy`'s
+`CockcroftGaultCrClMlPerMin` (built 2026-07-09, closing Gate 1c Finding
+1 for Cockcroft-Gault) uses the unrounded exact fraction rather than
+the rounded figures, so this mislabeling was caught before it could be
+baked into a proven artifact.
+
 ## Not independently verified (out of scope for this pass)
 
 - Whether the specific numeric coefficients above are correctly

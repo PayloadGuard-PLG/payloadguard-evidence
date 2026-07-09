@@ -7,19 +7,25 @@
 // rounding convention, formula selection between eGFR and Cockcroft-Gault
 // CrCl, the type-level guarantee that a CrCl value can never be run
 // through eGFR staging, and bound composition against dosage.dfy's
-// existing ceiling. It does NOT compute Cockcroft-Gault CrCl or CKD-EPI
-// eGFR from raw patient data (age/weight/sex/creatinine/cystatin C) —
-// both formulas' numeric outputs are caller-supplied inputs to
-// AssessRenalFunction, a provisional default (not a permanent decision)
-// per Steven's explicit direction, backed by verified equation data in
-// sources/ckd-epi-2021-and-cockcroft-gault-verification.md. REQ-RENAL-3,
-// REQ-RENAL-4, REQ-RENAL-6, and REQ-RENAL-7 are not yet formalized as
-// Dafny signatures (see GATE_1C_AUDIT.md's REQ-by-REQ trace) — they
-// exist only as prose in Gate 1a/1b so far.
+// existing ceiling. REQ-RENAL-3, REQ-RENAL-4, REQ-RENAL-6, and
+// REQ-RENAL-7 are not yet formalized as Dafny signatures (see
+// GATE_1C_AUDIT.md's REQ-by-REQ trace) — they exist only as prose in
+// Gate 1a/1b so far.
+//
+// Gate 1c Finding 1 (GATE_1C_AUDIT.md) — closed 2026-07-09 for
+// Cockcroft-Gault only, per Steven's scope decision: CKD-EPI eGFR stays
+// caller-supplied because Dafny/Z3 cannot express its real-valued
+// fractional exponents on a variable base — a genuine toolchain
+// expressiveness gap, not a scoping preference, so the eGFR side of the
+// decision follows from what the toolchain can actually prove, not a
+// judgment call. Cockcroft-Gault CrCl, by contrast, is small linear
+// arithmetic and is now computed and proven below
+// (`CockcroftGaultCrClMlPerMin`, `AssessRenalFunctionFromInputs`).
 //
 // Every function body below was first checked in a scratch file against
 // this same installed Dafny 4.11.0 toolchain during Gate 1c's audit and
-// its addendum (2026-07-08) before being committed here verbatim — no
+// its addendum (2026-07-08), and again for the Cockcroft-Gault
+// computation (2026-07-09), before being committed here verbatim — no
 // body changed between the scratch check and this file.
 
 datatype GStageCategory = G1 | G2 | G3a | G3b | G4 | G5
@@ -165,4 +171,73 @@ function AssessRenalFunction(formula: Formula, renalFunctionValue: real): RenalA
     EGFRAssessment(GStage(RoundHalfUp(renalFunctionValue)))
   else
     CrClAssessment(RoundHalfUp(renalFunctionValue))
+}
+
+// Gate 1c Finding 1, closed for Cockcroft-Gault (2026-07-09). Formula:
+// Cockcroft DW, Gault MH. "Prediction of creatinine clearance from serum
+// creatinine." Nephron. 1976;16(1):31-41. PMID 1244564, independently
+// verified in sources/ckd-epi-2021-and-cockcroft-gault-verification.md:
+//   CrCl (men)   = (140 - age) * weight(kg) / (72 * Scr[mg/dL])
+//   CrCl (women) = above * 0.85
+// Scr is supplied here in µmol/L (the UK's standard reporting unit,
+// matching AssessRenalFunction's other caller-supplied inputs), so the
+// mg/dL-based formula above is converted using the standard clinical-
+// chemistry factor 88.4 µmol/L per 1 mg/dL: 88.4 / 72 = 1.2278.
+//
+// NOTE (2026-07-09, source re-verification): earlier notes in this repo
+// (GATE_1C_AUDIT.md's NHS SPS hand-trace, sources/README.md) described
+// the resulting rounded multiplier as "MHRA's 1.23/1.04 constants." A
+// direct re-fetch of the MHRA source page confirmed this was imprecise —
+// MHRA's page does not itself state the Cockcroft-Gault formula or any
+// numeric constant; it names Cockcroft-Gault as the required method and
+// points to external calculators (e.g. MDCalc). The 1.23/1.04 figures
+// are simply the standard unit-conversion arithmetic above, rounded for
+// manual calculation — not an MHRA-specific number. This function uses
+// the unrounded exact fraction rather than the rounded 1.23/1.04, so no
+// rounding decision is baked into a "proven" artifact that the source
+// itself never made.
+function CockcroftGaultCrClMlPerMin(ageYears: int, weightKg: real, isFemale: bool, serumCreatinineUmolPerL: real): real
+  requires 0 <= ageYears < 140
+  requires weightKg > 0.0
+  requires serumCreatinineUmolPerL > 0.0
+  ensures CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) > 0.0
+  ensures !isFemale ==> CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) == ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL)
+  ensures isFemale ==> CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL) == ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL) * 0.85
+{
+  var base := ((140 - ageYears) as real) * weightKg * 88.4 / (72.0 * serumCreatinineUmolPerL);
+  if isFemale then base * 0.85 else base
+}
+
+// End-to-end orchestration closing the loop Gate 1c Finding 1 opened:
+// selects the formula (REQ-RENAL-2), and on the Cockcroft-Gault branch
+// computes the CrCl value from raw inputs instead of taking it
+// caller-supplied. The eGFR branch still takes `callerSuppliedEgfr` as
+// an input — CKD-EPI eGFR is NOT computed here, per this file's header:
+// that's a real Dafny/Z3 expressiveness gap (fractional exponents on a
+// variable base), not a choice, so the asymmetry between the two
+// branches is forced, not arbitrary.
+function AssessRenalFunctionFromInputs(
+  isDirectActingOralAnticoagulant: bool,
+  isOnNephrotoxicDrug: bool,
+  ageYears: int,
+  bmi: real,
+  isNarrowTherapeuticIndexDrug: bool,
+  weightKg: real,
+  isFemale: bool,
+  serumCreatinineUmolPerL: real,
+  callerSuppliedEgfr: real
+): RenalAssessment
+  requires 0 <= ageYears < 140
+  requires bmi > 0.0
+  requires weightKg > 0.0
+  requires serumCreatinineUmolPerL > 0.0
+  requires callerSuppliedEgfr >= 0.0
+  ensures SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug) == CockcroftGaultFormula ==> AssessRenalFunctionFromInputs(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug, weightKg, isFemale, serumCreatinineUmolPerL, callerSuppliedEgfr) == AssessRenalFunction(CockcroftGaultFormula, CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL)) // Gate 1c Finding 1 (Cockcroft-Gault)
+  ensures SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug) == EGFRFormula ==> AssessRenalFunctionFromInputs(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug, weightKg, isFemale, serumCreatinineUmolPerL, callerSuppliedEgfr) == AssessRenalFunction(EGFRFormula, callerSuppliedEgfr) // eGFR remains caller-supplied — Dafny/Z3 expressiveness gap, not a scope choice
+{
+  var formula := SelectFormula(isDirectActingOralAnticoagulant, isOnNephrotoxicDrug, ageYears, bmi, isNarrowTherapeuticIndexDrug);
+  if formula == CockcroftGaultFormula then
+    AssessRenalFunction(formula, CockcroftGaultCrClMlPerMin(ageYears, weightKg, isFemale, serumCreatinineUmolPerL))
+  else
+    AssessRenalFunction(formula, callerSuppliedEgfr)
 }

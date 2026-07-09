@@ -6,6 +6,85 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Closed Gate 1c Finding 1 for Cockcroft-Gault; re-verified MHRA/NICE sources; caught two real gaps along the way
+
+Closed two of the three open items from the last handoff review: (1)
+re-confirm the MHRA and NICE NG203 source URLs still resolve to the same
+content, and (2) decide and implement Finding 1's CrCl/eGFR computation
+scope. Steven's framing for (2) settled the CKD-EPI half without a
+judgment call: "if we have to tie to specific software then if we
+physically cannot at the moment, then the choice is made for us" — build
+whatever Dafny/Z3 can actually prove (Cockcroft-Gault), leave whatever it
+can't (CKD-EPI eGFR, real fractional exponents on a variable base) as
+caller-supplied, rather than treat both as equally open.
+
+**Source re-verification (item 4), done first, on purpose:** re-fetched
+`https://www.gov.uk/drug-safety-update/...` (MHRA) and
+`https://www.nice.org.uk/guidance/ng203/chapter/Recommendations` (NICE)
+directly. Both confirmed unchanged from the 2026-07-08 verification —
+same five formula-selection conditions, same `BMI <18 kg/m2 or >40
+kg/m2` boundary text, same NICE 1.1.2/1.1.4/1.1.24 wording. One real
+correction surfaced anyway: earlier notes in this repo
+(`GATE_1C_AUDIT.md`'s NHS SPS hand-trace, `sources/README.md`) called the
+CrCl-formula multiplier 1.23/1.04 "MHRA's constants." Re-checked directly
+against MHRA's actual page text — it states no formula or numeric
+constant at all, only that Cockcroft-Gault is the required method,
+pointing to external calculators. 1.23/1.04 is ordinary unit-conversion
+arithmetic (88.4 µmol/L per mg/dL applied to the independently-sourced
+1976 Cockcroft-Gault formula), not an MHRA-specific number. Corrected in
+`sources/README.md`, `sources/mhra-renal-formula-selection-2019.md`,
+`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`, and
+`GATE_1C_AUDIT.md`.
+
+**Implementation (item 1):** added `CockcroftGaultCrClMlPerMin` (small
+linear arithmetic, self-referential pinning `ensures` matching the exact
+formula — no under-constrained postcondition risk from the start) and
+`AssessRenalFunctionFromInputs` (end-to-end orchestration: selects the
+formula, computes CrCl on the Cockcroft-Gault branch, still takes
+`callerSuppliedEgfr` on the eGFR branch) to `renal_adjustment.dfy`.
+Checked in a scratch file against the real, installed Dafny 4.11.0
+toolchain first, including a sanity check against `GATE_1C_AUDIT.md`'s
+NHS SPS worked example (80yo male, 60kg, creatinine 120 µmol/L → the
+exact fraction 36.8(3), `RoundHalfUp`'d to the published 37 mL/min) —
+matched before either function was committed. `renal_adjustment.dfy`
+re-verifies clean: `7 verified, 0 errors` (up from 5).
+
+**Not skipped: Gate C4 extended for the two new functions too,** even
+though their postconditions are already exact equalities and therefore
+about as tight as a postcondition can be — added real ACCEPT/REJECT
+lemmas to `renal_adjustment_stp_suite.dfy` using the same NHS SPS
+scenario, rather than assuming exemption because "the equality already
+proves it." `52 verified, 0 errors` (up from 44).
+
+**A second real tooling gap found, not worked around:**
+`evidence/dafny_nl_summary.py` refused to summarize
+`AssessRenalFunctionFromInputs` on the first attempt — its `ensures`
+clauses were the first multi-line ones ever written in this repo's Dafny
+specs (every other function uses single-line `ensures`, however long),
+and the tool correctly refuses to guess a citation association rather
+than risk a dropped or misattributed one, exactly the same discipline
+behind its two Gate C6 fixes on 2026-07-08. This was my own formatting
+choice breaking an established convention, not a genuine spec need — so
+the fix was reformatting to single-line, not extending the tool. Named
+as a real, permanent tooling constraint in `KNOWN_LIMITATIONS.md`
+(single-line clauses only) rather than silently worked around and
+forgotten.
+
+Gate C6's sign-off document (`nl_confirmation_renal_adjustment_dfy.md`)
+amended with both new functions' generated summaries — still PENDING
+Steven's confirmation, now covering five amendments' worth of change
+under one outstanding sign-off. `python -m pytest tests/ -q` — 154
+passed, unaffected (no Python code changed). Documentation brought
+current in the same session as the change, per this repo's own recent
+lesson about `DEVLOG.md` drift: `GATE_1C_AUDIT.md`, `PHASE1_PLAN.md`,
+`KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `README.md`, `SYSTEM_BLUEPRINT.md`,
+and the three `sources/` documents above all updated together with the
+code.
+
+**Remaining open item:** `REQ-RENAL-8` classification-flag provenance
+(Phase 3 concern, not a Phase 2 blocker) — the sole item left in
+`PHASE1_PLAN.md`'s "Closed under named fallback assumptions" section.
+
 ## 2026-07-09 — Brought SYSTEM_BLUEPRINT.md and KNOWN_LIMITATIONS.md current (PR #5, `2fc2d88`)
 
 Asked to continue and make sure the main docs (`SYSTEM_BLUEPRINT.md`

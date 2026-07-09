@@ -236,3 +236,35 @@ the CKD-EPI trust boundary (the LUT itself would need independent
 verification against the formula). Finding 1's scope decision (build
 Cockcroft-Gault, keep CKD-EPI caller-supplied) remains Steven's call,
 now backed by verified data rather than an open question mark.
+
+## Addendum 2026-07-09 — Finding 1 closed for Cockcroft-Gault; CKD-EPI eGFR confirmed not a scope choice
+
+Steven made the scope call: build Cockcroft-Gault, leave CKD-EPI eGFR
+caller-supplied "if we physically cannot [tie eGFR to Dafny/Z3] at the
+moment, then the choice is made for us" — i.e. build whatever the
+toolchain can actually prove, defer whatever it can't, rather than
+treat both branches as equally optional. `CockcroftGaultCrClMlPerMin`
+is now committed and verified (`renal_adjustment.dfy`, `7 verified, 0
+errors`; STP suite extended to `52 verified, 0 errors`); the CKD-EPI
+side was re-confirmed, not just assumed, as a genuine toolchain gap
+(real-valued fractional exponents on a variable base), not a
+preference — see `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`'s
+"Dafny/Z3 architectural strategy" finding, unchanged since 2026-07-08.
+
+Before implementing, re-fetched the MHRA and NICE NG203 source pages
+directly (both had been due for a "still resolve to the same content"
+re-check per `PHASE1_PLAN.md`'s Verification section) — both confirmed
+unchanged from the 2026-07-08 verification, with one correction
+surfaced: MHRA's page does not itself state the Cockcroft-Gault formula
+or the "1.23/1.04" constants this audit's own NHS SPS hand-trace (line
+140 above) and `sources/README.md` had attributed to it — MHRA only
+names Cockcroft-Gault as the required method. The 1.23/1.04 figures are
+standard unit-conversion arithmetic (88.4 µmol/L per mg/dL, applied to
+the sourced 1976 formula), not an MHRA-stated number. `renal_adjustment.dfy`
+now uses the unrounded exact fraction rather than repeating that
+imprecise attribution.
+
+**Gate 1 status: still not formally closed**, now for one reason instead
+of two — `REQ-RENAL-8`'s classification-flag provenance is the sole
+remaining open item, reclassified as a Phase 3 concern per `PHASE1_PLAN.md`,
+not a Phase 2 blocker.

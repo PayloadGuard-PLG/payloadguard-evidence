@@ -486,12 +486,16 @@ payloadguard-evidence/
 │   │                            building - both confirmed for real
 │   ├── renal_adjustment.dfy     The committed spec: RoundHalfUp, GStage,
 │   │                            SelectFormula, ComposedCeiling,
-│   │                            AssessRenalFunction - verifies clean
-│   │                            (5 verified, 0 errors)
+│   │                            AssessRenalFunction,
+│   │                            CockcroftGaultCrClMlPerMin,
+│   │                            AssessRenalFunctionFromInputs - verifies
+│   │                            clean (7 verified, 0 errors)
 │   ├── renal_adjustment_underconstrained.dfy  Gate C4 honesty exhibit:
 │   │                            the pre-fix spec, preserved verbatim
 │   ├── renal_adjustment_stp_suite(_against_underconstrained).dfy  Gate
-│   │                            C4: 44 lemmas pass against the fix; the
+│   │                            C4: 44 lemmas pass against the fix
+│   │                            (52 verified, 0 errors, including the 7
+│   │                            spec functions the suite includes); the
 │   │                            same 4 REJECT lemmas genuinely fail
 │   │                            against the preserved original
 │   ├── nl_confirmation_renal_adjustment_dfy.md  Gate C6: generated
@@ -1072,15 +1076,19 @@ conditional-branching logic, using a UK-jurisdiction clinical example
 - Gate 1 (clinical sourcing, spec skeleton, consistency audit): closed,
   under two named, deliberately provisional fallback assumptions — not
   permanent decisions.
-- Gate C1 (spec + capture): built. `renal_adjustment.dfy` — five
+- Gate C1 (spec + capture): built. `renal_adjustment.dfy` — seven
   functions (`RoundHalfUp`, `GStage`, `SelectFormula`, `ComposedCeiling`,
-  `AssessRenalFunction`) — verifies clean (`5 verified, 0 errors`).
+  `AssessRenalFunction`, `CockcroftGaultCrClMlPerMin`,
+  `AssessRenalFunctionFromInputs`) — verifies clean (`7 verified, 0
+  errors`).
 - Gate C6 (NL confirmation): built; sign-off document presented but
   **pending actual confirmation**, not yet closed.
 - Gate C4 (STPs): built. Found and fixed two real under-constrained
   postconditions (`ComposedCeiling`, `AssessRenalFunction`) — confirmed
   failing against the preserved pre-fix spec, confirmed passing after a
-  proper pinning-clause fix, both for real, not asserted.
+  proper pinning-clause fix, both for real, not asserted. Extended
+  2026-07-09 with real ACCEPT/REJECT lemma coverage for the two new
+  functions below (`52 verified, 0 errors`, up from 44).
 - **Gate C3 (spec lint) and Gate C5 (mutation testing): not yet built
   for this example.** This is the concrete next step.
 - Not wired into the metadata/capture/generate pipeline (no
@@ -1089,10 +1097,23 @@ conditional-branching logic, using a UK-jurisdiction clinical example
   and Section 5's evidence inventory remain `dosage_calculator`-only
   until it does.
 
-**Two decisions explicitly left open**, per `PHASE1_PLAN.md`: whether to
-build a real Cockcroft-Gault CrCl computation (Dafny/Z3-feasible, small)
-versus leaving both CrCl and eGFR caller-supplied (current state); and
-who sets `SelectFormula`'s caller-supplied classification flags, by what
+**Gate 1c Finding 1 closed for Cockcroft-Gault, 2026-07-09.** Source
+re-verification first (direct re-fetch of the MHRA and NICE NG203 pages,
+confirming both still resolve to the same content originally verified
+2026-07-08 — no drift found) surfaced one real correction: the "MHRA's
+1.23/1.04 constants" framing used in earlier notes overstated MHRA as
+the source — MHRA's page states no formula or constant at all, only
+that Cockcroft-Gault is the required method. `CockcroftGaultCrClMlPerMin`
+therefore uses the unrounded exact conversion (88.4/72, sourced to the
+1976 Cockcroft-Gault paper plus the standard clinical-chemistry µmol/L↔
+mg/dL factor) rather than baking in a rounding decision the source never
+made. **CKD-EPI eGFR remains caller-supplied — not a scope preference,
+a forced consequence of Dafny/Z3 being unable to express real-valued
+fractional exponents on a variable base.** `AssessRenalFunctionFromInputs`
+orchestrates both branches end to end.
+
+**One decision remains explicitly left open**, per `PHASE1_PLAN.md`: who
+sets `SelectFormula`'s caller-supplied classification flags, by what
 process (reclassified as a Phase 3 concern, not a Phase 2 blocker).
 
 **A citation-verification module, `evidence/citation_gate.py`, was also
