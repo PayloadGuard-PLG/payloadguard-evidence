@@ -122,6 +122,19 @@ a derived conversion constant. This doesn't change any number used in
 this repo's spec, but the original document's causal story for why "72"
 appears is not well-supported and shouldn't be repeated as fact.
 
+**Amendment 2026-07-09 — study-design numbers independently confirmed.**
+A further "verified sources" document (Steven-supplied, checked rather
+than trusted, per this repo's standing rule) claimed the 1976 paper's
+derivation cohort was 249 patients aged 18–92, correlated against
+24-hour measured CrCl in 236 patients, r=0.83. Re-checked directly via
+PubMed's own abstract text (not available through this tool at the time
+of the original 2026-07-08 pass above) — confirmed verbatim: "Derivation
+included the relationship found between age and 24-hour creatinine
+excretion/kg in 249 patients aged 18-92... correlation coefficient
+between predicted and mean measured Ccr's of 0.83," 236 patients for the
+measured-Ccr comparison. No correction needed; this simply closes the
+"not machine-extractable" gap noted above with a real, current check.
+
 **Second correction, 2026-07-09:** the phrase "MHRA's rounded 1.23/1.04
 constants" used above (and in `sources/README.md`) is itself imprecise —
 a direct re-fetch of the MHRA source page (see

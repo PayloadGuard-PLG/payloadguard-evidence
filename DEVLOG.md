@@ -6,6 +6,46 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-09 — Independently checked a "Gate C5 verified sources" document; its flag wasn't the bug, but checking it found a real one
+
+Steven supplied a document claiming to independently verify four
+citations in `renal_adjustment.dfy` (Cockcroft-Gault 1976, MHRA DSU,
+Miller et al. 2022, KDIGO staging), flagging one item: a "Table 2 vs
+Table 11" numbering discrepancy for the KDIGO GFR-category table at
+p. S126, to resolve before sign-off. Per this repo's standing rule,
+checked directly rather than trusted.
+
+**Three of its four claims re-confirmed directly, adding real value:**
+Cockcroft-Gault's 1976 abstract (PMID 1244564, via PubMed metadata)
+confirms the 249-patient/236-patient/r=0.83 derivation numbers this repo
+hadn't previously extracted; Miller et al. 2022's exact "eGFR of 59.7...
+reported as 60" worked example (via direct fetch of the published
+article) is real and now quoted in `sources/kdigo-2024-gfr-staging.md`;
+its note that the MHRA page states no formula or constants at all
+independently corroborates the same finding this repo made 2026-07-09
+earlier the same day.
+
+**The flagged item itself wasn't a real bug — this repo never cited a
+table number for the p. S126 table, only its page.** But checking it
+against the committed PDF directly (`sources/KDIGO-2024-CKD-Guideline.pdf`,
+extracted with `pypdf` rather than re-reading prior extraction notes)
+surfaced a different, real citation error the flag hadn't caught:
+`PHASE1_PLAN.md`'s REQ-RENAL-1a row cited "p. S164, Table 11" — S164 is
+wrong (it's REQ-RENAL-7's Practice Point 4.2.4 page, apparently carried
+over by mistake); Table 11 is actually at S153 (where the quoted text
+appears) and S184 (its full first appearance). Fixed. Also confirmed:
+the p. S126 GFR-category data reappears explicitly labeled "Table 2" at
+S137, a stronger citation available if ever needed.
+
+**Pattern worth naming:** an external document's specific flag can be
+wrong and the exercise of checking it can still be worth doing —
+neither "trust the flag" nor "the flag was wrong, so nothing to find
+here" would have caught the real S164 bug. `python -m pytest tests/ -q`
+— 154 passed, unaffected (citation-only change). Full detail:
+`sources/kdigo-2024-gfr-staging.md`,
+`sources/ckd-epi-2021-and-cockcroft-gault-verification.md`,
+`PHASE1_PLAN.md`.
+
 ## 2026-07-09 — Closed Gate 1c Finding 1 for Cockcroft-Gault; re-verified MHRA/NICE sources; caught two real gaps along the way
 
 Closed two of the three open items from the last handoff review: (1)
