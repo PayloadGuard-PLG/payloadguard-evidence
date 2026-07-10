@@ -1,0 +1,63 @@
+{
+    "project": "PayloadGuard",
+    "verification_gates": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+    ],
+    "modules": [
+        {
+            "component": "__init__.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "citation_gate.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "cli.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "conflict.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "dafny_adapter.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "dafny_mutate.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "dafny_nl_summary.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "dafny_spec_lint.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "model.py",
+            "status": "linked",
+            "type": "logic_core"
+        },
+        {
+            "component": "reconcile.py",
+            "status": "linked",
+            "type": "logic_core"
+        }
+    ]
+}
