@@ -1,0 +1,272 @@
+<title>PayloadGuard Evidence — System Blueprint</title>
+<style>
+  :root {
+    --ground: #f4f6f8; --surface: #ffffff; --surface-2: #fbfcfd;
+    --ink: #14171c; --muted: #59636f; --faint: #8a94a1;
+    --hairline: #e3e6eb; --hairline-strong: #d4d9e0;
+    --accent: #3a34c9; --accent-soft: #ecebfa;
+    --proven: #1e875a; --bounded: #2563b0; --tested: #b0790e; --declared: #727c88; --gap: #bf3b3b;
+    --proven-bg: #e6f3ec; --bounded-bg: #e7eff9; --tested-bg: #f6eede; --declared-bg: #edeff2; --gap-bg: #f8e7e7;
+    --shadow: 0 1px 2px rgba(20,23,28,0.04), 0 4px 16px rgba(20,23,28,0.05);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e1015; --surface: #171a21; --surface-2: #1c2028;
+      --ink: #eaecef; --muted: #9aa4b2; --faint: #6c7686;
+      --hairline: #262b34; --hairline-strong: #333a45;
+      --accent: #8b87f5; --accent-soft: #211f3a;
+      --proven: #4bbd88; --bounded: #5b9be0; --tested: #d6a13f; --declared: #9aa4b2; --gap: #e0716f;
+      --proven-bg: #12271e; --bounded-bg: #142334; --tested-bg: #2b2313; --declared-bg: #21262e; --gap-bg: #2e1918;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.28);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f4f6f8; --surface: #ffffff; --surface-2: #fbfcfd;
+    --ink: #14171c; --muted: #59636f; --faint: #8a94a1;
+    --hairline: #e3e6eb; --hairline-strong: #d4d9e0;
+    --accent: #3a34c9; --accent-soft: #ecebfa;
+    --proven: #1e875a; --bounded: #2563b0; --tested: #b0790e; --declared: #727c88; --gap: #bf3b3b;
+    --proven-bg: #e6f3ec; --bounded-bg: #e7eff9; --tested-bg: #f6eede; --declared-bg: #edeff2; --gap-bg: #f8e7e7;
+    --shadow: 0 1px 2px rgba(20,23,28,0.04), 0 4px 16px rgba(20,23,28,0.05);
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e1015; --surface: #171a21; --surface-2: #1c2028;
+    --ink: #eaecef; --muted: #9aa4b2; --faint: #6c7686;
+    --hairline: #262b34; --hairline-strong: #333a45;
+    --accent: #8b87f5; --accent-soft: #211f3a;
+    --proven: #4bbd88; --bounded: #5b9be0; --tested: #d6a13f; --declared: #9aa4b2; --gap: #e0716f;
+    --proven-bg: #12271e; --bounded-bg: #142334; --tested-bg: #2b2313; --declared-bg: #21262e; --gap-bg: #2e1918;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.28);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: clamp(1.25rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2.5rem) 5rem; }
+
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.9rem; }
+
+  .masthead { padding-bottom: 2rem; border-bottom: 1px solid var(--hairline); }
+  .masthead .rule { width: 44px; height: 3px; background: var(--accent); border-radius: 2px; margin-bottom: 1.4rem; }
+  h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.05; letter-spacing: -0.02em; font-weight: 680; margin: 0 0 0.9rem; text-wrap: balance; }
+  .thesis { font-size: clamp(1rem, 2vw, 1.15rem); color: var(--muted); max-width: 62ch; margin: 0; }
+  .thesis strong { color: var(--ink); font-weight: 620; }
+
+  section { margin-top: 3.5rem; }
+  .sec-head { margin-bottom: 1.5rem; }
+  h2 { font-size: clamp(1.25rem, 2.6vw, 1.6rem); letter-spacing: -0.015em; font-weight: 640; margin: 0.2rem 0 0.4rem; }
+  .sec-head p { margin: 0; color: var(--muted); max-width: 70ch; font-size: 0.95rem; }
+
+  /* ---------- data flow ---------- */
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0.5rem; }
+  @media (max-width: 860px) { .flow { grid-template-columns: 1fr; } .flow .arrow { transform: rotate(90deg); justify-self: center; padding: 0.25rem 0; } }
+  .stage { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 1.15rem 1.2rem; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+  .stage .lead { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.7rem; }
+  .stage h3 { font-size: 0.98rem; font-weight: 640; margin: 0 0 0.55rem; letter-spacing: -0.01em; }
+  .stage ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .stage li { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); display: flex; gap: 0.45rem; align-items: baseline; }
+  .stage li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--hairline-strong); flex: none; transform: translateY(-1px); }
+  .stage.out { border-color: color-mix(in srgb, var(--accent) 40%, var(--hairline)); }
+  .stage.out .lead { color: var(--accent); }
+  .arrow { display: grid; place-items: center; color: var(--faint); font-family: var(--mono); font-size: 1.1rem; }
+
+  /* ---------- invariant callout ---------- */
+  .invariant { margin-top: 1.25rem; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 12px; padding: 1.15rem 1.35rem; display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; }
+  .invariant .mark { font-family: var(--mono); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.08em; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 8px; padding: 0.45rem 0.6rem; white-space: nowrap; }
+  .invariant p { margin: 0; font-size: 0.92rem; color: var(--ink); }
+  .invariant code { font-family: var(--mono); font-size: 0.82rem; color: var(--accent); font-weight: 600; }
+
+  /* ---------- gate reference ---------- */
+  .gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.9rem; }
+  .gcard { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 1.05rem 1.15rem; box-shadow: var(--shadow); position: relative; }
+  .gcard .id { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
+  .gcard h4 { margin: 0.35rem 0 0.4rem; font-size: 0.95rem; font-weight: 620; }
+  .gcard p { margin: 0; font-size: 0.82rem; color: var(--muted); }
+  .gcard .mod { display: block; margin-top: 0.7rem; font-family: var(--mono); font-size: 0.72rem; color: var(--faint); }
+  .gcard.human { border-left: 3px solid var(--tested); }
+
+  /* ---------- module map ---------- */
+  .modmap { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .modgroup { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 1.2rem 1.3rem; box-shadow: var(--shadow); }
+  .modgroup .glead { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.9rem; padding-bottom: 0.55rem; border-bottom: 1px solid var(--hairline); }
+  .modrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.15rem; padding: 0.55rem 0; border-bottom: 1px solid var(--hairline); }
+  .modrow:last-child { border-bottom: 0; padding-bottom: 0; }
+  .modrow .name { font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: var(--ink); word-break: break-word; }
+  .modrow .role { font-size: 0.8rem; color: var(--muted); }
+
+  /* ---------- examples ---------- */
+  .exgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 720px) { .exgrid { grid-template-columns: 1fr; } }
+  .excard { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 1.4rem 1.5rem; box-shadow: var(--shadow); }
+  .excard h3 { font-family: var(--mono); font-size: 1rem; font-weight: 620; margin: 0 0 0.2rem; }
+  .excard .sub { font-size: 0.82rem; color: var(--muted); margin: 0 0 1rem; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 0.9rem; font-size: 0.85rem; }
+  .kv dt { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); align-self: center; }
+  .kv dd { margin: 0; font-family: var(--mono); font-size: 0.8rem; }
+  .pill { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 650; padding: 0.22rem 0.5rem; border-radius: 999px; }
+  .pill.done { background: var(--proven-bg); color: var(--proven); }
+  .pill.pend { background: var(--tested-bg); color: var(--tested); }
+
+  footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline); font-size: 0.8rem; color: var(--faint); display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: space-between; }
+  footer .mono { font-family: var(--mono); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.6s cubic-bezier(0.2,0.7,0.2,1) forwards; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead reveal">
+    <div class="rule"></div>
+    <p class="eyebrow">PayloadGuard&nbsp;Evidence · System&nbsp;Blueprint · condensed</p>
+    <h1>How a real tool run becomes a claim nobody can round up.</h1>
+    <p class="thesis">The whole system is one guarded pipeline: authored requirements and primary sources meet real verifier output, and the engine binds them at a strength <strong>it will not let you overstate</strong>. This is the map — read it before the 1,100-line reference.</p>
+  </header>
+
+  <!-- ============ DATA FLOW ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Data flow</p>
+      <h2>Four stages, left to right</h2>
+      <p>Nothing is hand-typed downstream of a tool: a capture is the verbatim result of a real run, and the matrix is generated from captures — never edited.</p>
+    </div>
+    <div class="flow">
+      <div class="stage">
+        <p class="lead">Inputs</p>
+        <h3>Requirements &amp; sources</h3>
+        <ul>
+          <li>metadata.yaml</li>
+          <li>sources/ (primary docs)</li>
+          <li>schema/ validation</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="stage">
+        <p class="lead">Verify</p>
+        <h3>Real tool runs</h3>
+        <ul>
+          <li>Dafny 4.11.0 / Z3</li>
+          <li>CrossHair</li>
+          <li>captures + manifests</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="stage">
+        <p class="lead">Bind</p>
+        <h3>Evidence engine</h3>
+        <ul>
+          <li>parse &amp; guard output</li>
+          <li>assign honest strength</li>
+          <li>reconcile facts</li>
+        </ul>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="stage out">
+        <p class="lead">Output</p>
+        <h3>Traceability matrix</h3>
+        <ul>
+          <li>per requirement</li>
+          <li>evidence + strength</li>
+          <li>link to capture</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="invariant">
+      <span class="mark">INVARIANT</span>
+      <p>The core rule the whole architecture defends: a <code>PROVEN</code> label can never appear unless a real, completed Dafny proof produced it — gated on Z3 precondition satisfiability <em>and</em> the false-zero guard before any record is built (<code>ruling&nbsp;R3</code>).</p>
+    </div>
+  </section>
+
+  <!-- ============ GATES ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">The pipeline</p>
+      <h2>Six gates, C1 → C6</h2>
+      <p>Each gate is a distinct check with its own committed evidence. Five are mechanical; the last is deliberately human and can't be self-graded.</p>
+    </div>
+    <div class="gates">
+      <div class="gcard"><span class="id">C1</span><h4>Spec + capture</h4><p>Run the spec, capture verbatim output and a manifest.</p><span class="mod">run_verify_*.py · dafny_adapter.py</span></div>
+      <div class="gcard"><span class="id">C2</span><h4>Evidence binding</h4><p>Parse output, guard against false-zeros &amp; timeout masking; bind to requirements.</p><span class="mod">dafny_adapter.py · reconcile.py</span></div>
+      <div class="gcard"><span class="id">C3</span><h4>Spec lint</h4><p>Z3 precondition satisfiability (no vacuous proofs) + weak-postcondition heuristic.</p><span class="mod">dafny_spec_lint.py</span></div>
+      <div class="gcard"><span class="id">C4</span><h4>Spec-testing proofs</h4><p>IronSpec-style ACCEPT/REJECT lemmas prove each postcondition is <em>tight</em>, not just held.</p><span class="mod">*_stp_suite.dfy</span></div>
+      <div class="gcard"><span class="id">C5</span><h4>Mutation testing</h4><p>ROR / LOR / AOR / LVR / COI mutants, real-verified; a survivor is a finding.</p><span class="mod">dafny_mutate.py</span></div>
+      <div class="gcard human"><span class="id">C6</span><h4>NL sign-off <span class="pill pend" style="margin-left:0.3rem">human</span></h4><p>Plain-English summary of the contract, confirmed by a person against intent.</p><span class="mod">dafny_nl_summary.py</span></div>
+    </div>
+  </section>
+
+  <!-- ============ MODULE MAP ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Reusable engine · evidence/</p>
+      <h2>Module map</h2>
+      <p>One vocabulary-agnostic engine drives every example. Nothing here is hardcoded to a specific spec.</p>
+    </div>
+    <div class="modmap">
+      <div class="modgroup">
+        <p class="glead">Core &amp; schema</p>
+        <div class="modrow"><span class="name">model.py</span><span class="role">the Strength vocabulary — PROVEN · BOUNDED_CHECKED · TESTED · DECLARED · GAP</span></div>
+        <div class="modrow"><span class="name">schema/</span><span class="role">JSON-schema validation for authored metadata</span></div>
+        <div class="modrow"><span class="name">reconcile.py</span><span class="role">fact-equality gate across matrix variants</span></div>
+        <div class="modrow"><span class="name">cli.py</span><span class="role">builds a matrix from metadata + captures</span></div>
+      </div>
+      <div class="modgroup">
+        <p class="glead">Dafny toolchain</p>
+        <div class="modrow"><span class="name">dafny_adapter.py</span><span class="role">parse captured output; false-zero &amp; timeout-mask guards</span></div>
+        <div class="modrow"><span class="name">dafny_spec_lint.py</span><span class="role">Gate C3 — Z3 satisfiability + weak-postcondition lint</span></div>
+        <div class="modrow"><span class="name">dafny_mutate.py</span><span class="role">Gate C5 — ROR/LOR/AOR/LVR/COI generators</span></div>
+        <div class="modrow"><span class="name">dafny_nl_summary.py</span><span class="role">Gate C6 — plain-English contract summaries</span></div>
+      </div>
+      <div class="modgroup">
+        <p class="glead">Provenance &amp; render</p>
+        <div class="modrow"><span class="name">citation_gate.py</span><span class="role">mechanical quote-vs-source verification (non-LLM)</span></div>
+        <div class="modrow"><span class="name">render/matrix_variants.py</span><span class="role">variant matrices; gates PROVEN on R3</span></div>
+        <div class="modrow"><span class="name">render/manual_matrix.py</span><span class="role">the frozen base traceability view</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXAMPLES ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Applied</p>
+      <h2>Two worked examples on the same engine</h2>
+      <p>The second exists to prove the pipeline generalizes from flat arithmetic to lookup-table and branching logic — and it did, surfacing real engine gaps that were fixed, not worked around.</p>
+    </div>
+    <div class="exgrid">
+      <div class="excard">
+        <h3>dosage_calculator</h3>
+        <p class="sub">IV infusion-pump dose clamping · GIP hazard analysis</p>
+        <dl class="kv">
+          <dt>Status</dt><dd><span class="pill done">Complete</span></dd>
+          <dt>Evidence</dt><dd>CrossHair + Dafny + concrete</dd>
+          <dt>Gates</dt><dd>C1–C6 · all</dd>
+          <dt>C5</dt><dd>56 mutants · 0 survived</dd>
+          <dt>Matrix</dt><dd>variants A/B/C · 9 facts</dd>
+        </dl>
+      </div>
+      <div class="excard">
+        <h3>renal_adjustment</h3>
+        <p class="sub">Renal-function dose adjustment · MHRA / KDIGO / NICE</p>
+        <dl class="kv">
+          <dt>Status</dt><dd><span class="pill pend">C6 pending</span></dd>
+          <dt>Evidence</dt><dd>Dafny-first · 7 functions</dd>
+          <dt>Gates</dt><dd>C1 · C3 · C4 · C5 built</dd>
+          <dt>C5</dt><dd>450 mutants · 51 explained</dd>
+          <dt>Matrix</dt><dd>not yet wired</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Condensed from <span class="mono">SYSTEM_BLUEPRINT.md</span> · pairs with the Status &amp; Findings readout.</span>
+    <span class="mono">payloadguard-evidence · 2026-07-09</span>
+  </footer>
+
+</div>

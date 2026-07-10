@@ -1,0 +1,601 @@
+<title>PayloadGuard Evidence — Verification Status & Findings</title>
+<style>
+  :root {
+    --ground: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #fbfcfd;
+    --ink: #14171c;
+    --muted: #59636f;
+    --faint: #8a94a1;
+    --hairline: #e3e6eb;
+    --hairline-strong: #d4d9e0;
+    --accent: #3a34c9;
+    --accent-soft: #ecebfa;
+
+    --proven: #1e875a;
+    --bounded: #2563b0;
+    --tested: #b0790e;
+    --declared: #727c88;
+    --gap: #bf3b3b;
+
+    --proven-bg: #e6f3ec;
+    --bounded-bg: #e7eff9;
+    --tested-bg: #f6eede;
+    --declared-bg: #edeff2;
+    --gap-bg: #f8e7e7;
+
+    --fix: #1e875a;
+    --caught: #b0790e;
+    --named: #6b62d6;
+
+    --shadow: 0 1px 2px rgba(20, 23, 28, 0.04), 0 4px 16px rgba(20, 23, 28, 0.05);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e1015;
+      --surface: #171a21;
+      --surface-2: #1c2028;
+      --ink: #eaecef;
+      --muted: #9aa4b2;
+      --faint: #6c7686;
+      --hairline: #262b34;
+      --hairline-strong: #333a45;
+      --accent: #8b87f5;
+      --accent-soft: #211f3a;
+
+      --proven: #4bbd88;
+      --bounded: #5b9be0;
+      --tested: #d6a13f;
+      --declared: #9aa4b2;
+      --gap: #e0716f;
+
+      --proven-bg: #12271e;
+      --bounded-bg: #142334;
+      --tested-bg: #2b2313;
+      --declared-bg: #21262e;
+      --gap-bg: #2e1918;
+
+      --fix: #4bbd88;
+      --caught: #d6a13f;
+      --named: #a29cf7;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.28);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --ground: #f4f6f8; --surface: #ffffff; --surface-2: #fbfcfd;
+    --ink: #14171c; --muted: #59636f; --faint: #8a94a1;
+    --hairline: #e3e6eb; --hairline-strong: #d4d9e0;
+    --accent: #3a34c9; --accent-soft: #ecebfa;
+    --proven: #1e875a; --bounded: #2563b0; --tested: #b0790e; --declared: #727c88; --gap: #bf3b3b;
+    --proven-bg: #e6f3ec; --bounded-bg: #e7eff9; --tested-bg: #f6eede; --declared-bg: #edeff2; --gap-bg: #f8e7e7;
+    --fix: #1e875a; --caught: #b0790e; --named: #6b62d6;
+    --shadow: 0 1px 2px rgba(20,23,28,0.04), 0 4px 16px rgba(20,23,28,0.05);
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e1015; --surface: #171a21; --surface-2: #1c2028;
+    --ink: #eaecef; --muted: #9aa4b2; --faint: #6c7686;
+    --hairline: #262b34; --hairline-strong: #333a45;
+    --accent: #8b87f5; --accent-soft: #211f3a;
+    --proven: #4bbd88; --bounded: #5b9be0; --tested: #d6a13f; --declared: #9aa4b2; --gap: #e0716f;
+    --proven-bg: #12271e; --bounded-bg: #142334; --tested-bg: #2b2313; --declared-bg: #21262e; --gap-bg: #2e1918;
+    --fix: #4bbd88; --caught: #d6a13f; --named: #a29cf7;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.28);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2.5rem) 5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding-bottom: 2rem; border-bottom: 1px solid var(--hairline); }
+  .masthead .rule {
+    width: 44px; height: 3px; background: var(--accent);
+    border-radius: 2px; margin-bottom: 1.4rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    font-weight: 680;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+  }
+  .thesis {
+    font-size: clamp(1rem, 2vw, 1.18rem);
+    color: var(--muted);
+    max-width: 60ch;
+    margin: 0;
+  }
+  .thesis strong { color: var(--ink); font-weight: 620; }
+
+  /* ---------- status strip ---------- */
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--hairline);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 2rem;
+    box-shadow: var(--shadow);
+  }
+  .stat { background: var(--surface); padding: 1.15rem 1.25rem; }
+  .stat .k {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+  .stat .v {
+    font-family: var(--mono);
+    font-size: 1.65rem;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat .v small { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+  .stat .sub { font-size: 0.78rem; color: var(--muted); margin: 0.35rem 0 0; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 3.5rem; }
+  .sec-head { margin-bottom: 1.5rem; }
+  h2 {
+    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+    letter-spacing: -0.015em;
+    font-weight: 640;
+    margin: 0.2rem 0 0.4rem;
+  }
+  .sec-head p { margin: 0; color: var(--muted); max-width: 68ch; font-size: 0.95rem; }
+
+  /* ---------- example panels ---------- */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 720px) { .panels { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 1.5rem 1.5rem 1.65rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+  .panel h3 { font-family: var(--mono); font-size: 1.02rem; font-weight: 620; margin: 0; letter-spacing: -0.01em; }
+  .panel .role { font-size: 0.82rem; color: var(--muted); margin: 0.35rem 0 1.2rem; }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.24rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.done { background: var(--proven-bg); color: var(--proven); }
+  .badge.pending { background: var(--tested-bg); color: var(--tested); }
+
+  /* gate track */
+  .track { display: flex; flex-direction: column; gap: 0; margin-top: 0.25rem; }
+  .gate {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.62rem 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .gate:first-child { border-top: 0; }
+  .node {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+    border: 1.5px solid var(--hairline-strong);
+    color: var(--muted);
+    position: relative;
+  }
+  .gate.ok .node { background: var(--proven); border-color: var(--proven); color: #fff; }
+  :root[data-theme="dark"] .gate.ok .node,
+  .gate.wait .node { color: var(--muted); }
+  .gate.wait .node { border-color: var(--tested); color: var(--tested); border-style: dashed; }
+  .gate .label { font-size: 0.9rem; }
+  .gate .label b { font-weight: 600; }
+  .gate .label span { color: var(--muted); font-size: 0.82rem; }
+  .gate .readout {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .gate.ok .readout { color: var(--proven); }
+  .gate.wait .readout { color: var(--tested); }
+
+  .panel-foot {
+    margin-top: 1.15rem; padding-top: 1rem; border-top: 1px solid var(--hairline);
+    font-size: 0.82rem; color: var(--muted);
+  }
+  .panel-foot code { font-family: var(--mono); color: var(--ink); font-size: 0.78rem; }
+
+  /* ---------- strength ladder ---------- */
+  .ladder { display: flex; flex-direction: column; gap: 1px; background: var(--hairline);
+    border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .rung { display: grid; grid-template-columns: 130px 1fr; gap: 1rem; align-items: center;
+    background: var(--surface); padding: 0.9rem 1.25rem; }
+  @media (max-width: 560px) { .rung { grid-template-columns: 1fr; gap: 0.3rem; } }
+  .rung .name {
+    font-family: var(--mono); font-size: 0.78rem; font-weight: 650;
+    letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.55rem;
+  }
+  .rung .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .rung .desc { font-size: 0.9rem; color: var(--muted); }
+  .rung .desc b { color: var(--ink); font-weight: 600; }
+  .r-proven .dot { background: var(--proven); } .r-proven .name { color: var(--proven); }
+  .r-bounded .dot { background: var(--bounded); } .r-bounded .name { color: var(--bounded); }
+  .r-tested .dot { background: var(--tested); } .r-tested .name { color: var(--tested); }
+  .r-declared .dot { background: var(--declared); } .r-declared .name { color: var(--declared); }
+  .r-gap .dot { background: var(--gap); } .r-gap .name { color: var(--gap); }
+
+  /* ---------- findings ledger ---------- */
+  .ledger-wrap { border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
+    box-shadow: var(--shadow); background: var(--surface); }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  thead th {
+    font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-align: left; font-weight: 600;
+    padding: 0.75rem 1rem; background: var(--surface-2); border-bottom: 1px solid var(--hairline);
+    position: sticky; top: 0;
+  }
+  tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--hairline); vertical-align: top; font-size: 0.9rem; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.type { white-space: nowrap; }
+  td .mono { font-family: var(--mono); font-size: 0.82rem; }
+  td .what { color: var(--muted); }
+  td .what b { color: var(--ink); font-weight: 600; }
+
+  .tag {
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+    font-weight: 650; padding: 0.22rem 0.5rem; border-radius: 6px; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .tag.fixed { color: var(--fix); background: var(--proven-bg); }
+  .tag.caught { color: var(--caught); background: var(--tested-bg); }
+  .tag.named { color: var(--named); background: var(--accent-soft); }
+
+  .stripe { position: relative; }
+  .stripe::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .s-fix::before { background: var(--fix); }
+  .s-caught::before { background: var(--caught); }
+  .s-named::before { background: var(--named); }
+
+  /* ---------- sources ---------- */
+  .sources { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
+  .src {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
+    padding: 0.95rem 1.1rem; box-shadow: var(--shadow);
+  }
+  .src .title { font-size: 0.88rem; font-weight: 600; margin: 0 0 0.35rem; line-height: 1.35; }
+  .src .meta { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .src .meta .ok { color: var(--proven); }
+
+  /* ---------- open items ---------- */
+  .open { display: flex; flex-direction: column; gap: 0.75rem; }
+  .item {
+    background: var(--surface); border: 1px solid var(--hairline); border-left: 3px solid var(--tested);
+    border-radius: 10px; padding: 1rem 1.2rem; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: auto 1fr; gap: 0.9rem; align-items: start;
+  }
+  .item.human { border-left-color: var(--accent); }
+  .item.blocked { border-left-color: var(--declared); }
+  .item .chip {
+    font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 650; padding: 0.28rem 0.5rem; border-radius: 6px; white-space: nowrap; margin-top: 0.1rem;
+    background: var(--tested-bg); color: var(--tested);
+  }
+  .item.human .chip { background: var(--accent-soft); color: var(--accent); }
+  .item.blocked .chip { background: var(--declared-bg); color: var(--declared); }
+  .item .body h4 { margin: 0 0 0.3rem; font-size: 0.96rem; font-weight: 620; }
+  .item .body p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .item .body code { font-family: var(--mono); font-size: 0.8rem; color: var(--ink); }
+
+  /* ---------- footer ---------- */
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline);
+    font-size: 0.8rem; color: var(--faint); display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: space-between;
+  }
+  footer .mono { font-family: var(--mono); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.1rem; font-size: 0.78rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+    .reveal:nth-child(2) { animation-delay: 0.05s; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  }
+  a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 2px; }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead reveal">
+    <div class="rule"></div>
+    <p class="eyebrow">PayloadGuard&nbsp;Evidence · Verification State · 2026-07-09</p>
+    <h1>What is actually proven, checked, or still open.</h1>
+    <p class="thesis">A single readout over two worked examples that turn real Dafny/Z3 and CrossHair tool output into IEC&nbsp;62304 / FDA&nbsp;§524B traceability. <strong>Machine-truth is set in mono; human narration in sans</strong> — the same line this system draws between what a tool reported and what a person is claiming.</p>
+
+    <div class="strip">
+      <div class="stat">
+        <p class="k">Test suite</p>
+        <p class="v">170 <small>passed</small></p>
+        <p class="sub">full regression, green</p>
+      </div>
+      <div class="stat">
+        <p class="k">Worked examples</p>
+        <p class="v">2</p>
+        <p class="sub">1 complete · 1 at final gate</p>
+      </div>
+      <div class="stat">
+        <p class="k">Renal spec</p>
+        <p class="v">7&nbsp;/&nbsp;0 <small>verified&nbsp;/&nbsp;err</small></p>
+        <p class="sub">7 functions, Dafny 4.11.0</p>
+      </div>
+      <div class="stat">
+        <p class="k">Blocking sign-off</p>
+        <p class="v" style="color:var(--tested)">1</p>
+        <p class="sub">Gate C6, human review</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ EXAMPLES ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Pipeline state</p>
+      <h2>The two worked examples, gate by gate</h2>
+      <p>Each gate is a real, replayable capture — a green node means the tool actually ran and its verbatim output is committed, not summarized. Order is the pipeline order; C2 is the always-on capture/parse layer.</p>
+    </div>
+
+    <div class="panels">
+      <!-- dosage -->
+      <div class="panel reveal">
+        <div class="panel-top">
+          <h3>dosage_calculator</h3>
+          <span class="badge done">Complete</span>
+        </div>
+        <p class="role">IV infusion-pump dose clamping · sourced from a published pump hazard analysis</p>
+        <div class="track">
+          <div class="gate ok"><div class="node">C1</div><div class="label"><b>Spec + capture</b> <span>Dafny + CrossHair</span></div><div class="readout">PROVEN · BOUNDED</div></div>
+          <div class="gate ok"><div class="node">C2</div><div class="label"><b>Evidence binding</b> <span>false-zero guard</span></div><div class="readout">9 facts</div></div>
+          <div class="gate ok"><div class="node">C3</div><div class="label"><b>Spec lint</b> <span>Z3 + heuristic</span></div><div class="readout">sat</div></div>
+          <div class="gate ok"><div class="node">C4</div><div class="label"><b>Spec-testing proofs</b></div><div class="readout">STPs pass</div></div>
+          <div class="gate ok"><div class="node">C5</div><div class="label"><b>Mutation testing</b></div><div class="readout">56 · 0 survived</div></div>
+          <div class="gate ok"><div class="node">C6</div><div class="label"><b>NL sign-off</b></div><div class="readout">signed</div></div>
+        </div>
+        <p class="panel-foot">Full chain realized: <code>intended: PROVEN</code> is proven, not just declared. Carries deliberate honesty exhibits — a CrossHair miss (<code>dosage_naive_widening.py</code>) and a broken spec — preserved to show what each strength label does <em>not</em> guarantee.</p>
+      </div>
+
+      <!-- renal -->
+      <div class="panel reveal">
+        <div class="panel-top">
+          <h3>renal_adjustment</h3>
+          <span class="badge pending">C6 pending</span>
+        </div>
+        <p class="role">Renal-function dose adjustment · MHRA / KDIGO / NICE · lookup-table + branching logic</p>
+        <div class="track">
+          <div class="gate ok"><div class="node">C1</div><div class="label"><b>Spec + capture</b> <span>7 functions</span></div><div class="readout">7 verified, 0 err</div></div>
+          <div class="gate ok"><div class="node">C3</div><div class="label"><b>Spec lint</b> <span>vectors 1–2</span></div><div class="readout">7 sat · 16 warn</div></div>
+          <div class="gate ok"><div class="node">C4</div><div class="label"><b>Spec-testing proofs</b> <span>2 gaps fixed</span></div><div class="readout">52 verified, 0 err</div></div>
+          <div class="gate ok"><div class="node">C5</div><div class="label"><b>Mutation testing</b> <span>all explained</span></div><div class="readout">450 · 51 surv*</div></div>
+          <div class="gate wait"><div class="node">C6</div><div class="label"><b>NL sign-off</b> <span>awaiting review</span></div><div class="readout">PENDING</div></div>
+        </div>
+        <p class="panel-foot">Every survivor is categorized, not silent (<code>*</code> see findings). Gate&nbsp;C4 caught two genuinely under-constrained postconditions and re-proved them tight. Only the human sign-off remains before Phase 2 is done.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STRENGTH LADDER ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">The spine</p>
+      <h2>Evidence strength — the ladder this system keeps honest</h2>
+      <p>Every claim in a generated matrix carries exactly one of these labels. A stronger label can never appear unless the stronger tool actually produced it. The colors here recur wherever a gate reports its result.</p>
+    </div>
+    <div class="ladder">
+      <div class="rung r-proven"><span class="name"><i class="dot"></i>PROVEN</span><span class="desc"><b>Dafny/Z3 mathematical proof</b> — holds for every possible input, not just the ones tried.</span></div>
+      <div class="rung r-bounded"><span class="name"><i class="dot"></i>BOUNDED-CHECKED</span><span class="desc"><b>CrossHair</b> found no counterexample within a recorded search budget. Strong, not a proof.</span></div>
+      <div class="rung r-tested"><span class="name"><i class="dot"></i>TESTED</span><span class="desc"><b>Concrete inputs</b> gave the expected output. Says nothing about inputs not tried.</span></div>
+      <div class="rung r-declared"><span class="name"><i class="dot"></i>DECLARED</span><span class="desc"><b>A human stated it.</b> No tool checked it.</span></div>
+      <div class="rung r-gap"><span class="name"><i class="dot"></i>GAP</span><span class="desc"><b>Nothing established yet.</b> Flagged, never hidden.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ FINDINGS LEDGER ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Aggregated findings — this session</p>
+      <h2>Every real defect caught, fixed, or named</h2>
+      <p>Two kinds of finding: fabricated or mis-attributed citations caught by re-checking external documents against primary sources, and engine defects surfaced by pointing the shared tooling at a spec shaped differently from the first.</p>
+      <div class="legend">
+        <span><i style="background:var(--fix)"></i>Fixed</span>
+        <span><i style="background:var(--caught)"></i>Caught &amp; corrected</span>
+        <span><i style="background:var(--named)"></i>Named, left by design</span>
+      </div>
+    </div>
+
+    <div class="ledger-wrap">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Where</th><th>Finding</th><th>Outcome</th></tr>
+          </thead>
+          <tbody>
+            <tr class="stripe s-caught">
+              <td class="type"><span class="mono">NICE&nbsp;NG203</span></td>
+              <td><span class="what"><b>Fabricated citation.</b> Supplied doc claimed rec. 1.1.2 mandates the 2009 equation and 1.1.4 bars ethnicity-adjustment. Neither exists in the real guideline.</span></td>
+              <td><span class="tag caught">Caught</span></td>
+            </tr>
+            <tr class="stripe s-caught">
+              <td class="type"><span class="mono">KDIGO&nbsp;1.1.2.1</span></td>
+              <td><span class="what"><b>Second fabrication.</b> A later research doc invented a KDIGO recommendation number and text that don't appear in the source.</span></td>
+              <td><span class="tag caught">Caught</span></td>
+            </tr>
+            <tr class="stripe s-caught">
+              <td class="type"><span class="mono">RoundHalfUp</span></td>
+              <td><span class="what"><b>Self-contradictory sourcing.</b> Tie-break rule was called “KDIGO's own convention” in the same paragraph noting KDIGO specifies none. Re-cited as a named design decision (Miller 2022 defers to the LIS).</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-caught">
+              <td class="type"><span class="mono">MHRA&nbsp;DSU</span></td>
+              <td><span class="what"><b>Mis-attributed constants.</b> The “1.23 / 1.04” multiplier was called “MHRA's constants”; a direct re-fetch shows MHRA states no formula or constant at all — it's plain unit-conversion arithmetic.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-fix">
+              <td class="type"><span class="mono">KDIGO&nbsp;Table&nbsp;11</span></td>
+              <td><span class="what"><b>Wrong page locator.</b> Cited <span class="mono">p.&nbsp;S164</span> — that page belongs to a different requirement's Practice Point 4.2.4. Confirmed against the committed PDF and corrected to <span class="mono">S153</span>.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-fix">
+              <td class="type"><span class="mono">citation_gate.py</span></td>
+              <td><span class="what"><b>False positive in the checker itself.</b> <span class="mono">“1.1.2”</span> matched inside <span class="mono">“1.1.2.1”</span> after punctuation stripping. Fixed with digit-adjacency bounding + regression tests.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-fix">
+              <td class="type"><span class="mono">dafny_spec_lint</span></td>
+              <td><span class="what"><b>Refused a valid spec.</b> Modeled every declared parameter, so <span class="mono">AssessRenalFunction</span>'s unused <span class="mono">Formula</span> param made it refuse. Narrowed to only referenced parameters.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-fix">
+              <td class="type"><span class="mono">dafny_mutate</span></td>
+              <td><span class="what"><b>Two lexer + typing gaps.</b> No <span class="mono">.Floor</span> / <span class="mono">?</span> tokens; LVR formatted int-typed boundary literals as decimals, breaking Dafny's type check. Both fixed.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-fix">
+              <td class="type"><span class="mono">shared engine</span></td>
+              <td><span class="what"><b>Earlier same-session fixes.</b> <span class="mono">_find_method_header</span> matched only <span class="mono">method</span>, never <span class="mono">function</span>; <span class="mono">_REQ_ID_RE</span> truncated <span class="mono">REQ-RENAL-1a</span>. Both fixed, regression-tested.</span></td>
+              <td><span class="tag fixed">Fixed</span></td>
+            </tr>
+            <tr class="stripe s-named">
+              <td class="type"><span class="mono">LVR&nbsp;locator</span></td>
+              <td><span class="what"><b>Arithmetic-embedded literals.</b> <span class="mono">RoundHalfUp</span> / <span class="mono">CockcroftGaultCrClMlPerMin</span> hold literals inside arithmetic, off the Tier-1 scope. Left unbuilt — real new design work, and Gate C4 already proves those values.</span></td>
+              <td><span class="tag named">By design</span></td>
+            </tr>
+            <tr class="stripe s-named">
+              <td class="type"><span class="mono">SelectFormula</span></td>
+              <td><span class="what"><b>Flat ||-chain ambiguity.</b> Mutating one <span class="mono">||</span> to <span class="mono">&amp;&amp;</span> triggers Dafny's own “ambiguous” parse error. Needs real chain-grouping engineering; named, not rushed.</span></td>
+              <td><span class="tag named">By design</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MUTATION DETAIL ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Gate C5 · renal · why 51 survivors is not a red flag</p>
+      <h2>450 mutants, every survivor accounted for</h2>
+      <p>A survivor is a mutant the proof still accepts — normally a real finding. Here all 51 fall into three named, regression-tested classes, none of which is a proof gap. Counts are exact and locked in tests.</p>
+    </div>
+    <div class="strip" style="margin-top:0">
+      <div class="stat"><p class="k">Killed</p><p class="v" style="color:var(--proven)">250</p><p class="sub">boundary was load-bearing</p></div>
+      <div class="stat"><p class="k">Filtered pre-verify</p><p class="v">137</p><p class="sub">static / chain / magnitude</p></div>
+      <div class="stat"><p class="k">Survived</p><p class="v" style="color:var(--tested)">51</p><p class="sub">3 explained classes</p></div>
+      <div class="stat"><p class="k">Engine-limited</p><p class="v" style="color:var(--declared)">12</p><p class="sub">10 unclassifiable · 2 blocked</p></div>
+    </div>
+    <div class="ladder" style="margin-top:1.25rem">
+      <div class="rung r-tested"><span class="name" style="color:var(--ink)"><i class="dot" style="background:var(--tested)"></i>33 · ==&gt; narrowing</span><span class="desc">ROR/LVR that <b>narrow a one-way <span class="mono" style="font-size:0.82rem">==&gt;</span> antecedent</b> can never be killed — a subset of the original's true-set. A structural blind spot of mutation testing against guard-style dispatch; Gate C4's STPs pin these boundaries instead.</span></div>
+      <div class="rung r-bounded"><span class="name" style="color:var(--ink)"><i class="dot" style="background:var(--bounded)"></i>17 · requires weakening</span><span class="desc"><b>Preconditions not load-bearing</b> for the postconditions currently proven (e.g. <span class="mono" style="font-size:0.82rem">existingCeiling &gt; 0.0</span>). They still correctly document real domain facts — just aren't proof-necessary yet.</span></div>
+      <div class="rung r-declared"><span class="name" style="color:var(--ink)"><i class="dot" style="background:var(--declared)"></i>1 · coincidental AOR</span><span class="desc"><b>One numeric coincidence</b> on <span class="mono" style="font-size:0.82rem">RoundHalfUp</span>'s self-referential postcondition; its exact output is independently pinned by Gate C4 regardless.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Provenance</p>
+      <h2>Primary sources, each verified directly</h2>
+      <p>Every clinical citation was checked against the actual document — not a paraphrase — via direct fetch, PubMed metadata, or committed-PDF extraction.</p>
+    </div>
+    <div class="sources">
+      <div class="src"><p class="title">MHRA Drug Safety Update, vol.&nbsp;13(3)</p><p class="meta">Oct&nbsp;2019 · direct fetch · <span class="ok">verified</span></p></div>
+      <div class="src"><p class="title">KDIGO 2024 CKD Guideline</p><p class="meta">Kidney&nbsp;Int&nbsp;Suppl · committed PDF · <span class="ok">verified</span></p></div>
+      <div class="src"><p class="title">NICE NG203</p><p class="meta">direct fetch · <span class="ok">verified</span></p></div>
+      <div class="src"><p class="title">Cockcroft &amp; Gault, 1976</p><p class="meta">PMID&nbsp;1244564 · <span class="ok">verified</span></p></div>
+      <div class="src"><p class="title">Inker et al., CKD-EPI 2021</p><p class="meta">PMID&nbsp;34554658 · <span class="ok">verified</span></p></div>
+      <div class="src"><p class="title">Miller et al., NKF LIS guidance</p><p class="meta">PMID&nbsp;34918062 · <span class="ok">verified</span></p></div>
+    </div>
+  </section>
+
+  <!-- ============ OPEN ITEMS ============ -->
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">What's left</p>
+      <h2>Open items, named not hidden</h2>
+    </div>
+    <div class="open">
+      <div class="item human">
+        <span class="chip">Human</span>
+        <div class="body"><h4>Gate C6 sign-off — renal</h4><p>The accumulated NL-summary document (<code>nl_confirmation_renal_adjustment_dfy.md</code>) now covers seven amendments under one outstanding decision. The one gate no tool can close — needs a person to confirm the spec matches intent.</p></div>
+      </div>
+      <div class="item">
+        <span class="chip">Phase 3</span>
+        <div class="body"><h4>REQ-RENAL-8 flag provenance</h4><p>Who sets <code>SelectFormula</code>'s drug-classification flags, and by what process. An integration concern, not a proof blocker.</p></div>
+      </div>
+      <div class="item blocked">
+        <span class="chip">Toolchain</span>
+        <div class="body"><h4>CKD-EPI eGFR stays caller-supplied</h4><p>Not a scope choice — Dafny/Z3 cannot express its real-valued fractional exponents on a variable base. Cockcroft-Gault CrCl <em>is</em> computed and proven.</p></div>
+      </div>
+      <div class="item blocked">
+        <span class="chip">Engine</span>
+        <div class="body"><h4>Two Gate C5 limitations</h4><p>The <code>||</code>-chain ambiguity and the arithmetic-embedded LVR literals — real, documented tooling limits, worth engineering only if a future spec makes them load-bearing beyond what Gate C4 already covers.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Generated from committed captures, <span class="mono">DEVLOG.md</span>, <span class="mono">KNOWN_LIMITATIONS.md</span> &amp; the mutation reports.</span>
+    <span class="mono">payloadguard-evidence · 2026-07-09</span>
+  </footer>
+
+</div>
