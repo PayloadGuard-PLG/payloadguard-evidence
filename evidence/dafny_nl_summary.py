@@ -26,24 +26,46 @@ function - a generated summary is not itself evidence of anything. See
 examples/dosage_calculator/nl_confirmation_dosage_dfy.md for the recorded
 decision this produced for the one real spec in this repository.
 
-Scope, checked not assumed: only single-line requires/ensures clauses are
-supported (every real clause in this repo's specs is one line). A
-multi-line clause would break the citation-association logic below
-silently if not caught - so summarize_method() cross-checks its own
-line-based extraction against evidence.dafny_spec_lint's more general,
+Scope, checked not assumed, extended 2026-07-10: requires/ensures clauses
+may now span multiple physical lines (drug_interaction_checker.dfy's
+CheckInteraction has the first real one this repo has built against -
+every clause in dosage.dfy and renal_adjustment.dfy happened to be one
+line, which is why this was originally a hard single-line-only
+restriction). A continuation line is any non-blank line that isn't a
+standalone `//`-comment line and doesn't itself open a new
+requires/ensures/modifies/reads/decreases clause; a standalone comment
+line (or a blank line) always ends the clause currently being
+accumulated, so a large free-floating block comment between two clauses
+(e.g. explaining a spec-gap fix, common in this repo) is never
+misattributed as that clause's citation. Any inline `// ...` trailing
+comment is still preserved from whichever physical line it appears on,
+concatenated in source order if a clause happens to carry more than one
+- nothing is silently dropped. summarize_method() still cross-checks its
+own extraction against evidence.dafny_spec_lint's more general,
 already-tested clause extractor and refuses (SystemExit, Tier 1) on any
-mismatch, rather than risk a dropped or misattributed citation.
+mismatch, rather than risk a dropped or misattributed citation - that
+safety net is unchanged, only what it accepts got broader.
 """
 
 import re
 
 from evidence.dafny_spec_lint import (
+    _CLAUSE_KEYWORDS,
     _find_method_header,
     _parse_params,
     extract_ensures_clauses,
     extract_requires_clauses,
 )
 
+_CLAUSE_START_RE = re.compile(rf"^({'|'.join(_CLAUSE_KEYWORDS)})\b\s*(.*)$")
+# Preserved for evidence.dafny_mutate's _locate_clause_sites, which imports
+# this by name to locate single-line mutation sites by absolute offset - a
+# different need (byte-precise position within one physical line) than this
+# module's own multi-line-capable _extract_annotated_clauses below. Not
+# re-derived from _CLAUSE_START_RE since the two callers want genuinely
+# different match groups (this one captures an optional trailing comment
+# inline; _CLAUSE_START_RE's caller here handles comments separately, line
+# by line, to support continuations).
 _CLAUSE_LINE_RE = re.compile(r"^\s*(requires|ensures)\s+(.*?)\s*(?://\s*(.*))?$")
 # [A-Za-z0-9-]: a real bug, not a hypothetical, surfaced by
 # renal_adjustment.dfy's REQ-RENAL-1a (2026-07-08) - the original
@@ -79,22 +101,66 @@ def _gloss(clause_code):
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _split_code_comment(text):
+    """Split one physical line's already-keyword-stripped text at its
+    first `//` into (code, comment) - Dafny clauses never contain `//`
+    inside a string literal, so a plain find is safe here."""
+    idx = text.find("//")
+    if idx == -1:
+        return text.strip(), ""
+    return text[:idx].strip(), text[idx + 2:].strip()
+
+
 def _extract_annotated_clauses(source, method_name, keyword):
-    """Line-based extraction that preserves trailing `// ...` comments as
+    """Line-based extraction that preserves `// ...` comments as
     citations - evidence.dafny_spec_lint's extractors strip comments
     before this module ever sees the text, so citations have to be
-    pulled separately, here, from the original source. Only matches
-    clauses that are exactly one line; summarize_method() is responsible
-    for detecting when that assumption doesn't hold."""
+    pulled separately, here, from the original source.
+
+    Clauses may span multiple physical lines: once a `requires`/`ensures`/
+    etc. line opens a clause, every following line is treated as a
+    continuation of it until a blank line, a standalone `//`-comment
+    line, or the next clause-keyword line closes it - so a free-floating
+    block comment between two clauses is never swept in as either one's
+    citation. summarize_method() cross-checks the result against
+    evidence.dafny_spec_lint's canonical (comment-stripped) extractor and
+    refuses on any mismatch, so a genuinely unanticipated shape is caught
+    there, not silently misparsed here."""
     header = _find_method_header(source, method_name)
     clauses = []
-    for line in header.splitlines():
-        m = _CLAUSE_LINE_RE.match(line)
-        if m and m.group(1) == keyword:
-            code = m.group(2).strip()
-            comment = (m.group(3) or "").strip()
+    current_keyword = None
+    code_parts = []
+    comment_parts = []
+
+    def flush():
+        if current_keyword == keyword:
+            code = " ".join(p for p in code_parts if p)
+            comment = " ".join(comment_parts)
             if code:
                 clauses.append((code, comment))
+
+    for line in header.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("//"):
+            flush()
+            current_keyword = None
+            code_parts, comment_parts = [], []
+            continue
+        m = _CLAUSE_START_RE.match(stripped)
+        if m:
+            flush()
+            current_keyword = m.group(1)
+            code, comment = _split_code_comment(m.group(2))
+            code_parts = [code]
+            comment_parts = [comment] if comment else []
+        elif current_keyword is not None:
+            code, comment = _split_code_comment(stripped)
+            code_parts.append(code)
+            if comment:
+                comment_parts.append(comment)
+        # else: a line before any clause keyword has appeared yet (e.g.
+        # still inside the parameter list) - not part of any clause.
+    flush()
     return clauses
 
 
@@ -105,7 +171,9 @@ def _normalize(text):
 def summarize_method(source, method_name):
     """Gate C6: the plain-English summary a human signs off on. Returns
     a markdown string. Raises SystemExit if any requires/ensures clause
-    for method_name isn't a single line - refusing to guess a citation
+    for method_name can't be reconstructed exactly by the line-based
+    extraction above (e.g. a standalone comment line interrupting a
+    multi-line clause's continuation) - refusing to guess a citation
     association rather than silently dropping or misattributing one."""
     header = _find_method_header(source, method_name)
     params = _parse_params(header)
@@ -125,10 +193,11 @@ def summarize_method(source, method_name):
     canonical_ensures_norm = [_normalize(c) for c in canonical_ensures]
     if requires_norm != canonical_requires_norm or ensures_norm != canonical_ensures_norm:
         raise SystemExit(
-            f"Gate C6 summary generator only supports single-line "
-            f"requires/ensures clauses; {method_name!r} appears to have "
-            "one that isn't - refusing to guess a citation association "
-            "rather than risk a dropped or misattributed one"
+            f"Gate C6 summary generator could not exactly reconstruct one "
+            f"or more requires/ensures clauses for {method_name!r} (e.g. a "
+            "standalone comment line interrupting a multi-line clause) - "
+            "refusing to guess a citation association rather than risk a "
+            "dropped or misattributed one"
         )
 
     lines = [f"# Plain-English summary: `{method_name}`", ""]

@@ -6,6 +6,117 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C6 for drug_interaction_checker: genuinely extended the shared NL-summary generator, a different call than renal_adjustment's own equivalent gap
+
+Same day, later still. Direct instruction: "buiod out c6 please." First
+attempt at `evidence.dafny_nl_summary.summarize_method("CheckInteraction")`
+refused outright: `CheckInteraction`'s one `requires` clause spans three
+physical lines -
+
+```dafny
+requires !(doac == Apixaban &&
+           (agent == Rifampicin || agent == Carbamazepine ||
+            agent == Phenytoin || agent == Phenobarbital))
+```
+
+- the first genuinely multi-line clause this repo has pointed the
+summary generator at. Every clause in `dosage.dfy` was one line;
+`renal_adjustment.dfy` hit an equivalent gap for two `ensures` clauses
+in `AssessRenalFunctionFromInputs`, and that time the fix was to
+reformat them to single-line rather than extend the tool - recorded
+explicitly at the time as "a formatting choice that was mine, not a
+genuine spec need," not a tool bug.
+
+Considered doing the same thing here (briefly edited the `requires`
+clause down to one line, verified the diff was clean, then reverted it)
+before deciding against it: unlike `renal_adjustment.dfy` at the point
+its equivalent gap was found, this spec already had a committed Gate C1
+capture, a 22-lemma Gate C4 STP suite, and a 962-mutant Gate C5 mutation
+report all captured against the file exactly as currently formatted.
+Reformatting the `requires` clause - even though Dafny doesn't care
+about line breaks and the semantics are byte-identical either way -
+would have meant re-running and re-committing all three of those
+artifacts to keep them honestly bound to the source they claim to
+verify, for a change with zero semantic content. So the call went the
+other way this time: extend the tool, not reformat the spec, for a
+concrete, checkable reason (downstream artifact cost), not
+inconsistency with the earlier decision.
+
+**Fixed** in `evidence/dafny_nl_summary.py`: `_extract_annotated_clauses`
+now accumulates a clause across multiple physical lines. A continuation
+line is any non-blank line that isn't a standalone `//`-comment line and
+doesn't itself open a new `requires`/`ensures`/`modifies`/`reads`/
+`decreases` clause; a standalone comment line (or blank line) always
+ends the clause currently being accumulated. This matters concretely
+here: a 17-line block comment sits between `CheckInteraction`'s
+`requires` clause and its first `ensures` clause (explaining the Gate C4
+finding that led to the 60 pinning clauses below it) - without the
+"standalone comment ends accumulation" rule, that whole block would have
+been swept into the `requires` clause's own text and searched for a
+`// REQ-ID` citation that was never meant for it.
+
+The original single-line-only regex (`_CLAUSE_LINE_RE`) was kept, not
+deleted - `evidence/dafny_mutate.py::_locate_clause_sites` imports it by
+name for a different, byte-precise need (absolute offsets of a mutation
+site within one physical line), which this extension didn't need to
+touch. This is also why Gate C5's own mutation report could already
+mutate the `doac == Apixaban` comparison inside this same multi-line
+`requires` clause successfully, even before this fix existed - it sits
+on the clause's first physical line, and the two modules had different,
+independently correct notions of "clause" for their different purposes.
+
+The safety net itself is unchanged in spirit: `summarize_method` still
+cross-checks its extraction against `dafny_spec_lint`'s canonical
+extractor and refuses (`SystemExit`) on any mismatch. A comment sitting
+on its own line *inside* a multi-line boolean expression (as opposed to
+between two clauses) still correctly refuses - the "standalone comment
+ends accumulation" rule orphans the continuation lines after it,
+producing a truncated clause that no longer matches canonical
+extraction, genuinely ambiguous rather than something to guess at.
+Confirmed with a new regression test.
+
+Verified end-to-end against the real, committed spec: all 60 `ensures`
+clauses and the one multi-line `requires` clause reconstruct
+byte-for-byte correctly - cross-checked programmatically against
+`summarize_method`'s own output before being embedded in the sign-off
+document, not just visually inspected.
+
+**A real, notable fact this summary surfaces, not a defect:** none of
+`CheckInteraction`'s 60 `ensures` clauses carry an inline `// REQ-DDI-*`
+citation - every postcondition in the generated summary reads `*(no
+requirement cited)*`. Unlike `dosage.dfy`'s and `renal_adjustment.dfy`'s
+per-clause citation style, this spec is validated against
+`sources/sps-doac-interactions-2024.md` as a whole lookup table (Gate
+1a/1c), not REQ-ID by REQ-ID - accurate, not a gap, but flagged
+explicitly in the sign-off document for Steven to confirm is the right
+traceability model for this shape of spec.
+
+3 new/changed tests in `tests/test_dafny_nl_summary.py`: one obsolete
+blanket single-line-only refusal test rewritten in place
+(`test_multiline_clause_is_summarized_correctly_not_refused`, preserving
+the original regression-protection intent - a dropped or truncated
+continuation still fails this test, it just no longer does so via a
+blanket refusal), one new test for the still-genuinely-refusing
+mid-clause-comment case
+(`test_standalone_comment_inside_a_multiline_clause_still_refuses`), and
+one new end-to-end test against the real committed spec
+(`test_real_ddi_spec_multiline_requires_clause_summarizes_correctly`).
+
+Gate C6's actual deliverable - the recorded human decision, not the
+mechanical summary - is
+`examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`.
+Its Decision section is **pending Steven's review, not yet confirmed**,
+same discipline as `renal_adjustment`'s own still-open Gate C6 sign-off.
+Full documentation ripple: `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`
+("Phase E Gate C6" section), `HANDOFF.md`, `PHASE1_PLAN.md`.
+
+**All six Gate C1-C6 pipeline steps have now been built or confirmed for
+this example** - the third worked example this repo has carried all the
+way through. What remains: Steven's actual Gate C6 sign-off decision,
+and the two explicitly out-of-scope v2 items (`REQ-DDI-5`/`REQ-DDI-6`).
+
+190 tests pass (up from 188).
+
 ## 2026-07-10 — Gate C5 for drug_interaction_checker: found and fixed a real crash bug in Gate C3's own code, then 7 real survivors
 
 Same day, later still. Direct instruction: "c5 please." Mirrored

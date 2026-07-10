@@ -115,6 +115,49 @@ would be "always killed" was wrong — corrected in place in
 silently rewritten. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5"
 section. Gate C6 is the only gate left unbuilt for this example.
 
+**Sixth same-day addendum: Gate C6 built, genuinely extended the shared
+NL-summary generator — a different call than `renal_adjustment`'s own
+equivalent gap.** `evidence/dafny_nl_summary.py::summarize_method`
+refused outright on first attempt: `CheckInteraction`'s one `requires`
+clause spans three physical lines, the first genuinely multi-line clause
+this repo has pointed the summary generator at (every clause in
+`dosage.dfy`/`renal_adjustment.dfy` happened to be one line).
+`renal_adjustment` hit an equivalent gap for two `ensures` clauses and
+that time the fix was to reformat them to single-line rather than extend
+the tool ("a formatting choice that was mine, not a genuine spec need").
+**This time the call went the other way, for a concrete reason**: this
+spec already had committed Gate C1/C4/C5 captures bound to its current
+formatting, so a cosmetic reformat would have meant re-running and
+re-committing all three for a change with zero semantic content. Fixed
+instead by making `_extract_annotated_clauses` accumulate a clause
+across multiple physical lines — ending accumulation at a blank line, a
+standalone `//`-comment line, or the next clause keyword, so a
+free-floating block comment between two clauses (this spec has several)
+is never misattributed as either clause's citation. The original
+single-line regex is preserved unchanged, since `dafny_mutate.py`
+imports it for a different, byte-precise need this extension didn't
+touch. The safety net is unchanged in spirit: still cross-checks against
+`dafny_spec_lint`'s canonical extractor and refuses on any mismatch — a
+comment sitting on its own line *inside* a multi-line clause (as opposed
+to between two clauses) still correctly refuses, genuinely ambiguous,
+confirmed by a new regression test. Verified end-to-end: all 60
+`ensures` clauses and the one multi-line `requires` clause reconstruct
+byte-for-byte correctly. **A real, notable fact this summary surfaces,
+not a defect**: none of `CheckInteraction`'s 60 `ensures` clauses carry
+an inline `REQ-DDI-*` citation — unlike `dosage.dfy`/`renal_adjustment.dfy`'s
+per-clause style, this spec is validated as a whole lookup table, so
+every `*(no requirement cited)*` is accurate, flagged explicitly for
+Steven to confirm at sign-off. Presented in
+`examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`
+— **pending Steven's review, not yet confirmed**, same discipline as
+`renal_adjustment`'s own still-open Gate C6 sign-off above. 3 new/changed
+tests in `tests/test_dafny_nl_summary.py`, 190 total (up from 188). See
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C6" section. **All six Gate C1–C6
+pipeline steps have now been built or confirmed for this example** —
+what remains is Steven's actual sign-off decision (recorded in the
+`nl_confirmation_*.md` document, not this file), plus the explicitly
+out-of-scope v2 items (`REQ-DDI-5`/`REQ-DDI-6`).
+
 ## What this repo is, in one paragraph
 
 Turns real verification tool output (CrossHair, Dafny/Z3) plus authored
@@ -179,8 +222,8 @@ handoff file's example-agnostic summary. As of this writing:
 - **The only thing left before this example's Phase 2 is done: Gate
   C6's sign-off.** Everything else is built.
 
-**`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1,
-C2, C3, C4, and C5 built, Gate C6 not yet started.** Read
+**`examples/drug_interaction_checker/` — Phase 2 underway, all six
+Gates C1–C6 built or confirmed.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -250,7 +293,23 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   Gate C5), 2 unclassifiable (genuine Dafny type errors, a different
   failure mode from `renal_adjustment`'s parser-ambiguity case). See
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section.
-- Gate C6 not started. Two items named, not built:
+- **Gate C6 (NL-dialogue confirmation) built.** Refused on first
+  attempt — `CheckInteraction`'s one `requires` clause is the first
+  genuinely multi-line clause this repo has pointed
+  `evidence/dafny_nl_summary.py::summarize_method` at. Fixed by
+  genuinely extending the tool to accumulate a clause across multiple
+  physical lines (a deliberately different call than `renal_adjustment`'s
+  own equivalent gap, which was fixed by reformatting the spec instead —
+  this spec already had Gate C1/C4/C5 captures bound to its current
+  formatting, so reformatting would have meant re-committing all three
+  for a cosmetic change). Verified end-to-end against the real spec;
+  presented for sign-off in
+  `nl_confirmation_drug_interaction_checker_dfy.md` — **pending
+  Steven's review, not yet confirmed**. See `KNOWN_LIMITATIONS.md`'s
+  "Phase E Gate C6" section.
+- All six Gate C1–C6 pipeline steps built or confirmed for this
+  example. What remains: Steven's actual Gate C6 sign-off decision, and
+  two explicitly out-of-scope v2 items, not built:
   `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
   cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
   targets, staged as v2 — "both but in order of difficulty").
@@ -356,7 +415,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  188 as of this writing.
+  190 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch

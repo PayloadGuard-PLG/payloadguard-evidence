@@ -61,11 +61,18 @@ def test_gloss_renders_common_operators_as_words():
     assert "x is greater than 0 and y is greater than 0" in summary
 
 
-def test_refuses_a_multiline_clause_rather_than_dropping_its_continuation():
-    """The regression this module's own design guards against: a
-    multi-line clause must never silently lose its continuation line -
-    caught by comparing against dafny_spec_lint's canonical (multi-line-
-    capable) extraction, not just counting clauses."""
+def test_multiline_clause_is_summarized_correctly_not_refused():
+    """Real gap found 2026-07-10 building Gate C6 for
+    drug_interaction_checker.dfy: its one requires clause is the first
+    genuinely multi-line clause this repo has built against (every clause
+    in dosage.dfy/renal_adjustment.dfy happened to be one line). Before
+    this fix, summarize_method refused outright on any multi-line clause
+    rather than risk dropping its continuation - now it assembles the
+    full clause correctly, still verified byte-for-byte against
+    dafny_spec_lint's canonical multi-line-capable extractor (the
+    original regression-protection intent, preserved: a dropped or
+    truncated continuation still fails this test, it just no longer does
+    so via a blanket refusal)."""
     source = """
     method Multi(x: int) returns (r: int)
       requires x > 0
@@ -75,8 +82,49 @@ def test_refuses_a_multiline_clause_rather_than_dropping_its_continuation():
       r := x;
     }
     """
-    with pytest.raises(SystemExit, match="single-line"):
-        summarize_method(source, "Multi")
+    summary = summarize_method(source, "Multi")
+    assert "`x > 0 && x < 100`" in summary
+
+
+def test_standalone_comment_inside_a_multiline_clause_still_refuses():
+    """A multi-line clause's continuation lines are only ever joined up to
+    the first blank line, standalone `//`-comment line, or next clause
+    keyword - deliberately, so a free-floating block comment BETWEEN two
+    clauses is never misattributed as either one's citation (the common
+    shape in this repo's own specs). The cost of that choice: a comment
+    sitting on its own line INSIDE a multi-line boolean expression
+    (rather than between two clauses) genuinely orphans the continuation
+    lines after it, producing a truncated clause that no longer matches
+    dafny_spec_lint's canonical extraction - correctly caught by the
+    existing cross-check and refused, not silently misparsed."""
+    source = """
+    method Split(x: int) returns (r: int)
+      requires x > 0
+        // an explanatory comment stuck mid-expression, not at the end
+        && x < 100
+      ensures r == x
+    {
+      r := x;
+    }
+    """
+    with pytest.raises(SystemExit, match="could not exactly reconstruct"):
+        summarize_method(source, "Split")
+
+
+def test_real_ddi_spec_multiline_requires_clause_summarizes_correctly():
+    """End-to-end confirmation against the real, committed spec that
+    motivated this extension: CheckInteraction's one requires clause
+    spans three physical lines and carries no inline REQ-ID citation (a
+    real, notable fact about this function worth surfacing at sign-off -
+    unlike dosage.dfy/renal_adjustment.dfy, none of this spec's clauses
+    cite a per-clause REQ-ID; the source is validated as a whole table
+    instead)."""
+    source = (DDI_ART_DIR / "drug_interaction_checker.dfy").read_text()
+    summary = summarize_method(source, "CheckInteraction")
+    assert (
+        "`!(doac == Apixaban && (agent == Rifampicin || agent == Carbamazepine "
+        "|| agent == Phenytoin || agent == Phenobarbital))`" in summary
+    )
 
 
 def test_method_with_no_requires_or_ensures_still_summarizes():
@@ -109,6 +157,7 @@ def test_summary_is_deterministic():
 # regression tests for each.
 
 RENAL_ART_DIR = REPO_ROOT / "examples" / "renal_adjustment"
+DDI_ART_DIR = REPO_ROOT / "examples" / "drug_interaction_checker"
 
 
 def test_summarizes_a_function_not_just_a_method():
