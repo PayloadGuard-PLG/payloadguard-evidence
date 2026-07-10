@@ -2,8 +2,11 @@
 
 Status: **Gate 1a (clinical source audit) done. Gate 1b (spec-skeleton
 design decisions) recorded below. Gate 1c (internal consistency and
-completeness audit) not yet performed — that's the next step, not
-skipped.** Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s
+completeness audit) performed 2026-07-10 — see `GATE_1C_AUDIT.md`.
+Found three real findings (an incomplete `Outcome` taxonomy, a
+non-total `CheckInteraction` over its own declared `Agent` type, and a
+genuinely ambiguous pair of source cells); none resolved yet, so **Gate
+1 is not yet closeable.** Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s
 structure; read that file for the general pattern this one follows.
 
 ## Objective
@@ -41,7 +44,7 @@ built from the raw re-fetch, not the summary.
 | ID | Requirement | Source |
 |---|---|---|
 | REQ-DDI-1 | The checker returns one of a fixed set of outcome kinds — `NoInteractionExpected`, `Caution`, `Avoid`, `Contraindicated`, `DoseReductionAdvised`, `NotCovered` — never a bare boolean. `NotCovered` is distinct from `NoInteractionExpected`: digoxin gets an explicit stated negative ("No interactions are expected between digoxin and DOACs"); an agent never mentioned on the source page (e.g. apixaban+dronedarone, see REQ-DDI-2) gets `NotCovered`, not an assumed negative. | `sources/sps-doac-interactions-2024.md`, digoxin entry + scope statement. |
-| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent): Outcome` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering 14 of the source's 17 named entries: Amiodarone, Digoxin, Diltiazem, Dronedarone (incl. the apixaban `NotCovered` gap), Verapamil, Clarithromycin, Erythromycin(systemic), Other-DOAC/heparin/warfarin, Fluconazole, Itraconazole, Ketoconazole, Aspirin/Clopidogrel/Ticagrelor (antiplatelets), Ciclosporin, Tacrolimus, Ibuprofen/Naproxen (NSAIDs), Levetiracetam/valproate. Each cell's outcome kind is per-DOAC where the source differentiates (e.g. dabigatran=`Contraindicated` with itraconazole/ketoconazole, apixaban/rivaroxaban=`Avoid`... — see the source doc for every cell) — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections. |
+| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent): Outcome` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering 14 of the source's 17 named sections with no extra caller input needed: Amiodarone, Digoxin, Diltiazem, Dronedarone (incl. the apixaban `NotCovered` gap), Verapamil, Clarithromycin, Erythromycin(systemic), Other-DOAC/heparin/warfarin, Fluconazole, Itraconazole, Ketoconazole, Aspirin/Clopidogrel/Ticagrelor (antiplatelets), Ciclosporin, Tacrolimus, Ibuprofen/Naproxen (NSAIDs), Levetiracetam/valproate. **A 15th section, SSRIs/SNRIs, is also in v1 but needs one extra caller-supplied flag — see REQ-DDI-3, its own row, not folded into this count.** 15 of 17 in v1; the remaining 2 (Rifampicin, Carbamazepine/phenytoin/phenobarbital) are named and deferred in REQ-DDI-5, not silently dropped — see `GATE_1C_AUDIT.md`'s "Total coverage check" for the arithmetic error an earlier draft of this row had (miscounted as "14 of 17" with no accounting for where SSRI/SNRI's entry went). Each cell's outcome kind is per-DOAC where the source differentiates (e.g. dabigatran=`Contraindicated` with itraconazole/ketoconazole, apixaban/rivaroxaban=`Avoid`... — see the source doc for every cell) — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections. |
 | REQ-DDI-3 | SSRIs/SNRIs are in v1 scope despite carrying an extra factor: dabigatran's dose-reduction advice is conditional on a **caller-supplied** `hasOtherBleedingRiskFactors: bool` — "consider a dose reduction... if the individual also has other risk factors for bleeding." Same trust-boundary shape as `renal_adjustment.dfy`'s `REQ-RENAL-8` (caller-supplied classification flags): the proof establishes correct branching given the flag, not the correctness of the flag's clinical determination. Cheap enough to include in v1 rather than deferred, unlike REQ-DDI-5 below. | `sources/sps-doac-interactions-2024.md`, SSRIs/SNRIs entry. |
 | REQ-DDI-4 | Fail-safe: any `(doac, agent)` pair not present in the source's named set — including within-source gaps like apixaban+dronedarone — returns `NotCovered`, never silently `NoInteractionExpected`. Same "never default to the safe-looking answer on missing data" principle as `renal_adjustment.dfy`'s `REQ-RENAL-4`. | Design invariant, same category as `REQ-RENAL-4`; grounded in REQ-DDI-1's `NotCovered`/`NoInteractionExpected` distinction. |
 | REQ-DDI-5 (**named, deferred — not built in v1**) | Rifampicin and Carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication (AF-stroke-prevention/DVT-PE-recurrence-prevention vs. other indications) — genuinely new modeling (a `TreatmentIndication` caller input), not a cheap flag addition like REQ-DDI-3. Same pattern as `renal_adjustment`'s combined creatinine-cystatin-C eGFR: named as a real, sourced, feasible extension, not built because it doesn't change whether the core pipeline generalizes. | `sources/sps-doac-interactions-2024.md`, rifampicin + carbamazepine/phenytoin/phenobarbital entries. |
@@ -137,29 +140,30 @@ out completely and verifying against Dafny 4.11.0, matching
 `renal_adjustment`'s Gate 1b→C1 discipline (skeleton first, real capture
 before treating any of it as evidence).
 
-## Still open — for Gate 1c to check, not resolved here
+## Still open — performed in Gate 1c, not resolved there
 
-1. Whether every one of REQ-DDI-2's ~14×(1-4 DOACs each) cells has been
-   transcribed correctly from `sources/sps-doac-interactions-2024.md`
-   into the eventual `.dfy` file — Gate 1c's actual job, same as it was
-   for `renal_adjustment`'s `GStage`-misapplication finding.
-2. Whether `DoseReductionAdvised` should carry the outcome-kind payload
+Superseded by `GATE_1C_AUDIT.md`'s three named findings (risk-direction
+axis, `CheckInteraction` non-totality over the two deferred agents, the
+two ambiguous "clinically-not-relevant" cells) and its own "Open
+judgment calls" section — see that file for the current, complete list
+rather than this one, which predates the audit. Retained below only for
+the one item the audit didn't independently re-raise:
+
+1. Whether `DoseReductionAdvised` should carry the outcome-kind payload
    differently once REQ-DDI-6 (v2) is built, or whether a same-named
    companion function returning the numeric target is cleaner — a Gate
    1b-level design call better made once v1 is real and verified, not
    guessed at now.
-3. REQ-DDI-5's indication axis: if it's ever built, does it become a
-   third parameter on `CheckInteraction` or a separate function layered
-   on top? Not needed to decide before v1.
 
 ## Documentation set updated so far
 
 - `sources/sps-doac-interactions-2024.md` (this Phase 1's primary
   citation extract).
 - This file.
+- `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
 
 Not yet updated (deliberately — nothing built yet to describe):
 `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`.
-Those get real entries once Gate 1c closes and Gate C1 (spec + capture)
+Those get real entries once Gate 1 closes and Gate C1 (spec + capture)
 actually exists, same discipline `renal_adjustment` followed — no
 provisional entries for work that doesn't exist yet.
