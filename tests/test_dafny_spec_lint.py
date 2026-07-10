@@ -18,9 +18,11 @@ from evidence.dafny_spec_lint import (  # noqa: E402
     check_precondition_satisfiability,
     extract_requires_clauses,
     scan_weak_postconditions,
+    _parse_enum_datatypes,
 )
 
 ART_DIR = REPO_ROOT / "examples" / "dosage_calculator"
+DDI_ART_DIR = REPO_ROOT / "examples" / "drug_interaction_checker"
 
 
 # --------------------------------------------------------- vector 1: Z3
@@ -127,10 +129,14 @@ def test_unreferenced_unsupported_type_parameter_does_not_block_the_check():
     assert verdict == "sat"
 
 
-def test_referenced_unsupported_type_parameter_still_refuses():
-    """The narrowing above must not swallow a real refusal - if the
-    unsupported-type parameter IS referenced by a requires clause, this
-    must still refuse exactly as before."""
+def test_referenced_simple_enum_datatype_parameter_is_now_modeled():
+    """Extended 2026-07-10 (drug_interaction_checker.dfy's Gate C3): a
+    referenced parameter whose type is a SIMPLE Dafny datatype - every
+    constructor zero-argument, e.g. `Formula = A | B` - is modeled as a
+    Z3 EnumSort, not refused. This is the exact case
+    drug_interaction_checker.dfy's own precondition hits
+    (`doac == Apixaban`, `agent == Rifampicin`, ...), confirmed to refuse
+    before this extension existed."""
     source = """
     datatype Formula = A | B
     function UsesTheDatatypeParam(formula: Formula, x: real): bool
@@ -141,8 +147,94 @@ def test_referenced_unsupported_type_parameter_still_refuses():
       true
     }
     """
+    verdict, detail = check_precondition_satisfiability(source, "UsesTheDatatypeParam")
+    assert verdict == "sat", detail
+
+
+def test_referenced_unsupported_type_parameter_still_refuses():
+    """The narrowing above must not swallow a real refusal - if the
+    unsupported-type parameter IS referenced by a requires clause AND
+    it's not a simple enum (here, a parameterized constructor - EnumSort
+    can't represent a datatype with fields at all), this must still
+    refuse exactly as before."""
+    source = """
+    datatype Formula = A | B(n: int)
+    function UsesTheDatatypeParam(formula: Formula, x: real): bool
+      requires formula == A
+      requires x >= 0.0
+      ensures true
+    {
+      true
+    }
+    """
     with pytest.raises(SystemExit, match="unsupported Dafny parameter type"):
         check_precondition_satisfiability(source, "UsesTheDatatypeParam")
+
+
+def test_real_drug_interaction_checker_precondition_is_satisfiable():
+    """True-positive regression against the real, committed spec: the
+    exact scenario that originally exposed this gap. CheckInteraction's
+    requires clause references both doac and agent (both simple-enum
+    datatypes) directly - refuses without the EnumSort extension,
+    confirmed empirically before it was built."""
+    source = (DDI_ART_DIR / "drug_interaction_checker.dfy").read_text()
+    verdict, detail = check_precondition_satisfiability(source, "CheckInteraction")
+    assert verdict == "sat", detail
+
+
+def test_enum_comparison_precondition_can_still_be_unsat():
+    """The EnumSort extension must not make every datatype-comparing
+    precondition trivially sat - a genuinely contradictory one (no value
+    of the enum can be both A and B) must still be caught."""
+    source = """
+    datatype Formula = A | B
+    function Contradictory(formula: Formula): bool
+      requires formula == A
+      requires formula == B
+      ensures true
+    {
+      true
+    }
+    """
+    verdict, detail = check_precondition_satisfiability(source, "Contradictory")
+    assert verdict == "unsat", detail
+
+
+def test_parse_enum_datatypes_handles_multiline_declaration():
+    """Dafny datatype declarations aren't required to fit on one line -
+    drug_interaction_checker.dfy's own Agent datatype spans several.
+    Direct unit test of the extractor, independent of the full
+    satisfiability check."""
+    source = """
+    datatype Agent =
+        Amiodarone | Digoxin | Diltiazem
+      | Dronedarone | Verapamil
+    function F(agent: Agent): bool
+      requires agent == Amiodarone
+      ensures true
+    {
+      true
+    }
+    """
+    enums = _parse_enum_datatypes(source)
+    assert enums["Agent"] == [
+        "Amiodarone", "Digoxin", "Diltiazem", "Dronedarone", "Verapamil"
+    ]
+
+
+def test_parse_enum_datatypes_excludes_parameterized_constructors():
+    """A datatype with any parameterized constructor isn't a simple
+    enumeration and isn't representable as a Z3 EnumSort - it must be
+    excluded from the result entirely, not partially or incorrectly
+    modeled. Mirrors drug_interaction_checker.dfy's own
+    InteractionResult(outcome: Outcome, direction: RiskDirection)."""
+    source = """
+    datatype InteractionResult = InteractionResult(outcome: Outcome, direction: RiskDirection)
+    datatype Outcome = NoInteractionExpected | Caution
+    """
+    enums = _parse_enum_datatypes(source)
+    assert "InteractionResult" not in enums
+    assert enums["Outcome"] == ["NoInteractionExpected", "Caution"]
 
 
 def test_nat_parameter_gets_implicit_nonnegativity_constraint():

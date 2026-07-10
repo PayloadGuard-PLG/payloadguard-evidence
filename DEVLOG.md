@@ -6,6 +6,74 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C3 for drug_interaction_checker: required extending shared tooling, not just running it
+
+Same day, later still. Direct instruction: "go ahead and build gate
+C3." Applied `evidence/dafny_spec_lint.py`'s vector 1
+(`check_precondition_satisfiability`) to `CheckInteraction` and it
+genuinely refused: `requires !(doac == Apixaban && ...)` compares
+`doac`/`agent` directly against named datatype constructors, and the
+translator's `_TYPE_MAP` only ever modeled `real`/`int`/`nat`/`bool` -
+confirmed empirically before touching anything (`SystemExit:
+unsupported Dafny parameter type 'DOAC'`). This is the exact risk named
+at the very start of scoping this domain, now actually hit: a
+materially different, harder gap than `renal_adjustment`'s own Gate C3
+finding (a datatype-typed parameter simply unreferenced by its
+precondition - narrowing to "only model referenced parameters" was
+enough there; here the referenced parameters genuinely need a Z3
+representation that never existed).
+
+**Fixed by extending the shared module for real**, not routing around
+it. `DOAC`, `Agent`, `Outcome`, and `RiskDirection` are all simple Dafny
+datatypes (every constructor zero-argument) - representable natively as
+a Z3 `EnumSort`. New `_parse_enum_datatypes` finds every such
+declaration in a source file (handling the multi-line form `Agent`'s
+own declaration actually uses), and `build_symbol_table` now builds one
+`EnumSort` per referenced enum type, adding each constructor name as a
+resolvable symbol the same way `true`/`false` already resolve - no
+parser changes needed. `InteractionResult` (one parameterized
+constructor) is correctly excluded, still refused exactly as before -
+`EnumSort` has no way to represent fields.
+
+**A second, independent, more general bug caught while building the
+regression suite, not by inspection.** Two of the new test fixtures
+both happened to declare `datatype Formula = A | B` and running them in
+the same pytest session raised `z3.z3types.Z3Exception: enumeration
+sort name is already declared` - Z3 registers `EnumSort` names globally
+per process context, not per call. A real footgun for any future caller
+of `build_symbol_table`, not specific to this spec. Fixed with a
+monotonic per-call counter appended to the registered sort's internal
+Z3 name.
+
+**Verified against the real, committed spec.** `CheckInteraction`'s
+precondition: `sat` (`agent = Naproxen, doac = Dabigatran` is a real Z3
+model), confirming Gate C1's `1 verified, 0 errors` isn't vacuous.
+Vector 2 flags all 60 pinning `ensures` clauses, exactly as many as
+exist - the same "exhaustive, mutually-exclusive dispatch" pattern
+already established for `renal_adjustment`'s `GStage`/`SelectFormula`,
+independently backed here by Gate C4's real STP proofs rather than just
+asserted benign.
+
+5 new tests in `tests/test_dafny_spec_lint.py` for the extension itself
+(a real-spec true-positive, an unsat case confirming EnumSort
+comparisons can still correctly fail, a multi-line declaration parse, a
+parameterized-constructor exclusion); one pre-existing test rewritten
+in place rather than deleted -
+`test_referenced_unsupported_type_parameter_still_refuses`'s original
+fixture became a *supported* case by this extension, so its datatype
+was changed to a parameterized one, preserving the original regression
+intent. `tests/test_drug_interaction_checker_spec_lint.py` (new) is the
+real-spec application, mirroring `test_renal_adjustment_spec_lint.py`'s
+structure exactly. Full documentation ripple: `SYSTEM_BLUEPRINT.md`
+(the `evidence/dafny_spec_lint.py` component-map entry, Section 8),
+`KNOWN_LIMITATIONS.md` ("Phase E Gate C3" section, plus a note on the
+original Phase C Gate C3 entry pointing at the extension),
+`HANDOFF.md`, `PHASE1_PLAN.md`.
+
+179 tests pass (up from 171 before this session's Gate C1/C3/C4 work -
+5 new for the dafny_spec_lint.py extension, 3 new for the real-spec
+application; the one rewritten test doesn't change the count).
+
 ## 2026-07-10 — Gate C4 for drug_interaction_checker: the Gate C1 fix was itself only a stopgap
 
 Same day, later still. Direct instruction: "go ahead and build gate

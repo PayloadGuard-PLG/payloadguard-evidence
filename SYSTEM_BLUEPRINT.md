@@ -1,12 +1,16 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-10 (a third worked example,
-`examples/drug_interaction_checker/`, was scoped and its Gates C1 and
-C4 built — see the new Section 8 and its component-map entry below.
+`examples/drug_interaction_checker/`, was scoped and its Gates C1, C4,
+and C3 built — see the new Section 8 and its component-map entry below.
 Gate C4 found a real spec gap larger than Gate C1's own first-draft
 finding: the original 3-clause `ensures` set didn't pin almost anything;
 fixed with 60 comprehensive pinning clauses plus a real ACCEPT/REJECT
-STP suite. A real content review earlier the same day, not a bare date
+STP suite. Gate C3 required extending `evidence/dafny_spec_lint.py`
+itself — a shared module, not just this example's own files — to model
+Dafny datatype comparisons via Z3 `EnumSort`, plus a fix for a real,
+generally-applicable EnumSort name-collision bug caught along the way.
+A real content review earlier the same day, not a bare date
 bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
 empirically tested, not asserted — see Section 7 and
 `GATE_1C_AUDIT.md`'s 2026-07-10 addendum; a PayloadGuard pre-merge CI
@@ -264,7 +268,15 @@ payloadguard-evidence/
 │                                 real satisfiability via a small scoped
 │                                 expression translator (refuses on
 │                                 quantifiers/unsupported syntax rather
-│                                 than mistranslating). vector 2 -
+│                                 than mistranslating) - extended
+│                                 2026-07-10 (drug_interaction_checker's
+│                                 Gate C3) to model simple, zero-argument-
+│                                 constructor Dafny datatypes as a Z3
+│                                 EnumSort via _parse_enum_datatypes, once
+│                                 a real precondition (CheckInteraction's)
+│                                 compared datatype-typed parameters
+│                                 directly rather than merely declaring
+│                                 them unreferenced. vector 2 -
 │                                 scan_weak_postconditions(): heuristic,
 │                                 best-effort flag of one-way ==> ensures
 │                                 clauses without a matching <==>. Neither
@@ -595,12 +607,12 @@ payloadguard-evidence/
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
 ├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gates
-│   │                            C1+C4 built 2026-07-10 — see Section 8
+│   │                            C1+C3+C4 built 2026-07-10 — see Section 8
 │   │                            below and PHASE1_PLAN.md for current
 │   │                            status; structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
 │   │                            requirements table + resolved findings,
-│   │                            Gate 1b sketch, Gate C1/C4 status
+│   │                            Gate 1b sketch, Gate C1/C3/C4 status
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
 │   │                            findings (dropped risk-direction axis,
 │   │                            CheckInteraction non-total over its own
@@ -1368,17 +1380,41 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   revises this repo's own earlier estimate: this example's v1 design
   needs **no** `set`/`seq` Dafny types at all (`DOAC`/`Agent` are closed
   enumerated `datatype`s, `CheckInteraction` a total pattern match,
-  mirroring `renal_adjustment.dfy`'s own datatype precedent) — narrower
-  than the original scoping session's "moderate new engineering" flag
-  for Gate C3's Z3 translator. `set`/`seq`/quantifier support would only
-  become necessary for a later, distinct extension (checking a new drug
-  against an open, caller-supplied medication list, not a single
-  hardcoded pairwise lookup).
+  mirroring `renal_adjustment.dfy`'s own datatype precedent). `set`/`seq`/
+  quantifier support would only become necessary for a later, distinct
+  extension (checking a new drug against an open, caller-supplied
+  medication list, not a single hardcoded pairwise lookup) — **still
+  true**, but the "no new Gate C3 engineering needed" half of the
+  original estimate turned out wrong once Gate C3 was actually built
+  (below): comparing datatype VALUES in a precondition (not just
+  declaring a datatype-typed parameter) needed real, if narrower-than-
+  feared, new engineering.
+- **Gate C3 (spec lint): built, and required extending the shared
+  translator for real, not just applying it.** `CheckInteraction`'s
+  precondition compares `doac`/`agent` directly against named datatype
+  constructors — `evidence/dafny_spec_lint.py`'s vector-1 translator
+  genuinely refused before this gate was built
+  (`unsupported Dafny parameter type 'DOAC'`), a materially different
+  gap from `renal_adjustment`'s own Gate C3 finding (a datatype
+  parameter simply unreferenced by its precondition). Fixed by modeling
+  every *simple* Dafny datatype (zero-argument constructors only —
+  `DOAC`/`Agent`/`Outcome`/`RiskDirection` all qualify;
+  `InteractionResult`, with fields, correctly does not) as a Z3
+  `EnumSort`. A second, independent, more general bug was caught while
+  building the test suite: Z3 registers `EnumSort` names globally per
+  process, not per call, so two callers modeling a same-named type
+  collide — fixed with a per-call disambiguating tag, a fix that
+  protects every future caller of `build_symbol_table`, not just this
+  example. Verified against the real spec: `sat` (real Z3 model:
+  `agent = Naproxen, doac = Dabigatran`); vector 2 flags all 60 pinning
+  `ensures` clauses, expected and independently backed by Gate C4's real
+  proofs. Full account: `KNOWN_LIMITATIONS.md`'s "Phase E Gate C3"
+  section.
 - Not wired into the metadata/capture/generate pipeline (no
   `metadata.yaml`, no traceability matrix) — same status
   `renal_adjustment` had at this point; Section 3's data-flow diagram
   and Section 5's evidence inventory remain `dosage_calculator`-only.
-- Gates C2/C3/C5/C6 not yet started. Two items explicitly named, not
+- Gates C2/C5/C6 not yet started. Two items explicitly named, not
   built: `REQ-DDI-5` (an indication-dependent third axis for two agents'
   apixaban cells) and `REQ-DDI-6` (proving the specific numeric
   dose-reduction targets, staged as v2 per direct instruction — "both

@@ -51,7 +51,26 @@ resolve-time syntax check, not an SMT proof). Fixed by adding three
 real `ensures` clauses before committing anything. See
 `examples/drug_interaction_checker/PHASE1_PLAN.md`,
 `GATE_1C_AUDIT.md`, and `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1"
-section for the full account. Gates C2–C6 not started yet.
+section for the full account.
+
+**Third same-day addendum: Gate C4 found the Gate C1 fix was itself
+only a stopgap, then Gate C3 required real engineering, not just
+application.** Gate C4 (STPs): a real IronSpec ACCEPT lemma restating
+just the 3 `ensures` clauses Gate C1 added failed to prove the correct
+value for cells they didn't directly mention — confirmed with a real
+failing capture (`0 verified, 3 errors`), preserved as a proper honesty
+exhibit before fixing anything. Fixed with 60 comprehensive pinning
+`ensures` clauses plus a real 22-lemma ACCEPT/REJECT STP suite. Gate
+C3: `CheckInteraction`'s precondition compares `doac`/`agent` directly
+against datatype constructors — `evidence/dafny_spec_lint.py`'s Z3
+translator genuinely refused this (a real gap, not renal_adjustment's
+narrower "unreferenced parameter" one) until extended to model simple
+Dafny datatypes as a Z3 `EnumSort`. Caught a second, independent,
+generally-applicable bug while testing the extension: Z3 registers
+`EnumSort` names globally per process, so two callers modeling a
+same-named type collide — fixed with a per-call disambiguating tag.
+Full accounts: `KNOWN_LIMITATIONS.md`'s "Phase E Gate C4"/"Phase E Gate
+C3" sections. Gates C2/C5/C6 not started yet.
 
 ## What this repo is, in one paragraph
 
@@ -117,8 +136,8 @@ handoff file's example-agnostic summary. As of this writing:
 - **The only thing left before this example's Phase 2 is done: Gate
   C6's sign-off.** Everything else is built.
 
-**`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1 and
-C4 built, Gates C2/C3/C5/C6 not yet started.** Read
+**`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1,
+C3, and C4 built, Gates C2/C5/C6 not yet started.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -155,7 +174,20 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   worth reading before assuming a clean `dafny verify` pass on any
   future function means something was actually checked, or that adding
   *some* `ensures` clauses means enough were added.
-- Gates C2/C3/C5/C6 not started. Two items named, not built:
+- **Gate C3 then required genuinely extending shared tooling, not just
+  running it.** `evidence/dafny_spec_lint.py`'s Z3 translator refused
+  `CheckInteraction`'s precondition outright (`doac == Apixaban`
+  compares a datatype value directly — a real gap this repo's earlier
+  worked examples never hit, since `renal_adjustment`'s one
+  datatype-typed parameter was never referenced by any precondition).
+  Fixed by modeling simple, zero-argument-constructor Dafny datatypes as
+  a Z3 `EnumSort` — a real, if narrower-than-originally-feared,
+  extension. Caught a second, independent bug while testing it: Z3
+  registers `EnumSort` names globally per process, not per call, so two
+  callers modeling a same-named type collide — fixed with a per-call
+  disambiguating tag that protects every future caller, not just this
+  one. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C3" section.
+- Gates C2/C5/C6 not started. Two items named, not built:
   `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
   cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
   targets, staged as v2 — "both but in order of difficulty").
@@ -251,7 +283,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  171 as of this writing.
+  179 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch
