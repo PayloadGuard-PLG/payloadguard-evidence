@@ -147,6 +147,7 @@ reference for operating this system.
 | [`HANDOFF.md`](HANDOFF.md) | Start here if you're picking this repo up fresh: current status, what's actually done vs. in progress, and the concrete next step. |
 | [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) | The full technical manual: architecture, every verification gate explained, complete command reference, how to add a new example. |
 | [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference, kept in sync with the code. |
+| [`dashboards/`](dashboards/) | Visual, at-a-glance HTML snapshots (status/findings, condensed blueprint) — dated, not auto-regenerated; see its own README for what that means. |
 | [`DEVLOG.md`](DEVLOG.md) | Dated, append-only log of every real build session. |
 | [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) | The live ledger of every open item, named rather than hidden. |
 | [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) | How generated artifacts get reviewed before real use. |
