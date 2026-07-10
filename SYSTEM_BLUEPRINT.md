@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-10 (a third worked example,
 `examples/drug_interaction_checker/`, was scoped and its Gates C1, C4,
-C3, and C2 built — see the new Section 8 and its component-map entry
+C3, C2, and C5 built — see the new Section 8 and its component-map entry
 below. Gate C4 found a real spec gap larger than Gate C1's own
 first-draft finding: the original 3-clause `ensures` set didn't pin
 almost anything; fixed with 60 comprehensive pinning clauses plus a
@@ -13,7 +13,13 @@ example's own files — to model Dafny datatype comparisons via Z3
 name-collision bug caught along the way. Gate C2 confirmed the
 PROVEN-exclusivity binder generalizes to a real, independently-authored
 capture for the first time since `dosage_calculator` — no new gap, a
-real generalization confirmation. A real content review earlier the
+real generalization confirmation. Gate C5's mutation run (962 mutants)
+found and fixed a real crash bug in Gate C3's own `_apply_cmp` (ordering
+operators on datatype/`EnumSort` operands weren't modeled by Z3's Python
+bindings, and crashed instead of refusing cleanly), then produced 7 real
+survivors and 2 unclassifiable results, all explained — see
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section. A real content
+review earlier the
 same day, not a bare date
 bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
 empirically tested, not asserted — see Section 7 and
@@ -611,12 +617,12 @@ payloadguard-evidence/
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
 ├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gates
-│   │                            C1+C2+C3+C4 built 2026-07-10 — see
+│   │                            C1+C2+C3+C4+C5 built 2026-07-10 — see
 │   │                            Section 8 below and PHASE1_PLAN.md for
 │   │                            current status; structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
 │   │                            requirements table + resolved findings,
-│   │                            Gate 1b sketch, Gate C1/C2/C3/C4 status
+│   │                            Gate 1b sketch, Gate C1/C2/C3/C4/C5 status
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
 │   │                            findings (dropped risk-direction axis,
 │   │                            CheckInteraction non-total over its own
@@ -649,8 +655,25 @@ payloadguard-evidence/
 │   ├── run_verify_ddi.py, run_verify_dafny_stp_suite(_against_underconstrained)_ddi.py
 │   │                            Capture runners, mirroring
 │   │                            renal_adjustment's exact discipline
-│   └── raw_dafny_output_ddi*/run_manifest_dafny_ddi*  Verbatim captures
-│                                + manifests
+│   ├── raw_dafny_output_ddi*/run_manifest_dafny_ddi*  Verbatim captures
+│   │                            + manifests
+│   ├── run_mutation_suite_ddi.py  Gate C5: 962 mutants (ROR/LOR/COI;
+│   │                            AOR/LVR both confirmed contributing
+│   │                            zero — no arithmetic operator or numeric
+│   │                            literal anywhere in CheckInteraction).
+│   │                            Found and fixed a real crash bug in
+│   │                            dafny_spec_lint.py's _apply_cmp along the
+│   │                            way (ordering operators on datatype
+│   │                            operands weren't modeled by Z3's Python
+│   │                            bindings)
+│   └── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
+│                                Gate C5: real captured outcome of all
+│                                962 mutants — 564 killed, 389
+│                                filtered_static, 7 survived (both
+│                                explained categories already established
+│                                by renal_adjustment's own Gate C5), 2
+│                                unclassifiable (genuine Dafny type
+│                                errors, not a parser ambiguity)
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -1430,11 +1453,36 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   No new gap, no shared-code change; the value is confirming
   generalization, not discovering a defect. Full account:
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2" section.
+- **Gate C5 (mutation testing): built.** 962 mutants (ROR/LOR/COI
+  against `CheckInteraction`'s one `requires` clause and 60 `ensures`
+  clauses; AOR and LVR both confirmed contributing zero — no arithmetic
+  operator or numeric literal anywhere in this spec, checked not
+  assumed). **Found and fixed a real crash, not a Dafny finding, mid-run:**
+  a ROR mutant introducing `<=`/`>=` between two `DOAC` datatype operands
+  crashed `evidence/dafny_spec_lint.py`'s Z3 translator with a raw Python
+  `TypeError` — Z3's Python bindings don't overload ordering operators
+  for `DatatypeRef`. Fixed in `_apply_cmp` (a `z3.is_arith` guard,
+  refusing cleanly via `SystemExit` instead of crashing) — a shared-module
+  fix, not specific to this example, shipped as its own PR. Final real
+  run: **564 killed, 389 filtered_static, 7 survived, 2 unclassifiable.**
+  The 2 unclassifiable are genuine Dafny type errors on `<=`/`>=` between
+  `DOAC` values — a materially different failure mode from
+  `renal_adjustment`'s own unclassifiable case (a parser ambiguity). The
+  7 survivors fall into the same two structural categories
+  `renal_adjustment`'s own Gate C5 already established (requires-clause
+  weakenings not load-bearing for any proven `ensures` clause; a
+  guard-style `==>` clause whose consequent is independently guaranteed
+  by sibling clauses regardless of the mutated antecedent) — no new
+  category of finding. An earlier draft prediction that `<`/`>` between
+  datatype values would be "always killed" was wrong (the real run
+  proved 3 such mutants survive) and was corrected in place, left
+  visible rather than silently rewritten. Full account:
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section.
 - Not wired into the metadata/capture/generate pipeline (no
   `metadata.yaml`, no traceability matrix) — same status
   `renal_adjustment` had at this point; Section 3's data-flow diagram
   and Section 5's evidence inventory remain `dosage_calculator`-only.
-- Gates C5/C6 not yet started. Two items explicitly named, not
+- Gate C6 not yet started. Two items explicitly named, not
   built: `REQ-DDI-5` (an indication-dependent third axis for two agents'
   apixaban cells) and `REQ-DDI-6` (proving the specific numeric
   dose-reduction targets, staged as v2 per direct instruction — "both

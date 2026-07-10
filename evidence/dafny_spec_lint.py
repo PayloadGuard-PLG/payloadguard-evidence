@@ -340,8 +340,29 @@ class _Parser:
         ]
         return parts[0] if len(parts) == 1 else z3.And(*parts)
 
-    @staticmethod
-    def _apply_cmp(kind, a, b):
+    def _apply_cmp(self, kind, a, b):
+        """EQ/NE work for any Z3 sort (Bool, Int, Real, or an EnumSort
+        built by build_symbol_table for a simple Dafny datatype) - Z3's
+        generic equality is universal. LE/GE/LT/GT are only meaningful
+        for arithmetic (int/real) operands: Z3's Python bindings simply
+        don't overload <=/</>/>= for DatatypeRef at all (confirmed
+        empirically - a naive `a <= b` between two EnumSort constants
+        raises a raw Python TypeError, not a clean refusal, found while
+        mutation-testing drug_interaction_checker.dfy's precondition:
+        Gate C5's ROR generator has no reason to know this translator
+        can't handle an ordering operator it happily generates as a
+        candidate mutant). Dafny's OWN semantics may define some
+        ordering for other types (e.g. a structural "rank" order on
+        datatypes, used for termination metrics) - this translator does
+        not attempt to replicate that, and refuses cleanly rather than
+        crash or silently mistranslate."""
+        if kind in ("LE", "GE", "LT", "GT") and not (z3.is_arith(a) and z3.is_arith(b)):
+            raise SystemExit(
+                f"unsupported comparison in {self.clause_desc}: {kind!r} "
+                "(</<=/>/>=) is only modeled for real/int/nat operands - "
+                "refusing rather than crash or guess an ordering for a "
+                "non-arithmetic (e.g. datatype) sort"
+            )
         return {
             "LE": lambda: a <= b,
             "GE": lambda: a >= b,
