@@ -2,15 +2,19 @@
 
 Last updated: 2026-07-10 (a third worked example,
 `examples/drug_interaction_checker/`, was scoped and its Gates C1, C4,
-and C3 built — see the new Section 8 and its component-map entry below.
-Gate C4 found a real spec gap larger than Gate C1's own first-draft
-finding: the original 3-clause `ensures` set didn't pin almost anything;
-fixed with 60 comprehensive pinning clauses plus a real ACCEPT/REJECT
-STP suite. Gate C3 required extending `evidence/dafny_spec_lint.py`
-itself — a shared module, not just this example's own files — to model
-Dafny datatype comparisons via Z3 `EnumSort`, plus a fix for a real,
-generally-applicable EnumSort name-collision bug caught along the way.
-A real content review earlier the same day, not a bare date
+C3, and C2 built — see the new Section 8 and its component-map entry
+below. Gate C4 found a real spec gap larger than Gate C1's own
+first-draft finding: the original 3-clause `ensures` set didn't pin
+almost anything; fixed with 60 comprehensive pinning clauses plus a
+real ACCEPT/REJECT STP suite. Gate C3 required extending
+`evidence/dafny_spec_lint.py` itself — a shared module, not just this
+example's own files — to model Dafny datatype comparisons via Z3
+`EnumSort`, plus a fix for a real, generally-applicable EnumSort
+name-collision bug caught along the way. Gate C2 confirmed the
+PROVEN-exclusivity binder generalizes to a real, independently-authored
+capture for the first time since `dosage_calculator` — no new gap, a
+real generalization confirmation. A real content review earlier the
+same day, not a bare date
 bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
 empirically tested, not asserted — see Section 7 and
 `GATE_1C_AUDIT.md`'s 2026-07-10 addendum; a PayloadGuard pre-merge CI
@@ -607,12 +611,12 @@ payloadguard-evidence/
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
 ├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gates
-│   │                            C1+C3+C4 built 2026-07-10 — see Section 8
-│   │                            below and PHASE1_PLAN.md for current
-│   │                            status; structural listing only)
+│   │                            C1+C2+C3+C4 built 2026-07-10 — see
+│   │                            Section 8 below and PHASE1_PLAN.md for
+│   │                            current status; structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
 │   │                            requirements table + resolved findings,
-│   │                            Gate 1b sketch, Gate C1/C3/C4 status
+│   │                            Gate 1b sketch, Gate C1/C2/C3/C4 status
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
 │   │                            findings (dropped risk-direction axis,
 │   │                            CheckInteraction non-total over its own
@@ -1410,11 +1414,27 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `ensures` clauses, expected and independently backed by Gate C4's real
   proofs. Full account: `KNOWN_LIMITATIONS.md`'s "Phase E Gate C3"
   section.
+- **Gate C2 (PROVEN exclusivity): confirmed, not newly built — the
+  mechanism (`evidence/render/matrix_variants.py::dafny_record()`/
+  `assert_no_realized_proven`, ruling R3) already existed, but had never
+  been exercised against anything but `dosage_calculator`'s real
+  captures since 2026-07-07.** `renal_adjustment` never reached this
+  point (no `metadata.yaml` ever built for it). Run for real against
+  this example's actual capture: produces a genuine PROVEN record,
+  exercising Gate C3's Z3 check and Gate C1's false-zero guard for real
+  against a spec neither was written for; `assert_no_realized_proven`
+  accepts it cleanly. Two negative-case checks (tampered `method`,
+  tampered `verifier_completion_status`) confirm R3 still independently
+  refuses, not just trusting `dafny_record()`'s own diligence — tested
+  against this example's real record shape, not only a synthetic one.
+  No new gap, no shared-code change; the value is confirming
+  generalization, not discovering a defect. Full account:
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2" section.
 - Not wired into the metadata/capture/generate pipeline (no
   `metadata.yaml`, no traceability matrix) — same status
   `renal_adjustment` had at this point; Section 3's data-flow diagram
   and Section 5's evidence inventory remain `dosage_calculator`-only.
-- Gates C2/C5/C6 not yet started. Two items explicitly named, not
+- Gates C5/C6 not yet started. Two items explicitly named, not
   built: `REQ-DDI-5` (an indication-dependent third axis for two agents'
   apixaban cells) and `REQ-DDI-6` (proving the specific numeric
   dose-reduction targets, staged as v2 per direct instruction — "both

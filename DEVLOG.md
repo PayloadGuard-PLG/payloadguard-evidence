@@ -6,6 +6,54 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C2 for drug_interaction_checker: confirmed generalization, no new gap
+
+Same day, later still. Direct instruction: "c2 please." Unlike Gates
+C3 and C4, this one didn't find a bug or require a fix - its value is
+confirming an already-built mechanism actually works on a third,
+independently-authored spec, not discovering it doesn't.
+
+`evidence/render/matrix_variants.py::dafny_record()` (the only place in
+the codebase that can produce a dafny-method PROVEN record) and
+`assert_no_realized_proven` (ruling R3) were built 2026-07-07 and
+tested thoroughly - but only ever against `dosage_calculator`'s real
+captures. `renal_adjustment` never exercised this path at all: its
+captures were never wired into a `metadata.yaml`, so `dafny_record()`
+was never called against them.
+
+Ran it for real against `drug_interaction_checker`'s actual committed
+capture, not a synthetic fixture: `dafny_record(capture,
+"drug_interaction_checker.dfy::CheckInteraction")` produced a genuine
+`{"method": "dafny", "strength": "PROVEN", "verifier_completion_status":
+"completed"}` record - exercising Gate C3's Z3 precondition check (now
+able to model the datatype comparison, thanks to the same-day
+extension) and Gate C1's false-zero guard for real, both against a spec
+neither was originally written for. `assert_no_realized_proven`
+accepted the record cleanly.
+
+Then two negative-case checks, not just the positive one -
+`dafny_record()`'s own docstring makes an explicit claim ("R3 does not
+trust this function's own diligence"), worth actually testing rather
+than assuming it holds because it holds for `dosage_calculator`'s
+fixtures. A hand-tampered copy of the same real record with `method =
+"crosshair"` and another with `verifier_completion_status =
+"incomplete"` were both independently refused by
+`assert_no_realized_proven`, with the same assertion messages
+`test_proven_exclusivity.py`'s generic fixtures already established -
+now confirmed against this example's own real record shape.
+
+4 new tests, `tests/test_drug_interaction_checker_dafny_wiring.py` -
+deliberately narrower than `test_dafny_wiring.py` (which tests the full
+`metadata.yaml`/`build_matrix()`/CLI/fact-equality pipeline for
+`dosage_calculator`): this example has no traceability matrix yet
+(Phase 2, not Phase 3), so there's no fuller pipeline to test against,
+only the binder itself. A real, honest scope boundary, not an
+oversight. Full documentation ripple: `SYSTEM_BLUEPRINT.md`,
+`KNOWN_LIMITATIONS.md` ("Phase E Gate C2" section), `HANDOFF.md`,
+`PHASE1_PLAN.md`.
+
+183 tests pass (up from 179 - 4 new for this gate's binder confirmation).
+
 ## 2026-07-10 — Gate C3 for drug_interaction_checker: required extending shared tooling, not just running it
 
 Same day, later still. Direct instruction: "go ahead and build gate
