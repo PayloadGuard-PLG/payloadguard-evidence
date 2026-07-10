@@ -58,14 +58,31 @@ jobs:
           EXIT_CODE: ${{ steps.payloadguard.outputs.exit-code }}
           VERDICT: ${{ steps.payloadguard.outputs.verdict }}
         run: |
-          echo "PayloadGuard verdict: ${VERDICT} (exit code ${EXIT_CODE})"
-          # Fail-closed: the action's own exit-code -> verdict mapping
-          # only distinguishes 0 (SAFE) and 2 (DESTRUCTIVE) -- everything
-          # else, including whatever a REVIEW/CAUTION finding produces,
-          # collapses into the same ERROR bucket as a genuine tool crash.
-          # Until that's fixed upstream, treat anything but a clean 0 as
-          # blocking rather than guess which case it actually was.
+          echo "PayloadGuard verdict output: ${VERDICT} (exit code ${EXIT_CODE})"
+          # Corrected 2026-07-10 after reading analyze.py directly (an
+          # earlier version of this comment guessed wrong about exit-code
+          # ambiguity -- this is what the tool's own --help epilog and
+          # main() actually do):
+          #   0  safe, review, OR caution -- none of these block merge
+          #   1  analysis error -- the scan itself couldn't complete
+          #   2  destructive -- the only verdict the tool itself blocks on
+          # The four-way SAFE/REVIEW/CAUTION/DESTRUCTIVE distinction lives
+          # in the posted PR comment (the real markdown report), not in
+          # this exit code -- read that for the actual finding, this gate
+          # only answers "did the scan run clean and non-destructive."
+          #
+          # One real, minor wrapper quirk, not a gating bug: the
+          # composite action's own shell labels steps.payloadguard.outputs.verdict
+          # as "SAFE" for ANY exit-0 result, even a true REVIEW/CAUTION
+          # internally -- so ${VERDICT} above can under-report. This step
+          # gates on ${EXIT_CODE} directly, not on that label, so it isn't
+          # affected; noted here so nobody "fixes" this step by trusting
+          # ${VERDICT} instead.
+          #
+          # Blocking on exit 1 (not just 2) is a deliberate choice beyond
+          # the tool's own contract: a scan that couldn't complete gets
+          # treated as fail-closed here, not as an automatic pass.
           if [ "${EXIT_CODE}" != "0" ]; then
-            echo "::error::PayloadGuard did not return a clean SAFE verdict -- blocking merge."
+            echo "::error::PayloadGuard exit code ${EXIT_CODE} (0=safe/review/caution, 1=analysis error, 2=destructive) -- blocking merge."
             exit 1
           fi
