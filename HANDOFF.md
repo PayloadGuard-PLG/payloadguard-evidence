@@ -8,21 +8,23 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-09, after building Gate C3 (spec lint) and
-Gate C5 (mutation testing) for `renal_adjustment.dfy` — the last two
-unbuilt gates for this example. Both found real gaps in the shared
-`evidence/dafny_spec_lint.py`/`evidence/dafny_mutate.py` engines
-(unreferenced-parameter refusal, missing tokenizer characters, int/real
-literal typing), fixed rather than worked around, plus two engine
-limitations named and deliberately left unfixed (real new engineering,
-not bounded fixes — see `examples/renal_adjustment/README.md`'s Gate C5
-amendment). **Gate C6's sign-off is now the only thing left before this
-example's Phase 2 is done.** This file's prior entries also record two
-earlier staleness gaps found the same session (current-state docs
-drifting behind code; `DEVLOG.md` drifting behind merged PRs). **Update
-`DEVLOG.md` in the same commit as the change it records, and update this
-file, `README.md`, `OPERATIONS_MANUAL.md`, and `SYSTEM_BLUEPRINT.md`'s
-component map in the same session as any real change.**
+**Last updated:** 2026-07-10, while walking through Gate C6's actual
+sign-off review with Steven. Before confirming, he pushed on whether the
+closing claim for Gate 1c Finding 1 ("eGFR caller-supplied because
+Dafny/Z3 can't express it") was actually earned by the evidence, not
+just asserted — it wasn't: the prior "confirmed" was circular between
+`GATE_1C_AUDIT.md` and a sources doc, neither containing a real test.
+Tested for the first time with two committed probes
+(`examples/renal_adjustment/run_verify_pow_probes.py`): Dafny has no
+real-exponentiation primitive at all, and the obvious axiom workaround
+verifies trivially even for an absurd, wrong claim about it — see
+`GATE_1C_AUDIT.md`'s 2026-07-10 addendum. **This is the pattern to
+repeat: before signing off Gate C6 on any spec, check whether every
+claim the spec's comments make was actually tested, not just carried
+forward as reasoning that sounded right the first time.** Gate C6
+sign-off itself is still open pending Steven's read-through of
+`nl_confirmation_renal_adjustment_dfy.md` — this strengthened the
+evidence behind one of its closing claims, it didn't close the gate.
 
 ## What this repo is, in one paragraph
 
@@ -104,6 +106,14 @@ framing, confirmed correct: "if we have to tie to specific software then
 if we physically cannot at the moment, then the choice is made for us"
 — Dafny/Z3 genuinely cannot express CKD-EPI's real-valued fractional
 exponents on a variable base, so that half was never actually a choice.
+**This was only an asserted claim until 2026-07-10** — direct challenge
+before Gate C6 sign-off ("can we actually make this claim with the
+evidence we have?") found the prior "confirmed" was circular between
+two docs, neither containing a real test. Now empirically demonstrated:
+`examples/renal_adjustment/run_verify_pow_probes.py` shows Dafny has no
+real-exponentiation primitive at all, and that the obvious axiom
+workaround verifies trivially even for an absurd, wrong claim — see
+`GATE_1C_AUDIT.md`'s 2026-07-10 addendum.
 Closing this also re-verified the MHRA and NICE NG203 source URLs
 (both unchanged since 2026-07-08) and caught a real, minor attribution
 error along the way: earlier notes called the derived 1.23/1.04

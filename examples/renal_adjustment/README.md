@@ -231,6 +231,31 @@ named categories, each locked in by `tests/test_renal_mutation_report.py`:
    reason specific to that one substitution; its exact integer output is
    independently pinned by Gate C4's STP suite regardless.
 
+## Amendment 2026-07-10 — the CKD-EPI/Dafny expressiveness claim, actually tested
+
+Before Gate C6 sign-off, a direct challenge: can this repo actually
+*claim* "eGFR caller-supplied because Dafny/Z3 can't express it," or has
+that only ever been asserted as plausible reasoning? Checked, and it
+had only ever been asserted — the 2026-07-09 amendment above said
+"confirmed," but that confirmation was circular between `GATE_1C_AUDIT.md`
+and `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`, each
+deferring to the other, neither containing a real test.
+
+Tested for real with two committed probes
+(`run_verify_pow_probes.py`): `dafny_pow_expressiveness_probe.dfy`
+writes CKD-EPI's `min(Scr/κ, 1)^α` shape directly — Dafny has no
+real-exponentiation primitive at all (`unresolved identifier: Pow`).
+`dafny_pow_axiom_trap_probe.dfy` tests the obvious workaround —
+declaring `Pow` an unproven axiom — which verifies trivially even for a
+lemma claiming `Pow` always returns exactly `0.0`, an absurd, wrong
+statement (`2 verified, 0 errors`): an axiom that permissive proves
+nothing real, a DECLARED assumption wearing PROVEN's clothing, exactly
+what Gate C2 exists to refuse structurally.
+
+Both halves of Gate 1c Finding 1's closing claim now rest on real
+evidence, not reasoning alone. Full finding: `GATE_1C_AUDIT.md`'s
+2026-07-10 addendum.
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s discipline: every capture below is the
@@ -263,6 +288,13 @@ hand-typed.
   — working documents: signature sketches individually verified before
   composition, hand-derived STP predictions checked before building,
   and the internal-consistency audit that found Findings 1 and 2.
+- **`dafny_pow_expressiveness_probe.dfy`** / **`dafny_pow_axiom_trap_probe.dfy`**
+  — the empirical test behind "CKD-EPI eGFR can't be expressed in this
+  toolchain": no real-exponentiation primitive exists at all, and the
+  axiom workaround verifies trivially even for a wrong claim. Runner:
+  `run_verify_pow_probes.py` →
+  `raw_dafny_output_pow_expressiveness_probe.txt` /
+  `raw_dafny_output_pow_axiom_trap_probe.txt`.
 
 ## Open questions
 
@@ -275,11 +307,11 @@ Not resolved here — named, not guessed at, per this repo's discipline:
    integration concern, not a Phase 2 proof blocker — the proof itself
    doesn't need it resolved.
 2. **CKD-EPI eGFR computation** remains caller-supplied, not because
-   it's unscoped but because it's currently unprovable in this
-   toolchain — see the 2026-07-09 amendment above. Revisit only if
-   Dafny/Z3 gains real-valued fractional-exponent support, or if a
-   verified lookup-table approach is built with its own independent
-   verification against the formula (not assumed correct by
+   it's unscoped but because it's empirically unprovable in this
+   toolchain — see the 2026-07-10 amendment above (`run_verify_pow_probes.py`).
+   Revisit only if Dafny/Z3 gains real-valued fractional-exponent
+   support, or if a verified lookup-table approach is built with its
+   own independent verification against the formula (not assumed correct by
    construction).
 3. **Gate C5's two named engine gaps** (SelectFormula's `||`-chain
    ambiguity; the two arithmetic-embedded LVR literals) are real,

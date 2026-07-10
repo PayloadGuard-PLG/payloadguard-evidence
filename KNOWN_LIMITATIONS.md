@@ -1814,11 +1814,25 @@ don't guess it" discipline:
   2026-07-09 addendum and `PHASE1_PLAN.md`'s "Verification" section.
   CKD-EPI eGFR stays caller-supplied because Dafny/Z3 cannot express its
   real-valued fractional exponents on a variable base (`Scr^-1.200`,
-  `Scr^-0.302`, etc.) — a genuine toolchain expressiveness gap, checked
-  a second time on 2026-07-09 rather than carried over unquestioned; a
-  proposed lookup-table workaround doesn't eliminate the trust boundary,
-  only relocates it (the LUT itself would need independent verification
-  against the formula). Source re-verification for this closure also
+  `Scr^-0.302`, etc.) — a genuine toolchain expressiveness gap. **Actually
+  tested empirically for the first time 2026-07-10**, not just carried
+  forward as domain-informed reasoning: the 2026-07-09 entry below
+  claimed this was "checked a second time," but that check was
+  circular — `GATE_1C_AUDIT.md` deferred to this file's sourcing
+  document, which explicitly says the toolchain question is out of its
+  scope and defers back. Neither ever ran Dafny against the actual
+  claim. Caught by direct challenge; two real probes committed
+  (`examples/renal_adjustment/run_verify_pow_probes.py`): Dafny has no
+  real-exponentiation primitive at all (`unresolved identifier: Pow`),
+  and the obvious workaround — declaring it an unproven axiom — verifies
+  trivially even for an absurd, wrong claim about it (`2 verified, 0
+  errors` for a lemma asserting `Pow` always returns `0.0`), confirming
+  that path would be a DECLARED assumption wearing PROVEN's clothing,
+  not a real fix. Full detail: `GATE_1C_AUDIT.md`'s 2026-07-10 addendum.
+  A proposed lookup-table workaround doesn't eliminate the trust
+  boundary either, only relocates it (the LUT itself would need
+  independent verification against the formula). Source re-verification
+  for the Cockcroft-Gault closure also
   caught a real, minor attribution error: earlier notes (this file's
   prior entry, `GATE_1C_AUDIT.md`'s NHS SPS hand-trace, `sources/README.md`)
   called the derived 1.23/1.04 multiplier "MHRA's constants" — a direct
