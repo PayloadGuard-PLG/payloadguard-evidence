@@ -31,7 +31,7 @@ Considered doing the same thing here (briefly edited the `requires`
 clause down to one line, verified the diff was clean, then reverted it)
 before deciding against it: unlike `renal_adjustment.dfy` at the point
 its equivalent gap was found, this spec already had a committed Gate C1
-capture, a 22-lemma Gate C4 STP suite, and a 962-mutant Gate C5 mutation
+capture, an 11-lemma Gate C4 STP suite, and a 962-mutant Gate C5 mutation
 report all captured against the file exactly as currently formatted.
 Reformatting the `requires` clause - even though Dafny doesn't care
 about line breaks and the semantics are byte-identical either way -
@@ -371,14 +371,18 @@ from 113,039 before the fix — the heaviest single verification task
 recorded across all three worked examples so far — still 0.42s real
 time, nowhere near the 30s default timeout).
 
-**The real STP suite**, `drug_interaction_checker_stp_suite.dfy`: 6
-ACCEPT lemmas covering every worked example already established in
-`GATE_1C_AUDIT.md`'s hand-traces (both branches of the
-`hasOtherBleedingRiskFactors` conditional included), plus 4 REJECT
-lemmas — one per `Contraindicated` cell, the highest-stakes rows in the
-table, proving a plausible-but-wrong weaker `Caution` candidate is
-genuinely excluded — plus one more re-testing Gate 1c Finding 3's
-specific ambiguity directly. `22 verified, 0 errors`. Scoped
+**The real STP suite**, `drug_interaction_checker_stp_suite.dfy`: 7
+ACCEPT lemmas covering 6 worked examples already established in
+`GATE_1C_AUDIT.md`'s hand-traces (`(Dabigatran, SSRIOrSNRI)` gets both
+branches of the `hasOtherBleedingRiskFactors` conditional as separate
+lemmas), plus 4 REJECT lemmas — 3, one per `Contraindicated` cell, the
+highest-stakes rows in the table, proving a plausible-but-wrong weaker
+`Caution` candidate is genuinely excluded — plus one more re-testing
+Gate 1c Finding 3's specific ambiguity directly. 11 lemmas total; Dafny's
+capture reads `22 verified, 0 errors` (~2 verification tasks per lemma,
+not a 1:1 lemma count - a doc-accuracy correction made 2026-07-10 after
+this entry and several other docs originally misread the raw capture
+figure as "22 lemmas"). Scoped
 deliberately short of restating all 60 pinning clauses individually —
 each already is its own ACCEPT proof; the suite adds narrative
 continuity and safety-focused REJECT coverage on top, not underneath.

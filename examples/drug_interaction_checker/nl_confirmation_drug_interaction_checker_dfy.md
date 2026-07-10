@@ -31,7 +31,9 @@ formatting choice that was mine, not a genuine spec need."
 
 **This time the call went the other way, for a concrete reason.** By
 2026-07-10 this exact spec already had a committed Gate C1 capture, a
-Gate C4 STP suite (22 lemmas), and a Gate C5 mutation report (962
+Gate C4 STP suite (11 lemmas — Dafny's own capture reads `22 verified,
+0 errors`, which is ~2 verification tasks per lemma, not a 1:1 lemma
+count), and a Gate C5 mutation report (962
 mutants) all captured against the file *as currently formatted* —
 reformatting the `requires` clause, even purely cosmetically, would mean
 re-running and re-committing every one of those captures to keep them
