@@ -86,6 +86,35 @@ refuses, not just trusting the binder's own diligence. See
 `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2" section. Gates C5/C6 not
 started yet.
 
+**Fifth same-day addendum: Gate C5 built, found and fixed a real crash
+bug in Gate C3's own code, then 7 real survivors.** 962 mutants
+(ROR/LOR/COI; AOR/LVR both confirmed contributing zero — no arithmetic
+operator or numeric literal anywhere in `CheckInteraction`). **A real
+crash, not a Dafny finding, caught mid-run**: a ROR mutant introducing
+`<=`/`>=` between two `DOAC` datatype operands crashed
+`evidence/dafny_spec_lint.py`'s Z3 translator with a raw Python
+`TypeError` — Z3's Python bindings don't overload ordering operators for
+`DatatypeRef` the way they do for `==`/`!=`. Fixed in `_apply_cmp` (a
+`z3.is_arith` guard, refusing cleanly via `SystemExit` instead of
+crashing) — a shared-module fix, shipped as its own PR before the full
+mutation run could even complete. Final real run: **564 killed, 389
+filtered_static, 7 survived, 2 unclassifiable.** The 2 unclassifiable
+are genuine Dafny type errors on `<=`/`>=` between `DOAC` values — a
+materially different failure mode from `renal_adjustment`'s own
+unclassifiable case (a parser ambiguity, not a type error). The 7
+survivors fall into the same two structural categories
+`renal_adjustment`'s own Gate C5 already established — no new category
+of finding: 4 mutate the one `requires` clause's `doac == Apixaban`
+comparison (not load-bearing for any of the 60 `ensures` clauses); 3
+mutate one `ensures` clause's `doac == Dabigatran` antecedent (the
+consequent is independently guaranteed for the other three DOACs by
+sibling clauses, confirmed directly against the real spec text). An
+earlier draft's prediction that ordering comparisons on datatype values
+would be "always killed" was wrong — corrected in place in
+`run_mutation_suite_ddi.py`'s own comments, left visible rather than
+silently rewritten. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5"
+section. Gate C6 is the only gate left unbuilt for this example.
+
 ## What this repo is, in one paragraph
 
 Turns real verification tool output (CrossHair, Dafny/Z3) plus authored
@@ -151,7 +180,7 @@ handoff file's example-agnostic summary. As of this writing:
   C6's sign-off.** Everything else is built.
 
 **`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1,
-C2, C3, and C4 built, Gates C5/C6 not yet started.** Read
+C2, C3, C4, and C5 built, Gate C6 not yet started.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -211,7 +240,17 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   independently refuses tampered records shaped like this one, not just
   trusting the binder. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"
   section.
-- Gates C5/C6 not started. Two items named, not built:
+- **Gate C5 (mutation testing) built** — 962 mutants (ROR/LOR/COI; AOR/
+  LVR confirmed contributing zero). Found and fixed a real crash bug in
+  `evidence/dafny_spec_lint.py`'s `_apply_cmp` along the way (ordering
+  operators on datatype/`EnumSort` operands weren't modeled by Z3's
+  Python bindings, crashed instead of refusing cleanly) — shipped as its
+  own PR. Final: 564 killed, 389 filtered_static, 7 survived (both
+  explained categories already established by `renal_adjustment`'s own
+  Gate C5), 2 unclassifiable (genuine Dafny type errors, a different
+  failure mode from `renal_adjustment`'s parser-ambiguity case). See
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section.
+- Gate C6 not started. Two items named, not built:
   `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
   cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
   targets, staged as v2 — "both but in order of difficulty").
@@ -300,6 +339,16 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 - **Never hand-edit a generated artifact.** If a traceability matrix or
   report looks wrong, the metadata or capture it came from is wrong —
   fix that, regenerate.
+- **A generator that happily produces a mutant doesn't mean the
+  translator underneath can actually evaluate it.** Gate C5's ROR
+  generator has no reason to know `evidence/dafny_spec_lint.py`'s Z3
+  translator can't handle an ordering operator between two datatype
+  values — it generated the mutant anyway, and the translator crashed
+  with a raw Python `TypeError` instead of refusing cleanly like every
+  other unsupported construct. Mutation testing exercises shared tooling
+  in combinations its own test suite never tried; treat a crash found
+  this way as a real bug in the shared module, not a mutation-suite
+  quirk to work around locally.
 - **Full review discipline:** `REVIEW_PROTOCOL.md`. **Full known-gap
   ledger:** `KNOWN_LIMITATIONS.md`. **Full dated history:** `DEVLOG.md`
   — this handoff file is a summary, not a replacement for it.
@@ -307,7 +356,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  183 as of this writing.
+  188 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch

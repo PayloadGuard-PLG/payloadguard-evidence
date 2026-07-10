@@ -36,8 +36,17 @@ genuine confirmation the mechanism generalizes, not busywork: run for
 real against the actual committed capture, plus two negative-case
 checks (wrong method, incomplete verifier status) confirming R3 still
 independently refuses tampered records shaped exactly like this
-example's real one. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/
-"Phase E Gate C3" sections for the full account. Mirrors
+example's real one. **Gate C5 (mutation testing) also built
+2026-07-10** — 962 mutants (ROR/LOR/COI; AOR/LVR both confirmed
+contributing zero, no arithmetic or numeric literal anywhere in this
+spec), found and fixed a real crash bug in Gate C3's own `EnumSort`
+extension along the way (a ROR mutant introducing `<=`/`>=` between two
+datatype values crashed the Z3 translator with a raw Python `TypeError`
+instead of refusing cleanly), then 7 real survivors and 2 unclassifiable
+(genuine Dafny type errors, not a parser ambiguity like
+`renal_adjustment`'s) — all explained and categorized, none silently
+absorbed. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/"Phase E Gate
+C3"/"Phase E Gate C5" sections for the full account. Mirrors
 `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
 for the general pattern this one follows.
 
@@ -221,14 +230,18 @@ the one item the audit didn't independently re-raise:
 - This file.
 - `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
 - `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`
-  (Gates C1, C4, C3, then C2, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
+  (Gates C1, C4, C3, C2, then C5, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
   "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3"/"Phase E Gate
-  C2" sections have the full account of each).
-- `evidence/dafny_spec_lint.py` (Gate C3's real extension — see its
-  updated module docstring) and its test files,
-  `tests/test_dafny_spec_lint.py` (extended) and
-  `tests/test_drug_interaction_checker_spec_lint.py` (new).
+  C2"/"Phase E Gate C5" sections have the full account of each).
+- `evidence/dafny_spec_lint.py` (Gate C3's real extension, then a real
+  crash fix found by Gate C5's mutation testing — see its updated
+  module docstring) and its test files, `tests/test_dafny_spec_lint.py`
+  (extended twice) and `tests/test_drug_interaction_checker_spec_lint.py`
+  (new).
 - `tests/test_drug_interaction_checker_dafny_wiring.py` (new, Gate C2).
+- `run_mutation_suite_ddi.py`, `mutation_report_ddi.json`/`.md`,
+  `run_manifest_mutation_ddi.json` (new, Gate C5) and
+  `tests/test_drug_interaction_checker_mutation_report.py` (new).
 
 Not yet updated (deliberately — nothing built yet to describe):
-anything for Gates C5/C6, not started.
+anything for Gate C6, not started.

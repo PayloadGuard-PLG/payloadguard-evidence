@@ -6,6 +6,97 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C5 for drug_interaction_checker: found and fixed a real crash bug in Gate C3's own code, then 7 real survivors
+
+Same day, later still. Direct instruction: "c5 please." Mirrored
+`run_mutation_suite_renal.py`'s exact capture/classification discipline
+in a new `run_mutation_suite_ddi.py` against `CheckInteraction`'s one
+`requires` clause and 60 `ensures` clauses, via
+`evidence/dafny_mutate.py`'s ROR/LOR/AOR/LVR/COI generators. AOR and LVR
+both confirmed contributing zero mutants - checked directly (the
+generators return `[]`), not assumed: there is no arithmetic operator
+and no numeric literal anywhere in `CheckInteraction`, a pure datatype
+pattern match.
+
+**The first run crashed, not a Dafny finding but a real bug in this
+repo's own tooling.** A ROR mutant introduced `<=` between two `DOAC`
+datatype operands (from the `requires` clause's `doac == Apixaban`
+comparison), and `evidence/dafny_spec_lint.py`'s Z3 precondition
+translator raised a raw Python `TypeError`
+(`'<=' not supported between instances of 'DatatypeRef' and
+'DatatypeRef'`) - Z3's Python bindings simply don't overload ordering
+operators for `DatatypeRef`, unlike `==`/`!=` which work universally via
+generic equality. A real, generally-applicable gap in a shared module:
+any future spec with a datatype comparison, mutated by ROR into an
+ordering operator, would hit the same crash. Fixed in `_apply_cmp`
+(changed from a `@staticmethod` to an instance method) with a
+`z3.is_arith(a) and z3.is_arith(b)` guard before applying
+`LE`/`GE`/`LT`/`GT`, raising a clean `SystemExit` instead - matching
+every other unsupported-construct refusal already in that module.
+`run_mutation_suite_ddi.py` was updated to catch this `SystemExit`
+around its `requires`-clause pre-filter call and still fall through to
+real Dafny verification for that mutant. One new regression test,
+`test_ordering_operator_on_enum_datatype_refuses_cleanly_not_a_crash`,
+added to `tests/test_dafny_spec_lint.py`. Shipped this fix as its own
+PR (#26), independent of the full mutation report, since it stood on
+its own and there was no reason to block it behind a still-running
+21-minute background job.
+
+**Final real run (re-run clean after the fix): 962 mutants - 564
+killed, 389 filtered_static, 7 survived, 2 unclassifiable.** The 2
+unclassifiable are both the `<=`/`>=` case above - Dafny genuinely
+refuses these with a real type error ("arguments to `<=` must be of a
+numeric type... instead got `DOAC` and `DOAC`"), a materially different
+failure mode from `renal_adjustment`'s own unclassifiable case (a parser
+ambiguity, not a type error).
+
+**A wrong prediction, corrected in place rather than silently rewritten.**
+`<` and `>` between two datatype values, unlike `<=`/`>=`, DO type-check
+in Dafny (a structural "rank" ordering used for termination metrics). An
+earlier draft of this gate's own runner-script comments predicted every
+such mutant would be "always killed," assuming the relation was
+unconditionally false for a flat, non-recursive enum. Wrong: two direct
+Dafny probes showed neither `Apixaban < Dabigatran` nor
+`!(d < Apixaban)` is provable as a bare claim - for a flat enum with no
+recursive constructor argument, Z3 has no axiom pinning the relation
+down at all, genuinely unconstrained rather than false. The real run
+then showed exactly 3 such mutants survive. Corrected in place in
+`run_mutation_suite_ddi.py`'s header comment, left visible with an
+explicit note that the guess was wrong before the real run proved it,
+rather than rewritten as if the right answer had been known from the
+start.
+
+**All 7 survivors explained, both falling into structural categories
+`renal_adjustment`'s own Gate C5 already established - no new class of
+finding:**
+
+- 4 survivors mutate the one `requires` clause's `doac == Apixaban`
+  comparison (`==`->`!=`, `==`->`<`, `==`->`>`, one LOR `&&`->`||`).
+  None of the 60 `ensures` clauses makes any claim about the region this
+  clause excludes, so no proof's provability depends on its exact shape
+  - "requires-clause weakenings not load-bearing for the specific
+  ensures clauses currently proven," `renal_adjustment`'s own category.
+- 3 survivors mutate one ensures clause's `doac == Dabigatran`
+  antecedent (`==`->`!=`, `==`->`<`, `==`->`>`). `Caution`/`BleedingRisk`
+  is already separately, unconditionally guaranteed for
+  Apixaban/Edoxaban/Rivaroxaban+SSRIOrSNRI by three sibling ensures
+  clauses, confirmed directly against the real spec text - so the
+  consequent holds regardless of what the mutated antecedent matches.
+  "A structural blind spot against guard-style `==>` clauses whose
+  consequent happens to be broadly true," `renal_adjustment`'s own
+  largest survivor category (39 of 51).
+
+4 new tests, `tests/test_drug_interaction_checker_mutation_report.py`,
+pinning the exact 962-mutant outcome-count distribution and directly
+asserting both survivor categories against the real spec text, not just
+the report's own labels - mirroring `tests/test_renal_mutation_report.py`'s
+discipline. Full documentation ripple: `SYSTEM_BLUEPRINT.md`,
+`KNOWN_LIMITATIONS.md` ("Phase E Gate C5" section, plus a follow-up note
+on the existing "Phase E Gate C3" row), `HANDOFF.md`, `PHASE1_PLAN.md`.
+
+188 tests pass (up from 184 - 1 from the standalone crash-fix PR, 4 for
+this gate's mutation report).
+
 ## 2026-07-10 — Gate C2 for drug_interaction_checker: confirmed generalization, no new gap
 
 Same day, later still. Direct instruction: "c2 please." Unlike Gates

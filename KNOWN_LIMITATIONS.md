@@ -6,15 +6,18 @@ a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-10 (PayloadGuard CI gate and pytest CI job entries
 added — see their own table rows; a third worked example,
-`drug_interaction_checker` (Phase E), had its Gates C1, C4, C3, and C2
-built the same day — Gate C4 found a real spec gap larger than Gate
+`drug_interaction_checker` (Phase E), had its Gates C1, C4, C3, C2, and
+C5 built the same day — Gate C4 found a real spec gap larger than Gate
 C1's own, Gate C3 required real, non-trivial extension to
 `evidence/dafny_spec_lint.py` itself (a shared module, not just this
-example's own files) to model Dafny datatype comparisons, and Gate C2
+example's own files) to model Dafny datatype comparisons, Gate C2
 confirmed the PROVEN-exclusivity binder generalizes to a real capture
-for the first time since `dosage_calculator` — see their table rows and
-the "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3"/"Phase E Gate
-C2" sections below). Phase
+for the first time since `dosage_calculator`, and Gate C5's mutation
+run found and fixed a real crash bug in Gate C3's own extension
+(ordering operators on datatype/`EnumSort` operands weren't modeled by
+Z3's Python bindings) before producing 7 real, explained survivors — see
+their table rows and the "Phase E Gate C1"/"Phase E Gate C4"/"Phase E
+Gate C3"/"Phase E Gate C2"/"Phase E Gate C5" sections below). Phase
 B/C entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.)
 date to 2026-07-07 and are historical, not stale — the ledger below is
 append-only and each entry is dated individually. The renal-adjustment
@@ -44,8 +47,9 @@ dated build-by-build narrative, see `DEVLOG.md`.
 | pytest CI job | **ADDED 2026-07-10** | `.github/workflows/tests.yml` runs `python -m pytest tests/ -q` on every PR into `main`, closing a real gap: until now, `main` had no automated check that the test suite itself still passes — `HANDOFF.md`'s own working-conventions section said "no CI is configured on this repo" (stale, now corrected) and relied entirely on the local run before each commit. Installs from a new `requirements.txt` (pytest/jsonschema/PyYAML/z3-solver, pinned to exact versions, not floated). No Dafny/Z3 *binary* toolchain install in the job — confirmed before adding it, not assumed, by grepping `tests/` and `evidence/` for `subprocess` usage: the suite reads committed verification captures, it never shells out to a live `dafny`/`crosshair` invocation; the one real subprocess use in `tests/` drives this repo's own `evidence.cli`, not an external verifier. `z3-solver` is Z3's Python binding, needed by `evidence/dafny_spec_lint.py`'s own precondition-satisfiability translator — a different thing from the Dafny verifier binary, and sufficient on its own for every test to pass. |
 | Phase E Gate C1 — `drug_interaction_checker.dfy` spec + capture | **BUILT 2026-07-10 — a real false-clean result caught before committing** | Third worked example, testing whether Gate C1–C6 generalizes to set/list-membership logic. `CheckInteraction(doac, agent, hasOtherBleedingRiskFactors): InteractionResult` — 63 match arms across 15 v1 agents, a `requires` clause excluding two agents' still-blocked apixaban cells (Gate 1c Finding 2's resolution) — verifies clean (`1 verified, 0 errors`). **An early draft with no `ensures` clauses reported "0 verified, 0 errors"** — Dafny generated zero verification tasks, since match-exhaustiveness is a resolve-time syntax check, not an SMT proof, and a function with no postconditions has nothing else to prove; that "0 verified, 0 errors" would have been a false-clean result if committed as-is, exactly the class of overclaim this repo's whole discipline exists to catch. Fixed by adding three real `ensures` clauses (a `NotCovered`-implies-the-one-real-source-gap pin, a `Contraindicated`-implies-`Dabigatran` pin, a `Digoxin`-always-safe pin), matching how every other function in this repo (`GStage`, `SelectFormula`, `ComposedCeiling`) commits to a real claim in its own signature rather than leaving the match body as the only content. `evidence/dafny_adapter.py::parse_dafny_capture` parses the real capture unmodified (`Strength.PROVEN`, `verifier_completion_status == "completed"`) — the third confirmation this parser generalizes across worked examples with zero changes. Full per-cell pinning of all 63 match arms is deferred to Gate C4 (STP lemmas), matching this repo's established division of labor, not duplicated inline. |
 | Phase E Gate C4 — `drug_interaction_checker.dfy` STPs | **BUILT 2026-07-10 — found a real spec gap larger than Gate C1's own** | IronSpec methodology applied to `CheckInteraction`. Gate C1's original 3 `ensures` clauses turned out to be only a stopgap: a genuine ACCEPT lemma restating just those 3 clauses as premises **failed to prove the correct value for any cell they didn't directly mention** — e.g. `(Dabigatran, Ketoconazole)`, which should be `Contraindicated`, was provably *not forced* to any value at all by the declared spec. Confirmed with a real committed failing capture, not just predicted: `drug_interaction_checker_stp_suite_against_underconstrained.dfy` (3 ACCEPT lemmas restating the preserved original's 3 clauses) genuinely fails — `0 verified, 3 errors`. **Unlike `renal_adjustment`'s own Gate C4 finding** (postconditions *bounded* a result without *pinning* it, so ACCEPT proofs succeeded on loose bounds while REJECT proofs failed to exclude wrong values), most cells here had **no constraint at all**, bound or pin — the match body's correctness was never actually a signature-level claim, only an artifact of the implementation happening to be right. **Fixed** by restating all 63 match arms as explicit pinning `ensures` clauses on `CheckInteraction` itself (`drug_interaction_checker.dfy`, re-verified clean: `1 verified, 0 errors`, resource cost 358,399 — the heaviest single verification task recorded across all three worked examples, still completing in well under a second). The real STP suite (`drug_interaction_checker_stp_suite.dfy`) then covers the established Gate 1c worked examples as ACCEPT lemmas (6 cells, including both branches of the caller-supplied-flag-conditional SSRI/SNRI case) plus REJECT lemmas for the three `Contraindicated` cells — the highest-stakes rows in the table, proving a plausible-but-wrong weaker `Caution` candidate is genuinely excluded, not just absent from the match arm by accident — plus one REJECT lemma re-testing Gate 1c Finding 3's specific ambiguity (`Rivaroxaban`+`Verapamil` is provably not the unqualified negative digoxin gets). **22 verified, 0 errors.** Not exhaustive by design — restating all 60 pinning clauses as separate lemmas would be near-pure duplication, since each `ensures` clause already is its own cell's ACCEPT proof; the STP suite adds value on top of that (worked-example continuity, safety-critical REJECT coverage), not underneath it. |
-| Phase E Gate C3 — `drug_interaction_checker.dfy` spec lint | **BUILT 2026-07-10 — extended the shared vector-1 translator for real, not just applied it** | Vector 1 (`check_precondition_satisfiability`) on `CheckInteraction`'s precondition **refused outright before this gate was built**: `requires !(doac == Apixaban && ...)` compares `doac`/`agent` directly, and both are Dafny `datatype`s (`DOAC`, `Agent`) — a type `evidence/dafny_spec_lint.py`'s translator had never needed to model, since renal_adjustment's own Gate C3 gap (a datatype parameter unreferenced by its precondition) never required actually representing one. Genuinely different, harder gap. **Fixed**: `_parse_enum_datatypes` (new) finds every `datatype Name = C1 \| C2 \| ...` declaration whose constructors are ALL zero-argument (multi-line declarations handled — confirmed against `Agent`'s own multi-line form) and `build_symbol_table` now represents each as a Z3 `EnumSort`, with constructor names (`Apixaban`, `Rifampicin`, ...) becoming resolvable symbols the same way `true`/`false` already did — no parser changes needed. A parameterized constructor (`InteractionResult(outcome: ..., direction: ...)`) is still refused, unchanged — `EnumSort` can't represent fields at all. **A second, independent bug caught while building the test suite, not by inspection**: Z3 registers `EnumSort` names globally per context, not per call — two separate `build_symbol_table()` calls modeling a same-named type (a real collision hit by two of this session's own test fixtures, both named `Formula`) raised `enumeration sort name is already declared`. Fixed with a monotonic per-call tag on the registered sort name. Verified against the real spec: `CheckInteraction`'s precondition is `sat` (real Z3 model: `agent = Naproxen, doac = Dabigatran`); vector 2 flags all 60 pinning `ensures` clauses (expected — same "exhaustive, mutually-exclusive dispatch" pattern already established for `renal_adjustment`'s `GStage`/`SelectFormula`, independently backed by Gate C4's real STP proofs, not just asserted benign). 5 new tests in `tests/test_dafny_spec_lint.py` (the extension itself) + 3 in `tests/test_drug_interaction_checker_spec_lint.py` (the real-spec application, mirroring `test_renal_adjustment_spec_lint.py`'s pattern) — one pre-existing test (`test_referenced_unsupported_type_parameter_still_refuses`) updated in place: its original fixture (a simple two-constructor enum) is now a *supported* case, not a refused one, so it was rewritten to use a parameterized constructor instead, preserving the original regression-protection intent. Vector 3 unaffected (already universal, confirmed working at Gate C1). Vector 4 unchanged, still BLOCKED. |
+| Phase E Gate C3 — `drug_interaction_checker.dfy` spec lint | **BUILT 2026-07-10 — extended the shared vector-1 translator for real, not just applied it** | Vector 1 (`check_precondition_satisfiability`) on `CheckInteraction`'s precondition **refused outright before this gate was built**: `requires !(doac == Apixaban && ...)` compares `doac`/`agent` directly, and both are Dafny `datatype`s (`DOAC`, `Agent`) — a type `evidence/dafny_spec_lint.py`'s translator had never needed to model, since renal_adjustment's own Gate C3 gap (a datatype parameter unreferenced by its precondition) never required actually representing one. Genuinely different, harder gap. **Fixed**: `_parse_enum_datatypes` (new) finds every `datatype Name = C1 \| C2 \| ...` declaration whose constructors are ALL zero-argument (multi-line declarations handled — confirmed against `Agent`'s own multi-line form) and `build_symbol_table` now represents each as a Z3 `EnumSort`, with constructor names (`Apixaban`, `Rifampicin`, ...) becoming resolvable symbols the same way `true`/`false` already did — no parser changes needed. A parameterized constructor (`InteractionResult(outcome: ..., direction: ...)`) is still refused, unchanged — `EnumSort` can't represent fields at all. **A second, independent bug caught while building the test suite, not by inspection**: Z3 registers `EnumSort` names globally per context, not per call — two separate `build_symbol_table()` calls modeling a same-named type (a real collision hit by two of this session's own test fixtures, both named `Formula`) raised `enumeration sort name is already declared`. Fixed with a monotonic per-call tag on the registered sort name. Verified against the real spec: `CheckInteraction`'s precondition is `sat` (real Z3 model: `agent = Naproxen, doac = Dabigatran`); vector 2 flags all 60 pinning `ensures` clauses (expected — same "exhaustive, mutually-exclusive dispatch" pattern already established for `renal_adjustment`'s `GStage`/`SelectFormula`, independently backed by Gate C4's real STP proofs, not just asserted benign). 5 new tests in `tests/test_dafny_spec_lint.py` (the extension itself) + 3 in `tests/test_drug_interaction_checker_spec_lint.py` (the real-spec application, mirroring `test_renal_adjustment_spec_lint.py`'s pattern) — one pre-existing test (`test_referenced_unsupported_type_parameter_still_refuses`) updated in place: its original fixture (a simple two-constructor enum) is now a *supported* case, not a refused one, so it was rewritten to use a parameterized constructor instead, preserving the original regression-protection intent. Vector 3 unaffected (already universal, confirmed working at Gate C1). Vector 4 unchanged, still BLOCKED. **Follow-up 2026-07-10**: Gate C5's mutation testing of this same spec found and fixed a real crash bug in this translator's `_apply_cmp` (ordering operators on `EnumSort` operands raised a raw Python `TypeError` instead of refusing cleanly) — see the "Phase E Gate C5" row below for the fix. |
 | Phase E Gate C2 — PROVEN exclusivity, confirmed for `drug_interaction_checker` | **CONFIRMED 2026-07-10 — no new gap, first real generalization test since `dosage_calculator`** | `evidence/render/matrix_variants.py::dafny_record()`/`assert_no_realized_proven` (ruling R3) had never been exercised against an independently-authored spec's real capture before — `renal_adjustment` never reached this point (no `metadata.yaml` was ever built for it, so its captures never flowed through this binder at all). Run for real against `drug_interaction_checker`'s actual committed capture (not a synthetic fixture): `dafny_record()` produces a genuine `{"method": "dafny", "strength": "PROVEN", "verifier_completion_status": "completed"}` record, exercising both of its documented gates for real — Gate C3 vector 1 (now able to model `CheckInteraction`'s datatype comparisons, per the same-day Gate C3 extension) and Gate C1's false-zero guard. `assert_no_realized_proven` accepts the real record cleanly. Two negative-case checks confirm R3 still doesn't just trust `dafny_record()`'s own diligence, per that function's own documented claim — a hand-tampered copy of the same real record with `method="crosshair"` and another with `verifier_completion_status="incomplete"` are both independently refused, matching the exact assertion messages the generic `test_proven_exclusivity.py` fixtures already established, now confirmed against this example's own real record shape rather than only a synthetic one. 4 new tests, `tests/test_drug_interaction_checker_dafny_wiring.py` — deliberately narrower in scope than `test_dafny_wiring.py` (which tests the full `metadata.yaml`/`build_matrix()`/CLI/fact-equality pipeline): this example has no traceability matrix yet (Phase 2, not Phase 3), so there's no full pipeline to test against, only the binder itself — a real, honest scope boundary, not an oversight. |
+| Phase E Gate C5 — `drug_interaction_checker.dfy` mutation testing | **BUILT 2026-07-10 — found and fixed a real crash bug in Gate C3's own extension, then 7 real survivors, all explained** | 962 mutants (ROR/LOR/COI against `CheckInteraction`'s one `requires` clause and 60 `ensures` clauses; AOR and LVR both confirmed contributing **zero** mutants — no arithmetic operator or numeric literal anywhere in this spec, checked not assumed). **A real crash, not a Dafny finding, caught mid-run**: a ROR mutant introducing `<=`/`>=` between two datatype (`DOAC`) operands crashed `evidence/dafny_spec_lint.py`'s Z3 translator with a raw Python `TypeError` ("'<=' not supported between instances of 'DatatypeRef' and 'DatatypeRef'") — Z3's Python bindings don't overload ordering operators for `DatatypeRef`. Fixed in that module (`_apply_cmp` now checks `z3.is_arith` before applying `LE`/`GE`/`LT`/`GT`, refusing cleanly instead of crashing) before the mutation run could even complete — see the standalone entry below. **Final real run: 962 mutants — 564 killed, 389 filtered_static, 7 survived, 2 unclassifiable.** The 2 unclassifiable are genuine Dafny type errors (`<=`/`>=` between two `DOAC` values: "arguments to <= must be of a numeric type... instead got DOAC and DOAC") — a materially different failure mode from `renal_adjustment`'s own unclassifiable case (a parser ambiguity, not a type error) — while `<`/`>` between datatype values DO type-check (Dafny accepts them for any datatype; for a flat, non-recursive enum Z3 has no axiom pinning down what the relation means, genuinely unconstrained rather than "always false" — an earlier draft's prediction that all such mutants would be trivially killed was wrong, corrected in `run_mutation_suite_ddi.py`'s own comments rather than silently rewritten). **All 7 survivors fall into two categories, both already-established patterns from `renal_adjustment`'s own Gate C5, not a new class of finding:** (A) 4 survivors mutate the one `requires` clause's `doac == Apixaban` comparison (`!=`, `<`, `>`, and one LOR `&&`→`\|\|`) — none of the 60 `ensures` clauses makes any claim about the `(Apixaban, {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})` region specifically, so no proof depends on the exact shape of this exclusion ("requires-clause weakenings not load-bearing," `renal_adjustment`'s own category 2). (B) 3 survivors mutate the `(Dabigatran, SSRIOrSNRI, !hasOtherBleedingRiskFactors)` ensures clause's `doac == Dabigatran` antecedent (`!=`, `<`, `>`) — `Caution`/`BleedingRisk` is already separately guaranteed for `Apixaban`/`Edoxaban`/`Rivaroxaban`+`SSRIOrSNRI` by three other, unconditional ensures clauses, confirmed directly against the real spec text, not just argued — so the consequent holds regardless of what this specific antecedent's mutation matches ("a structural blind spot against guard-style `==>` clauses whose consequent happens to be broadly true," `renal_adjustment`'s own largest category, 39 of 51). 4 new tests, `tests/test_drug_interaction_checker_mutation_report.py`, pinning the exact counts and asserting both survivor categories directly against the real spec text (not just the report), mirroring `test_renal_mutation_report.py`'s discipline. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -2298,3 +2302,107 @@ declaration, `build_matrix()`, the CLI, fact-equality across variants)
 — this example has no traceability matrix yet, Phase 2 not Phase 3, so
 there's no fuller pipeline to test against. A real scope boundary, not
 an oversight.
+
+## Phase E Gate C5 — `drug_interaction_checker.dfy` mutation testing: BUILT, found and fixed a real crash bug in Gate C3's own code (2026-07-10)
+
+Third worked example testing whether MutDafny-style mutation testing
+(`evidence/dafny_mutate.py`'s ROR/LOR/AOR/LVR/COI generators,
+`run_mutation_suite_ddi.py` mirroring `run_mutation_suite_renal.py`'s
+exact capture/classification discipline) generalizes to a spec whose
+comparisons are almost entirely `identifier == Constructor` between
+simple-enum Dafny datatype values (`DOAC`, `Agent`, `Outcome`,
+`RiskDirection`), not real/int — a genuinely different shape from both
+`dosage.dfy` (arithmetic) and `renal_adjustment.dfy` (mostly arithmetic
+with one enum). 962 mutants generated against `CheckInteraction`'s one
+`requires` clause and 60 `ensures` clauses. AOR and LVR both confirmed
+contributing exactly zero mutants — checked directly, not assumed: the
+generators themselves return `[]` against this spec, since there is no
+arithmetic operator and no numeric literal anywhere in `CheckInteraction`'s
+clauses or body (a pure datatype pattern match).
+
+**A real crash, found mid-run, fixed before the run could complete.** A
+ROR mutant introducing `<=`/`>=` between two `DOAC` operands (from the
+one `requires` clause's `doac == Apixaban` comparison) crashed
+`evidence/dafny_spec_lint.py`'s Z3 precondition-satisfiability
+translator with a raw Python `TypeError`
+(`'<=' not supported between instances of 'DatatypeRef' and 'DatatypeRef'`)
+— Z3's Python bindings simply don't overload ordering operators for
+`DatatypeRef` the way they do for `==`/`!=` (Z3's generic equality is
+universal across sorts; ordering is not). This is a real, generally
+applicable gap in a *shared* module, not something specific to this
+example: any future spec with a datatype comparison, mutated by ROR
+into an ordering operator, would have hit the same crash. **Fixed** in
+`_apply_cmp` (changed from a `@staticmethod` to an instance method) by
+adding a `z3.is_arith(a) and z3.is_arith(b)` guard before applying
+`LE`/`GE`/`LT`/`GT`, raising a clean `SystemExit` instead of crashing —
+matching every other unsupported-construct refusal already in that
+module. `run_mutation_suite_ddi.py` was updated to catch this
+`SystemExit` around its precondition pre-filter call, recording
+`"precondition_check_outcome": "z3_translation_refused"` and still
+falling through to real Dafny verification for that mutant, rather than
+losing the result. One new regression test,
+`test_ordering_operator_on_enum_datatype_refuses_cleanly_not_a_crash`,
+in `tests/test_dafny_spec_lint.py`. Shipped as its own PR, independent
+of this gate's full report, since the fix stands on its own regardless
+of what the rest of the mutation run found.
+
+**Final real run (re-run clean after the fix): 962 mutants — 564
+killed, 389 filtered_static, 7 survived, 2 unclassifiable.**
+
+The 2 unclassifiable results are both the `<=`/`>=` case above (`==` →
+`<=` and `==` → `>=` on the same `doac == Apixaban` comparison) — Dafny
+itself genuinely refuses these with a real type error ("arguments to
+`<=` must be of a numeric type... instead got `DOAC` and `DOAC`"), not
+a parser ambiguity like `renal_adjustment`'s own unclassifiable case. A
+materially different failure mode, correctly distinguished rather than
+lumped together.
+
+**A correction made and left visible, not silently edited away.** `<`
+and `>` between two datatype values, unlike `<=`/`>=`, DO type-check —
+Dafny accepts them syntactically for any datatype via a structural
+"rank" ordering it uses for termination metrics. An earlier draft of
+this gate's own runner-script comments predicted every such mutant
+would therefore be "always killed" (guessing the relation was
+unconditionally false for a flat, non-recursive enum). Two direct Dafny
+probes disproved this: neither `Apixaban < Dabigatran` nor
+`!(d < Apixaban)` is provable as a bare claim — for a flat enum with no
+recursive constructor argument, Z3 has no axiom pinning the relation
+down at all, genuinely unconstrained rather than false. The wrong
+prediction was corrected in place in `run_mutation_suite_ddi.py`'s
+header comment, left visible with an explicit note that it was wrong
+before the real run proved it wrong, rather than rewritten as if the
+right answer had been known from the start — matching this repo's
+standing discipline of treating incorrect predictions as part of the
+record.
+
+**All 7 survivors, explained, falling into the same two structural
+categories `renal_adjustment`'s own Gate C5 already established** (no
+new category of finding):
+
+- **Category A (4 survivors)** — mutations to the one `requires`
+  clause's `doac == Apixaban` comparison (`==`→`!=`, `==`→`<`, `==`→`>`,
+  and one LOR `&&`→`\|\|`). None of the 60 `ensures` clauses makes any
+  claim about the `(Apixaban, {Rifampicin, Carbamazepine, Phenytoin,
+  Phenobarbital})` region specifically — the region this `requires`
+  clause excludes — so no proof's provability depends on the exact
+  shape of the exclusion. Same category as `renal_adjustment`'s own
+  requires-clause survivors: "weakenings not load-bearing for the
+  specific ensures clauses currently proven."
+- **Category B (3 survivors)** — mutations to the
+  `(doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors)
+  ==> ... InteractionResult(Caution, BleedingRisk)` ensures clause's
+  `doac == Dabigatran` antecedent (`==`→`!=`, `==`→`<`, `==`→`>`).
+  Confirmed directly against the real spec text, not just argued:
+  `Caution`/`BleedingRisk` is already separately, unconditionally
+  guaranteed for `Apixaban`/`Edoxaban`/`Rivaroxaban`+`SSRIOrSNRI` by
+  three sibling ensures clauses — so whatever set of `DOAC` values the
+  mutated antecedent ends up matching, the consequent holds regardless.
+  Same category as `renal_adjustment`'s own largest survivor group (39
+  of 51): "a structural blind spot against guard-style `==>` clauses
+  whose consequent happens to be broadly true across cases."
+
+4 new tests, `tests/test_drug_interaction_checker_mutation_report.py`,
+pinning the exact 962-mutant outcome-count distribution and directly
+asserting both survivor categories against the real spec text (not just
+trusting the report's own labels), mirroring
+`tests/test_renal_mutation_report.py`'s discipline.
