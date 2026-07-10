@@ -25,10 +25,21 @@ constructors, a case the translator had never needed to model before
 (confirmed to refuse first: `unsupported Dafny parameter type 'DOAC'`).
 Fixed by representing simple (zero-argument-constructor) Dafny
 datatypes as a Z3 `EnumSort`, plus a fix for an independent, real
-EnumSort name-collision bug caught while testing it. See
-`KNOWN_LIMITATIONS.md`'s "Phase E Gate C3" section for the full
-account. Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s
-structure; read that file for the general pattern this one follows.
+EnumSort name-collision bug caught while testing it. **Gate C2 (PROVEN
+exclusivity) also confirmed 2026-07-10** — the first time since
+`dosage_calculator` (2026-07-07) that `evidence/render/matrix_variants.py`'s
+`dafny_record()`/`assert_no_realized_proven` (ruling R3) has been
+exercised against an independently-authored spec's real capture;
+`renal_adjustment` never reached this point (no `metadata.yaml` was
+ever built for it). No new gap, no shared-code change — a real,
+genuine confirmation the mechanism generalizes, not busywork: run for
+real against the actual committed capture, plus two negative-case
+checks (wrong method, incomplete verifier status) confirming R3 still
+independently refuses tampered records shaped exactly like this
+example's real one. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/
+"Phase E Gate C3" sections for the full account. Mirrors
+`examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
+for the general pattern this one follows.
 
 ## Objective
 
@@ -210,13 +221,14 @@ the one item the audit didn't independently re-raise:
 - This file.
 - `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
 - `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`
-  (Gates C1, C4, then C3, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
-  "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3" sections have
-  the full account of each).
+  (Gates C1, C4, C3, then C2, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
+  "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3"/"Phase E Gate
+  C2" sections have the full account of each).
 - `evidence/dafny_spec_lint.py` (Gate C3's real extension — see its
   updated module docstring) and its test files,
   `tests/test_dafny_spec_lint.py` (extended) and
   `tests/test_drug_interaction_checker_spec_lint.py` (new).
+- `tests/test_drug_interaction_checker_dafny_wiring.py` (new, Gate C2).
 
 Not yet updated (deliberately — nothing built yet to describe):
-anything for Gates C2/C5/C6, not started.
+anything for Gates C5/C6, not started.

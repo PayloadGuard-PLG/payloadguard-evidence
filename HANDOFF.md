@@ -70,7 +70,21 @@ generally-applicable bug while testing the extension: Z3 registers
 `EnumSort` names globally per process, so two callers modeling a
 same-named type collide — fixed with a per-call disambiguating tag.
 Full accounts: `KNOWN_LIMITATIONS.md`'s "Phase E Gate C4"/"Phase E Gate
-C3" sections. Gates C2/C5/C6 not started yet.
+C3" sections.
+
+**Fourth same-day addendum: Gate C2 confirmed, no new gap.** Unlike
+C3/C4, this one found nothing broken — it confirmed
+`evidence/render/matrix_variants.py::dafny_record()`/
+`assert_no_realized_proven` (built 2026-07-07, tested thoroughly
+against `dosage_calculator`) actually works against an independently-
+authored spec's real capture, the first time since `dosage_calculator`
+itself (`renal_adjustment` never reached this point — no `metadata.yaml`
+was ever built for it). Run for real: produces a genuine PROVEN record,
+accepted cleanly by R3; two negative-case checks (tampered `method`,
+tampered `verifier_completion_status`) confirm R3 still independently
+refuses, not just trusting the binder's own diligence. See
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C2" section. Gates C5/C6 not
+started yet.
 
 ## What this repo is, in one paragraph
 
@@ -137,7 +151,7 @@ handoff file's example-agnostic summary. As of this writing:
   C6's sign-off.** Everything else is built.
 
 **`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1,
-C3, and C4 built, Gates C2/C5/C6 not yet started.** Read
+C2, C3, and C4 built, Gates C5/C6 not yet started.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -187,7 +201,17 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   callers modeling a same-named type collide — fixed with a per-call
   disambiguating tag that protects every future caller, not just this
   one. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C3" section.
-- Gates C2/C5/C6 not started. Two items named, not built:
+- **Gate C2 confirmed, no new gap this time.** The PROVEN-exclusivity
+  binder (`dafny_record()`/`assert_no_realized_proven`, built
+  2026-07-07) had never been run against anything but
+  `dosage_calculator`'s captures — `renal_adjustment` never got a
+  `metadata.yaml`, so it never exercised this path at all. Run for real
+  against this example's capture: produces a genuine PROVEN record,
+  accepted cleanly; two negative-case checks confirm R3 still
+  independently refuses tampered records shaped like this one, not just
+  trusting the binder. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"
+  section.
+- Gates C5/C6 not started. Two items named, not built:
   `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
   cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
   targets, staged as v2 — "both but in order of difficulty").
@@ -283,7 +307,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  179 as of this writing.
+  183 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch
