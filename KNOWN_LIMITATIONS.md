@@ -4,14 +4,15 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-09. Phase B/C entries below (Gate 2/C2-C4 wiring
-extended to variants A/B, etc.) date to 2026-07-07 and are historical,
-not stale — the ledger below is append-only and each entry is dated
-individually. The renal-adjustment second worked example (Phase D) has
-its own extensive entries further down this file, current as of the
-citation-gate audit on 2026-07-09. For current status rather than full
-history, see `HANDOFF.md`; for the dated build-by-build narrative, see
-`DEVLOG.md`.
+Last updated: 2026-07-10 (PayloadGuard CI gate entry added — see the
+table row and the "PayloadGuard CI gate" section below). Phase B/C
+entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.) date
+to 2026-07-07 and are historical, not stale — the ledger below is
+append-only and each entry is dated individually. The renal-adjustment
+second worked example (Phase D) has its own extensive entries further
+down this file, current as of the citation-gate audit on 2026-07-09. For
+current status rather than full history, see `HANDOFF.md`; for the
+dated build-by-build narrative, see `DEVLOG.md`.
 
 | Gate | Status | Summary |
 |---|---|---|
@@ -30,6 +31,7 @@ history, see `HANDOFF.md`; for the dated build-by-build narrative, see
 | Phase C Gate C5 LVR extension — Literal Value Replacement | **BUILT 2026-07-07; real run matched every hand-derived prediction exactly, zero survivors** | `evidence/dafny_mutate.py::generate_lvr_mutants` mutates every numeric literal in `dosage.dfy`'s requires/ensures clauses and `ExpectedDose`'s function body — all 7 are exactly `0.0` — to `original ± 0.01` (the clinical-precision floor sourced in the Gate C5 research; the first place that guidance has an actual application). `_lvr_trivial` generalizes ROR's requires/ensures polarity principle from operator-implication to magnitude-implication for LE/LT/GE/GT-adjacent literals (4 filtered as `filtered_magnitude_implied`); EQ-adjacent and all function-body literals have no such filter, sent straight to real verification. Real run: **14 mutants — 10 real-verified, all 10 genuinely killed, zero survivors** — matching the scoping session's hand-worked prediction exactly, site by site (e.g. why widening `concentrationMgPerMl > 0.0` to `> -0.01` fails via `ExpectedDose`'s own unchanged precondition at the pinning clause's call site). 7 new tests. Combined with the rest of Gate C5: **56 mutants total — 41 killed, 6 filtered_static, 4 filtered_chain_incompatible, 1 filtered_ar_group_incompatible, 4 filtered_magnitude_implied — zero survived, zero unclassifiable.** The clinical-precision-floor-vs-exact-zero-requirement tension named in scoping is unresolved — REQ-GIP-1-8-1's function-body zero-literal mutant (site 7) was killed at the ±0.01 granularity, so the tension didn't need resolving to get a clean result here, but the underlying judgment call (is ±0.01 the right test for an exact-zero safety requirement) is still open. Full detail below. |
 | Phase C Gate C6 — NL-dialogue confirmation | **BUILT and SIGNED OFF 2026-07-07** | Process-control gate aimed directly at recurrence of Gate 1's original finding: a spec/requirement-text mismatch caught only at review, not at authoring time. `evidence/dafny_nl_summary.py::summarize_method` mechanically extracts each requires/ensures clause verbatim, plus any REQ-ID cited in a trailing comment, alongside a best-effort operator-substitution English gloss labeled as a reading aid, not comprehension — deliberately not a natural-language generator. Only single-line clauses are supported; the function cross-checks its own line-based, comment-preserving extraction against `dafny_spec_lint`'s canonical, already-tested multi-line-capable extractor and refuses (`SystemExit`) on any content mismatch. That refusal check's first draft compared clause counts, not content, and missed a real case — a synthetic multi-line clause produced the same count under both extractors while the line-based scan had silently truncated it, dropping the continuation; caught in manual testing before the test suite was even written, fixed by comparing normalized clause text instead of counts, with a regression test added. 7 tests in `tests/test_dafny_nl_summary.py`. The gate's actual deliverable is not this code but the recorded human decision it feeds: `examples/dosage_calculator/nl_confirmation_dosage_dfy.md` records Steven's sign-off ("it's good for the spec as is") on the generated summary for `dosage.dfy::CalculateHourlyDose`, plus a next-phase item (adapting the spec and explaining downstream analysis by different software, for a regulatory submission) he explicitly scoped out as separate follow-up work, not part of this gate. |
 | Gate C6 next-phase adaptation work | **BLOCKED, named 2026-07-07 — asked, not guessed** | Full note in `payloadguard-evidence-roadmap-phaseB-to-C.md`'s "Gate C6 next-phase adaptation work" section. Trigger condition ("a defensible artifact to build it on top of") is now met — the full evidence chain (Gates C1/C4/C5/C6) exists. But the only description of this work anywhere in the repo is one sentence from the original Gate C6 sign-off, repeated verbatim in every place it's mentioned, never elaborated — checked directly (grepped the whole repo, including `PayloadGuard-Evidence-Blueprint-1.md`'s cited FDA guidance URLs), not assumed. Three concrete unknowns block real scoping: what "adapting the spec" means, what "different downstream software" refers to, and which regulatory pathway (510(k)/De Novo/PMA/other) this targets. Matches Gate C3 vector 4's own precedent (stayed BLOCKED, named, rather than inferred from its name alone) — resolved by asking directly rather than guessing a concrete plan from one sentence. |
+| PayloadGuard CI gate — third-party pre-merge scan | **WIRED 2026-07-10 — unverified-claim caveats named, not blanket-trusted** | `.github/workflows/payloadguard.yml` runs a third-party GitHub Action (`PayloadGuard-PLG/payload-consequence-analyser`, pinned to a commit SHA) on every PR into `main`, discovered and wired after a real CI failure surfaced a mutable-tag risk this repo doesn't accept elsewhere. Its exit-code contract was confirmed by reading `analyze.py` directly, not by trusting the wrapper `action.yml`'s shell logic or the tool's own `--help` epilog (which itself underspecifies the CAUTION verdict): exit 0 covers SAFE, REVIEW, and CAUTION alike (none block merge), exit 1 is an analysis error, exit 2 is DESTRUCTIVE — only 1 and 2 are gated on. The tool's own composite-action wrapper labels its `verdict` output "SAFE" for any exit-0 result even when the real finding was REVIEW/CAUTION, a real wrapper quirk this repo's workflow works around by gating on `${EXIT_CODE}` directly, never on `${VERDICT}` — noted in `payloadguard.yml` itself so it isn't "fixed" the wrong way later. Full detail below. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -1959,3 +1961,59 @@ postcondition, independently resolved by Gate C4's STP suite regardless.
 
 **Gate C6's sign-off is now the only thing left before this example's
 Phase 2 is done.**
+
+## PayloadGuard CI gate — third-party pre-merge scan (wired 2026-07-10)
+
+`.github/workflows/payloadguard.yml` runs
+`PayloadGuard-PLG/payload-consequence-analyser` (pinned to a commit SHA,
+`fe6833887f34e77e53cf7e1dcf73c37297f5fea3`, tag `v1.3.0` — not a mutable
+tag) on every pull request into `main`. Discovered and wired after a
+real CI failure on an earlier PR surfaced that the composite action's
+own `action.yml`, as published, resolves several of its own steps
+(`actions/setup-python`, `actions/github-script`) by tag rather than
+SHA — the same mutable-reference risk this repo pins against everywhere
+else. `payloadguard.yml` itself pins `actions/checkout` to a SHA
+(`11bd71901bbe5b1630ceea73d27597364c9af683`, v4.2.2); the third-party
+action's own internal tag references are outside this repo's control
+and are named here, not silently trusted.
+
+**Exit-code contract, confirmed by reading `analyze.py` directly, not by
+trusting the wrapper's shell logic or the tool's own `--help` epilog**
+(which itself underspecifies the CAUTION verdict): `main()` exits 0 for
+SAFE, REVIEW, or CAUTION alike — none of these three block merge — exits
+1 when the analysis itself errored, and exits 2 only for a DESTRUCTIVE
+verdict. `payloadguard.yml`'s "Enforce verdict" step gates on exit code
+1 or 2, matching this contract; blocking on exit 1 (not just 2) is a
+deliberate choice beyond the tool's own contract — a scan that couldn't
+complete is treated as fail-closed here, not as an automatic pass. The
+four-way SAFE/REVIEW/CAUTION/DESTRUCTIVE distinction itself lives only
+in the markdown report the action posts as a PR comment, not in the
+exit code — that comment is the actual finding to read, this gate only
+answers "did the scan run clean and non-destructive."
+
+**One real, minor wrapper quirk, not a gating bug:** the composite
+action's own `Run PayloadGuard` step labels its `verdict` output
+`"SAFE"` for any exit-0 result, even a true REVIEW or CAUTION internally
+(`action.yml`'s `case $EXIT` only special-cases 0 and 2, mapping
+everything else including a real REVIEW/CAUTION to the `"SAFE"` label).
+`payloadguard.yml`'s enforcement step gates on `${EXIT_CODE}` directly,
+never on `${VERDICT}`, so it isn't affected — but the quirk is real and
+is called out explicitly in that workflow file's own comments so a
+future edit doesn't "simplify" the gate by trusting `${VERDICT}`
+instead.
+
+**What this entry does not claim:** this is scrutiny of the wiring and
+the documented contract, not an independent audit of the scanner's
+detection logic itself — whether PayloadGuard actually catches the
+classes of destructive change its README claims to is unverified here.
+A sibling repo, `payloadguard-test-harness` (PayloadGuard's own
+41-case adversarial/validation suite across five tracks), was located
+and its README read, but its actual test contents and pass/fail history
+were not — checked via `WebFetch` only under a tooling restriction that
+blocked cloning it, so its claims about PayloadGuard's own detection
+accuracy are named here as unverified, not relied upon. `runtime-mode`
+(the eBPF process-killing agent) and `auto-remediate` (the tag-to-SHA
+auto-PR feature) are both left at their safe defaults (`disabled`/
+`false`) in `payloadguard.yml`, deliberately, per the comments in that
+file — turning either on is a materially bigger blast-radius decision
+this entry does not make on its own.
