@@ -6,8 +6,10 @@ Gate 1b sketch in `PHASE1_PLAN.md` against
 purpose (`renal_adjustment/GATE_1C_AUDIT.md`) — catch conceptual gaps at
 the cheapest possible point, before any Dafny code exists — **this
 audit found three real findings, not zero.** Named here rather than
-smoothed over so Gate 1 can be marked closed. **Conclusion: Gate 1 is
-not yet fully closeable.** See "Exit criteria assessment" at the end.
+smoothed over so Gate 1 can be marked closed. **All three now resolved
+by explicit decision — see the 2026-07-10 addendum below. Gate 1 is
+closeable.** See "Exit criteria assessment" at the end for the original
+(now superseded) assessment.
 
 ## Total coverage check
 
@@ -183,7 +185,7 @@ worth naming rather than making silently.
    would be exactly the kind of undocumented judgment call Gate 1c exists
    to surface instead of hide.
 
-## Open judgment calls (named, not guessed)
+## Open judgment calls (named, not guessed) — resolved, see 2026-07-10 addendum below
 
 1. **Risk-direction axis (Finding 1)** — add a field to `Outcome`, or
    leave it as informational-only text outside the proof. Recommendation
@@ -198,7 +200,7 @@ worth naming rather than making silently.
    over/understating options. Not decided; genuinely ambiguous in the
    primary source itself, not just in this document's reading of it.
 
-## Exit criteria assessment
+## Exit criteria assessment (original, superseded — see addendum below)
 
 Per `renal_adjustment`'s own precedent for what Gate 1 exit requires
 ("specification skeleton has no undefined input regions... audit
@@ -209,3 +211,65 @@ type (Finding 1), a non-total function over its own declared input type
 (Finding 2), and a real, sourced ambiguity with no committed resolution
 (Finding 3). All three are named, not resolved, per this repo's
 discipline. Phase 2 remains blocked until Steven decides all three.
+
+## Addendum 2026-07-10 — all three findings resolved by explicit decision
+
+Steven's direction on all three, asked directly rather than assumed:
+Finding 1 → add the `RiskDirection` field (option (a)). Finding 2 →
+type-level exclusion (option (a)). Finding 3 → add a fourth `Outcome`
+case, `CautionLowRelevance`. `PHASE1_PLAN.md`'s Gate 1b sketch has been
+redesigned to match — `RiskDirection`, `Outcome` (now including
+`CautionLowRelevance`), and `InteractionResult(outcome, direction)` as
+`CheckInteraction`'s return type; the function gained
+`requires !(doac == Apixaban && agent in {Rifampicin, Carbamazepine,
+Phenytoin, Phenobarbital})`.
+
+**Every worked-example hand-trace above re-derived against the new
+design, to confirm the redesign is actually consistent with this
+audit's own earlier findings, not just declared fixed:**
+
+1. `(Dabigatran, Ketoconazole)` → `InteractionResult(Contraindicated,
+   BleedingRisk)`. Direction correct: the itraconazole/ketoconazole
+   section is headed "Increased risk of bleeding." Matches the original
+   trace's outcome exactly, now with a direction attached.
+2. `(Edoxaban, Ciclosporin)` → `InteractionResult(DoseReductionAdvised,
+   BleedingRisk)`. Ciclosporin's section is also "Increased risk of
+   bleeding." Matches.
+3. `(Apixaban, Dronedarone)` → `InteractionResult(NotCovered,
+   UnknownRisk)`. Still a real, sourced gap, not excluded by Finding 2's
+   new precondition (Dronedarone isn't one of the four
+   indication-dependent agents) — the two gaps are independent and
+   don't collide.
+4. `(Dabigatran, SSRIOrSNRI, true/false)` →
+   `InteractionResult(DoseReductionAdvised, BleedingRisk)` /
+   `InteractionResult(Caution, BleedingRisk)`. SSRIs/SNRIs' section is
+   "Increased risk of bleeding" both ways. Matches.
+5. `(Rivaroxaban, Verapamil)` → **this was the exact cell the original
+   hand-trace flagged as unresolved (Finding 3).** Now
+   `InteractionResult(CautionLowRelevance, BleedingRisk)` — the
+   ambiguity has an actual answer, not just a decision to eventually
+   pick one.
+6. **New, demonstrating Finding 2's fix directly:**
+   `(Dabigatran, Rifampicin)` → `InteractionResult(Avoid,
+   ThrombosisRisk)` — one of the 6 cells the precondition redesign
+   recovers; direction correctly flips to `ThrombosisRisk` (rifampicin
+   decreases DOAC levels, the opposite failure mode from most of this
+   table). `(Apixaban, Rifampicin)` — excluded by the precondition;
+   attempting this call is a precondition violation, a provable
+   impossibility rather than a silently wrong or undefined answer,
+   exactly mirroring how `renal_adjustment`'s Finding 2 turned a
+   category error into a type-level impossibility rather than a
+   documented convention.
+
+All six traces are consistent with the redesigned sketch and with this
+audit's own original findings — no new inconsistency introduced by the
+fix itself.
+
+**Gate 1 status: closeable.** Unlike `renal_adjustment`'s Finding 1
+(CrCl/eGFR computation scope), nothing here was deferred — all three
+findings got an actual decision, not a named-but-open item. The next
+step is Gate C1: write out `CheckInteraction`'s full case coverage (all
+15 v1 agents, including the 6 recovered Rifampicin/Carbamazepine/
+Phenytoin/Phenobarbital cells) and verify it for real against Dafny
+4.11.0 — the sketch above is illustrative, not complete, same
+distinction `renal_adjustment`'s Gate 1b→C1 transition drew.
