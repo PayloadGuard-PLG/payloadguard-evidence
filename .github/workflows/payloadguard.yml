@@ -25,7 +25,7 @@ jobs:
 
       - name: PayloadGuard
         id: payloadguard
-        uses: PayloadGuard-PLG/payload-consequence-analyser@v1.3.0
+        uses: PayloadGuard-PLG/payload-consequence-analyser@fe6833887f34e77e53cf7e1dcf73c37297f5fea3  # v1.3.0
         with:
           pr-description: ${{ github.event.pull_request.body }}
           # auto-remediate and runtime-mode intentionally left at their
