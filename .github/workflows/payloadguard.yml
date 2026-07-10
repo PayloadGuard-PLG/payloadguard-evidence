@@ -1,0 +1,71 @@
+name: PayloadGuard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scan:
+    name: PayloadGuard scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          # Full history: PayloadGuard diffs head against base internally
+          # (git fetch origin <base_ref>:<base_ref>) — a shallow checkout
+          # risks that fetch landing on a truncated history.
+          fetch-depth: 0
+
+      - name: PayloadGuard
+        id: payloadguard
+        uses: PayloadGuard-PLG/payload-consequence-analyser@v1.3.0
+        with:
+          pr-description: ${{ github.event.pull_request.body }}
+          # auto-remediate and runtime-mode intentionally left at their
+          # safe defaults (false / disabled) — see the comments below
+          # before turning either on.
+
+      # auto-remediate: "false" (default) — opts INTO a separate PR that
+      # rewrites mutable Action tags to pinned SHAs. Never touches the
+      # scanned branch directly, but it does mean granting this workflow
+      # `contents: write` (to push that new branch) in addition to
+      # `pull-requests: write` above. Turn on deliberately, not by default.
+      #
+      # runtime-mode: "disabled" (default) — "audit"/"block" download and
+      # run a privileged eBPF agent via sudo that can, in block mode,
+      # terminate processes matching its policy. Needs a runner with
+      # CONFIG_KPROBES/CONFIG_FTRACE, degrades to exit 0 without them.
+      # A materially bigger blast radius than the static scan above —
+      # leave disabled until that's an explicit decision, not a default.
+      #
+      # app-id / private-key / installation-id: optional GitHub App
+      # wiring for posting a native Check Run instead of (or alongside)
+      # the PR comment above. Not configured — no such App exists for
+      # this org yet. Add repo secrets and wire them in here if that
+      # changes.
+
+      - name: Enforce verdict
+        if: always()
+        shell: bash
+        env:
+          EXIT_CODE: ${{ steps.payloadguard.outputs.exit-code }}
+          VERDICT: ${{ steps.payloadguard.outputs.verdict }}
+        run: |
+          echo "PayloadGuard verdict: ${VERDICT} (exit code ${EXIT_CODE})"
+          # Fail-closed: the action's own exit-code -> verdict mapping
+          # only distinguishes 0 (SAFE) and 2 (DESTRUCTIVE) -- everything
+          # else, including whatever a REVIEW/CAUTION finding produces,
+          # collapses into the same ERROR bucket as a genuine tool crash.
+          # Until that's fixed upstream, treat anything but a clean 0 as
+          # blocking rather than guess which case it actually was.
+          if [ "${EXIT_CODE}" != "0" ]; then
+            echo "::error::PayloadGuard did not return a clean SAFE verdict -- blocking merge."
+            exit 1
+          fi
