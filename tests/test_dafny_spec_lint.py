@@ -200,6 +200,28 @@ def test_enum_comparison_precondition_can_still_be_unsat():
     assert verdict == "unsat", detail
 
 
+def test_ordering_operator_on_enum_datatype_refuses_cleanly_not_a_crash():
+    """Real bug found 2026-07-10 mutation-testing drug_interaction_checker.dfy:
+    a ROR mutant introducing <=/</>/>= between two datatype (EnumSort)
+    operands used to crash with a raw Python TypeError ("'<=' not
+    supported between instances of 'DatatypeRef' and 'DatatypeRef'") --
+    Z3's Python bindings simply don't overload ordering operators for
+    DatatypeRef. Must now refuse cleanly (SystemExit, Tier 1) instead,
+    matching every other unsupported-construct refusal in this module.
+    EQ/NE are unaffected -- Z3's equality is universal across sorts."""
+    source = """
+    datatype Formula = A | B
+    function F(f: Formula): bool
+      requires f <= A
+      ensures true
+    {
+      true
+    }
+    """
+    with pytest.raises(SystemExit, match="only modeled for real/int/nat operands"):
+        check_precondition_satisfiability(source, "F")
+
+
 def test_parse_enum_datatypes_handles_multiline_declaration():
     """Dafny datatype declarations aren't required to fit on one line -
     drug_interaction_checker.dfy's own Agent datatype spans several.
