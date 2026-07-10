@@ -60,7 +60,10 @@ just the 3 `ensures` clauses Gate C1 added failed to prove the correct
 value for cells they didn't directly mention — confirmed with a real
 failing capture (`0 verified, 3 errors`), preserved as a proper honesty
 exhibit before fixing anything. Fixed with 60 comprehensive pinning
-`ensures` clauses plus a real 22-lemma ACCEPT/REJECT STP suite. Gate
+`ensures` clauses plus a real 11-lemma ACCEPT/REJECT STP suite (Dafny's
+own capture reads `22 verified, 0 errors` — ~2 verification tasks per
+lemma, not a 1:1 lemma count, corrected 2026-07-10 after this line and
+several other docs previously misread it as "22 lemmas"). Gate
 C3: `CheckInteraction`'s precondition compares `doac`/`agent` directly
 against datatype constructors — `evidence/dafny_spec_lint.py`'s Z3
 translator genuinely refused this (a real gap, not renal_adjustment's
@@ -253,8 +256,9 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   `(Dabigatran, Ketoconazole)` — and 3 more such lemmas, preserved
   against `drug_interaction_checker_underconstrained.dfy`, genuinely
   fail as a committed capture (`0 verified, 3 errors`). Fixed for real
-  by pinning all 63 cells explicitly, then building a real ACCEPT/REJECT
-  STP suite (`22 verified, 0 errors`) with REJECT coverage for the three
+  by pinning all 63 cells explicitly, then building a real 11-lemma
+  ACCEPT/REJECT STP suite (`22 verified, 0 errors` — ~2 verification
+  tasks per lemma, not a 1:1 count) with REJECT coverage for the three
   `Contraindicated` cells specifically. See `KNOWN_LIMITATIONS.md`'s
   "Phase E Gate C1"/"Phase E Gate C4" sections for the full account —
   worth reading before assuming a clean `dafny verify` pass on any

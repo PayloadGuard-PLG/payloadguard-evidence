@@ -672,8 +672,14 @@ payloadguard-evidence/
 │   │                            exhibit: the original 3-ensures-clause
 │   │                            spec, preserved verbatim
 │   ├── drug_interaction_checker_stp_suite(_against_underconstrained).dfy
-│   │                            Gate C4: 22 ACCEPT/REJECT lemmas pass
-│   │                            against the fix (22 verified, 0 errors);
+│   │                            Gate C4: 11 ACCEPT/REJECT lemmas (7
+│   │                            ACCEPT + 4 REJECT) pass against the fix
+│   │                            - Dafny reports 22 verified, 0 errors
+│   │                            (~2 verification tasks per lemma,
+│   │                            confirmed empirically, not 1:1 - a real
+│   │                            doc-accuracy bug this repo's own docs
+│   │                            previously misread as "22 lemmas,"
+│   │                            corrected 2026-07-10);
 │   │                            3 ACCEPT lemmas genuinely fail against
 │   │                            the preserved original (0 verified, 3
 │   │                            errors) — a real captured failure, not
@@ -1440,10 +1446,14 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `GStage`'s clean six-clause range partition) — re-verified clean (`1
   verified, 0 errors`, resource cost 358,399, still well under a
   second). The real STP suite (`drug_interaction_checker_stp_suite.dfy`)
-  then covers the established worked examples as ACCEPT lemmas plus
-  REJECT lemmas for the three `Contraindicated` cells (the highest-
-  stakes rows in the table) — `22 verified, 0 errors`. Full account:
-  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C4" section.
+  then covers the established worked examples as 7 ACCEPT lemmas plus 4
+  REJECT lemmas (3 for the `Contraindicated` cells, the highest-stakes
+  rows in the table, plus one more) — 11 lemmas total. Dafny's real
+  capture reads `22 verified, 0 errors` (~2 verification tasks per
+  lemma, not a 1:1 lemma count — confirmed empirically, corrected
+  2026-07-10 after this and several other docs previously misread it as
+  "22 lemmas"). Full account: `KNOWN_LIMITATIONS.md`'s "Phase E Gate C4"
+  section.
 - A real design finding from Gate 1b, worth restating here since it
   revises this repo's own earlier estimate: this example's v1 design
   needs **no** `set`/`seq` Dafny types at all (`DOAC`/`Agent` are closed

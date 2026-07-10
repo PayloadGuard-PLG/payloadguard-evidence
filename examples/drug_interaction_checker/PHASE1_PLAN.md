@@ -14,8 +14,10 @@ directly mention** — confirmed empirically, not assumed
 genuinely failing captured run: `0 verified, 3 errors`). Fixed by
 restating all 63 match arms as explicit pinning `ensures` clauses
 (`drug_interaction_checker.dfy`, re-verified clean), then a real
-ACCEPT/REJECT STP suite (`drug_interaction_checker_stp_suite.dfy`, `22
-verified, 0 errors`) covering the established worked examples plus
+11-lemma ACCEPT/REJECT STP suite (`drug_interaction_checker_stp_suite.dfy`
+— Dafny's raw capture reads `22 verified, 0 errors`, ~2 verification
+tasks per lemma, not a 1:1 lemma count, confirmed empirically) covering
+the established worked examples plus
 REJECT lemmas for the three `Contraindicated` cells. **Gate C3 (spec
 lint) also built 2026-07-10** — and, unlike `renal_adjustment`'s own
 Gate C3 (a narrowing fix), required genuinely extending
