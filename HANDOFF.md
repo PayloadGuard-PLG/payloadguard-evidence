@@ -36,6 +36,23 @@ added, alongside the existing PayloadGuard scan — see the "Working
 conventions" section below, which was itself corrected at the same time
 (it still said "no CI is configured on this repo").
 
+**Second same-day addendum: a third worked example started.**
+`examples/drug_interaction_checker/` (NHS SPS DOAC-interaction
+guidance, testing whether the pipeline generalizes to set/list-
+membership logic) went through Gate 1a (sourced), Gate 1c (three real
+findings — a dropped risk-direction axis, a `CheckInteraction` function
+non-total over its own declared `Agent` type, two genuinely ambiguous
+source cells — all resolved by explicit decision, none deferred), and
+Gate C1 (spec + capture, verifies clean). **Gate C1 caught a real
+false-clean result before it was committed:** an early draft with no
+`ensures` clauses reported "0 verified, 0 errors" — not a pass, a sign
+Dafny had nothing to actually prove (match-exhaustiveness is a
+resolve-time syntax check, not an SMT proof). Fixed by adding three
+real `ensures` clauses before committing anything. See
+`examples/drug_interaction_checker/PHASE1_PLAN.md`,
+`GATE_1C_AUDIT.md`, and `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1"
+section for the full account. Gates C2–C6 not started yet.
+
 ## What this repo is, in one paragraph
 
 Turns real verification tool output (CrossHair, Dafny/Z3) plus authored
@@ -46,7 +63,7 @@ Dafny proof produced it. Full explanation: `README.md` (plain-English)
 and `OPERATIONS_MANUAL.md` (technical reference — read this one if
 you're about to build something, not just read about the system).
 
-## Current state of both worked examples
+## Current state of all three worked examples
 
 **`examples/dosage_calculator/` — complete.** Every requirement carried
 through source citation → formal spec → mathematical proof → mutation
@@ -99,6 +116,37 @@ handoff file's example-agnostic summary. As of this writing:
   — see `run_mutation_suite_renal.py`'s module docstring.
 - **The only thing left before this example's Phase 2 is done: Gate
   C6's sign-off.** Everything else is built.
+
+**`examples/drug_interaction_checker/` — Phase 2 just started, Gate C1
+built, Gates C2–C6 not yet started.** Read
+`examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
+touching this example. Third worked example, testing whether the
+pipeline generalizes to **set/list-membership logic** — sourced from
+NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
+`renal_adjustment`. As of this writing:
+
+- Gate 1a (clinical sourcing) closed: single primary source, chosen
+  after direct comparison against BNF/MHRA DSU (bounded, versioned,
+  publicly fetchable, states its own scope boundary explicitly).
+- Gate 1c (consistency audit) closed: three real findings — a dropped
+  risk-direction axis, a `CheckInteraction` function non-total over its
+  own declared `Agent` type, two genuinely ambiguous source cells — all
+  resolved by explicit decision, none deferred (unlike `renal_adjustment`'s
+  own Finding 1, which was deliberately left open).
+- `drug_interaction_checker.dfy` exists, is committed, and verifies (`1
+  verified, 0 errors`) — `CheckInteraction`, 63 match arms across 15 v1
+  agents.
+- **A real false-clean result caught before committing, not after:** an
+  early draft with no `ensures` clauses reported "0 verified, 0
+  errors" — Dafny had generated zero verification tasks, not zero
+  problems. Fixed by adding three real `ensures` clauses. See
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1" section for the full
+  account — worth reading before assuming a clean `dafny verify` pass
+  on any future function means something was actually checked.
+- Gates C2–C6 not started. Two items named, not built: `REQ-DDI-5`
+  (an indication-dependent axis for two agents' apixaban cells) and
+  `REQ-DDI-6` (proving the specific numeric dose-reduction targets,
+  staged as v2 — "both but in order of difficulty").
 
 ## One thing explicitly left open, not forgotten
 
@@ -157,6 +205,15 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
   before being caught — the postconditions bounded a result without
   pinning it to an exact value. Write the STP before trusting a clean
   pass at face value.
+- **"0 verified, 0 errors" is not the same claim as "N verified, 0
+  errors" for N > 0 — check which one a capture actually says before
+  calling a gate built.** `drug_interaction_checker.dfy`'s first draft
+  had no `ensures` clauses and reported exactly this: zero errors
+  because there was nothing to disprove, since Dafny generates zero
+  verification tasks for a function with no postconditions
+  (match-exhaustiveness is a resolve-time syntax rule, not an SMT
+  proof). Caught before committing by actually reading the count, not
+  just the "0 errors" half of the line.
 - **Hand-derive a prediction before building, especially for mutation
   testing and STPs.** Every extension in this repo's history that did
   this caught something real or confirmed its own reasoning explicitly,
