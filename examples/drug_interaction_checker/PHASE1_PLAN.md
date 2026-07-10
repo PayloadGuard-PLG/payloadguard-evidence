@@ -16,9 +16,19 @@ restating all 63 match arms as explicit pinning `ensures` clauses
 (`drug_interaction_checker.dfy`, re-verified clean), then a real
 ACCEPT/REJECT STP suite (`drug_interaction_checker_stp_suite.dfy`, `22
 verified, 0 errors`) covering the established worked examples plus
-REJECT lemmas for the three `Contraindicated` cells. Mirrors
-`examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
-for the general pattern this one follows.
+REJECT lemmas for the three `Contraindicated` cells. **Gate C3 (spec
+lint) also built 2026-07-10** — and, unlike `renal_adjustment`'s own
+Gate C3 (a narrowing fix), required genuinely extending
+`evidence/dafny_spec_lint.py`'s Z3 translator: `CheckInteraction`'s
+precondition compares `doac`/`agent` directly against datatype
+constructors, a case the translator had never needed to model before
+(confirmed to refuse first: `unsupported Dafny parameter type 'DOAC'`).
+Fixed by representing simple (zero-argument-constructor) Dafny
+datatypes as a Z3 `EnumSort`, plus a fix for an independent, real
+EnumSort name-collision bug caught while testing it. See
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C3" section for the full
+account. Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s
+structure; read that file for the general pattern this one follows.
 
 ## Objective
 
@@ -200,9 +210,13 @@ the one item the audit didn't independently re-raise:
 - This file.
 - `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
 - `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`
-  (Gate C1, then Gate C4, both 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
-  "Phase E Gate C4" section has the full account of the under-
-  constrained-spec finding).
+  (Gates C1, C4, then C3, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
+  "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3" sections have
+  the full account of each).
+- `evidence/dafny_spec_lint.py` (Gate C3's real extension — see its
+  updated module docstring) and its test files,
+  `tests/test_dafny_spec_lint.py` (extended) and
+  `tests/test_drug_interaction_checker_spec_lint.py` (new).
 
 Not yet updated (deliberately — nothing built yet to describe):
-anything for Gates C2/C3/C5/C6, not started.
+anything for Gates C2/C5/C6, not started.

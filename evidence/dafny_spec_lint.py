@@ -21,6 +21,29 @@ Vector 1 - vacuous proofs from contradictory preconditions
     calls, old-expressions, sequences/sets/maps, ...) is refused outright,
     Tier 1, rather than silently mistranslated or skipped.
 
+    Extended 2026-07-10 (drug_interaction_checker.dfy's Gate C3): a
+    parameter typed as a simple Dafny `datatype` - every constructor
+    zero-argument, e.g. `datatype DOAC = Apixaban | Dabigatran | ...` -
+    is now modeled as a Z3 EnumSort when a `requires` clause actually
+    compares it (`doac == Apixaban`). This is the exact gap
+    renal_adjustment's own Gate C3 build never had to close: every
+    datatype-typed parameter in dosage.dfy/renal_adjustment.dfy that a
+    requires clause referenced was already real/int/nat/bool underneath,
+    and the one genuinely datatype-typed parameter (AssessRenalFunction's
+    `formula: Formula`) was never referenced by its one requires clause,
+    so the "only model referenced parameters" narrowing sidestepped it
+    entirely. drug_interaction_checker.dfy's precondition, `requires
+    !(doac == Apixaban && agent in {...})` (written as an explicit
+    disjunction, not this set-literal form, but comparing datatype values
+    either way), references two datatype-typed parameters directly -
+    confirmed to refuse before this extension existed
+    (SystemExit: "unsupported Dafny parameter type 'DOAC'"). A
+    *parameterized* constructor (e.g. `InteractionResult(outcome: ...,
+    direction: ...)`) is still refused, unchanged - EnumSort only
+    represents a finite set of nullary values, not a real datatype with
+    fields, and this module still refuses rather than guessing a
+    representation for those.
+
 Vector 2 - weak postconditions (heuristic, best-effort, NOT a full proof,
     named as such in the roadmap): a one-way implication (`==>`) in an
     `ensures` clause can let a broken implementation vacuously satisfy the
@@ -36,9 +59,19 @@ not here - see that module for the real, empirically-confirmed
 against it.
 """
 
+import itertools
 import re
 
 import z3
+
+# Z3 registers EnumSort names globally per context, not per call - two
+# separate build_symbol_table() calls that both happen to model a Dafny
+# datatype named e.g. "Formula" (a real collision across two different
+# test fixtures, caught empirically: "enumeration sort name is already
+# declared") would otherwise clash. A monotonic per-call tag keeps every
+# call's sorts distinct regardless of how many times a type name recurs
+# across this process's lifetime.
+_ENUM_SORT_CALL_COUNTER = itertools.count()
 
 _CLAUSE_KEYWORDS = ("requires", "ensures", "modifies", "reads", "decreases")
 
@@ -136,6 +169,38 @@ def _parse_params(header):
                 )
             params[name.strip()] = ty.strip()
     return params
+
+
+_DATATYPE_DECL_RE = re.compile(
+    r"\bdatatype\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*"
+    r"(?P<body>.*?)"
+    r"(?=\bdatatype\b|\bfunction\b|\bmethod\b|\Z)",
+    re.DOTALL,
+)
+_IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def _parse_enum_datatypes(source):
+    """Find every `datatype Name = C1 | C2 | ...` declaration in source
+    whose constructors are ALL zero-argument (a finite enumeration, e.g.
+    `datatype DOAC = Apixaban | Dabigatran | Edoxaban | Rivaroxaban`) -
+    representable as a Z3 EnumSort. A datatype with any parameterized
+    constructor (e.g. `InteractionResult(outcome: Outcome, direction:
+    RiskDirection)`) is simply not included here, not silently
+    misrepresented - callers still refuse on it via the normal
+    unsupported-type path. Declarations may span multiple lines (Dafny
+    doesn't require them on one line); line comments are stripped first
+    so a commented-out constructor never leaks in as real content.
+    Returns {datatype_name: [constructor_names]}."""
+    source_nc = re.sub(r"//[^\n]*", "", source)
+    enums = {}
+    for m in _DATATYPE_DECL_RE.finditer(source_nc):
+        name = m.group("name")
+        parts = [p.strip() for p in m.group("body").split("|")]
+        parts = [p for p in parts if p]
+        if parts and all(_IDENTIFIER_RE.fullmatch(p) for p in parts):
+            enums[name] = parts
+    return enums
 
 
 def _extract_clauses(source, method_name, keyword):
@@ -333,23 +398,54 @@ class _Parser:
         raise SystemExit(f"unexpected token in {self.clause_desc}: {value!r}")
 
 
-def build_symbol_table(params):
+def build_symbol_table(params, enums=None):
     """{name: dafny_type} -> ({name: z3 var}, [implicit constraints]).
-    `nat` gets an implicit >= 0 constraint (Dafny's own semantics); any
-    type outside real/int/nat/bool is refused rather than guessed at."""
+    `nat` gets an implicit >= 0 constraint (Dafny's own semantics).
+
+    `enums` is an optional {datatype_name: [constructor_names]} map (see
+    _parse_enum_datatypes) for simple, zero-argument-constructor Dafny
+    datatypes - represented as a Z3 EnumSort, one per distinct enum type
+    referenced, memoized within this call so two parameters of the same
+    enum type share one sort. Each constructor name becomes a resolvable
+    symbol too (e.g. `Apixaban`), the same way `true`/`false` already
+    resolve as literals in _Parser._atom - no parser changes needed for
+    this to work, since it's just more entries in the same symbol table.
+
+    Any type that is neither real/int/nat/bool nor a known simple enum -
+    including a parameterized datatype constructor, which EnumSort can't
+    represent at all - is refused rather than guessed at, unchanged."""
+    enums = enums or {}
     symbols = {}
     implicit = []
+    enum_sorts = {}
+    call_tag = next(_ENUM_SORT_CALL_COUNTER)
     for name, ty in params.items():
-        if ty not in _TYPE_MAP:
+        if ty in _TYPE_MAP:
+            var = _TYPE_MAP[ty](name)
+            symbols[name] = var
+            if ty == "nat":
+                implicit.append(var >= 0)
+        elif ty in enums:
+            if ty not in enum_sorts:
+                sort, values = z3.EnumSort(f"{ty}#{call_tag}", enums[ty])
+                const_map = dict(zip(enums[ty], values))
+                for cname, cval in const_map.items():
+                    if cname in symbols:
+                        raise SystemExit(
+                            f"name collision: {cname!r} is both a parameter "
+                            "and a datatype constructor - refusing rather "
+                            "than guessing which one a clause means"
+                        )
+                    symbols[cname] = cval
+                enum_sorts[ty] = sort
+            symbols[name] = z3.Const(name, enum_sorts[ty])
+        else:
             raise SystemExit(
                 f"unsupported Dafny parameter type {ty!r} for {name!r} - "
-                "only real/int/nat/bool are modeled; refusing rather than "
+                "only real/int/nat/bool and simple (zero-argument-"
+                "constructor) datatypes are modeled; refusing rather than "
                 "guessing a Z3 representation"
             )
-        var = _TYPE_MAP[ty](name)
-        symbols[name] = var
-        if ty == "nat":
-            implicit.append(var >= 0)
     return symbols, implicit
 
 
@@ -369,14 +465,20 @@ def check_precondition_satisfiability(source, method_name):
     "sat" / "unsat" / "unknown".
 
     Only builds Z3 symbols for parameters actually referenced by a
-    `requires` clause - a parameter of an unsupported type (e.g. a Dafny
-    datatype like `Formula`) that no precondition mentions doesn't need a
-    Z3 representation to answer "is this conjunction satisfiable," and
-    refusing on it anyway would be refusing to check a clause that never
-    touches it. A referenced identifier of an unsupported type still
-    refuses, unchanged - this only narrows what counts as "referenced."
-    Found empirically: renal_adjustment.dfy's AssessRenalFunction takes a
-    `Formula`-typed parameter its one requires clause never mentions."""
+    `requires` clause - a parameter of an unsupported type (e.g. a
+    parameterized Dafny datatype like `InteractionResult`) that no
+    precondition mentions doesn't need a Z3 representation to answer "is
+    this conjunction satisfiable," and refusing on it anyway would be
+    refusing to check a clause that never touches it. A referenced
+    identifier of an unsupported type still refuses, unchanged - this
+    only narrows what counts as "referenced." Found empirically:
+    renal_adjustment.dfy's AssessRenalFunction takes a `Formula`-typed
+    parameter its one requires clause never mentions. A *simple* Dafny
+    datatype (every constructor zero-argument, e.g. `DOAC`) that a
+    requires clause DOES reference is modeled as a Z3 EnumSort - see
+    _parse_enum_datatypes/build_symbol_table; found empirically the same
+    way, drug_interaction_checker.dfy's precondition compares `doac`/
+    `agent` directly."""
     params = _parse_params(_find_method_header(source, method_name))
     clauses = extract_requires_clauses(source, method_name)
     if not clauses:
@@ -388,7 +490,8 @@ def check_precondition_satisfiability(source, method_name):
         if re.search(rf"\b{re.escape(name)}\b", combined)
     }
     relevant_params = {name: ty for name, ty in params.items() if name in referenced}
-    symbols, implicit = build_symbol_table(relevant_params)
+    enums = _parse_enum_datatypes(source)
+    symbols, implicit = build_symbol_table(relevant_params, enums)
 
     constraints = list(implicit)
     for idx, clause in enumerate(clauses):
