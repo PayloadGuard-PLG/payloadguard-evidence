@@ -6,6 +6,99 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Docs-staleness fix, pytest CI, and a third worked example through Gate C1
+
+Same day as the Gate C6 walkthrough entry below, later in the session.
+Four pieces of work, in order.
+
+**Documentation staleness, closed mechanically, not just by hand.**
+`SYSTEM_BLUEPRINT.md` and `KNOWN_LIMITATIONS.md` had drifted behind
+`DEVLOG.md`'s own newest entry (still said "2026-07-09" the same day
+this file already had a 2026-07-10 entry) — a real, live instance of
+exactly the drift Steven had flagged by hand more than once this
+session. Fixed with a real content review (not a bare date bump):
+`SYSTEM_BLUEPRINT.md`'s component map gained `.github/workflows/`,
+`dashboards/`, and the pow-probe files; its Gate 1c Finding 1 narrative
+now cites the empirical pow probes instead of stating the claim as
+given. New test, `tests/test_docs_current_with_devlog.py`, makes this
+specific drift mechanically impossible to reintroduce silently.
+
+**PayloadGuard's exit-code contract corrected, then a pytest CI job
+added.** Confirmed by reading `analyze.py` directly rather than
+trusting the wrapper's shell logic: exit 0 covers SAFE/REVIEW/CAUTION
+alike, only exit 1 (analysis error) and exit 2 (DESTRUCTIVE) block
+merge. `.github/workflows/tests.yml` now runs `pytest tests/ -q` on
+every PR, closing a real gap — `main` previously had no automated check
+that the suite itself still passed. Caught and fixed a stale claim
+while touching this area: `HANDOFF.md`'s working-conventions section
+still said "no CI is configured on this repo."
+
+**A third worked example, `examples/drug_interaction_checker/`,
+scoped and sourced.** Steven's domain choice: set/list-membership
+logic. He found the primary source himself (NHS SPS's DOAC-interaction
+guidance) after a first attempt at scoping candidate sources came up
+short — verified independently via a raw `curl` fetch, not just the
+AI-summarized pass, which turned out to matter: the summary had
+flattened real structure (per-DOAC downgrades on verapamil/fluconazole,
+two indication-dependent apixaban branches, a real gap in the source
+itself on apixaban+dronedarone). Full extraction:
+`sources/sps-doac-interactions-2024.md`.
+
+**Gate 1c found three real findings; all three resolved by explicit
+decision, none deferred.** (1) The `Outcome` taxonomy dropped the
+source's own risk-direction axis (every one of its 17 sections is
+headed "bleeding risk" or "thrombosis risk" or a no-interaction/
+theoretical variant) — resolved by adding a `RiskDirection` field. (2)
+`CheckInteraction` wasn't total over its own declared `Agent` type —
+two agents' apixaban cells needed an indication axis not yet built, but
+their other cells didn't — resolved with a type-level precondition
+exclusion, recovering six real cells rather than deferring all eight.
+(3) Two cells were genuinely ambiguous in the source itself (hedged
+"unlikely to be clinically relevant" without digoxin's clean negative)
+— resolved by adding a fourth `Outcome` case, `CautionLowRelevance`.
+Every original worked-example hand-trace was re-derived against the
+redesigned sketch to confirm the fix introduced no new inconsistency.
+
+**Gate C1 built — and caught a real false-clean result before it was
+committed.** `drug_interaction_checker.dfy`: 63 match arms across 15
+v1 agents. An early draft with no `ensures` clauses reported "0
+verified, 0 errors" from `dafny verify` — not a pass. Dafny generates
+verification tasks from postconditions; a function with none has
+nothing for Z3 to prove, and match-exhaustiveness is a resolve-time
+syntax rule, not an SMT proof. Confirmed with `--progress Symbol` (still
+0 verified) and `dafny resolve` (parses and type-checks fine) before
+concluding the absence of tasks was real, not a harness glitch. Fixed
+by adding three real `ensures` clauses — a `NotCovered`-implies-the-
+one-real-gap pin, a `Contraindicated`-implies-`Dabigatran` pin, a
+`Digoxin`-always-safe pin — before committing anything. Re-verified: `1
+verified, 0 errors`, resource cost 113,039 (heaviest single
+verification task across all three worked examples so far, still
+under a second real time). `evidence/dafny_adapter.py` parses the real
+capture unmodified — the third confirmation this parser generalizes
+across independently-authored specs with zero code changes.
+
+Also mined a genuinely worthless-looking external "hardening
+recommendations" document for real signal rather than dismissing it
+outright: most of its nine items either described already-fixed
+problems or repeated design mistakes this repo had already caught and
+named (a lookup-table proposal for drug classification that
+`REQ-RENAL-8` already rejected, for the reason `REQ-RENAL-8` already
+gave). But two things checked out empirically and are worth acting on
+later: `dafny verify --json-output` gives real structured per-clause
+diagnostics on a failing verification (better than the summary-line
+regex `dafny_adapter.py` currently parses), and Dafny's own docs
+distinguish `--resource-limit` as "a deterministic alternative to a
+time limit" from the wall-clock default every real capture in this
+repo currently uses — measured the actual margin (7,443–113,039
+resource units observed so far, nowhere near a practical boundary) and
+confirmed Dafny's default random seed is fixed at 0, not
+entropy-randomized, so the theoretical risk is real but currently low
+for every spec in this repo. Neither built yet — held off per direct
+instruction to stay on the worked-example thread first.
+
+171 tests pass throughout (no Python code changed this session — new
+Dafny specs, new docs, one new test file for the staleness check).
+
 ## 2026-07-10 — Gate C6 walkthrough surfaced an unearned claim; tested and closed it for real
 
 Walking through `renal_adjustment.dfy`'s Gate C6 sign-off with Steven

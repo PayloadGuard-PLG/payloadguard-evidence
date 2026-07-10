@@ -4,11 +4,12 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-10 (PayloadGuard CI gate entry added — see the
-table row and the "PayloadGuard CI gate" section below; a pytest CI job
-entry was added the same day, see its own table row). Phase B/C
-entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.) date
-to 2026-07-07 and are historical, not stale — the ledger below is
+Last updated: 2026-07-10 (PayloadGuard CI gate and pytest CI job entries
+added — see their own table rows; a third worked example,
+`drug_interaction_checker` (Phase E), had its Gate C1 built the same
+day — see its table row and the "Phase E Gate C1" section below). Phase
+B/C entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.)
+date to 2026-07-07 and are historical, not stale — the ledger below is
 append-only and each entry is dated individually. The renal-adjustment
 second worked example (Phase D) has its own extensive entries further
 down this file, current as of the citation-gate audit on 2026-07-09. For
@@ -34,6 +35,7 @@ dated build-by-build narrative, see `DEVLOG.md`.
 | Gate C6 next-phase adaptation work | **BLOCKED, named 2026-07-07 — asked, not guessed** | Full note in `payloadguard-evidence-roadmap-phaseB-to-C.md`'s "Gate C6 next-phase adaptation work" section. Trigger condition ("a defensible artifact to build it on top of") is now met — the full evidence chain (Gates C1/C4/C5/C6) exists. But the only description of this work anywhere in the repo is one sentence from the original Gate C6 sign-off, repeated verbatim in every place it's mentioned, never elaborated — checked directly (grepped the whole repo, including `PayloadGuard-Evidence-Blueprint-1.md`'s cited FDA guidance URLs), not assumed. Three concrete unknowns block real scoping: what "adapting the spec" means, what "different downstream software" refers to, and which regulatory pathway (510(k)/De Novo/PMA/other) this targets. Matches Gate C3 vector 4's own precedent (stayed BLOCKED, named, rather than inferred from its name alone) — resolved by asking directly rather than guessing a concrete plan from one sentence. |
 | PayloadGuard CI gate — third-party pre-merge scan | **WIRED 2026-07-10 — unverified-claim caveats named, not blanket-trusted** | `.github/workflows/payloadguard.yml` runs a third-party GitHub Action (`PayloadGuard-PLG/payload-consequence-analyser`, pinned to a commit SHA) on every PR into `main`, discovered and wired after a real CI failure surfaced a mutable-tag risk this repo doesn't accept elsewhere. Its exit-code contract was confirmed by reading `analyze.py` directly, not by trusting the wrapper `action.yml`'s shell logic or the tool's own `--help` epilog (which itself underspecifies the CAUTION verdict): exit 0 covers SAFE, REVIEW, and CAUTION alike (none block merge), exit 1 is an analysis error, exit 2 is DESTRUCTIVE — only 1 and 2 are gated on. The tool's own composite-action wrapper labels its `verdict` output "SAFE" for any exit-0 result even when the real finding was REVIEW/CAUTION, a real wrapper quirk this repo's workflow works around by gating on `${EXIT_CODE}` directly, never on `${VERDICT}` — noted in `payloadguard.yml` itself so it isn't "fixed" the wrong way later. Full detail below. |
 | pytest CI job | **ADDED 2026-07-10** | `.github/workflows/tests.yml` runs `python -m pytest tests/ -q` on every PR into `main`, closing a real gap: until now, `main` had no automated check that the test suite itself still passes — `HANDOFF.md`'s own working-conventions section said "no CI is configured on this repo" (stale, now corrected) and relied entirely on the local run before each commit. Installs from a new `requirements.txt` (pytest/jsonschema/PyYAML/z3-solver, pinned to exact versions, not floated). No Dafny/Z3 *binary* toolchain install in the job — confirmed before adding it, not assumed, by grepping `tests/` and `evidence/` for `subprocess` usage: the suite reads committed verification captures, it never shells out to a live `dafny`/`crosshair` invocation; the one real subprocess use in `tests/` drives this repo's own `evidence.cli`, not an external verifier. `z3-solver` is Z3's Python binding, needed by `evidence/dafny_spec_lint.py`'s own precondition-satisfiability translator — a different thing from the Dafny verifier binary, and sufficient on its own for every test to pass. |
+| Phase E Gate C1 — `drug_interaction_checker.dfy` spec + capture | **BUILT 2026-07-10 — a real false-clean result caught before committing** | Third worked example, testing whether Gate C1–C6 generalizes to set/list-membership logic. `CheckInteraction(doac, agent, hasOtherBleedingRiskFactors): InteractionResult` — 63 match arms across 15 v1 agents, a `requires` clause excluding two agents' still-blocked apixaban cells (Gate 1c Finding 2's resolution) — verifies clean (`1 verified, 0 errors`). **An early draft with no `ensures` clauses reported "0 verified, 0 errors"** — Dafny generated zero verification tasks, since match-exhaustiveness is a resolve-time syntax check, not an SMT proof, and a function with no postconditions has nothing else to prove; that "0 verified, 0 errors" would have been a false-clean result if committed as-is, exactly the class of overclaim this repo's whole discipline exists to catch. Fixed by adding three real `ensures` clauses (a `NotCovered`-implies-the-one-real-source-gap pin, a `Contraindicated`-implies-`Dabigatran` pin, a `Digoxin`-always-safe pin), matching how every other function in this repo (`GStage`, `SelectFormula`, `ComposedCeiling`) commits to a real claim in its own signature rather than leaving the match body as the only content. `evidence/dafny_adapter.py::parse_dafny_capture` parses the real capture unmodified (`Strength.PROVEN`, `verifier_completion_status == "completed"`) — the third confirmation this parser generalizes across worked examples with zero changes. Full per-cell pinning of all 63 match arms is deferred to Gate C4 (STP lemmas), matching this repo's established division of labor, not duplicated inline. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -2019,3 +2021,82 @@ auto-PR feature) are both left at their safe defaults (`disabled`/
 `false`) in `payloadguard.yml`, deliberately, per the comments in that
 file — turning either on is a materially bigger blast-radius decision
 this entry does not make on its own.
+
+## Phase E Gate C1 — `drug_interaction_checker.dfy` spec + capture: BUILT (2026-07-10)
+
+Third worked example, `examples/drug_interaction_checker/`, testing
+whether Gate C1–C6 generalizes to set/list-membership logic — distinct
+from `dosage.dfy`'s arithmetic clamping and `renal_adjustment.dfy`'s
+lookup-table/conditional-branching shape. Gate 1a (sourced from NHS
+SPS's DOAC-interaction guidance) and Gate 1c (three real findings, all
+resolved by explicit decision) preceded this build — see
+`examples/drug_interaction_checker/PHASE1_PLAN.md` and
+`GATE_1C_AUDIT.md`.
+
+**The spec:** `DOAC`/`Agent`/`RiskDirection`/`Outcome`/`InteractionResult`
+datatypes; `CheckInteraction(doac, agent, hasOtherBleedingRiskFactors):
+InteractionResult` — 63 match arms covering all 15 v1-scoped agents
+(11 uniform across all four DOACs, 13 per-DOAC-differentiated, one
+conditional on the caller-supplied bleeding-risk flag). A `requires`
+clause (`!(doac == Apixaban && agent in {Rifampicin, Carbamazepine,
+Phenytoin, Phenobarbital})`) makes the two agents' still-blocked
+apixaban cells a provable exclusion at every call site rather than a
+silently undefined match arm — Gate 1c Finding 2's resolution, written
+as an explicit boolean disjunction rather than a set literal, to stay
+within syntax already confirmed supported by Gate C3's
+precondition-satisfiability translator (set-literal membership hasn't
+been verified against that translator and wasn't assumed to work).
+Verifies clean against real Dafny 4.11.0: `1 verified, 0 errors`,
+`run_manifest_dafny_ddi.json`.
+
+**A real false-clean result, caught before committing, not after.** An
+early draft had no `ensures` clauses at all — `dafny verify` reported
+"0 verified, 0 errors." That is not a vacuous pass to be read as
+"nothing wrong, nothing to check" — it means Dafny generated **zero**
+verification tasks for the function, because match-exhaustiveness is
+enforced by the resolver at parse/type-check time (a syntax rule, not
+an SMT proof), and a function with no postconditions has no correctness
+claim for Z3 to discharge. Confirmed empirically (`dafny verify
+--progress Symbol` still reported 0 verified for the no-ensures draft;
+`dafny resolve` separately confirmed the file parses and type-checks
+fine — the absence of verification tasks was real, not a tooling
+glitch). Committing that result as "Gate C1 built, verifies clean"
+would have been exactly the kind of overstated evidence this repo's
+whole discipline exists to refuse. Fixed by adding three real `ensures`
+clauses before committing anything:
+
+1. `CheckInteraction(...).outcome == NotCovered ==> (doac == Apixaban
+   && agent == Dronedarone)` — pins REQ-DDI-4's fail-safe: the *only*
+   way to reach `NotCovered` is the one real, sourced gap in the source
+   page itself, not a silent catch-all.
+2. `CheckInteraction(...).outcome == Contraindicated ==> doac ==
+   Dabigatran` — every `Contraindicated` cell in this table happens to
+   be a dabigatran cell; now a checked fact, not an incidental pattern
+   nobody verified.
+3. `agent == Digoxin ==> CheckInteraction(...) == InteractionResult(
+   NoInteractionExpected, NoRisk)` — pins the one section with a clean,
+   explicit negative in the source.
+
+Re-verified after the fix: `1 verified, 0 errors`, real resource cost
+113,039 (`--log-format csv`, well under any timeout concern — the
+heaviest single verification task recorded across all three worked
+examples so far, still completing in well under a second). Full
+per-cell pinning of the remaining 60 match arms is deferred to Gate C4
+(STP lemmas, ACCEPT/REJECT-style, matching `renal_adjustment`'s own
+Gate C4 methodology) — not duplicated as inline `ensures` clauses, same
+division of labor this repo has used since `dosage.dfy`'s
+`ExpectedDose`.
+
+**`evidence/dafny_adapter.py::parse_dafny_capture` parses the real
+capture unmodified** — `Strength.PROVEN`, `verifier_completion_status
+== "completed"` — the third time this parser has generalized across an
+independently-authored worked example with zero code changes (after
+`dosage.dfy` and `renal_adjustment.dfy`).
+
+**Gates C2–C6 not yet started.** Two items named, not built:
+`REQ-DDI-5` (an indication-dependent third axis for two agents'
+apixaban cells, needs a `TreatmentIndication` caller input) and
+`REQ-DDI-6` (proving the specific numeric dose-reduction targets,
+staged as v2 per direct instruction — "both but in order of
+difficulty"). Not wired into the metadata/capture/generate pipeline —
+same status `renal_adjustment` had at this point in its own build.

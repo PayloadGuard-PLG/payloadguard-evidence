@@ -1,11 +1,22 @@
 # Drug-Drug Interaction Checker — Phase 1 (Specification & Foundation)
 
-Status: **Gate 1a (clinical source audit) done. Gate 1c (internal
-consistency and completeness audit) performed 2026-07-10, found three
-real findings, all three now resolved by explicit decision (not
-deferral) — see `GATE_1C_AUDIT.md`'s 2026-07-10 addendum. Gate 1b's
-sketch below has been redesigned to match. Gate 1 is closeable** —
-Gate C1 (spec + capture) is the next step. Mirrors
+Status: **Gate 1a (clinical source audit) done. Gate 1c performed
+2026-07-10, all three findings resolved by explicit decision — see
+`GATE_1C_AUDIT.md`. Gate C1 (spec + capture) built 2026-07-10:
+`drug_interaction_checker.dfy` exists, is committed, and verifies
+clean against real Dafny 4.11.0 (`1 verified, 0 errors`,
+`run_manifest_dafny_ddi.json`).** A real finding caught before
+committing: an early draft with no `ensures` clauses reported "0
+verified, 0 errors" — a false-clean result, since match-exhaustiveness
+is a resolve-time syntax check, not a verification task, so a function
+with no postconditions gives Dafny nothing to actually prove. Three
+real `ensures` clauses were added (the `NotCovered`/`REQ-DDI-4`
+fail-safe pin, a `Contraindicated`-implies-`Dabigatran` claim, and a
+`Digoxin`-always-safe pin), matching how every other function in this
+repo (`GStage`, `SelectFormula`, `ComposedCeiling`) commits to a real
+claim in its own signature rather than relying on the match body alone
+— full per-cell pinning of all 63 match arms is left to Gate C4's STP
+lemmas, not duplicated here. Mirrors
 `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
 for the general pattern this one follows.
 

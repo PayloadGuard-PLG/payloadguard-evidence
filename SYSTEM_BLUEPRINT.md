@@ -1,13 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-10 (real content review, not a bare date bump: Gate
-1c Finding 1's eGFR/Dafny-expressiveness half is now empirically tested,
-not asserted — see Section 7 and `GATE_1C_AUDIT.md`'s 2026-07-10
-addendum; a PayloadGuard pre-merge CI scan, a pytest CI job
-(`tests.yml`/`requirements.txt`), and a `dashboards/` directory were
-added — all new component-map entries below; full narrative in
-`DEVLOG.md`/`HANDOFF.md` as always). Prior header, preserved: Last
-updated 2026-07-09 (Phase D component-map/status entries added —
+Last updated: 2026-07-10 (a third worked example,
+`examples/drug_interaction_checker/`, was scoped and its Gate C1
+[spec + capture] built — see the new Section 8 and its component-map
+entry below; a real content review earlier the same day, not a bare
+date bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
+empirically tested, not asserted — see Section 7 and
+`GATE_1C_AUDIT.md`'s 2026-07-10 addendum; a PayloadGuard pre-merge CI
+scan, a pytest CI job (`tests.yml`/`requirements.txt`), and a
+`dashboards/` directory were also added — all new component-map entries
+below; full narrative in `DEVLOG.md`/`HANDOFF.md` as always). Prior
+header, preserved: Last updated 2026-07-09 (Phase D component-map/status
+entries added —
 see Section 7 and the 2026-07-09 addendum a few lines below; original
 Gate C5 narrative preserved as history). Prior header, preserved: Last
 updated 2026-07-07 (Gate C5, mutation testing, BUILT then EXTENDED
@@ -587,6 +591,36 @@ payloadguard-evidence/
 │   │                            the exact failure mode Gate C2 refuses
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
+├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gate
+│   │                            C1 built 2026-07-10 — see Section 8
+│   │                            below and PHASE1_PLAN.md for current
+│   │                            status; structural listing only)
+│   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
+│   │                            requirements table + resolved findings,
+│   │                            Gate 1b sketch, Gate C1 status
+│   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
+│   │                            findings (dropped risk-direction axis,
+│   │                            CheckInteraction non-total over its own
+│   │                            Agent type, two genuinely ambiguous
+│   │                            source cells), all resolved by explicit
+│   │                            decision — 2026-07-10 addendum re-derives
+│   │                            every worked-example hand-trace against
+│   │                            the redesigned sketch
+│   ├── drug_interaction_checker.dfy  The committed spec: DOAC/Agent/
+│   │                            RiskDirection/Outcome/InteractionResult
+│   │                            datatypes, CheckInteraction (63 match
+│   │                            arms, 15 v1 agents) — verifies clean
+│   │                            (1 verified, 0 errors). No set/seq
+│   │                            Dafny types needed (Gate 1b finding);
+│   │                            three ensures clauses give Gate C1 real
+│   │                            content to prove (an earlier no-ensures
+│   │                            draft reported a false-clean "0
+│   │                            verified, 0 errors" — caught before
+│   │                            committing, not after)
+│   ├── run_verify_ddi.py        Capture runner, mirroring
+│   │                            renal_adjustment's exact discipline
+│   └── raw_dafny_output_ddi.txt/run_manifest_dafny_ddi.json  Verbatim
+│                                capture + manifest
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -603,11 +637,17 @@ payloadguard-evidence/
 │   │                            KDIGO specifies no tie-break rule)
 │   ├── mhra-renal-formula-selection-2019.md  Focused citation extract,
 │   │                            the BMI-threshold formula-selection rule
-│   └── ckd-epi-2021-and-cockcroft-gault-verification.md  Independent
-│                                verification of externally-supplied
-│                                equation citations - confirms the real
-│                                ones, corrects a fabricated NICE NG203
-│                                citation
+│   ├── ckd-epi-2021-and-cockcroft-gault-verification.md  Independent
+│   │                            verification of externally-supplied
+│   │                            equation citations - confirms the real
+│   │                            ones, corrects a fabricated NICE NG203
+│   │                            citation
+│   └── sps-doac-interactions-2024.md  drug_interaction_checker's
+│                                primary source (NHS SPS DOAC-interaction
+│                                guidance) - raw-text extraction, not an
+│                                AI-summarized pass, after the summary was
+│                                found to flatten real per-DOAC/indication
+│                                structure the raw fetch caught
 └── tests/
     ├── conftest.py              Import-path plumbing
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
@@ -1251,3 +1291,66 @@ added this phase** (component map, above) — built after two real
 fabricated citations were caught by hand in externally-supplied
 "research findings" documents, one of which repeated the same
 fabrication after already being corrected once.
+
+## 8. Phase E — third worked example (`examples/drug_interaction_checker/`)
+
+Deliberately concise, matching Section 7's own precedent: a status
+pointer, not a narrative. Full detail lives in
+`examples/drug_interaction_checker/PHASE1_PLAN.md` (kept current
+per-session), `GATE_1C_AUDIT.md`, `sources/sps-doac-interactions-2024.md`,
+`DEVLOG.md`, and `HANDOFF.md`.
+
+**Objective:** prove the Gate C1–C6 pipeline generalizes to
+**set/list-membership logic** — checking whether a specific pairing
+belongs to a known, bounded set and, if so, what outcome it maps to —
+distinct from `dosage.dfy`'s arithmetic clamping and
+`renal_adjustment.dfy`'s lookup-table/conditional-branching shape.
+UK-jurisdiction (NHS Specialist Pharmacy Service DOAC-interaction
+guidance), consistent with `renal_adjustment`'s sourcing convention.
+
+**Status as of 2026-07-10:**
+
+- Gate 1a (clinical source audit): done. Single primary source (NHS SPS,
+  chosen over BNF/MHRA DSU after direct comparison — bounded, versioned,
+  publicly fetchable, states its own scope boundary explicitly).
+- Gate 1c (internal consistency audit): performed, found three real
+  findings (a dropped risk-direction axis, a `CheckInteraction` function
+  non-total over its own declared `Agent` type, two genuinely ambiguous
+  source cells) — all three resolved by explicit decision, none
+  deferred. Every original worked-example hand-trace re-derived against
+  the redesigned sketch to confirm the fix introduced no new
+  inconsistency.
+- **Gate C1 (spec + capture): built.** `drug_interaction_checker.dfy` —
+  `DOAC`/`Agent`/`RiskDirection`/`Outcome`/`InteractionResult` datatypes,
+  `CheckInteraction` (63 match arms across 15 v1 agents, a
+  `requires` clause excluding the two agents' still-blocked apixaban
+  cells) — verifies clean (`1 verified, 0 errors`). A real finding
+  caught before committing: an earlier draft with no `ensures` clauses
+  reported a false-clean "0 verified, 0 errors" (match-exhaustiveness is
+  a resolve-time syntax check, not a verification task — a function with
+  no postconditions gives Dafny nothing to actually prove). Three real
+  `ensures` clauses were added instead, matching every other function in
+  this repo's discipline of committing to a real claim in its own
+  signature. `evidence/dafny_adapter.py::parse_dafny_capture` parses the
+  real capture unmodified — `Strength.PROVEN`,
+  `verifier_completion_status == "completed"` — the third confirmation
+  this parser generalizes across worked examples without change.
+- A real design finding from Gate 1b, worth restating here since it
+  revises this repo's own earlier estimate: this example's v1 design
+  needs **no** `set`/`seq` Dafny types at all (`DOAC`/`Agent` are closed
+  enumerated `datatype`s, `CheckInteraction` a total pattern match,
+  mirroring `renal_adjustment.dfy`'s own datatype precedent) — narrower
+  than the original scoping session's "moderate new engineering" flag
+  for Gate C3's Z3 translator. `set`/`seq`/quantifier support would only
+  become necessary for a later, distinct extension (checking a new drug
+  against an open, caller-supplied medication list, not a single
+  hardcoded pairwise lookup).
+- Not wired into the metadata/capture/generate pipeline (no
+  `metadata.yaml`, no traceability matrix) — same status
+  `renal_adjustment` had at this point; Section 3's data-flow diagram
+  and Section 5's evidence inventory remain `dosage_calculator`-only.
+- Gates C2–C6 not yet started. Two items explicitly named, not built:
+  `REQ-DDI-5` (an indication-dependent third axis for two agents'
+  apixaban cells) and `REQ-DDI-6` (proving the specific numeric
+  dose-reduction targets, staged as v2 per direct instruction — "both
+  but in order of difficulty").
