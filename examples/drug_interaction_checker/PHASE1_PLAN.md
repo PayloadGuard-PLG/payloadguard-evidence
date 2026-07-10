@@ -1,13 +1,13 @@
 # Drug-Drug Interaction Checker — Phase 1 (Specification & Foundation)
 
-Status: **Gate 1a (clinical source audit) done. Gate 1b (spec-skeleton
-design decisions) recorded below. Gate 1c (internal consistency and
-completeness audit) performed 2026-07-10 — see `GATE_1C_AUDIT.md`.
-Found three real findings (an incomplete `Outcome` taxonomy, a
-non-total `CheckInteraction` over its own declared `Agent` type, and a
-genuinely ambiguous pair of source cells); none resolved yet, so **Gate
-1 is not yet closeable.** Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s
-structure; read that file for the general pattern this one follows.
+Status: **Gate 1a (clinical source audit) done. Gate 1c (internal
+consistency and completeness audit) performed 2026-07-10, found three
+real findings, all three now resolved by explicit decision (not
+deferral) — see `GATE_1C_AUDIT.md`'s 2026-07-10 addendum. Gate 1b's
+sketch below has been redesigned to match. Gate 1 is closeable** —
+Gate C1 (spec + capture) is the next step. Mirrors
+`examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
+for the general pattern this one follows.
 
 ## Objective
 
@@ -43,8 +43,8 @@ built from the raw re-fetch, not the summary.
 
 | ID | Requirement | Source |
 |---|---|---|
-| REQ-DDI-1 | The checker returns one of a fixed set of outcome kinds — `NoInteractionExpected`, `Caution`, `Avoid`, `Contraindicated`, `DoseReductionAdvised`, `NotCovered` — never a bare boolean. `NotCovered` is distinct from `NoInteractionExpected`: digoxin gets an explicit stated negative ("No interactions are expected between digoxin and DOACs"); an agent never mentioned on the source page (e.g. apixaban+dronedarone, see REQ-DDI-2) gets `NotCovered`, not an assumed negative. | `sources/sps-doac-interactions-2024.md`, digoxin entry + scope statement. |
-| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent): Outcome` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering 14 of the source's 17 named sections with no extra caller input needed: Amiodarone, Digoxin, Diltiazem, Dronedarone (incl. the apixaban `NotCovered` gap), Verapamil, Clarithromycin, Erythromycin(systemic), Other-DOAC/heparin/warfarin, Fluconazole, Itraconazole, Ketoconazole, Aspirin/Clopidogrel/Ticagrelor (antiplatelets), Ciclosporin, Tacrolimus, Ibuprofen/Naproxen (NSAIDs), Levetiracetam/valproate. **A 15th section, SSRIs/SNRIs, is also in v1 but needs one extra caller-supplied flag — see REQ-DDI-3, its own row, not folded into this count.** 15 of 17 in v1; the remaining 2 (Rifampicin, Carbamazepine/phenytoin/phenobarbital) are named and deferred in REQ-DDI-5, not silently dropped — see `GATE_1C_AUDIT.md`'s "Total coverage check" for the arithmetic error an earlier draft of this row had (miscounted as "14 of 17" with no accounting for where SSRI/SNRI's entry went). Each cell's outcome kind is per-DOAC where the source differentiates (e.g. dabigatran=`Contraindicated` with itraconazole/ketoconazole, apixaban/rivaroxaban=`Avoid`... — see the source doc for every cell) — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections. |
+| REQ-DDI-1 | The checker returns an `InteractionResult(outcome, direction)` pair, never a bare boolean. `outcome` is one of `NoInteractionExpected`, `Caution`, `CautionLowRelevance`, `Avoid`, `Contraindicated`, `DoseReductionAdvised`, `NotCovered`. `CautionLowRelevance` added 2026-07-10 (Gate 1c Finding 3, resolved by explicit decision) — distinct from plain `Caution`, for the two cells where the source hedges ("unlikely to be clinically relevant") without ever giving digoxin's clean, unqualified negative; distinct from `NoInteractionExpected` too, since the source never actually states a negative for those two cells the way it does for digoxin. `direction` is `BleedingRisk \| ThrombosisRisk \| NoRisk \| UnknownRisk`, added 2026-07-10 (Gate 1c Finding 1, resolved by explicit decision) — every one of the source's 17 sections is headed by exactly this distinction, and it's clinically load-bearing (the correct thing to monitor for differs). `NotCovered` is distinct from `NoInteractionExpected`: digoxin gets an explicit stated negative; an agent never mentioned on the source page (e.g. apixaban+dronedarone, see REQ-DDI-2) gets `NotCovered`, not an assumed negative. | `sources/sps-doac-interactions-2024.md`, digoxin entry + scope statement; `GATE_1C_AUDIT.md`'s Findings 1 and 3. |
+| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent, hasOtherBleedingRiskFactors: bool): InteractionResult` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering 14 of the source's 17 named sections with no extra caller input needed, plus SSRIs/SNRIs (REQ-DDI-3, its own row) = 15 of 17 in v1. **As of 2026-07-10 (Gate 1c Finding 2, resolved by explicit decision), the function also carries `requires !(doac == Apixaban && agent in {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})`** — recovering 6 of those two agents' 8 total DOAC cells as real, provable v1 cells (dabigatran/edoxaban/rivaroxaban for both), while making their still-blocked apixaban cells (REQ-DDI-5, the indication axis) a provable precondition violation rather than a silently undefined match arm. 17 of 17 named sections now have *something* defined for every cell they can have defined without REQ-DDI-5 — the only true gaps left are the 2 apixaban cells the precondition explicitly excludes, and the 1 real source gap (apixaban+dronedarone, `NotCovered`). Each cell's outcome is per-DOAC where the source differentiates — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections; `GATE_1C_AUDIT.md`'s Finding 2. |
 | REQ-DDI-3 | SSRIs/SNRIs are in v1 scope despite carrying an extra factor: dabigatran's dose-reduction advice is conditional on a **caller-supplied** `hasOtherBleedingRiskFactors: bool` — "consider a dose reduction... if the individual also has other risk factors for bleeding." Same trust-boundary shape as `renal_adjustment.dfy`'s `REQ-RENAL-8` (caller-supplied classification flags): the proof establishes correct branching given the flag, not the correctness of the flag's clinical determination. Cheap enough to include in v1 rather than deferred, unlike REQ-DDI-5 below. | `sources/sps-doac-interactions-2024.md`, SSRIs/SNRIs entry. |
 | REQ-DDI-4 | Fail-safe: any `(doac, agent)` pair not present in the source's named set — including within-source gaps like apixaban+dronedarone — returns `NotCovered`, never silently `NoInteractionExpected`. Same "never default to the safe-looking answer on missing data" principle as `renal_adjustment.dfy`'s `REQ-RENAL-4`. | Design invariant, same category as `REQ-RENAL-4`; grounded in REQ-DDI-1's `NotCovered`/`NoInteractionExpected` distinction. |
 | REQ-DDI-5 (**named, deferred — not built in v1**) | Rifampicin and Carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication (AF-stroke-prevention/DVT-PE-recurrence-prevention vs. other indications) — genuinely new modeling (a `TreatmentIndication` caller input), not a cheap flag addition like REQ-DDI-3. Same pattern as `renal_adjustment`'s combined creatinine-cystatin-C eGFR: named as a real, sourced, feasible extension, not built because it doesn't change whether the core pipeline generalizes. | `sources/sps-doac-interactions-2024.md`, rifampicin + carbamazepine/phenytoin/phenobarbital entries. |
@@ -92,7 +92,7 @@ itself the set-membership question, whether checked via `set<T>.Contains`
 or a total pattern match over a closed enumeration is an implementation
 choice, not a difference in what's being proven.
 
-**Sketch:**
+**Sketch, redesigned 2026-07-10 to resolve all three Gate 1c findings:**
 
 ```dafny
 datatype DOAC = Apixaban | Dabigatran | Edoxaban | Rivaroxaban
@@ -112,31 +112,58 @@ datatype Agent =
   | Tacrolimus
   | Ibuprofen | Naproxen
 
-datatype Outcome =
-    NoInteractionExpected | Caution | Avoid | Contraindicated
-  | DoseReductionAdvised | NotCovered
+// Finding 1 (resolved): every source section is headed by exactly this
+// distinction -- Outcome alone can't tell a reader which way to monitor.
+datatype RiskDirection = BleedingRisk | ThrombosisRisk | NoRisk | UnknownRisk
 
+// Finding 3 (resolved): CautionLowRelevance is distinct from both Caution
+// and NoInteractionExpected -- honest about the source's own hedge
+// ("unlikely to be clinically relevant") rather than forcing a choice
+// between two options that both misrepresent it.
+datatype Outcome =
+    NoInteractionExpected | Caution | CautionLowRelevance | Avoid
+  | Contraindicated | DoseReductionAdvised | NotCovered
+
+datatype InteractionResult = InteractionResult(outcome: Outcome, direction: RiskDirection)
+
+// Finding 2 (resolved): the precondition makes Rifampicin/Carbamazepine/
+// Phenytoin/Phenobarbital's still-blocked apixaban cell a provable
+// exclusion, not a silently undefined match arm -- while their other
+// 3 DOAC cells each (6 cells total) are now real, defined, v1 cells.
 function CheckInteraction(doac: DOAC, agent: Agent,
-                           hasOtherBleedingRiskFactors: bool): Outcome
+                           hasOtherBleedingRiskFactors: bool): InteractionResult
+  requires !(doac == Apixaban && agent in
+             {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})
 {
   match (doac, agent)
-  case (_, Amiodarone) => Caution
-  case (_, Digoxin) => NoInteractionExpected
-  case (_, Diltiazem) => Caution
-  case (Dabigatran, Dronedarone) => Avoid
-  case (Rivaroxaban, Dronedarone) => Avoid
-  case (Edoxaban, Dronedarone) => DoseReductionAdvised
-  case (Apixaban, Dronedarone) => NotCovered   // real source gap, not assumed
+  case (_, Amiodarone) => InteractionResult(Caution, BleedingRisk)
+  case (_, Digoxin) => InteractionResult(NoInteractionExpected, NoRisk)
+  case (_, Diltiazem) => InteractionResult(Caution, BleedingRisk)
+  case (Dabigatran, Dronedarone) => InteractionResult(Avoid, BleedingRisk)
+  case (Rivaroxaban, Dronedarone) => InteractionResult(Avoid, BleedingRisk)
+  case (Edoxaban, Dronedarone) => InteractionResult(DoseReductionAdvised, BleedingRisk)
+  case (Apixaban, Dronedarone) => InteractionResult(NotCovered, UnknownRisk)   // real source gap, not assumed
+  case (Dabigatran, Verapamil) => InteractionResult(DoseReductionAdvised, BleedingRisk)
+  case (Rivaroxaban, Verapamil) => InteractionResult(CautionLowRelevance, BleedingRisk)   // Finding 3, was the unresolved hand-trace example
+  case (Apixaban, Verapamil) => InteractionResult(CautionLowRelevance, BleedingRisk)      // Finding 3
+  case (Edoxaban, Verapamil) => InteractionResult(Caution, BleedingRisk)
+  case (Dabigatran, Rifampicin) => InteractionResult(Avoid, ThrombosisRisk)               // now defined -- Finding 2's recovered cell
+  case (Edoxaban, Rifampicin) => InteractionResult(Caution, ThrombosisRisk)               // Finding 2's recovered cell
+  case (Rivaroxaban, Rifampicin) => InteractionResult(Caution, ThrombosisRisk)            // Finding 2's recovered cell
+  // (Apixaban, Rifampicin) excluded by the precondition above -- REQ-DDI-5, not yet built
   // ... remaining cells per sources/sps-doac-interactions-2024.md
   case (Dabigatran, SSRIOrSNRI) =>
-    if hasOtherBleedingRiskFactors then DoseReductionAdvised else Caution
-  case (_, SSRIOrSNRI) => Caution
+    if hasOtherBleedingRiskFactors
+    then InteractionResult(DoseReductionAdvised, BleedingRisk)
+    else InteractionResult(Caution, BleedingRisk)
+  case (_, SSRIOrSNRI) => InteractionResult(Caution, BleedingRisk)
 }
 ```
 
-This is a sketch, not the committed spec — full case coverage (all 14
-v1 agents × the DOACs each one differentiates on) still needs writing
-out completely and verifying against Dafny 4.11.0, matching
+This is a sketch, not the committed spec — full case coverage (all 15
+v1 agents × the DOACs each one differentiates on, plus the 6 recovered
+Rifampicin/Carbamazepine/Phenytoin/Phenobarbital cells) still needs
+writing out completely and verifying against Dafny 4.11.0, matching
 `renal_adjustment`'s Gate 1b→C1 discipline (skeleton first, real capture
 before treating any of it as evidence).
 
