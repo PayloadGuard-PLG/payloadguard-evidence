@@ -1,0 +1,252 @@
+{
+    "meta": {
+        "audit_timestamp": "2026-07-10T04:51:00.759156",
+        "total_files": 18,
+        "gate_definitions": {
+            "C1": {
+                "title": "Specification Capture",
+                "keywords": [
+                    "yaml",
+                    "json",
+                    "schema",
+                    "spec"
+                ],
+                "desc": "Input constraints and data definitions."
+            },
+            "C2": {
+                "title": "Exclusivity Proofs",
+                "keywords": [
+                    "unique",
+                    "id",
+                    "singleton",
+                    "reconcile"
+                ],
+                "desc": "Logic ensuring single source of truth."
+            },
+            "C3": {
+                "title": "Parser Hardening",
+                "keywords": [
+                    "validate",
+                    "try",
+                    "except",
+                    "parse",
+                    "model"
+                ],
+                "desc": "Robustness against malformed inputs."
+            },
+            "C4": {
+                "title": "Formal Verification",
+                "keywords": [
+                    "dafny",
+                    "invariant",
+                    "ensures",
+                    "requires",
+                    "proof"
+                ],
+                "desc": "Mathematical proof of correctness."
+            },
+            "C5": {
+                "title": "Mutation Testing",
+                "keywords": [
+                    "test",
+                    "pytest",
+                    "assert",
+                    "mock"
+                ],
+                "desc": "Concrete execution and edge-case coverage."
+            },
+            "C6": {
+                "title": "NL Confirmation",
+                "keywords": [
+                    "render",
+                    "report",
+                    "markdown",
+                    "text"
+                ],
+                "desc": "Human-readable output generation."
+            }
+        }
+    },
+    "findings": [
+        {
+            "filename": "__init__.py",
+            "gate": "C3",
+            "integrity_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "metrics": {
+                "loc": 0,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "citation_gate.py",
+            "gate": "C3",
+            "integrity_hash": "cd67a0464c93a87cea8718629c1a48802ecba3910eb172c87b46a6cf8fed5b9d",
+            "metrics": {
+                "loc": 225,
+                "complexity_proxy": 7
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "cli.py",
+            "gate": "C1",
+            "integrity_hash": "111934ada3455391d987e2991ef06d63a60e6ba9023dd55f56e98c5bc0db6f1b",
+            "metrics": {
+                "loc": 212,
+                "complexity_proxy": 5
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "conflict.py",
+            "gate": "C1",
+            "integrity_hash": "3b3d4fae1017beafd3acefd091fb29092c5632176ffc62fa443a0b3a7e4eb3ad",
+            "metrics": {
+                "loc": 277,
+                "complexity_proxy": 10
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "dafny_adapter.py",
+            "gate": "C4",
+            "integrity_hash": "0cf45c20fd94a008f4cf8053a44ddf0cad846793e8238149b92a12f305d21ea8",
+            "metrics": {
+                "loc": 116,
+                "complexity_proxy": 1
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "dafny_mutate.py",
+            "gate": "C4",
+            "integrity_hash": "a6f5596c70209a64c9122314018798193d4ed730b4ccc8210b73da32b91df846",
+            "metrics": {
+                "loc": 719,
+                "complexity_proxy": 24
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "dafny_nl_summary.py",
+            "gate": "C4",
+            "integrity_hash": "1a90b59132887ad9489f647ad4a1e1ab9950ba6197f9462a7b998b9de2238af9",
+            "metrics": {
+                "loc": 162,
+                "complexity_proxy": 4
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "dafny_spec_lint.py",
+            "gate": "C4",
+            "integrity_hash": "d5325a1b46b06009c3a0bce442b4020d3bd10e5332eec70c3b572eef7be657f8",
+            "metrics": {
+                "loc": 431,
+                "complexity_proxy": 27
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "model.py",
+            "gate": "C3",
+            "integrity_hash": "5e039151838adcebec8e7216873273ab690e86ad2656e0b4e0c68551c61193e9",
+            "metrics": {
+                "loc": 58,
+                "complexity_proxy": 3
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "reconcile.py",
+            "gate": "C1",
+            "integrity_hash": "b5e1fd1b47b779f69ba45ac27dac532b3a667c38e47f5358387ad36a404d1592",
+            "metrics": {
+                "loc": 152,
+                "complexity_proxy": 4
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "__init__.py",
+            "gate": "C3",
+            "integrity_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "metrics": {
+                "loc": 0,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "manual_matrix.py",
+            "gate": "C6",
+            "integrity_hash": "3750010ceedab0954224713e63f7d7d1022ff1f94a6c116a4e7a6f10a097f11e",
+            "metrics": {
+                "loc": 138,
+                "complexity_proxy": 4
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "matrix_variants.py",
+            "gate": "C1",
+            "integrity_hash": "0dfe90c5b6c71d08c1ac76d68a6fac42a975c79fba082ed2ddf1c32433adcb65",
+            "metrics": {
+                "loc": 843,
+                "complexity_proxy": 27
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "__init__.py",
+            "gate": "C3",
+            "integrity_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "metrics": {
+                "loc": 0,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "metadata.schema.a.json",
+            "gate": "C1",
+            "integrity_hash": "0702a0fb636393cef4ad735eabe7ef0f225b973b7a180756f4b19bb3aeb4619e",
+            "metrics": {
+                "loc": 181,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "metadata.schema.b.json",
+            "gate": "C1",
+            "integrity_hash": "ab7844244e3df418e3dba1f3dc302c43858f4bcd6f1fc0f31b554ac1fba95f00",
+            "metrics": {
+                "loc": 140,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "metadata.schema.c.json",
+            "gate": "C1",
+            "integrity_hash": "4d55126bf933df360d6c1cda1900237d8809a8082290757b71d629aa91e3a6ef",
+            "metrics": {
+                "loc": 181,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        },
+        {
+            "filename": "metadata.schema.json",
+            "gate": "C1",
+            "integrity_hash": "68662c435bc571bd59e2f5044166cb962b56c8540f04b27f4be9798d700f91ad",
+            "metrics": {
+                "loc": 120,
+                "complexity_proxy": 0
+            },
+            "status": "VERIFIED"
+        }
+    ]
+}
