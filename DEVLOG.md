@@ -6,6 +6,77 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C4 for drug_interaction_checker: the Gate C1 fix was itself only a stopgap
+
+Same day, later still. Direct instruction: "go ahead and build gate
+C4." Applied IronSpec methodology to `CheckInteraction`, the same way
+Gate C4 was applied to `renal_adjustment.dfy`'s `ComposedCeiling` and
+`AssessRenalFunction` — but this time the finding was bigger and came
+from a hand-derived prediction that turned out to be exactly right.
+
+**Prediction, before writing anything real:** Gate C1's `ensures`
+clauses only covered 3 of `CheckInteraction`'s 63 match arms (the
+`NotCovered`/`Contraindicated`/`Digoxin` pins added to fix the earlier
+"0 verified, 0 errors" false-clean result). A genuine IronSpec ACCEPT
+lemma — restating only those 3 declared clauses as premises on a fresh
+hypothetical result, proving the correct value is forced — should fail
+for any cell those 3 clauses don't directly mention.
+
+**Confirmed for real, not just predicted.** A probe lemma for
+`(Dabigatran, Ketoconazole)` (should be `Contraindicated`) genuinely
+failed to verify. Preserved as a proper honesty exhibit before touching
+anything further: `drug_interaction_checker_underconstrained.dfy` (the
+original Gate C1 spec, byte-for-byte, same rationale as
+`dosage_underconstrained.dfy`) and
+`drug_interaction_checker_stp_suite_against_underconstrained.dfy` (3
+ACCEPT lemmas, one per Gate 1c finding for narrative continuity) — real
+committed failing capture, `0 verified, 3 errors`.
+
+**Materially different from, and larger than, `renal_adjustment`'s own
+Gate C4 finding.** There, two functions' postconditions *bounded* a
+result without *pinning* it — ACCEPT proofs succeeded against the loose
+bounds, only REJECT proofs (excluding a wrong candidate) failed. Here,
+most of the 60 unmentioned cells had **no constraint at all** — not
+even ACCEPT worked, because nothing forced the *correct* value either.
+The match body's correctness was never actually a signature-level
+claim; the "1 verified, 0 errors" Gate C1 capture was true, but it was
+never evidence that the *specification* — as opposed to the
+*implementation* — guaranteed the lookup table's content.
+
+**Fixed for real.** `drug_interaction_checker.dfy` gained 60 explicit
+pinning `ensures` clauses, one per match arm, replacing the original 3
+(now strictly subsumed). Verbose on purpose — an honest reflection of
+this function's actual shape, a flat 63-cell lookup table with no clean
+range partition to exploit the way `GStage`'s six boundary clauses did.
+Re-verified clean: `1 verified, 0 errors`, resource cost 358,399 (up
+from 113,039 before the fix — the heaviest single verification task
+recorded across all three worked examples so far — still 0.42s real
+time, nowhere near the 30s default timeout).
+
+**The real STP suite**, `drug_interaction_checker_stp_suite.dfy`: 6
+ACCEPT lemmas covering every worked example already established in
+`GATE_1C_AUDIT.md`'s hand-traces (both branches of the
+`hasOtherBleedingRiskFactors` conditional included), plus 4 REJECT
+lemmas — one per `Contraindicated` cell, the highest-stakes rows in the
+table, proving a plausible-but-wrong weaker `Caution` candidate is
+genuinely excluded — plus one more re-testing Gate 1c Finding 3's
+specific ambiguity directly. `22 verified, 0 errors`. Scoped
+deliberately short of restating all 60 pinning clauses individually —
+each already is its own ACCEPT proof; the suite adds narrative
+continuity and safety-focused REJECT coverage on top, not underneath.
+
+Both Gate C1's and Gate C4's captures re-run and re-committed fresh
+after the spec changed, not left pointing at stale content.
+`evidence/dafny_adapter.py` re-confirmed parsing the (re-captured) Gate
+C1 output unmodified. Full documentation ripple in the same session:
+`PHASE1_PLAN.md`, `SYSTEM_BLUEPRINT.md` (Section 8 + component map),
+`KNOWN_LIMITATIONS.md` ("Phase E Gate C4" section), `HANDOFF.md`
+(worked-examples section + a new standing-discipline entry: adding
+*some* `ensures` clauses isn't the same as adding *enough*).
+
+171 tests pass throughout (no Python code changed — new Dafny specs and
+docs only).
+
 ## 2026-07-10 — Docs-staleness fix, pytest CI, and a third worked example through Gate C1
 
 Same day as the Gate C6 walkthrough entry below, later in the session.

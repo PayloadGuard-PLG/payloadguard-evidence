@@ -117,8 +117,8 @@ handoff file's example-agnostic summary. As of this writing:
 - **The only thing left before this example's Phase 2 is done: Gate
   C6's sign-off.** Everything else is built.
 
-**`examples/drug_interaction_checker/` — Phase 2 just started, Gate C1
-built, Gates C2–C6 not yet started.** Read
+**`examples/drug_interaction_checker/` — Phase 2 underway, Gates C1 and
+C4 built, Gates C2/C3/C5/C6 not yet started.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -135,18 +135,30 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   own Finding 1, which was deliberately left open).
 - `drug_interaction_checker.dfy` exists, is committed, and verifies (`1
   verified, 0 errors`) — `CheckInteraction`, 63 match arms across 15 v1
-  agents.
-- **A real false-clean result caught before committing, not after:** an
-  early draft with no `ensures` clauses reported "0 verified, 0
-  errors" — Dafny had generated zero verification tasks, not zero
-  problems. Fixed by adding three real `ensures` clauses. See
-  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1" section for the full
-  account — worth reading before assuming a clean `dafny verify` pass
-  on any future function means something was actually checked.
-- Gates C2–C6 not started. Two items named, not built: `REQ-DDI-5`
-  (an indication-dependent axis for two agents' apixaban cells) and
-  `REQ-DDI-6` (proving the specific numeric dose-reduction targets,
-  staged as v2 — "both but in order of difficulty").
+  agents, 60 pinning `ensures` clauses (one per match arm).
+- **Gate C1's first draft had a real false-clean result, caught before
+  committing:** an early version with no `ensures` clauses reported "0
+  verified, 0 errors" — Dafny had generated zero verification tasks,
+  not zero problems.
+- **Gate C4 then found the fix was itself only a stopgap, and this time
+  the gap was real and much bigger — confirmed with a genuinely failing
+  captured run, not just predicted.** The 3 `ensures` clauses Gate C1
+  first added didn't pin almost anything: a real IronSpec ACCEPT lemma
+  restating just those 3 clauses failed to prove the correct value for
+  `(Dabigatran, Ketoconazole)` — and 3 more such lemmas, preserved
+  against `drug_interaction_checker_underconstrained.dfy`, genuinely
+  fail as a committed capture (`0 verified, 3 errors`). Fixed for real
+  by pinning all 63 cells explicitly, then building a real ACCEPT/REJECT
+  STP suite (`22 verified, 0 errors`) with REJECT coverage for the three
+  `Contraindicated` cells specifically. See `KNOWN_LIMITATIONS.md`'s
+  "Phase E Gate C1"/"Phase E Gate C4" sections for the full account —
+  worth reading before assuming a clean `dafny verify` pass on any
+  future function means something was actually checked, or that adding
+  *some* `ensures` clauses means enough were added.
+- Gates C2/C3/C5/C6 not started. Two items named, not built:
+  `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
+  cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
+  targets, staged as v2 — "both but in order of difficulty").
 
 ## One thing explicitly left open, not forgotten
 
@@ -214,6 +226,17 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
   (match-exhaustiveness is a resolve-time syntax rule, not an SMT
   proof). Caught before committing by actually reading the count, not
   just the "0 errors" half of the line.
+- **Adding *some* `ensures` clauses isn't the same as adding *enough* —
+  Gate C4 exists precisely to test that, and it found a real gap even
+  right after Gate C1's own fix above.** The 3 clauses added to fix the
+  "0 verified" problem were real, but only covered 3 of 63 match arms;
+  a genuine IronSpec ACCEPT lemma restating just those 3 as premises
+  still failed for every other cell, confirmed with a real committed
+  failing capture (`0 verified, 3 errors`), not assumed from the fact
+  that the main file itself verified clean. A clean `dafny verify` on
+  the function being specified says nothing about whether cells outside
+  its `ensures` clauses are actually guaranteed — only Gate C4's
+  spec-only lemmas test that directly.
 - **Hand-derive a prediction before building, especially for mutation
   testing and STPs.** Every extension in this repo's history that did
   this caught something real or confirmed its own reasoning explicitly,

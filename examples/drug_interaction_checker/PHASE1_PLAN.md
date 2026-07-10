@@ -1,22 +1,22 @@
 # Drug-Drug Interaction Checker — Phase 1 (Specification & Foundation)
 
-Status: **Gate 1a (clinical source audit) done. Gate 1c performed
-2026-07-10, all three findings resolved by explicit decision — see
-`GATE_1C_AUDIT.md`. Gate C1 (spec + capture) built 2026-07-10:
-`drug_interaction_checker.dfy` exists, is committed, and verifies
-clean against real Dafny 4.11.0 (`1 verified, 0 errors`,
-`run_manifest_dafny_ddi.json`).** A real finding caught before
-committing: an early draft with no `ensures` clauses reported "0
-verified, 0 errors" — a false-clean result, since match-exhaustiveness
-is a resolve-time syntax check, not a verification task, so a function
-with no postconditions gives Dafny nothing to actually prove. Three
-real `ensures` clauses were added (the `NotCovered`/`REQ-DDI-4`
-fail-safe pin, a `Contraindicated`-implies-`Dabigatran` claim, and a
-`Digoxin`-always-safe pin), matching how every other function in this
-repo (`GStage`, `SelectFormula`, `ComposedCeiling`) commits to a real
-claim in its own signature rather than relying on the match body alone
-— full per-cell pinning of all 63 match arms is left to Gate C4's STP
-lemmas, not duplicated here. Mirrors
+Status: **Gate 1a done. Gate 1c performed 2026-07-10, all three
+findings resolved — see `GATE_1C_AUDIT.md`. Gate C1 (spec + capture)
+built 2026-07-10, `drug_interaction_checker.dfy` verifies clean. Gate
+C4 (STPs) also built 2026-07-10, and found a real spec gap far larger
+than Gate C1's own — see below and `KNOWN_LIMITATIONS.md`'s "Phase E
+Gate C4" section for the full account.** Gate C1's three original
+`ensures` clauses were only ever a stopgap, not left as the final
+state: real IronSpec-style ACCEPT lemmas restating just those three
+clauses **failed to prove the correct value for any cell they didn't
+directly mention** — confirmed empirically, not assumed
+(`drug_interaction_checker_stp_suite_against_underconstrained.dfy`, a
+genuinely failing captured run: `0 verified, 3 errors`). Fixed by
+restating all 63 match arms as explicit pinning `ensures` clauses
+(`drug_interaction_checker.dfy`, re-verified clean), then a real
+ACCEPT/REJECT STP suite (`drug_interaction_checker_stp_suite.dfy`, `22
+verified, 0 errors`) covering the established worked examples plus
+REJECT lemmas for the three `Contraindicated` cells. Mirrors
 `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
 for the general pattern this one follows.
 
@@ -199,9 +199,10 @@ the one item the audit didn't independently re-raise:
   citation extract).
 - This file.
 - `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
+- `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`
+  (Gate C1, then Gate C4, both 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
+  "Phase E Gate C4" section has the full account of the under-
+  constrained-spec finding).
 
 Not yet updated (deliberately — nothing built yet to describe):
-`SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`.
-Those get real entries once Gate 1 closes and Gate C1 (spec + capture)
-actually exists, same discipline `renal_adjustment` followed — no
-provisional entries for work that doesn't exist yet.
+anything for Gates C2/C3/C5/C6, not started.
