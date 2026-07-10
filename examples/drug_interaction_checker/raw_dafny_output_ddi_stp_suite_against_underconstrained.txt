@@ -1,0 +1,32 @@
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(24,0): Error: a postcondition could not be proved on this return path
+   |
+24 | {}
+   | ^
+
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(23,12): Related location: this is the postcondition that could not be proved
+   |
+23 |   ensures r == InteractionResult(Avoid, ThrombosisRisk)
+   |             ^^
+
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(36,0): Error: a postcondition could not be proved on this return path
+   |
+36 | {}
+   | ^
+
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(35,12): Related location: this is the postcondition that could not be proved
+   |
+35 |   ensures r == InteractionResult(CautionLowRelevance, BleedingRisk)
+   |             ^^
+
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(48,0): Error: a postcondition could not be proved on this return path
+   |
+48 | {}
+   | ^
+
+examples/drug_interaction_checker/drug_interaction_checker_stp_suite_against_underconstrained.dfy(47,12): Related location: this is the postcondition that could not be proved
+   |
+47 |   ensures r == InteractionResult(DoseReductionAdvised, BleedingRisk)
+   |             ^^
+
+
+Dafny program verifier finished with 0 verified, 3 errors

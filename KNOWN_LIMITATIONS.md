@@ -6,8 +6,10 @@ a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-10 (PayloadGuard CI gate and pytest CI job entries
 added — see their own table rows; a third worked example,
-`drug_interaction_checker` (Phase E), had its Gate C1 built the same
-day — see its table row and the "Phase E Gate C1" section below). Phase
+`drug_interaction_checker` (Phase E), had its Gates C1 and C4 built the
+same day — Gate C4 found a real spec gap larger than Gate C1's own, see
+their table rows and the "Phase E Gate C1"/"Phase E Gate C4" sections
+below). Phase
 B/C entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.)
 date to 2026-07-07 and are historical, not stale — the ledger below is
 append-only and each entry is dated individually. The renal-adjustment
@@ -36,6 +38,7 @@ dated build-by-build narrative, see `DEVLOG.md`.
 | PayloadGuard CI gate — third-party pre-merge scan | **WIRED 2026-07-10 — unverified-claim caveats named, not blanket-trusted** | `.github/workflows/payloadguard.yml` runs a third-party GitHub Action (`PayloadGuard-PLG/payload-consequence-analyser`, pinned to a commit SHA) on every PR into `main`, discovered and wired after a real CI failure surfaced a mutable-tag risk this repo doesn't accept elsewhere. Its exit-code contract was confirmed by reading `analyze.py` directly, not by trusting the wrapper `action.yml`'s shell logic or the tool's own `--help` epilog (which itself underspecifies the CAUTION verdict): exit 0 covers SAFE, REVIEW, and CAUTION alike (none block merge), exit 1 is an analysis error, exit 2 is DESTRUCTIVE — only 1 and 2 are gated on. The tool's own composite-action wrapper labels its `verdict` output "SAFE" for any exit-0 result even when the real finding was REVIEW/CAUTION, a real wrapper quirk this repo's workflow works around by gating on `${EXIT_CODE}` directly, never on `${VERDICT}` — noted in `payloadguard.yml` itself so it isn't "fixed" the wrong way later. Full detail below. |
 | pytest CI job | **ADDED 2026-07-10** | `.github/workflows/tests.yml` runs `python -m pytest tests/ -q` on every PR into `main`, closing a real gap: until now, `main` had no automated check that the test suite itself still passes — `HANDOFF.md`'s own working-conventions section said "no CI is configured on this repo" (stale, now corrected) and relied entirely on the local run before each commit. Installs from a new `requirements.txt` (pytest/jsonschema/PyYAML/z3-solver, pinned to exact versions, not floated). No Dafny/Z3 *binary* toolchain install in the job — confirmed before adding it, not assumed, by grepping `tests/` and `evidence/` for `subprocess` usage: the suite reads committed verification captures, it never shells out to a live `dafny`/`crosshair` invocation; the one real subprocess use in `tests/` drives this repo's own `evidence.cli`, not an external verifier. `z3-solver` is Z3's Python binding, needed by `evidence/dafny_spec_lint.py`'s own precondition-satisfiability translator — a different thing from the Dafny verifier binary, and sufficient on its own for every test to pass. |
 | Phase E Gate C1 — `drug_interaction_checker.dfy` spec + capture | **BUILT 2026-07-10 — a real false-clean result caught before committing** | Third worked example, testing whether Gate C1–C6 generalizes to set/list-membership logic. `CheckInteraction(doac, agent, hasOtherBleedingRiskFactors): InteractionResult` — 63 match arms across 15 v1 agents, a `requires` clause excluding two agents' still-blocked apixaban cells (Gate 1c Finding 2's resolution) — verifies clean (`1 verified, 0 errors`). **An early draft with no `ensures` clauses reported "0 verified, 0 errors"** — Dafny generated zero verification tasks, since match-exhaustiveness is a resolve-time syntax check, not an SMT proof, and a function with no postconditions has nothing else to prove; that "0 verified, 0 errors" would have been a false-clean result if committed as-is, exactly the class of overclaim this repo's whole discipline exists to catch. Fixed by adding three real `ensures` clauses (a `NotCovered`-implies-the-one-real-source-gap pin, a `Contraindicated`-implies-`Dabigatran` pin, a `Digoxin`-always-safe pin), matching how every other function in this repo (`GStage`, `SelectFormula`, `ComposedCeiling`) commits to a real claim in its own signature rather than leaving the match body as the only content. `evidence/dafny_adapter.py::parse_dafny_capture` parses the real capture unmodified (`Strength.PROVEN`, `verifier_completion_status == "completed"`) — the third confirmation this parser generalizes across worked examples with zero changes. Full per-cell pinning of all 63 match arms is deferred to Gate C4 (STP lemmas), matching this repo's established division of labor, not duplicated inline. |
+| Phase E Gate C4 — `drug_interaction_checker.dfy` STPs | **BUILT 2026-07-10 — found a real spec gap larger than Gate C1's own** | IronSpec methodology applied to `CheckInteraction`. Gate C1's original 3 `ensures` clauses turned out to be only a stopgap: a genuine ACCEPT lemma restating just those 3 clauses as premises **failed to prove the correct value for any cell they didn't directly mention** — e.g. `(Dabigatran, Ketoconazole)`, which should be `Contraindicated`, was provably *not forced* to any value at all by the declared spec. Confirmed with a real committed failing capture, not just predicted: `drug_interaction_checker_stp_suite_against_underconstrained.dfy` (3 ACCEPT lemmas restating the preserved original's 3 clauses) genuinely fails — `0 verified, 3 errors`. **Unlike `renal_adjustment`'s own Gate C4 finding** (postconditions *bounded* a result without *pinning* it, so ACCEPT proofs succeeded on loose bounds while REJECT proofs failed to exclude wrong values), most cells here had **no constraint at all**, bound or pin — the match body's correctness was never actually a signature-level claim, only an artifact of the implementation happening to be right. **Fixed** by restating all 63 match arms as explicit pinning `ensures` clauses on `CheckInteraction` itself (`drug_interaction_checker.dfy`, re-verified clean: `1 verified, 0 errors`, resource cost 358,399 — the heaviest single verification task recorded across all three worked examples, still completing in well under a second). The real STP suite (`drug_interaction_checker_stp_suite.dfy`) then covers the established Gate 1c worked examples as ACCEPT lemmas (6 cells, including both branches of the caller-supplied-flag-conditional SSRI/SNRI case) plus REJECT lemmas for the three `Contraindicated` cells — the highest-stakes rows in the table, proving a plausible-but-wrong weaker `Caution` candidate is genuinely excluded, not just absent from the match arm by accident — plus one REJECT lemma re-testing Gate 1c Finding 3's specific ambiguity (`Rivaroxaban`+`Verapamil` is provably not the unqualified negative digoxin gets). **22 verified, 0 errors.** Not exhaustive by design — restating all 60 pinning clauses as separate lemmas would be near-pure duplication, since each `ensures` clause already is its own cell's ACCEPT proof; the STP suite adds value on top of that (worked-example continuity, safety-critical REJECT coverage), not underneath it. |
 
 ## Gate 2 — CONFLICT rule: Types 1 and 2 BUILT (2026-07-06)
 
@@ -2080,12 +2083,12 @@ clauses before committing anything:
 Re-verified after the fix: `1 verified, 0 errors`, real resource cost
 113,039 (`--log-format csv`, well under any timeout concern — the
 heaviest single verification task recorded across all three worked
-examples so far, still completing in well under a second). Full
-per-cell pinning of the remaining 60 match arms is deferred to Gate C4
-(STP lemmas, ACCEPT/REJECT-style, matching `renal_adjustment`'s own
-Gate C4 methodology) — not duplicated as inline `ensures` clauses, same
-division of labor this repo has used since `dosage.dfy`'s
-`ExpectedDose`.
+examples so far, still completing in well under a second, **until Gate
+C4 substantially raised that bar again the same day — see the "Phase E
+Gate C4" section below.** Full per-cell pinning of the remaining 60
+match arms, originally deferred to Gate C4 here, is now built — not
+duplicated as inline `ensures` clauses in this Gate C1 write-up; see
+below for what that actually found.
 
 **`evidence/dafny_adapter.py::parse_dafny_capture` parses the real
 capture unmodified** — `Strength.PROVEN`, `verifier_completion_status
@@ -2093,10 +2096,86 @@ capture unmodified** — `Strength.PROVEN`, `verifier_completion_status
 independently-authored worked example with zero code changes (after
 `dosage.dfy` and `renal_adjustment.dfy`).
 
-**Gates C2–C6 not yet started.** Two items named, not built:
-`REQ-DDI-5` (an indication-dependent third axis for two agents'
-apixaban cells, needs a `TreatmentIndication` caller input) and
-`REQ-DDI-6` (proving the specific numeric dose-reduction targets,
-staged as v2 per direct instruction — "both but in order of
-difficulty"). Not wired into the metadata/capture/generate pipeline —
-same status `renal_adjustment` had at this point in its own build.
+**Gates C2/C3/C5/C6 not yet started** (Gate C4 built the same day, see
+below). Two items named, not built: `REQ-DDI-5` (an indication-dependent
+third axis for two agents' apixaban cells, needs a `TreatmentIndication`
+caller input) and `REQ-DDI-6` (proving the specific numeric
+dose-reduction targets, staged as v2 per direct instruction — "both
+but in order of difficulty"). Not wired into the metadata/capture/generate
+pipeline — same status `renal_adjustment` had at this point in its own
+build.
+
+## Phase E Gate C4 — `drug_interaction_checker.dfy` STPs: BUILT, found a real spec gap larger than Gate C1's own (2026-07-10)
+
+IronSpec methodology (`renal_adjustment`'s Gate C4 methodology,
+generalized) applied to `CheckInteraction`. Hand-derived prediction
+before building anything, per this repo's standing discipline: since
+Gate C1's `ensures` clauses only covered 3 of `CheckInteraction`'s 63
+match arms, a real IronSpec-style ACCEPT lemma restating just those 3
+clauses as premises should **fail** to prove the correct value for any
+cell they don't directly mention.
+
+**Confirmed empirically, not just predicted.** A probe lemma for
+`(Dabigatran, Ketoconazole)` — which should be `Contraindicated` —
+restating only the 3 original clauses as premises, genuinely failed to
+verify (`0 verified, 1 error`, "a postcondition could not be proved").
+Preserved as a proper honesty exhibit, same discipline as
+`dosage_underconstrained.dfy`/`renal_adjustment_underconstrained.dfy`:
+`drug_interaction_checker_underconstrained.dfy` (the original Gate C1
+spec, byte-for-byte) plus
+`drug_interaction_checker_stp_suite_against_underconstrained.dfy` (3
+ACCEPT lemmas, one per Gate 1c finding for narrative continuity —
+Rifampicin/`ThrombosisRisk`, `CautionLowRelevance`, a plain dose
+reduction — genuinely fail: `0 verified, 3 errors`, a real committed
+failing capture, not smoothed over).
+
+**This is a materially different, and materially larger, finding than
+`renal_adjustment`'s own Gate C4 gap.** There, `ComposedCeiling` and
+`AssessRenalFunction`'s postconditions *bounded* a result without
+*pinning* it — ACCEPT proofs succeeded against the loose bounds, only
+REJECT proofs (excluding a wrong candidate) failed, revealing the gap.
+Here, most of `CheckInteraction`'s 60 unpinned cells had **no
+constraint at all**, bound or pin — not even an ACCEPT proof of the
+*correct* value was possible from the declared spec alone. The match
+body's correctness was never actually a claim the function's signature
+made; it was purely an artifact of the implementation happening to
+compute the right thing.
+
+**Fixed for real**, not just documented as a known gap:
+`drug_interaction_checker.dfy` gained 60 explicit pinning `ensures`
+clauses, one per match arm (replacing the original 3, which are now
+strictly subsumed) — verbose, deliberately: an honest reflection of
+this function's actual shape (a flat 63-cell lookup table with no clean
+range partition to exploit, unlike `GStage`'s six boundary clauses).
+Re-verified clean: `1 verified, 0 errors`, resource cost 358,399 (up
+from 113,039 pre-fix, still completing in 0.42s — nowhere near the 30s
+default timeout).
+
+**The real STP suite**, `drug_interaction_checker_stp_suite.dfy`:
+6 ACCEPT lemmas covering every worked example already established in
+`GATE_1C_AUDIT.md`'s hand-traces (including both branches of the
+caller-supplied `hasOtherBleedingRiskFactors` conditional on
+`(Dabigatran, SSRIOrSNRI)`), plus 4 REJECT lemmas — one per
+`Contraindicated` cell (`Ketoconazole`, `Itraconazole`, `Ciclosporin`,
+all dabigatran-specific), proving a plausible-but-wrong weaker
+`Caution` candidate is genuinely excluded, not just absent from the
+match arm by accident of how it happened to be written; plus one more
+REJECT re-testing Gate 1c Finding 3's specific ambiguity directly
+(`Rivaroxaban`+`Verapamil` is provably **not** the unqualified negative
+digoxin gets). **22 verified, 0 errors.**
+
+**Scope stated explicitly, not left implicit:** this suite does not
+restate all 60 pinning clauses as individual lemmas — each `ensures`
+clause already *is* the ACCEPT proof for its own cell, so a
+one-to-one restatement would be near-pure duplication. The STP suite's
+job is to add value the ensures clauses alone don't provide: narrative
+continuity with Gate 1c's worked examples, and safety-focused REJECT
+coverage for the highest-stakes rows.
+
+`evidence/dafny_adapter.py::parse_dafny_capture` was not re-tested
+against this capture specifically (already confirmed generalizing
+against Gate C1's capture, above) — the STP suite, like every other
+worked example's, is not wired into the metadata/capture/generate
+pipeline; matches `renal_adjustment`'s own Gate C4 scope discipline
+exactly ("Neither STP suite is wired into `build_matrix()` or any
+generator").

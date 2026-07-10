@@ -60,21 +60,83 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   requires !(doac == Apixaban &&
              (agent == Rifampicin || agent == Carbamazepine ||
               agent == Phenytoin || agent == Phenobarbital))
-  // Real claims, not a vacuous match -- a function with no ensures
-  // clauses gives Dafny nothing to prove (match-exhaustiveness is a
-  // resolve-time syntax check, not a verification task; confirmed
-  // empirically -- an earlier draft with no ensures reported "0
-  // verified, 0 errors," a false-clean result, not committed). Full
-  // per-cell pinning of all 63 match arms belongs to Gate C4's STP
-  // lemmas (matching how GStage/SelectFormula/ComposedCeiling each
-  // commit to a real claim in their own signature, with exhaustive
-  // per-value pinning left to the STP suite, not duplicated here).
-  ensures CheckInteraction(doac, agent, hasOtherBleedingRiskFactors).outcome == NotCovered
-          ==> (doac == Apixaban && agent == Dronedarone)   // REQ-DDI-4: the only real source gap
-  ensures CheckInteraction(doac, agent, hasOtherBleedingRiskFactors).outcome == Contraindicated
-          ==> doac == Dabigatran   // every Contraindicated cell in this table is a dabigatran cell
-  ensures agent == Digoxin
-          ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(NoInteractionExpected, NoRisk)
+  // Gate C4 (Phase 2) finding, confirmed for real, not just predicted:
+  // an earlier version of this function had only 3 ensures clauses (the
+  // NotCovered/Contraindicated/Digoxin pins below) -- real IronSpec-
+  // style ACCEPT lemmas restating ONLY those 3 clauses as premises
+  // FAILED to prove the correct value for any other cell (e.g.
+  // (Dabigatran, Ketoconazole) -- see
+  // drug_interaction_checker_stp_suite_against_underconstrained.dfy, a
+  // genuinely failing captured run: 0 verified, 3 errors). Unlike
+  // renal_adjustment's Gate C4 finding (postconditions bounded without
+  // pinning), most cells here had NO constraint at all, bound or pin --
+  // the match body's correctness was never actually a claim of this
+  // function's signature, only an artifact of the implementation.
+  // Fixed by restating every one of the 63 match arms as an explicit
+  // pinning ensures clause below, one per arm, mirroring the match body
+  // 1:1 -- verbose, but an honest reflection of this function's actual
+  // shape (a flat lookup table, not a clean range partition like
+  // GStage's six boundary clauses).
+  ensures agent == Amiodarone ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures agent == Digoxin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(NoInteractionExpected, NoRisk)
+  ensures agent == Diltiazem ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures agent == Clarithromycin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures agent == OtherDOACOrHeparinOrWarfarin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures agent == Aspirin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures agent == Clopidogrel ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures agent == Ticagrelor ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures agent == LevetiracetamOrValproateContaining ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures agent == Ibuprofen ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures agent == Naproxen ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Apixaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(NotCovered, UnknownRisk)
+  ensures (doac == Dabigatran && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(CautionLowRelevance, BleedingRisk)
+  ensures (doac == Apixaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(CautionLowRelevance, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Edoxaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Dabigatran && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Apixaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, ThrombosisRisk)
+  ensures (doac == Edoxaban && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Rivaroxaban && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Apixaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Edoxaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Apixaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(CautionLowRelevance, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(NoInteractionExpected, NoRisk)
+  ensures (doac == Dabigatran && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Contraindicated, BleedingRisk)
+  ensures (doac == Apixaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Contraindicated, BleedingRisk)
+  ensures (doac == Apixaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, ThrombosisRisk)
+  ensures (doac == Edoxaban && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Rivaroxaban && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, ThrombosisRisk)
+  ensures (doac == Edoxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Rivaroxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, ThrombosisRisk)
+  ensures (doac == Edoxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Rivaroxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, ThrombosisRisk)
+  ensures (doac == Dabigatran && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Contraindicated, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+  ensures (doac == Apixaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Dabigatran && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Avoid, BleedingRisk)
+  ensures (doac == Apixaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Edoxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
+  ensures (doac == Rivaroxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)
 {
   match (doac, agent)
 

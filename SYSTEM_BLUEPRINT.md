@@ -1,10 +1,13 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-10 (a third worked example,
-`examples/drug_interaction_checker/`, was scoped and its Gate C1
-[spec + capture] built — see the new Section 8 and its component-map
-entry below; a real content review earlier the same day, not a bare
-date bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
+`examples/drug_interaction_checker/`, was scoped and its Gates C1 and
+C4 built — see the new Section 8 and its component-map entry below.
+Gate C4 found a real spec gap larger than Gate C1's own first-draft
+finding: the original 3-clause `ensures` set didn't pin almost anything;
+fixed with 60 comprehensive pinning clauses plus a real ACCEPT/REJECT
+STP suite. A real content review earlier the same day, not a bare date
+bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
 empirically tested, not asserted — see Section 7 and
 `GATE_1C_AUDIT.md`'s 2026-07-10 addendum; a PayloadGuard pre-merge CI
 scan, a pytest CI job (`tests.yml`/`requirements.txt`), and a
@@ -591,13 +594,13 @@ payloadguard-evidence/
 │   │                            the exact failure mode Gate C2 refuses
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
-├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gate
-│   │                            C1 built 2026-07-10 — see Section 8
+├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gates
+│   │                            C1+C4 built 2026-07-10 — see Section 8
 │   │                            below and PHASE1_PLAN.md for current
 │   │                            status; structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
 │   │                            requirements table + resolved findings,
-│   │                            Gate 1b sketch, Gate C1 status
+│   │                            Gate 1b sketch, Gate C1/C4 status
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
 │   │                            findings (dropped risk-direction axis,
 │   │                            CheckInteraction non-total over its own
@@ -609,18 +612,29 @@ payloadguard-evidence/
 │   ├── drug_interaction_checker.dfy  The committed spec: DOAC/Agent/
 │   │                            RiskDirection/Outcome/InteractionResult
 │   │                            datatypes, CheckInteraction (63 match
-│   │                            arms, 15 v1 agents) — verifies clean
-│   │                            (1 verified, 0 errors). No set/seq
-│   │                            Dafny types needed (Gate 1b finding);
-│   │                            three ensures clauses give Gate C1 real
-│   │                            content to prove (an earlier no-ensures
-│   │                            draft reported a false-clean "0
-│   │                            verified, 0 errors" — caught before
-│   │                            committing, not after)
-│   ├── run_verify_ddi.py        Capture runner, mirroring
+│   │                            arms, 15 v1 agents, 60 pinning ensures
+│   │                            clauses — one per match arm) — verifies
+│   │                            clean (1 verified, 0 errors). No set/seq
+│   │                            Dafny types needed (Gate 1b finding).
+│   │                            The ensures clauses aren't decoration:
+│   │                            Gate C4 found the original 3-clause
+│   │                            version didn't pin almost anything (see
+│   │                            _underconstrained.dfy below)
+│   ├── drug_interaction_checker_underconstrained.dfy  Gate C4 honesty
+│   │                            exhibit: the original 3-ensures-clause
+│   │                            spec, preserved verbatim
+│   ├── drug_interaction_checker_stp_suite(_against_underconstrained).dfy
+│   │                            Gate C4: 22 ACCEPT/REJECT lemmas pass
+│   │                            against the fix (22 verified, 0 errors);
+│   │                            3 ACCEPT lemmas genuinely fail against
+│   │                            the preserved original (0 verified, 3
+│   │                            errors) — a real captured failure, not
+│   │                            smoothed over
+│   ├── run_verify_ddi.py, run_verify_dafny_stp_suite(_against_underconstrained)_ddi.py
+│   │                            Capture runners, mirroring
 │   │                            renal_adjustment's exact discipline
-│   └── raw_dafny_output_ddi.txt/run_manifest_dafny_ddi.json  Verbatim
-│                                capture + manifest
+│   └── raw_dafny_output_ddi*/run_manifest_dafny_ddi*  Verbatim captures
+│                                + manifests
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -1324,17 +1338,32 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `DOAC`/`Agent`/`RiskDirection`/`Outcome`/`InteractionResult` datatypes,
   `CheckInteraction` (63 match arms across 15 v1 agents, a
   `requires` clause excluding the two agents' still-blocked apixaban
-  cells) — verifies clean (`1 verified, 0 errors`). A real finding
-  caught before committing: an earlier draft with no `ensures` clauses
-  reported a false-clean "0 verified, 0 errors" (match-exhaustiveness is
-  a resolve-time syntax check, not a verification task — a function with
-  no postconditions gives Dafny nothing to actually prove). Three real
-  `ensures` clauses were added instead, matching every other function in
-  this repo's discipline of committing to a real claim in its own
-  signature. `evidence/dafny_adapter.py::parse_dafny_capture` parses the
-  real capture unmodified — `Strength.PROVEN`,
+  cells) — verifies clean (`1 verified, 0 errors`). `evidence/dafny_adapter.py::parse_dafny_capture`
+  parses the real capture unmodified — `Strength.PROVEN`,
   `verifier_completion_status == "completed"` — the third confirmation
   this parser generalizes across worked examples without change.
+- **Gate C4 (STPs): also built, and found a real spec gap far larger
+  than Gate C1's own first-draft finding.** Gate C1's original three
+  `ensures` clauses turned out to be only a stopgap: a genuine
+  IronSpec-style ACCEPT lemma restating just those three clauses as
+  premises **failed to prove the correct value for any cell they didn't
+  directly mention** — confirmed with a real committed failing capture
+  (`drug_interaction_checker_stp_suite_against_underconstrained.dfy`,
+  preserved against `drug_interaction_checker_underconstrained.dfy`: `0
+  verified, 3 errors`), not just predicted. Unlike `renal_adjustment`'s
+  own Gate C4 finding (postconditions *bounded* a result without
+  *pinning* it), most cells here had no constraint at all, bound or pin
+  — the match body's correctness was never actually a signature-level
+  claim, only an implementation artifact. Fixed by restating all 63
+  match arms as explicit pinning `ensures` clauses (verbose, but an
+  honest reflection of a flat lookup table's actual shape, unlike
+  `GStage`'s clean six-clause range partition) — re-verified clean (`1
+  verified, 0 errors`, resource cost 358,399, still well under a
+  second). The real STP suite (`drug_interaction_checker_stp_suite.dfy`)
+  then covers the established worked examples as ACCEPT lemmas plus
+  REJECT lemmas for the three `Contraindicated` cells (the highest-
+  stakes rows in the table) — `22 verified, 0 errors`. Full account:
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C4" section.
 - A real design finding from Gate 1b, worth restating here since it
   revises this repo's own earlier estimate: this example's v1 design
   needs **no** `set`/`seq` Dafny types at all (`DOAC`/`Agent` are closed
@@ -1349,8 +1378,8 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `metadata.yaml`, no traceability matrix) — same status
   `renal_adjustment` had at this point; Section 3's data-flow diagram
   and Section 5's evidence inventory remain `dosage_calculator`-only.
-- Gates C2–C6 not yet started. Two items explicitly named, not built:
-  `REQ-DDI-5` (an indication-dependent third axis for two agents'
+- Gates C2/C3/C5/C6 not yet started. Two items explicitly named, not
+  built: `REQ-DDI-5` (an indication-dependent third axis for two agents'
   apixaban cells) and `REQ-DDI-6` (proving the specific numeric
   dose-reduction targets, staged as v2 per direct instruction — "both
   but in order of difficulty").
