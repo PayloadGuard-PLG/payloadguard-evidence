@@ -26,6 +26,16 @@ sign-off itself is still open pending Steven's read-through of
 `nl_confirmation_renal_adjustment_dfy.md` — this strengthened the
 evidence behind one of its closing claims, it didn't close the gate.
 
+**Same-day addendum:** two follow-up items closed. `SYSTEM_BLUEPRINT.md`
+and `KNOWN_LIMITATIONS.md` had themselves drifted behind this exact
+2026-07-10 entry (still said 2026-07-09) — fixed with a real content
+review, plus a new mechanical test
+(`tests/test_docs_current_with_devlog.py`) so that specific drift can't
+recur silently. A pytest CI job (`.github/workflows/tests.yml`) was also
+added, alongside the existing PayloadGuard scan — see the "Working
+conventions" section below, which was itself corrected at the same time
+(it still said "no CI is configured on this repo").
+
 ## What this repo is, in one paragraph
 
 Turns real verification tool output (CrossHair, Dafny/Z3) plus authored
@@ -161,15 +171,20 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  154 as of this writing.
+  171 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch
-  off `main`, commit there, open a PR, merge it into `main` the same
-  session once tests pass locally (no CI is configured on this repo —
-  0 checks — so there's nothing to wait for beyond the local test run).
-  `main` is the live, current state; feature branches are short-lived
-  and not meant to accumulate.
+  off `main`, commit there, open a PR. **Two CI checks now run on every
+  PR into `main` (added 2026-07-10, both real — this line was stale
+  before that and said "no CI is configured," "0 checks"):**
+  `.github/workflows/tests.yml` (`python -m pytest tests/ -q`) and
+  `.github/workflows/payloadguard.yml` (third-party pre-merge scan —
+  see `KNOWN_LIMITATIONS.md`'s "PayloadGuard CI gate" entry). **Branch
+  protection now requires human approval before merge** — open the PR,
+  let both checks run, then stop and wait; don't auto-merge even once
+  CI is green. `main` is the live, current state; feature branches are
+  short-lived and not meant to accumulate.
 - Every real tool run (Dafny, CrossHair, pytest) gets its raw output
   and a manifest committed verbatim — never re-typed, never smoothed
   over if the result is unexpected.
