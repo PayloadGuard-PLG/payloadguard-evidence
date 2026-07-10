@@ -15,12 +15,19 @@
 // Gate 1c Finding 1 (GATE_1C_AUDIT.md) — closed 2026-07-09 for
 // Cockcroft-Gault only, per Steven's scope decision: CKD-EPI eGFR stays
 // caller-supplied because Dafny/Z3 cannot express its real-valued
-// fractional exponents on a variable base — a genuine toolchain
-// expressiveness gap, not a scoping preference, so the eGFR side of the
-// decision follows from what the toolchain can actually prove, not a
-// judgment call. Cockcroft-Gault CrCl, by contrast, is small linear
-// arithmetic and is now computed and proven below
-// (`CockcroftGaultCrClMlPerMin`, `AssessRenalFunctionFromInputs`).
+// fractional exponents on a variable base — a toolchain expressiveness
+// gap CONFIRMED EMPIRICALLY (2026-07-10, prompted by direct challenge
+// on whether the closing claim was actually earned), not just asserted
+// from general Z3-theory knowledge: `dafny_pow_expressiveness_probe.dfy`
+// shows Dafny has no real-exponentiation primitive at all
+// ("unresolved identifier: Pow"); `dafny_pow_axiom_trap_probe.dfy` shows
+// the obvious workaround (declaring Pow as an unproven axiom) verifies
+// trivially even for an absurd, wrong claim about it — a DECLARED
+// assumption wearing PROVEN's clothing, exactly what Gate C2 exists to
+// refuse. So the eGFR side of the decision follows from what the
+// toolchain can actually prove, not a judgment call. Cockcroft-Gault
+// CrCl, by contrast, is small linear arithmetic and is now computed and
+// proven below (`CockcroftGaultCrClMlPerMin`, `AssessRenalFunctionFromInputs`).
 //
 // Every function body below was first checked in a scratch file against
 // this same installed Dafny 4.11.0 toolchain during Gate 1c's audit and

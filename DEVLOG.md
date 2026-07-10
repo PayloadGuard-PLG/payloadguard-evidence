@@ -6,6 +6,53 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C6 walkthrough surfaced an unearned claim; tested and closed it for real
+
+Walking through `renal_adjustment.dfy`'s Gate C6 sign-off with Steven
+(the actual "does the summary match intent" review this gate exists
+for), he pushed back before confirming: "can we make the claim with the
+evidence we have and supplied documentation... it's a judgment call but
+not entirely my own." That question, applied to Gate 1c Finding 1's
+closing claim ("CKD-EPI eGFR stays caller-supplied because Dafny/Z3
+can't express it"), found the claim had never actually been tested —
+`GATE_1C_AUDIT.md`'s 2026-07-09 addendum said it was "re-confirmed,"
+pointing at `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`'s
+"Dafny/Z3 architectural strategy" finding, which itself explicitly says
+that question is out of scope for that document and defers back. A
+circular "confirmed" with no real Dafny run behind it, on either end.
+
+**Tested it for real.** Two probes, committed with genuine captures
+(`examples/renal_adjustment/run_verify_pow_probes.py`,
+`dafny_pow_expressiveness_probe.dfy`,
+`dafny_pow_axiom_trap_probe.dfy`): (1) writing CKD-EPI's `min(Scr/κ,
+1)^α` shape directly hits `Error: unresolved identifier: Pow` — Dafny
+has no real-exponentiation primitive at all, for any exponent; (2) the
+obvious workaround, declaring `Pow` an unproven `{:axiom}`, verifies
+trivially (`2 verified, 0 errors`) even for a lemma claiming `Pow`
+always returns exactly `0.0` — an absurd, wrong statement that an axiom
+this permissive can't distinguish from a correct one. Confirms the
+axiom path would be a DECLARED assumption wearing PROVEN's clothing,
+exactly what Gate C2 (`assert_no_realized_proven`) exists to refuse
+structurally, caught here even earlier at the spec-authoring level.
+
+Both halves of Gate 1c Finding 1's closing claim now rest on real
+evidence: Cockcroft-Gault was already PROVEN-strength (Dafny + STP +
+independently-sourced citations); CKD-EPI eGFR's exclusion is now
+empirically demonstrated, not asserted. Updated everywhere the old
+circular claim appeared: `renal_adjustment.dfy`'s header comment,
+`GATE_1C_AUDIT.md` (new 2026-07-10 addendum), the CKD-EPI sources doc,
+`KNOWN_LIMITATIONS.md`, `examples/renal_adjustment/README.md`, and
+`HANDOFF.md` — the last of these now states the pattern explicitly for
+future sessions: before signing off Gate C6 on any spec, check whether
+every claim in the spec's own comments was actually tested, not just
+reasoning that sounded right the first time it was written.
+
+`python -m pytest tests/ -q` — 170 passed, unaffected (no Python code
+changed; `renal_adjustment.dfy` re-verifies clean, `7 verified, 0
+errors`, comment-only change). **Gate C6 sign-off itself remains open**
+— this strengthened one of the claims under review, it did not close
+the gate; that's still Steven's decision on the full document.
+
 ## 2026-07-09 — Built Gate C3 and Gate C5 for renal_adjustment.dfy: the last two unbuilt gates, four real engine gaps found and fixed, two named and left unfixed
 
 "Build until sign-off, i will review." Applied the shared

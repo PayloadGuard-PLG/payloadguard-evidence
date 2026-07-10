@@ -158,6 +158,13 @@ baked into a proven artifact.
   Force that commissioned the equations, but this is not the same as
   reading Table 2 directly).
 - The Dafny/Z3 architectural strategy proposed alongside the clinical
-  data is a separate engineering question, evaluated on its own terms in
-  `examples/renal_adjustment/GATE_1C_AUDIT.md`'s Finding 1 discussion —
-  not a sourcing question, so not covered by this document.
+  data is a separate engineering question, not a sourcing question, so
+  still not covered by this document — **but it is no longer an open
+  question elsewhere either.** For a time, `GATE_1C_AUDIT.md` pointed
+  back here for it, this document pointed there, and neither actually
+  contained a test — a circular "confirmed" caught 2026-07-10 and closed
+  for real: `examples/renal_adjustment/run_verify_pow_probes.py`
+  empirically demonstrates Dafny has no real-exponentiation primitive at
+  all, and that declaring one as an unproven axiom verifies trivially
+  even for a wrong claim about it. See `GATE_1C_AUDIT.md`'s 2026-07-10
+  addendum for the full finding.

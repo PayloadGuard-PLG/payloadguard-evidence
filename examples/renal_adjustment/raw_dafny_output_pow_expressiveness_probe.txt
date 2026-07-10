@@ -1,0 +1,6 @@
+dafny_pow_expressiveness_probe.dfy(8,2): Error: unresolved identifier: Pow
+  |
+8 |   Pow(ratio, alpha)
+  |   ^^^
+
+1 resolution/type errors detected in dafny_pow_expressiveness_probe.dfy

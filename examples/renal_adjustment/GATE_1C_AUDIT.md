@@ -246,10 +246,15 @@ toolchain can actually prove, defer whatever it can't, rather than
 treat both branches as equally optional. `CockcroftGaultCrClMlPerMin`
 is now committed and verified (`renal_adjustment.dfy`, `7 verified, 0
 errors`; STP suite extended to `52 verified, 0 errors`); the CKD-EPI
-side was re-confirmed, not just assumed, as a genuine toolchain gap
-(real-valued fractional exponents on a variable base), not a
-preference — see `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`'s
-"Dafny/Z3 architectural strategy" finding, unchanged since 2026-07-08.
+side was described here as "re-confirmed, not just assumed" — that
+phrasing pointed at `sources/ckd-epi-2021-and-cockcroft-gault-verification.md`'s
+"Dafny/Z3 architectural strategy" finding, which itself explicitly says
+the toolchain question is *not* covered by that document and defers
+back here. Neither document had ever actually run Dafny against the
+claim — a circular, self-referential "confirmed" with no empirical
+test behind it. **Corrected 2026-07-10, see the addendum below**: this
+was caught by direct challenge on whether the closing claim was
+actually earned, not self-caught.
 
 Before implementing, re-fetched the MHRA and NICE NG203 source pages
 directly (both had been due for a "still resolve to the same content"
@@ -268,3 +273,35 @@ imprecise attribution.
 of two — `REQ-RENAL-8`'s classification-flag provenance is the sole
 remaining open item, reclassified as a Phase 3 concern per `PHASE1_PLAN.md`,
 not a Phase 2 blocker.
+
+## Addendum 2026-07-10 — the CKD-EPI/Dafny expressiveness claim, actually tested
+
+Prompted by a direct question — before signing off Gate C6, can this
+repo actually *claim* "eGFR caller-supplied because Dafny/Z3 can't
+express it" with the evidence in hand, not just plausible reasoning —
+the claim was tested for the first time rather than asserted again.
+Two real probes, both committed with real captures
+(`run_verify_pow_probes.py`):
+
+1. **`dafny_pow_expressiveness_probe.dfy`** — a function computing
+   CKD-EPI's `min(Scr/κ, 1)^α` shape directly. Result: `Error:
+   unresolved identifier: Pow` — Dafny has no real-exponentiation
+   primitive at all, for any exponent, integer or not
+   (`raw_dafny_output_pow_expressiveness_probe.txt`).
+2. **`dafny_pow_axiom_trap_probe.dfy`** — tests the obvious workaround:
+   declare `Pow` as an unproven `{:axiom}`. Result: `2 verified, 0
+   errors` — including a lemma claiming `Pow` always returns exactly
+   `0.0`, an absurd, wrong statement that verifies just as cleanly as
+   any correct one would. An axiom this permissive proves nothing
+   about the real function's behavior — it's a DECLARED assumption
+   wearing PROVEN's clothing, the exact failure mode Gate C2 exists to
+   refuse structurally, caught here at the spec-authoring level before
+   it could ever reach a matrix.
+
+**This upgrades the eGFR half of Gate 1c Finding 1's closure from a
+plausible, domain-informed assertion to an empirically demonstrated
+one.** The Cockcroft-Gault half was already PROVEN-strength (Dafny +
+STP + sourced). Both halves of the closing claim now rest on real
+evidence, not reasoning alone — directly relevant to Gate C6's own
+closing question ("does this match what was actually meant by closing
+Finding 1 for Cockcroft-Gault only").
