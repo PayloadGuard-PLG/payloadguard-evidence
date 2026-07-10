@@ -1,9 +1,9 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-10 (a third worked example,
-`examples/drug_interaction_checker/`, was scoped and its Gates C1, C4,
-C3, C2, and C5 built — see the new Section 8 and its component-map entry
-below. Gate C4 found a real spec gap larger than Gate C1's own
+`examples/drug_interaction_checker/`, was scoped and had all six Gates
+C1–C6 built or confirmed — see the new Section 8 and its component-map
+entry below. Gate C4 found a real spec gap larger than Gate C1's own
 first-draft finding: the original 3-clause `ensures` set didn't pin
 almost anything; fixed with 60 comprehensive pinning clauses plus a
 real ACCEPT/REJECT STP suite. Gate C3 required extending
@@ -17,8 +17,15 @@ real generalization confirmation. Gate C5's mutation run (962 mutants)
 found and fixed a real crash bug in Gate C3's own `_apply_cmp` (ordering
 operators on datatype/`EnumSort` operands weren't modeled by Z3's Python
 bindings, and crashed instead of refusing cleanly), then produced 7 real
-survivors and 2 unclassifiable results, all explained — see
-`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section. A real content
+survivors and 2 unclassifiable results, all explained. Gate C6 genuinely
+extended `evidence/dafny_nl_summary.py` to support multi-line clauses
+for the first time — a deliberately different call than
+`renal_adjustment`'s own equivalent gap (fixed there by reformatting the
+spec instead), made because this spec already had Gate C1/C4/C5
+captures bound to its current formatting; its sign-off document is
+presented but still pending Steven's review. See
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5"/"Phase E Gate C6" sections. A
+real content
 review earlier the
 same day, not a bare date
 bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
@@ -301,17 +308,35 @@ payloadguard-evidence/
 │                                 (template, not comprehension - the raw
 │                                 clause is always shown first). Reuses
 │                                 dafny_spec_lint.py's Gate C3 parsing
-│                                 surface. Only single-line clauses
-│                                 supported; cross-checks its own
-│                                 line-based extraction against
-│                                 dafny_spec_lint's canonical multi-line-
-│                                 capable extractor by CONTENT (not just
+│                                 surface. Extended 2026-07-10 (drug_
+│                                 interaction_checker's Gate C6) to
+│                                 genuinely support multi-line clauses -
+│                                 CheckInteraction's one requires clause
+│                                 was the first real one this repo built
+│                                 against; a continuation line is any
+│                                 non-blank, non-comment-only line that
+│                                 doesn't itself open a new clause, so a
+│                                 free-floating block comment between two
+│                                 clauses (common in that spec) is never
+│                                 misattributed as either one's citation.
+│                                 The original single-line regex
+│                                 (_CLAUSE_LINE_RE) is preserved and still
+│                                 exported - dafny_mutate.py's
+│                                 _locate_clause_sites imports it for a
+│                                 different, byte-precise need this
+│                                 extension didn't touch. Still
+│                                 cross-checks its own line-based
+│                                 extraction against dafny_spec_lint's
+│                                 canonical extractor by CONTENT (not just
 │                                 count - an earlier count-only draft
 │                                 missed a real silently-truncated case)
-│                                 and refuses (SystemExit) on mismatch.
-│                                 Not wired into the capture/generation
-│                                 pipeline - a process habit, not an
-│                                 automated gate
+│                                 and refuses (SystemExit) on mismatch -
+│                                 a comment sitting on its own line INSIDE
+│                                 a multi-line clause (as opposed to
+│                                 between two clauses) still correctly
+│                                 refuses, genuinely ambiguous. Not wired
+│                                 into the capture/generation pipeline -
+│                                 a process habit, not an automated gate
 │   └── dafny_mutate.py          Gate C5: mutation testing (mutant
 │                                 generation only - real re-verification
 │                                 lives in the capture script below).
@@ -616,13 +641,14 @@ payloadguard-evidence/
 │   │                            the exact failure mode Gate C2 refuses
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
 │   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
-├── examples/drug_interaction_checker/  Worked example 3 (Phase E, Gates
-│   │                            C1+C2+C3+C4+C5 built 2026-07-10 — see
-│   │                            Section 8 below and PHASE1_PLAN.md for
-│   │                            current status; structural listing only)
+├── examples/drug_interaction_checker/  Worked example 3 (Phase E, all
+│   │                            six Gates C1-C6 built or confirmed
+│   │                            2026-07-10 — see Section 8 below and
+│   │                            PHASE1_PLAN.md for current status;
+│   │                            structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
 │   │                            requirements table + resolved findings,
-│   │                            Gate 1b sketch, Gate C1/C2/C3/C4/C5 status
+│   │                            Gate 1b sketch, Gate C1-C6 status
 │   ├── GATE_1C_AUDIT.md         Internal consistency audit: three real
 │   │                            findings (dropped risk-direction axis,
 │   │                            CheckInteraction non-total over its own
@@ -666,14 +692,29 @@ payloadguard-evidence/
 │   │                            way (ordering operators on datatype
 │   │                            operands weren't modeled by Z3's Python
 │   │                            bindings)
-│   └── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
-│                                Gate C5: real captured outcome of all
-│                                962 mutants — 564 killed, 389
-│                                filtered_static, 7 survived (both
-│                                explained categories already established
-│                                by renal_adjustment's own Gate C5), 2
-│                                unclassifiable (genuine Dafny type
-│                                errors, not a parser ambiguity)
+│   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
+│   │                            Gate C5: real captured outcome of all
+│   │                            962 mutants — 564 killed, 389
+│   │                            filtered_static, 7 survived (both
+│   │                            explained categories already established
+│   │                            by renal_adjustment's own Gate C5), 2
+│   │                            unclassifiable (genuine Dafny type
+│   │                            errors, not a parser ambiguity)
+│   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
+│                                actual sign-off deliverable. Presented,
+│                                pending Steven's review, not yet
+│                                confirmed. Documents a real tooling
+│                                extension found along the way:
+│                                CheckInteraction's one requires clause
+│                                is the first genuinely multi-line clause
+│                                this repo has pointed the NL summary
+│                                generator at; extended
+│                                dafny_nl_summary.py to support it rather
+│                                than reformat the spec (renal_adjustment's
+│                                equivalent gap was fixed the other way,
+│                                since that spec had no other gate's
+│                                captures riding on its exact formatting
+│                                yet)
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -1482,8 +1523,32 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `metadata.yaml`, no traceability matrix) — same status
   `renal_adjustment` had at this point; Section 3's data-flow diagram
   and Section 5's evidence inventory remain `dosage_calculator`-only.
-- Gate C6 not yet started. Two items explicitly named, not
-  built: `REQ-DDI-5` (an indication-dependent third axis for two agents'
-  apixaban cells) and `REQ-DDI-6` (proving the specific numeric
-  dose-reduction targets, staged as v2 per direct instruction — "both
-  but in order of difficulty").
+- **Gate C6 (NL-dialogue confirmation): built.** `evidence/dafny_nl_summary.py::summarize_method`
+  refused outright on first attempt — `CheckInteraction`'s one `requires`
+  clause is the first genuinely multi-line clause this repo has pointed
+  the summary generator at (every clause in `dosage.dfy`/
+  `renal_adjustment.dfy` happened to be one line). Unlike
+  `renal_adjustment`'s equivalent gap (fixed by reformatting two
+  `ensures` clauses to single-line, since that spec had no other gate's
+  captures riding on its exact formatting at the time), this spec
+  already had committed Gate C1/C4/C5 captures bound to its current
+  formatting, so the tool was genuinely extended instead — a
+  deliberately different call, made for a concrete reason, not
+  inconsistency. `_extract_annotated_clauses` now accumulates a clause
+  across multiple physical lines, ending accumulation at a blank line, a
+  standalone comment line, or the next clause keyword, so a
+  free-floating block comment between two clauses (this spec has
+  several) is never misattributed as either one's citation. The original
+  single-line regex is preserved unchanged for `dafny_mutate.py`'s
+  different, byte-precise use of it. Verified end-to-end: all 60
+  `ensures` clauses and the one multi-line `requires` clause reconstruct
+  correctly. Presented for sign-off in
+  `nl_confirmation_drug_interaction_checker_dfy.md` — **pending
+  Steven's review**, not yet confirmed. 3 new/changed tests, 190 total
+  (up from 188). Full account: `KNOWN_LIMITATIONS.md`'s "Phase E Gate
+  C6" section.
+- Two items explicitly named, not built: `REQ-DDI-5` (an
+  indication-dependent third axis for two agents' apixaban cells) and
+  `REQ-DDI-6` (proving the specific numeric dose-reduction targets,
+  staged as v2 per direct instruction — "both but in order of
+  difficulty").

@@ -45,10 +45,27 @@ datatype values crashed the Z3 translator with a raw Python `TypeError`
 instead of refusing cleanly), then 7 real survivors and 2 unclassifiable
 (genuine Dafny type errors, not a parser ambiguity like
 `renal_adjustment`'s) — all explained and categorized, none silently
-absorbed. See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/"Phase E Gate
-C3"/"Phase E Gate C5" sections for the full account. Mirrors
-`examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read that file
-for the general pattern this one follows.
+absorbed. **Gate C6 (NL-dialogue confirmation) also built 2026-07-10** —
+`evidence/dafny_nl_summary.py` refused outright on first attempt:
+`CheckInteraction`'s one `requires` clause is the first genuinely
+multi-line clause this repo has pointed the summary generator at (every
+clause in `dosage.dfy`/`renal_adjustment.dfy` happened to be one line).
+Unlike `renal_adjustment`'s equivalent gap (two multi-line `ensures`
+clauses, fixed by reformatting them to single-line, since that spec had
+no other gate's captures riding on their exact formatting yet), this
+spec already had committed Gate C1/C4/C5 captures bound to its current
+formatting — so the tool was extended instead, to genuinely support
+multi-line clauses (ending accumulation at a blank line, a standalone
+comment line, or the next clause keyword, so a free-floating block
+comment between two clauses is never misattributed as either one's
+citation). Presented for Steven's sign-off in
+`nl_confirmation_drug_interaction_checker_dfy.md` — **pending**, not yet
+confirmed, matching this repo's standing discipline of never
+rubber-stamping a Gate C6 document in the same pass that generated it.
+See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/"Phase E Gate
+C3"/"Phase E Gate C5"/"Phase E Gate C6" sections for the full account.
+Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read
+that file for the general pattern this one follows.
 
 ## Objective
 
@@ -230,9 +247,10 @@ the one item the audit didn't independently re-raise:
 - This file.
 - `GATE_1C_AUDIT.md` (Gate 1c, performed 2026-07-10).
 - `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`, `HANDOFF.md`, `DEVLOG.md`
-  (Gates C1, C4, C3, C2, then C5, all 2026-07-10 — `KNOWN_LIMITATIONS.md`'s
-  "Phase E Gate C1"/"Phase E Gate C4"/"Phase E Gate C3"/"Phase E Gate
-  C2"/"Phase E Gate C5" sections have the full account of each).
+  (Gates C1, C4, C3, C2, C5, then C6, all 2026-07-10 —
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1"/"Phase E Gate C4"/"Phase E
+  Gate C3"/"Phase E Gate C2"/"Phase E Gate C5"/"Phase E Gate C6" sections
+  have the full account of each).
 - `evidence/dafny_spec_lint.py` (Gate C3's real extension, then a real
   crash fix found by Gate C5's mutation testing — see its updated
   module docstring) and its test files, `tests/test_dafny_spec_lint.py`
@@ -242,6 +260,14 @@ the one item the audit didn't independently re-raise:
 - `run_mutation_suite_ddi.py`, `mutation_report_ddi.json`/`.md`,
   `run_manifest_mutation_ddi.json` (new, Gate C5) and
   `tests/test_drug_interaction_checker_mutation_report.py` (new).
+- `evidence/dafny_nl_summary.py` (Gate C6's real multi-line-clause
+  extension — see its updated module docstring) and its test file,
+  `tests/test_dafny_nl_summary.py` (extended: one obsolete refusal test
+  rewritten to reflect the new correct behavior, two new tests added).
+  `nl_confirmation_drug_interaction_checker_dfy.md` (new, Gate C6 — the
+  actual sign-off deliverable, currently **pending** Steven's review).
 
-Not yet updated (deliberately — nothing built yet to describe):
-anything for Gate C6, not started.
+Not yet updated: nothing — all six Gate C1–C6 pipeline steps have now
+been built or confirmed for this example. Remaining, explicitly named,
+not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged), and Gate C6's own
+Decision section (pending Steven's actual sign-off, not yet closed).
