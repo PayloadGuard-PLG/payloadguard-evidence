@@ -875,12 +875,20 @@ payloadguard-evidence/
 │   │                            one dafny evidence entry, REQ-DDI-5/6
 │   │                            honest GAP rows (intended PROVEN,
 │   │                            staged v2)
-│   └── traceability_matrix.a.json/.md  Phase 3: real, committed output
-│                                of `evidence.cli build --variant a`, no
-│                                --manifest/--concrete (no crosshair/
-│                                concrete_test evidence exists for this
-│                                Dafny-only example) - see
-│                                tests/test_drug_interaction_checker_matrix.py
+│   ├── traceability_matrix.a.json/.md  Phase 3: real, committed output
+│   │                            of `evidence.cli build --variant a`, no
+│   │                            --manifest/--concrete (no crosshair/
+│   │                            concrete_test evidence exists for this
+│   │                            Dafny-only example) - see
+│   │                            tests/test_drug_interaction_checker_matrix.py
+│   └── README.md                Fixed audit-trail record (added
+│                                2026-07-11, closing a named-but-open
+│                                item from the Phase 3 scoping plan) -
+│                                mirrors dosage_calculator's and
+│                                renal_adjustment's structure, built from
+│                                this example's own already-committed
+│                                record, every quoted number cross-
+│                                checked against its real capture file
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim

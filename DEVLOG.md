@@ -6,6 +6,69 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-11 — Two named-not-fixed items closed: dosage_calculator's stale provenance hash, drug_interaction_checker's missing README
+
+Direct instruction, following straight on from the documentation-audit
+session (previous entry below), which had surfaced these exact two
+items as open but explicitly out of scope at the time: "create the
+missing readme and fix the 6. bug" (referring to items 5 and 6 of a
+"what's next" list given to Steven — the missing README and the stale
+provenance-index hash, in that order).
+
+**Fix 1 — `dosage_calculator/artifact_index.json`'s stale SHA-256
+hashes for `dosage.dfy` and `run_manifest_dafny.json`.** Root cause
+investigated before touching anything, not assumed: `git log` on both
+files showed the last real edit was commit `0dc2715` (2026-07-07,
+"Fix Gate C5 finding: tighten REQ-GIP-1-8-1 to `>`"), which legitimately
+tightened `dosage.dfy`'s postcondition and re-verified it for real
+against the Dafny binary — but never re-ran `generate_artifacts.py`'s
+stage 7 (provenance index) afterward, despite an otherwise-thorough
+"full documentation set updated to match" sweep in that same commit.
+The underlying spec/capture content was never in question, only the
+index's own bookkeeping. Fixed by running the sanctioned regeneration
+entrypoint (`examples/dosage_calculator/generate_artifacts.py`) rather
+than hand-editing the index — all 7 stages passed. This also picked up
+the metadata schema files' real content changes from the same-day
+Phase 3 work (id pattern widened, `crosshair_bounds` made optional,
+2026-07-11), which had gone stale in the index the identical way. The
+five traceability-matrix variants regenerate with a refreshed
+`generated_utc` as an unavoidable side effect (their content is part of
+what the index hashes), so committed alongside the index rather than
+reverted, which would just reintroduce the same staleness immediately.
+`KNOWN_LIMITATIONS.md`'s Phase 3 entry (which had named this bug
+"deliberately NOT touched") amended with a "Fixed, 2026-07-11" addendum
+rather than rewritten, preserving the original as history.
+
+**Fix 2 — `examples/drug_interaction_checker/README.md` didn't exist.**
+Unlike `dosage_calculator/README.md` and `renal_adjustment/README.md`,
+this example had no audit-trail record — flagged as a "confirm" item in
+the original Phase 3 scoping plan and never resolved either way. Built
+mirroring the other two examples' exact structure (source documents →
+requirement-to-source mapping → interpretive-call caveats → dated
+amendments in chronological order → fixture/capture formats → open
+questions), sourced entirely from this example's own already-committed
+record — `PHASE1_PLAN.md`, `GATE_1C_AUDIT.md`,
+`nl_confirmation_drug_interaction_checker_dfy.md`,
+`sources/sps-doac-interactions-2024.md`, `mutation_report_ddi.json`,
+and `KNOWN_LIMITATIONS.md`'s "Phase E Gate C1"–"Phase E Gate C6
+sign-off" sections — not invented. Every quoted number
+(`1 verified, 0 errors`; the STP suite's `22 verified, 0 errors`
+against 11 real lemmas; resource costs 113,039 pre-fix / 358,399
+post-fix; the mutation run's 962/564/389/7/2 breakdown) cross-checked
+directly against the real committed capture files
+(`raw_dafny_output_ddi*.txt`, `run_manifest_mutation_ddi.json`) before
+being written, not copied from a secondary source without verification.
+
+Two research agents (`Explore`, both foreground) gathered the code/spec
+and documentation-history facts for `REQ-RENAL-8` scoping immediately
+before this redirect — that plan-mode session was interrupted mid-
+research by this more concrete pair of instructions and is not
+reflected here; `REQ-RENAL-8`'s classification-flag provenance remains
+open, unstarted.
+
+`python -m pytest tests/ -q`: 205 passed throughout both fixes, no
+regressions.
+
 ## 2026-07-11 — Documentation audit: fixed real disparities across all main docs, none merely re-dated
 
 Direct instruction: "ensure all of the main docs are up to date and no

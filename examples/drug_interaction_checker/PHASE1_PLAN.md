@@ -299,8 +299,14 @@ the one item the audit didn't independently re-raise:
   actual sign-off deliverable, **confirmed by Steven 2026-07-10**,
   which caught and fixed a real doc-accuracy bug in the document's own
   text before the decision was recorded).
+- `README.md` (new, 2026-07-11) — the fixed audit-trail record, mirroring
+  `dosage_calculator/README.md`'s and `renal_adjustment/README.md`'s
+  structure; had been a named-but-unresolved "confirm" item since the
+  Phase 3 scoping plan, built entirely from this file, `GATE_1C_AUDIT.md`,
+  the Gate C6 sign-off document, and the real committed capture files.
 
 Not yet updated: nothing — all six Gate C1–C6 pipeline steps have now
-been built AND confirmed for this example. Remaining, explicitly named,
-not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged) — the only work left on
-this worked example.
+been built AND confirmed for this example, Phase 3 (evidence packaging)
+is built, and this example now has its own `README.md`. Remaining,
+explicitly named, not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged) — the
+only work left on this worked example.
