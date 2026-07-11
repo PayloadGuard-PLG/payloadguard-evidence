@@ -168,10 +168,71 @@ are both closed under named, provisional fallback assumptions per
 
 ## Decision
 
-**Pending — presented for Steven's confirmation, not decided here.**
-Per this gate's own purpose, the summary above needs an explicit human
-check against intent before it counts as signed off, the same standard
-`dosage.dfy`'s Gate C6 sign-off was held to.
+**Confirmed, 2026-07-11** — Steven, against the raw KDIGO/MHRA sources
+directly, not a rubber stamp: every checkable claim independently
+re-verified against the actual committed source files before being
+recorded here.
+
+1. **`RoundHalfUp`** — confirmed. `sources/kdigo-2024-gfr-staging.md`
+   line 51: KDIGO's own text says only "rounded to the nearest whole
+   number"; line 137 confirms no single authoritative source specifies
+   round-half-up over round-half-even. The spec's framing (base
+   rounding is KDIGO-sourced; the round-half-up tie-break specifically
+   is a named, uncited design decision) is accurate to the source, not
+   overclaimed.
+2. **`GStage`** — confirmed exact. `sources/kdigo-2024-gfr-staging.md`
+   line 31 onward: G1 ≥90, G2 60–89, G3a 45–59, G3b 30–44, G4 15–29, G5
+   <15 — all six boundary clauses match verbatim.
+3. **`SelectFormula`** — confirmed against verbatim MHRA wording.
+   `sources/mhra-renal-formula-selection-2019.md` line 31: "patients at
+   extremes of muscle mass (BMI <18 kg/m2 or >40 kg/m2)" — strict
+   inequality confirmed directly (line 33); exactly 18.0 or 40.0 does
+   NOT trigger Cockcroft-Gault, matching `bmi < 18.0 || bmi > 40.0`
+   exactly. All five conditions (line 14-17: DOACs, nephrotoxic drugs,
+   age ≥75, BMI extremes, narrow therapeutic index) present and
+   matching; "aged 75 and older" correctly maps to `ageYears >= 75`
+   (inclusive).
+4. **`ComposedCeiling` / `AssessRenalFunction` Gate C4 fixes** —
+   confirmed matching intent. Re-ran the real STP suite live
+   (`dafny verify renal_adjustment_stp_suite.dfy`): `52 verified, 0
+   errors`, unchanged from the committed capture. The pinning logic
+   holds by construction: `ComposedCeiling`'s third clause (`result ==
+   existingCeiling || result == renalCeiling`) combined with its two
+   `<=` bounds forces the result to the minimum by cases; `AssessRenalFunction`'s
+   two new clauses pin the exact composed value while its original two
+   constructor-only clauses still preserve Gate 1c Finding 2's
+   type-safety guarantee.
+5. **`CockcroftGaultCrClMlPerMin` / `AssessRenalFunctionFromInputs`** —
+   the eGFR/CrCl split is confirmed forced, not a preference. Re-ran
+   both Pow-expressiveness probes live: `dafny_pow_expressiveness_probe.dfy`
+   still genuinely fails to resolve (no real-exponentiation primitive in
+   Dafny), `dafny_pow_axiom_trap_probe.dfy` still verifies cleanly (`2
+   verified, 0 errors`) even for an absurd axiom-backed claim — both
+   match the established finding exactly. **On the open question this
+   document itself posed** ("does 'CrCl computed, eGFR still
+   caller-supplied' match what was meant by closing Finding 1 'for
+   Cockcroft-Gault only'?"): yes — "for Cockcroft-Gault only" scopes the
+   closure precisely to the branch where the maths is actually
+   expressible, and leaves the other branch explicitly, not silently,
+   open. Confirmed correct as written.
+
+**One citation flagged, not silently absorbed.** A note was raised
+about the µmol/L 88.4 conversion factor being corroborated by
+"Sheffield and BSW" clinical calculator sources. Checked and could not
+verify: no such source document exists anywhere in this repository's
+`sources/` directory, and neither name appears in any committed source
+file. Not treated as confirmed — the underlying claim it was attached to
+(the 88.4 factor is standard unit-conversion arithmetic, not an
+MHRA-specific number) doesn't depend on it and was already independently
+established in this file's own 2026-07-09 amendment via a direct MHRA
+source re-fetch, so nothing here is left resting on the unverified
+citation. Consistent with this repo's standing discipline
+(`HANDOFF.md`): an external claim gets checked against a real primary
+source before it's trusted, not accepted on the strength of how
+confidently it's stated.
+
+All six checkpoints confirmed against real, checkable evidence.
+`renal_adjustment.dfy`'s Gate C6 is closed.
 
 ## Amendment 2026-07-09 — Gate C4 found and fixed two real gaps in `ComposedCeiling` and `AssessRenalFunction`
 

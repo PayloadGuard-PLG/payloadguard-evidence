@@ -8,8 +8,32 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-10, while walking through Gate C6's actual
-sign-off review with Steven. Before confirming, he pushed on whether the
+**Last updated:** 2026-07-11 — `renal_adjustment.dfy`'s Gate C6 sign-off
+is now confirmed and closed. Steven reviewed the six checkpoints from
+`nl_confirmation_renal_adjustment_dfy.md` (RoundHalfUp's tie-break
+framing, GStage's boundaries, SelectFormula's BMI thresholds, the Gate
+C4 pinning fixes, and the eGFR/CrCl split's forced asymmetry) against
+the raw KDIGO/MHRA sources directly — every checkable claim
+independently re-verified against the real committed source files and
+live Dafny re-runs (both Pow-expressiveness probes re-run: still fail /
+still verify exactly as established; the STP suite re-run: `52 verified,
+0 errors`, unchanged) before being recorded. **One citation flagged, not
+silently absorbed**: a supporting claim about "Sheffield and BSW"
+clinical calculator sources corroborating the 88.4 conversion factor
+could not be verified — no such source exists anywhere in this
+repository. Not treated as confirmed; the underlying claim it was
+attached to didn't depend on it and was already independently
+established via a direct MHRA source re-fetch in an earlier session. See
+`nl_confirmation_renal_adjustment_dfy.md`'s Decision section for the
+full account. **`renal_adjustment` now has all six Gate C1–C6 pipeline
+steps both built and confirmed** — the only remaining items are the
+named, deliberately unbuilt requirements (`REQ-RENAL-3`, `REQ-RENAL-4`,
+`REQ-RENAL-6`, `REQ-RENAL-7`; `REQ-RENAL-8`'s classification-flag
+provenance question, reclassified as a Phase 3 concern).
+
+**Prior update, preserved: 2026-07-10**, while walking through Gate C6's
+actual sign-off review with Steven. Before confirming, he pushed on
+whether the
 closing claim for Gate 1c Finding 1 ("eGFR caller-supplied because
 Dafny/Z3 can't express it") was actually earned by the evidence, not
 just asserted — it wasn't: the prior "confirmed" was circular between
@@ -198,8 +222,8 @@ testing → recorded human sign-off. Nothing pending here. Don't touch it
 unless something new demands it — it's the reference implementation the
 second example was built to prove the pipeline generalizes to.
 
-**`examples/renal_adjustment/` — Phase 2 in progress, Gates C1/C3/C4/C5/C6
-all built; only Gate C6's sign-off decision is still pending.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
+**`examples/renal_adjustment/` — Phase 2 done: all six Gates C1–C6
+built AND confirmed.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
 top to bottom before touching this example — it's the living status
 document for this example specifically and is kept current, unlike this
 handoff file's example-agnostic summary. As of this writing:
@@ -213,12 +237,16 @@ handoff file's example-agnostic summary. As of this writing:
   verified, 0 errors`) — seven functions: `RoundHalfUp`, `GStage`,
   `SelectFormula`, `ComposedCeiling`, `AssessRenalFunction`,
   `CockcroftGaultCrClMlPerMin`, `AssessRenalFunctionFromInputs`.
-- Gate C6 (NL confirmation) is built; the sign-off document
-  (`nl_confirmation_renal_adjustment_dfy.md`) is presented but its
-  "Decision" section is **pending Steven's actual confirmation** — it
-  has not been rubber-stamped, don't treat it as closed. Now has three
+- **Gate C6 (NL confirmation) confirmed and closed, 2026-07-11.** The
+  sign-off document (`nl_confirmation_renal_adjustment_dfy.md`) — three
   amendments (two functions fixed 2026-07-09, two functions added
-  2026-07-09) all awaiting the same one sign-off.
+  2026-07-09) plus the original seven-function summary — was reviewed
+  by Steven against the raw KDIGO/MHRA sources directly, not rubber-
+  stamped: every checkable claim independently re-verified against the
+  real source files and live Dafny re-runs before being recorded. One
+  unverifiable supporting citation ("Sheffield and BSW" sources) was
+  flagged, not silently absorbed — see the Decision section for the
+  full account.
 - Gate C4 (STPs) is built and found + fixed two real gaps for real
   (`ComposedCeiling`, `AssessRenalFunction` both needed pinning
   clauses) — see `gate_c4_stp_plan.md` and the `_underconstrained`/
@@ -241,8 +269,12 @@ handoff file's example-agnostic summary. As of this writing:
   STPs already cover what they'd add. Four real engine gaps found and
   fixed along the way (missing tokenizer chars, int/real literal typing)
   — see `run_mutation_suite_renal.py`'s module docstring.
-- **The only thing left before this example's Phase 2 is done: Gate
-  C6's sign-off.** Everything else is built.
+- **All six Gate C1–C6 pipeline steps are now built and confirmed —
+  this example's Phase 2 is done.** What remains: the named,
+  deliberately unbuilt requirements (`REQ-RENAL-3`, `REQ-RENAL-4`,
+  `REQ-RENAL-6`, `REQ-RENAL-7`) and `REQ-RENAL-8`'s classification-flag
+  provenance question (reclassified as a Phase 3 concern, not a Phase 2
+  blocker).
 
 **`examples/drug_interaction_checker/` — Phase 2 underway, all six
 Gates C1–C6 built or confirmed.** Read

@@ -1,7 +1,13 @@
 # Renal Function Dose Adjustment — Phase 1 (Specification & Foundation)
 
 Status: **Gate 1 closed, under two named, documented fallback
-assumptions — Phase 2 started 2026-07-08.** Gate 1a and 1b closed; Gate
+assumptions. Phase 2 done as of 2026-07-11 — all six Gate C1–C6
+pipeline steps built AND confirmed** (Gate C6's sign-off recorded
+2026-07-11, six checkpoints independently re-verified against the raw
+KDIGO/MHRA sources directly, one unverifiable supporting citation
+flagged rather than absorbed — see
+`nl_confirmation_renal_adjustment_dfy.md`'s Decision section). Gate 1a
+and 1b closed; Gate
 1c performed (`examples/renal_adjustment/GATE_1C_AUDIT.md`) and found
 two real gaps, one resolved by redesign (`AssessRenalFunction`'s
 type-level fix for the `GStage`-misapplication finding), one closed by
@@ -37,10 +43,13 @@ plan) is now underway — see `examples/renal_adjustment/renal_adjustment.dfy`
 and its capture.
 
 **Gate C1 built** (`renal_adjustment.dfy`, `run_verify_renal.py`,
-real capture: `5 verified, 0 errors`). **Gate C6 built** (NL-dialogue
+real capture: `5 verified, 0 errors`). **Gate C6 built, and confirmed
+2026-07-11** (NL-dialogue
 confirmation, moved earlier per its own recommendation) — see
-`examples/renal_adjustment/nl_confirmation_renal_adjustment_dfy.md`,
-pending Steven's sign-off. Building it surfaced two real bugs in shared
+`examples/renal_adjustment/nl_confirmation_renal_adjustment_dfy.md`'s
+Decision section: six checkpoints independently re-verified against the
+raw KDIGO/MHRA sources directly, one unverifiable supporting citation
+flagged rather than absorbed. Building it surfaced two real bugs in shared
 tooling, caught rather than papered over: `evidence/dafny_nl_summary.py`
 and `evidence/dafny_spec_lint.py::_find_method_header` only matched
 Dafny's `method` keyword, never `function` — `renal_adjustment.dfy` is
@@ -69,8 +78,17 @@ pinning `ensures` clauses (the same self-referential pattern
 `ExpectedDose` uses in `dosage.dfy`) — not a loosened test, not a
 partial constraint. Re-verified: `renal_adjustment.dfy` still
 `5 verified, 0 errors`; the full STP suite (`renal_adjustment_stp_suite.dfy`,
-44 lemmas: ACCEPT, REJECT, uniqueness, and totality checks across all
-five functions) now `44 verified, 0 errors`. `RoundHalfUp`, `GStage`,
+40 lemmas at this point: ACCEPT, REJECT, uniqueness, and totality checks
+across all five functions) now `44 verified, 0 errors`. **A real
+lemma-count/verified-count conflation, caught and fixed 2026-07-11**:
+this paragraph originally described the suite as "44 lemmas... now 44
+verified," coincidentally using the same number for both — checked
+against the actual historical commit (`fc36de4`) and found wrong: 40
+lemmas at that point, not 44 (the current 44-lemma, 52-verified total
+only exists after the Cockcroft-Gault functions' lemmas were added the
+same day, below) — the same class of doc-accuracy bug found and fixed
+in `drug_interaction_checker`'s own STP suite count the day before.
+`RoundHalfUp`, `GStage`,
 and `SelectFormula` were confirmed genuinely tight on the first run, no
 fix needed. Gate C6's sign-off document amended to re-present the two
 changed functions' postconditions — see

@@ -6,6 +6,72 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-11 — Gate C6 sign-off confirmed for renal_adjustment: six checkpoints verified against raw KDIGO/MHRA sources, one citation flagged as unverifiable
+
+Direct instruction: "go ahead and build gate C6 for renal_adjustment."
+Checked the current state before doing anything: Gate C6's mechanical
+build already existed (all seven functions summarized, two tooling gaps
+found and fixed 2026-07-08, two amendments 2026-07-09), just with its
+Decision section still reading "Pending" since then. Rather than
+silently redo already-correct work or silently do nothing, asked
+directly what was wanted - confirmed: give the actual sign-off.
+
+**Re-verified for drift before treating the existing artifact as still
+accurate.** `summarize_method()` re-run fresh for all seven functions,
+diff-checked against `nl_confirmation_renal_adjustment_dfy.md` -
+byte-identical, confirming the multi-line-clause extension built the
+same day for `drug_interaction_checker`'s own Gate C6 didn't silently
+change output for `renal_adjustment`'s single-line clauses. `dafny
+verify renal_adjustment.dfy` and `dafny verify
+renal_adjustment_stp_suite.dfy` both re-run live: `7 verified, 0
+errors` and `52 verified, 0 errors`, matching committed captures
+exactly. (Confirmed 44 real lemmas in the STP suite via `--progress
+Symbol`, correctly already reported as "44 lemmas" separately from "52
+verified" in the existing docs - no repeat of the same conflation bug
+fixed for `drug_interaction_checker`'s STP suite the day before.)
+
+**The actual review checked six claims against real sources, not the
+confidence they were presented with.** All independently re-verified
+against `sources/kdigo-2024-gfr-staging.md` and
+`sources/mhra-renal-formula-selection-2019.md` directly:
+`RoundHalfUp`'s tie-break framing (KDIGO states only "nearest whole
+number," no tie-break rule - confirmed at source line 51/137);
+`GStage`'s six boundaries (G1 >=90 through G5 <15 - confirmed exact at
+source line 31); `SelectFormula`'s BMI thresholds (strict inequality,
+<18/>40 - confirmed verbatim at source line 31/33, all five conditions
+present); the `ComposedCeiling`/`AssessRenalFunction` Gate C4 pinning
+fixes (confirmed via the live STP re-run plus a direct logical
+walkthrough); the eGFR/CrCl split's forced asymmetry (both
+Pow-expressiveness probes re-run live, still match the established
+2026-07-10 finding exactly); and the document's own open question about
+"for Cockcroft-Gault only" scoping (confirmed the phrase does exactly
+what it claims - closes the branch where the maths is expressible,
+leaves the other explicitly open).
+
+**One citation flagged, not silently absorbed.** A supporting claim
+that "Sheffield and BSW" clinical-calculator sources corroborate the
+88.4 conversion factor could not be verified - no such source exists
+anywhere in this repository's `sources/` directory. Not recorded as
+confirmed. The underlying claim it was attached to didn't depend on it
+and was already independently established via a direct MHRA re-fetch in
+an earlier session (2026-07-09). Same discipline that caught a real
+mislabeling in this session's own `drug_interaction_checker` Gate C6
+sign-off the day before - an external claim gets checked against a real
+primary source before being trusted, regardless of how confidently or
+thoroughly it's presented.
+
+Gate C6's Decision section recorded, closing the gate. Full
+documentation ripple: `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md` (new
+"Phase D Gate C6 sign-off" section), `HANDOFF.md`.
+
+**`renal_adjustment` now has all six Gate C1-C6 pipeline steps both
+built and confirmed** - matching `drug_interaction_checker`'s status.
+Both of this repo's Dafny-based worked examples are now fully signed
+off; only the named, deliberately unbuilt requirements
+(`REQ-RENAL-3`/`4`/`6`/`7`/`8`) remain on this example.
+
+No `.dfy` file or code changed - docs-only. 190 tests unchanged.
+
 ## 2026-07-10 — Gate C6 sign-off confirmed for drug_interaction_checker: the review itself caught a real doc-accuracy bug
 
 Same day, later still. Steven's actual Gate C6 review of
