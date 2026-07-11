@@ -4,7 +4,14 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-10 (PayloadGuard CI gate and pytest CI job entries
+Last updated: 2026-07-11 (`renal_adjustment.dfy`'s Gate C6 sign-off
+confirmed and closed — six checkpoints independently re-verified
+against the raw KDIGO/MHRA sources directly and live Dafny re-runs, one
+unverifiable supporting citation flagged rather than absorbed; see the
+"Phase D Gate C6 sign-off" section below. `renal_adjustment` now has all
+six Gate C1–C6 pipeline steps both built and confirmed, matching
+`drug_interaction_checker`'s status). Prior entry, preserved: Last
+updated 2026-07-10 (PayloadGuard CI gate and pytest CI job entries
 added — see their own table rows; a third worked example,
 `drug_interaction_checker` (Phase E), had all six Gates C1–C6 built or
 confirmed the same day — Gate C4 found a real spec gap larger than Gate
@@ -30,7 +37,8 @@ B/C entries below (Gate 2/C2-C4 wiring extended to variants A/B, etc.)
 date to 2026-07-07 and are historical, not stale — the ledger below is
 append-only and each entry is dated individually. The renal-adjustment
 second worked example (Phase D) has its own extensive entries further
-down this file, current as of the citation-gate audit on 2026-07-09. For
+down this file, current as of its Gate C6 sign-off confirmation on
+2026-07-11. For
 current status rather than full history, see `HANDOFF.md`; for the
 dated build-by-build narrative, see `DEVLOG.md`.
 
@@ -1778,9 +1786,11 @@ discipline exactly. `evidence/dafny_adapter.py::parse_dafny_capture`
 confirmed to work unmodified against this new capture (not assumed) —
 `strength=PROVEN`, `verifier_completion_status='completed'`, the
 infrastructure plan's first real end-to-end confirmation for this POC.
-**Gate C6 built** (NL-dialogue confirmation, moved earlier per its own
-recommendation — `nl_confirmation_renal_adjustment_dfy.md`, pending
-Steven's sign-off). Building it found and fixed two real bugs in shared
+**Gate C6 built, and later confirmed 2026-07-11** (NL-dialogue
+confirmation, moved earlier per its own recommendation —
+`nl_confirmation_renal_adjustment_dfy.md`; see the "Phase D Gate C6
+sign-off" section below for the confirmation itself). Building it found
+and fixed two real bugs in shared
 tooling that dosage.dfy's one method/spec never exercised:
 `_find_method_header` (`dafny_spec_lint.py`, shared with `dafny_mutate.py`
 and `dafny_nl_summary.py`) only matched `method`, never `function` —
@@ -2044,6 +2054,97 @@ auto-PR feature) are both left at their safe defaults (`disabled`/
 `false`) in `payloadguard.yml`, deliberately, per the comments in that
 file — turning either on is a materially bigger blast-radius decision
 this entry does not make on its own.
+
+## Phase D Gate C6 sign-off — `renal_adjustment.dfy` confirmed and closed, against the raw KDIGO/MHRA sources directly (2026-07-11)
+
+Gate C6's mechanical build for `renal_adjustment.dfy` (all seven
+functions summarized, two tooling gaps found and fixed, two documented
+amendments — Gate C4's pinning fixes, then the Cockcroft-Gault
+computation addition) had sat with its Decision section reading
+"Pending" since 2026-07-08/09. Before recording an actual decision, the
+existing artifact was re-verified for drift, not assumed still accurate
+just because nothing had touched it recently: `summarize_method()`
+re-run fresh for all seven functions and diff-checked against the
+committed `nl_confirmation_renal_adjustment_dfy.md` — byte-identical,
+no drift (confirming the multi-line-clause extension built the same day
+for `drug_interaction_checker`'s own Gate C6 didn't silently change
+behavior for `renal_adjustment`'s single-line clauses). `dafny verify
+renal_adjustment.dfy` and `dafny verify renal_adjustment_stp_suite.dfy`
+both re-run live: `7 verified, 0 errors` and `52 verified, 0 errors`
+respectively, matching the committed captures exactly.
+
+**The actual sign-off review checked every claim against the real
+source, not the confident tone it was presented in.** Six checkpoints,
+each independently re-verified against the primary source files
+already committed in `sources/`:
+
+1. **`RoundHalfUp`'s tie-break framing** — confirmed against
+   `sources/kdigo-2024-gfr-staging.md` line 51 (KDIGO's own text: only
+   "rounded to the nearest whole number," no tie-break specified) and
+   line 137 (no single authoritative source specifies round-half-up
+   over round-half-even). The spec's own framing — base rounding is
+   KDIGO-sourced, the round-half-up tie-break specifically is a named,
+   uncited design decision — is accurate, not overclaimed.
+2. **`GStage`'s boundaries** — confirmed exact against
+   `sources/kdigo-2024-gfr-staging.md` line 31 onward: G1 ≥90, G2
+   60–89, G3a 45–59, G3b 30–44, G4 15–29, G5 <15, matching all six
+   `ensures` clauses verbatim.
+3. **`SelectFormula`'s BMI thresholds** — confirmed against verbatim
+   MHRA wording, `sources/mhra-renal-formula-selection-2019.md` line 31
+   ("patients at extremes of muscle mass (BMI <18 kg/m2 or >40
+   kg/m2)") and line 33 (strict inequality confirmed directly — exactly
+   18.0 or 40.0 does not trigger Cockcroft-Gault), matching `bmi <
+   18.0 || bmi > 40.0` exactly. All five formula-selection conditions
+   (lines 14-17) present and matching, including "aged 75 and older"
+   correctly mapping to the spec's inclusive `ageYears >= 75`.
+4. **`ComposedCeiling`/`AssessRenalFunction`'s Gate C4 pinning fixes** —
+   confirmed matching intent via the live STP suite re-run above
+   (`52 verified, 0 errors`, unchanged) plus a direct logical check: the
+   third `ComposedCeiling` clause combined with its two `<=` bounds
+   forces the result to the minimum by cases; `AssessRenalFunction`'s
+   two new clauses pin the exact composed value while its original two
+   constructor-only clauses still preserve Gate 1c Finding 2's
+   type-safety guarantee.
+5. **The eGFR/CrCl split's forced asymmetry** — confirmed by re-running
+   both Pow-expressiveness probes live:
+   `dafny_pow_expressiveness_probe.dfy` still genuinely fails to
+   resolve (no real-exponentiation primitive in Dafny),
+   `dafny_pow_axiom_trap_probe.dfy` still verifies cleanly (`2 verified,
+   0 errors`) even for an absurd axiom-backed claim — both match the
+   established 2026-07-10 finding exactly, not just cited from memory.
+6. **The document's own open question** ("does 'CrCl computed, eGFR
+   still caller-supplied' match what was meant by closing Finding 1 'for
+   Cockcroft-Gault only'?") — confirmed yes: "for Cockcroft-Gault only"
+   scopes the closure precisely to the branch where the maths is
+   actually expressible, leaving the other branch explicitly open, not
+   silently hedged.
+
+**One supporting citation flagged, not silently absorbed.** A claim
+that "Sheffield and BSW" clinical-calculator sources corroborate the
+88.4 µmol/L conversion factor was checked and could not be verified —
+no such source document exists anywhere in this repository's `sources/`
+directory, and neither name appears in any committed source file. Not
+recorded as confirmed. The underlying claim it was attached to (88.4 is
+standard unit-conversion arithmetic, not an MHRA-specific number) does
+not depend on the unverified citation — it was already independently
+established via a direct MHRA source re-fetch in this file's own
+2026-07-09 amendment (see `sources/mhra-renal-formula-selection-2019.md`).
+Consistent with this repo's standing discipline: an external claim gets
+checked against a real primary source before it's trusted, not accepted
+on the strength of how confidently or thoroughly it's presented — the
+same discipline that caught a real mislabeling in this session's own
+`drug_interaction_checker` Gate C6 sign-off the day before (see "Phase E
+Gate C6 sign-off" below).
+
+**Gate C6's Decision section recorded, closing the gate.**
+`renal_adjustment` now has all six Gate C1–C6 pipeline steps both built
+and confirmed, matching `drug_interaction_checker`'s status. Remaining
+work on this example: the named, deliberately unbuilt requirements
+(`REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`, `REQ-RENAL-7`) and
+`REQ-RENAL-8`'s classification-flag provenance question, already
+reclassified as a Phase 3 concern, not a Phase 2 blocker.
+
+No `.dfy` file or code changed — docs-only. 190 tests unchanged.
 
 ## Phase E Gate C1 — `drug_interaction_checker.dfy` spec + capture: BUILT (2026-07-10)
 

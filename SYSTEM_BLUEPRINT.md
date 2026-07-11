@@ -1,6 +1,20 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-10 (a third worked example,
+Last updated: 2026-07-11 (`renal_adjustment.dfy`'s Gate C6 sign-off
+confirmed and closed — Steven checked all six checkpoints
+(RoundHalfUp's tie-break framing, GStage's boundaries, SelectFormula's
+BMI thresholds, the Gate C4 pinning fixes, the eGFR/CrCl split) against
+the raw KDIGO/MHRA sources directly, with every claim independently
+re-verified against the real source files and live Dafny re-runs before
+being recorded. One supporting citation ("Sheffield and BSW" sources)
+was flagged as unverifiable, not silently absorbed — no such source
+exists in this repository. `renal_adjustment` now has all six Gate
+C1–C6 pipeline steps both built and confirmed, matching
+`drug_interaction_checker`'s status. See
+`examples/renal_adjustment/nl_confirmation_renal_adjustment_dfy.md`'s
+Decision section for the full account, and Section 7 below for its
+status-block update). Prior header, preserved: Last updated 2026-07-10
+(a third worked example,
 `examples/drug_interaction_checker/`, was scoped and had all six Gates
 C1–C6 built or confirmed — see the new Section 8 and its component-map
 entry below. Gate C4 found a real spec gap larger than Gate C1's own
@@ -620,8 +634,13 @@ payloadguard-evidence/
 │   │                            same 4 REJECT lemmas genuinely fail
 │   │                            against the preserved original
 │   ├── nl_confirmation_renal_adjustment_dfy.md  Gate C6: generated
-│   │                            summary + amendment; sign-off PENDING,
-│   │                            not yet confirmed
+│   │                            summary + two amendments; sign-off
+│   │                            CONFIRMED 2026-07-11 - Steven checked
+│   │                            every claim against the raw KDIGO/MHRA
+│   │                            sources directly, not a rubber stamp
+│   │                            (one unverifiable supporting citation
+│   │                            flagged, not silently absorbed - see
+│   │                            its Decision section)
 │   ├── run_verify_renal.py, run_verify_dafny_stp_suite(_against_underconstrained)_renal.py
 │   │                            Capture runners, mirroring
 │   │                            dosage_calculator's exact discipline
@@ -1323,8 +1342,12 @@ conditional-branching logic, using a UK-jurisdiction clinical example
   `AssessRenalFunction`, `CockcroftGaultCrClMlPerMin`,
   `AssessRenalFunctionFromInputs`) — verifies clean (`7 verified, 0
   errors`).
-- Gate C6 (NL confirmation): built; sign-off document presented but
-  **pending actual confirmation**, not yet closed.
+- **Gate C6 (NL confirmation): built and confirmed, 2026-07-11.**
+  Sign-off document reviewed by Steven against the raw KDIGO/MHRA
+  sources directly — every checkable claim independently re-verified,
+  not rubber-stamped. One unverifiable supporting citation flagged, not
+  silently absorbed. See
+  `nl_confirmation_renal_adjustment_dfy.md`'s Decision section.
 - Gate C4 (STPs): built. Found and fixed two real under-constrained
   postconditions (`ComposedCeiling`, `AssessRenalFunction`) — confirmed
   failing against the preserved pre-fix spec, confirmed passing after a
@@ -1353,8 +1376,12 @@ conditional-branching logic, using a UK-jurisdiction clinical example
   and deliberately left unfixed (a `||`-chain ambiguity; two
   arithmetic-embedded LVR literals — real new engineering, and Gate C4's
   STPs already cover what they'd add).
-- **Gate C6's sign-off is now the only thing left before this example's
-  Phase 2 is done.**
+- **All six Gate C1–C6 pipeline steps are now built and confirmed —
+  this example's Phase 2 is done**, matching `drug_interaction_checker`'s
+  status. What remains: the named, deliberately unbuilt requirements
+  (`REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`, `REQ-RENAL-7`) and
+  `REQ-RENAL-8`'s classification-flag provenance question (a Phase 3
+  concern, not a Phase 2 blocker).
 - Not wired into the metadata/capture/generate pipeline (no
   `metadata.yaml`, no traceability matrix) — this example hasn't
   reached that part of the system yet; Section 3's data-flow diagram
