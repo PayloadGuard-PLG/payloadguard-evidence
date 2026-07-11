@@ -198,8 +198,8 @@ testing → recorded human sign-off. Nothing pending here. Don't touch it
 unless something new demands it — it's the reference implementation the
 second example was built to prove the pipeline generalizes to.
 
-**`examples/renal_adjustment/` — Phase 2 in progress, Gates C1/C4/C6
-built, Gates C3/C5 not yet started.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
+**`examples/renal_adjustment/` — Phase 2 in progress, Gates C1/C3/C4/C5/C6
+all built; only Gate C6's sign-off decision is still pending.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
 top to bottom before touching this example — it's the living status
 document for this example specifically and is kept current, unlike this
 handoff file's example-agnostic summary. As of this writing:

@@ -66,6 +66,150 @@ traceable, and — critically — impossible to fake or round up.
   evidence (a "Proven" label can never appear unless it was actually
   produced by a real mathematical proof).
 
+## A worked example: what "Proven" actually looks like
+
+Abstract claims about "formal verification" are easy to write and hard
+to trust. Here is one real requirement, traced through every gate this
+system runs, with the actual captured output at each step — not a
+summary, not a paraphrase, all pulled verbatim from files committed in
+`examples/drug_interaction_checker/`.
+
+**The requirement:** dabigatran (a blood thinner) combined with
+ketoconazole (an antifungal) is contraindicated — the two must never be
+prescribed together. Sourced from NHS Specialist Pharmacy Service
+guidance (`sources/sps-doac-interactions-2024.md`): *"Itraconazole and
+ketoconazole — contraindicated with dabigatran."* This is exactly the
+kind of claim that matters: get it wrong, and the software tells a
+clinician a dangerous combination is merely worth "caution."
+
+**Gate C1 — capture the proof, verbatim, or don't count it.**
+The requirement is encoded as one clause (of 60) on a Dafny function,
+`CheckInteraction`:
+
+```dafny
+ensures (doac == Dabigatran && agent == Ketoconazole) ==>
+  CheckInteraction(doac, agent, hasOtherBleedingRiskFactors)
+  == InteractionResult(Contraindicated, BleedingRisk)
+```
+
+Running the real Dafny 4.11.0 / Z3 toolchain against it produces exactly
+one line of output, captured byte-for-byte in
+`raw_dafny_output_ddi.txt`:
+
+```
+Dafny program verifier finished with 1 verified, 0 errors
+```
+
+That's the raw evidence. `evidence/dafny_adapter.py` parses it into a
+strength label — and it isn't a rubber stamp: an early draft of this
+same spec had *no* `ensures` clauses at all, and Dafny reported the
+identical-looking "0 verified, 0 errors" — meaning zero proof
+obligations existed, not zero problems. Gate C1's own job is catching
+that difference before anything gets labeled `PROVEN`. Once real
+postconditions exist, the same parser turns this capture into:
+
+```
+strength = PROVEN, verifier_completion_status = "completed"
+```
+
+**Gate C2 — a `PROVEN` label can't be typed in by hand.** The only code
+path in this repository that can attach a `PROVEN` strength label is
+`evidence/render/matrix_variants.py::dafny_record()`, and it re-derives
+that label from the raw capture above — it does not trust a
+pre-existing label. A second rule, ruling R3
+(`assert_no_realized_proven`), independently refuses two tampered copies
+of this exact record before it accepts the real one: one with the tool
+name changed to `"crosshair"`, one with `verifier_completion_status`
+changed to `"incomplete"`. Both are rejected. Only the real, complete
+Dafny capture above passes.
+
+**Gate C3 — the proof isn't quietly checking nothing.** A precondition
+that can never be satisfied makes every postcondition trivially,
+uselessly "true" — the classic way a formal proof lies without actually
+lying. `evidence/dafny_spec_lint.py` asks Z3 directly: can
+`CheckInteraction`'s precondition ever hold? The real answer, computed
+fresh, not asserted:
+
+```
+sat — model: [agent = Naproxen, doac = Dabigatran]
+```
+
+Z3 found a real, concrete input that satisfies the precondition —
+proof obligations are being exercised, not vacuously discharged.
+
+**Gate C4 — the proof pins the exact answer, not just a plausible one.**
+A clean Dafny pass only shows the spec is internally consistent, not
+that "Contraindicated" is actually forced. A companion lemma (`GATE_1C_AUDIT.md`
+hand-trace 1) tests the specification alone, with no access to the
+function's implementation:
+
+```dafny
+lemma STP_Accept_CheckInteraction_DabigatranKetoconazole(hasFlag: bool)
+  ensures CheckInteraction(Dabigatran, Ketoconazole, hasFlag)
+       == InteractionResult(Contraindicated, BleedingRisk)
+{}
+```
+
+That alone isn't enough — a *weaker* answer (a plain "Caution" instead
+of "Contraindicated") might also be consistent with an under-specified
+proof. A second, REJECT lemma tests exactly that and must fail to
+verify:
+
+```dafny
+lemma STP_Reject_CheckInteraction_DabigatranKetoconazole_NotMerelyCaution(hasFlag: bool)
+  requires CheckInteraction(Dabigatran, Ketoconazole, hasFlag)
+        == InteractionResult(Caution, BleedingRisk)  // wrong: real answer is Contraindicated
+  ensures false
+{}
+```
+
+Both lemmas, and 9 others covering the rest of the table, verify
+together in one real run: `22 verified, 0 errors`
+(`raw_dafny_output_ddi_stp_suite.txt`) — 11 lemmas, ~2 Dafny
+verification tasks each. The weaker "Caution" answer is provably
+excluded, not merely absent from the code by coincidence.
+
+**Gate C5 — the proof isn't accidentally tight only where nobody
+looked.** Mutation testing rewrites the spec's own operators —
+`==`→`!=`, `&&`→`||`, and so on — and reruns the real verifier on each
+mutant, checking that a *wrong* spec actually fails to verify. Every
+mutant generated against this specific clause was either killed by
+Dafny (proof genuinely fails on the corrupted spec) or filtered as a
+detected non-arithmetic operator — zero survived undetected
+(`mutation_report_ddi.json`). Across the whole 63-cell function: 962
+mutants, 564 killed, 389 filtered as structurally redundant before even
+invoking Dafny, 7 real survivors — each individually explained, not
+hidden (`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section) — and 2
+refused outright as genuine Dafny type errors rather than guessed at.
+
+**Gate C6 — a human confirmed it means what it was meant to mean, and
+actually checked.** A mechanical step
+(`evidence/dafny_nl_summary.py`) renders the clause in plain English for
+review:
+
+> `(doac == Dabigatran && agent == Ketoconazole) ==> CheckInteraction(...) == InteractionResult(Contraindicated, BleedingRisk)`
+> — (doac equals Dabigatran and agent equals Ketoconazole) implies
+> CheckInteraction(...) equals InteractionResult(Contraindicated,
+> BleedingRisk)
+
+This is not itself evidence — a generated sentence isn't a proof. The
+actual deliverable is the recorded human decision in
+`nl_confirmation_drug_interaction_checker_dfy.md`, and it was not a
+rubber stamp: reviewing it against the primary source directly caught a
+real inaccuracy in the sign-off document's own supporting text (an
+unrelated clause's rationale had been mislabeled), which was corrected
+and left visible, not silently fixed, before the sign-off was recorded.
+
+**The result:** one clinical claim, traced from a cited source, through
+a machine-checked proof, through two independent checks that the proof
+means what it says and pins the value it claims to pin, through 962
+adversarial mutations of the spec itself, to a human confirmation that
+actually found and fixed something — six independent layers, every one
+of them capable of catching a different class of mistake, all pointing
+at the same real, committed artifact. That's what a `PROVEN` label
+costs in this system, and why it's the only label that can carry that
+word.
+
 ## What's in this repository
 
 - **`evidence/`** — the reusable engine: schema validation, evidence
@@ -78,16 +222,22 @@ traceable, and — critically — impossible to fake or round up.
   from a published infusion-pump hazard analysis, taken all the way
   through to a full mathematical proof and mutation-tested for real.
 - **`examples/renal_adjustment/`** — a second, independent worked
-  example, in progress: adjusting a drug dose for a patient's kidney
-  function, sourced from UK clinical guidelines (MHRA, KDIGO, NICE).
-  Built specifically to prove the same verification pipeline generalizes
+  example: adjusting a drug dose for a patient's kidney function,
+  sourced from UK clinical guidelines (MHRA, KDIGO, NICE). Built
+  specifically to prove the same verification pipeline generalizes
   beyond simple arithmetic to lookup tables and conditional branching.
+- **`examples/drug_interaction_checker/`** — a third, independent
+  worked example: checking a specific drug pairing against a known
+  interactions table, sourced from NHS Specialist Pharmacy Service
+  guidance. Built to prove the pipeline generalizes again, this time to
+  set/list-membership logic. The worked example above walks this one
+  through every gate with real, verbatim evidence.
 - **`sources/`** — the primary source documents (hazard analyses,
   clinical guidelines, regulatory guidance) that every sourced
   requirement traces back to, archived so a claim can always be checked
   against the actual document, not a paraphrase of it.
 - **`tests/`** — the automated regression suite protecting every rule
-  above (154 tests as of this writing).
+  above (190 tests as of this writing).
 
 ## Quick start
 
@@ -118,12 +268,19 @@ reference for operating this system.
   mathematical proof, mutation testing (to check the proof is actually
   tight, not just present), and a recorded human sign-off confirming the
   formal specification says what was intended.
-- **Renal-function dose adjustment**: in progress. Clinical sourcing and
-  the core formal specification are built and proof-checked, including a
-  proven Cockcroft-Gault CrCl computation from raw patient inputs; CKD-EPI
-  eGFR remains caller-supplied (a real Dafny/Z3 expressiveness gap, not a
-  choice). One requirement is still deliberately left open, a named
-  decision rather than guessed at.
+- **Drug-drug interaction checker**: complete. All six verification
+  gates built and confirmed — including a human sign-off review that
+  caught and fixed a real inaccuracy in its own supporting text before
+  being recorded. The worked example above walks this one through every
+  gate with real, verbatim evidence.
+- **Renal-function dose adjustment**: nearly complete. Clinical sourcing
+  and the formal specification (proof, spec-lint, mutation testing) are
+  all built and proof-checked, including a proven Cockcroft-Gault CrCl
+  computation from raw patient inputs; CKD-EPI eGFR remains
+  caller-supplied (a real Dafny/Z3 expressiveness gap, confirmed
+  empirically, not a choice). The only thing left is the recorded human
+  sign-off for the plain-English confirmation step — presented, not yet
+  rubber-stamped.
 - Full, dated build history: [`DEVLOG.md`](DEVLOG.md). Current open
   items and known gaps: [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
 
