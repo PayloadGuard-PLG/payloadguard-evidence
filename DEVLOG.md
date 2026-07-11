@@ -6,6 +6,78 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-11 — Documentation audit: fixed real disparities across all main docs, none merely re-dated
+
+Direct instruction: "ensure all of the main docs are up to date and no
+disparity whatsoever. running system should be clean. please check and
+fix where necessary" — a dedicated audit pass, not tied to any new
+feature, following directly on the Phase 3 work merged in PR #32
+(previous entry below). Cross-checked every main doc (`README.md`,
+`HANDOFF.md`, `OPERATIONS_MANUAL.md`, `SYSTEM_BLUEPRINT.md`,
+`KNOWN_LIMITATIONS.md`, `REVIEW_PROTOCOL.md`, plus
+`examples/dosage_calculator/RECONCILIATION.md`) against the actual repo
+state — test counts recomputed via `pytest --collect-only`, gate
+statuses cross-checked against `KNOWN_LIMITATIONS.md`'s own gate ledger,
+schema `required` fields read directly from the JSON, GAP-row claims
+checked against the real committed matrix JSON — rather than trusting
+any doc's own prose.
+
+Real findings, all fixed (commit `41be18b`, PR #33, merged
+`d7123c2`):
+
+- **Arithmetic bug in three places** (`HANDOFF.md`, `KNOWN_LIMITATIONS.md`
+  twice): "9 new tests" next to a correct "205 total, up from 190" —
+  9 (`renal_adjustment`) + 6 (`drug_interaction_checker`) is 15, not 9;
+  the adjacent correct total is what exposed the undercount.
+- **`README.md`**: test count said 190 (stale); `renal_adjustment`'s
+  "Status at a glance" bullet still said "nearly complete" pending a
+  Gate C6 sign-off that was actually confirmed and closed 2026-07-11
+  (same day, earlier session).
+- **`REVIEW_PROTOCOL.md`**: "GAP rows ... currently none" — stale;
+  Phase 3 introduced the first 7 real GAP rows across the two new
+  matrices. Its reconciliation-asymmetries pointer also still cited
+  binding authorship as open, but that was resolved 2026-07-05 (Gate 4,
+  option 3, cross-checked) — five weeks stale, unrelated to this
+  session's own Phase 3 work, just never caught before.
+- **`examples/dosage_calculator/RECONCILIATION.md`**: the same binding-
+  authorship finding, independently still saying "OPEN, deferred to
+  Phase B" in its own source location — fixed with a pointer to Gate 4's
+  actual resolution and mechanism.
+- **`OPERATIONS_MANUAL.md`**: component map was missing
+  `drug_interaction_checker` entirely, marked `renal_adjustment` "in
+  progress", and cited a 154-test count (several sessions stale — this
+  doc had evidently not been touched by any of the recent example-adding
+  sessions' documentation ripples). Command reference had no example of
+  the now-common Dafny-only invocation (omitting `--manifest`/
+  `--concrete`, both optional since the same-day Phase 3 work).
+- **`SYSTEM_BLUEPRINT.md`**: top "Last updated" header still led with
+  the prior Gate C6 sign-off entry, not the later same-day Phase 3 work
+  (both dated 2026-07-11, so the mechanical staleness test couldn't
+  catch it — same date, wrong content); "Phase C (in progress)"
+  contradicted its own section content showing all six Gate C1–C6 steps
+  built and signed off; the Phase D/E status-block headers were dated to
+  their last narrative update despite being extended since;
+  `drug_interaction_checker`'s Phase 3 bullet was ordered before its own
+  Gate C6 bullet despite structurally depending on it being done first.
+
+Two background audit agents (`general-purpose`, for `OPERATIONS_MANUAL.md`
+and `SYSTEM_BLUEPRINT.md`) were launched to parallelize the largest two
+files' review; both hit a session rate limit (`429`, "session limit ·
+resets 6pm UTC") and failed before producing output. Completed that
+portion of the audit directly instead, via targeted `grep` sweeps for
+known stale-content patterns (old test-count numbers, "in progress"/
+"nearly complete"/"currently none" phrasing, `--manifest`/`--concrete`
+"required" claims) rather than a full agent-mediated read — narrower
+than originally planned, but every finding reported above was still
+independently verified against the real repo state, not guessed.
+
+`python -m pytest tests/ -q` — 205 passed throughout, no regressions (a
+docs-only change, but `tests/test_docs_current_with_devlog.py`'s
+mechanical staleness check is itself part of the suite and passed on
+every run). PR #33 merged same day; both CI checks (pytest, PayloadGuard
+scan) green before merge, per direct instruction ("merge it once CI's
+green").
+
 ## 2026-07-11 — Phase 3 built for renal_adjustment and drug_interaction_checker: three real gaps found and fixed in shared code
 
 Direct instruction: "go ahead and scope out Phase 3," followed by "go
