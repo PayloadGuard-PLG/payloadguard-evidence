@@ -2826,6 +2826,14 @@ with every change in this entry fully reverted — a genuine, pre-existing
 provenance-index staleness bug (`dosage.dfy` was evidently edited at
 some point after the index was last regenerated), unrelated to Phase 3,
 named here rather than silently fixed in passing or silently ignored.
+**Fixed, 2026-07-11 (same day, on direct instruction):** root cause
+confirmed via git history — commit `0dc2715` (2026-07-07) legitimately
+tightened `dosage.dfy`'s postcondition and re-verified it for real, but
+never re-ran `generate_artifacts.py`'s stage 7 (provenance index)
+afterward. Fixed by running that sanctioned entrypoint rather than
+hand-editing the index; this also picked up the metadata schema files'
+real content changes from this same Phase 3 work, which had gone stale
+in the index the same way. `python -m pytest tests/ -q`: 205 passed.
 
 **`renal_adjustment`'s real packaging** (`metadata.a.yaml`,
 `dafny_captures_index.json`, `traceability_matrix.a.json`/`.md`): 9

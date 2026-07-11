@@ -8,7 +8,24 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-11 — Documentation audit: every main doc
+**Last updated:** 2026-07-11 — Two named-not-fixed items closed, both
+surfaced (but deliberately left open) by the documentation audit just
+below. **`dosage_calculator/artifact_index.json`'s stale provenance
+hashes for `dosage.dfy`/`run_manifest_dafny.json` are fixed** — root
+cause was a real, legitimate `dosage.dfy` edit (commit `0dc2715`,
+2026-07-07) whose otherwise-thorough doc sweep never re-ran
+`generate_artifacts.py`'s provenance-index stage; fixed by running that
+sanctioned entrypoint, not by hand-editing the index.
+**`examples/drug_interaction_checker/README.md` now exists**, mirroring
+`dosage_calculator`'s and `renal_adjustment`'s audit-trail structure,
+built entirely from that example's own already-committed record
+(`PHASE1_PLAN.md`, `GATE_1C_AUDIT.md`, the Gate C6 sign-off doc, the raw
+Dafny/mutation captures) — every quoted number cross-checked directly
+against its source capture file before being written. Full account:
+`DEVLOG.md`'s 2026-07-11 "Two named-not-fixed items closed" entry
+(above the Documentation audit entry below). 205 tests pass throughout,
+no regressions. **Prior update, preserved below — Documentation audit:
+every main doc
 (`README.md`, this file, `OPERATIONS_MANUAL.md`, `SYSTEM_BLUEPRINT.md`,
 `KNOWN_LIMITATIONS.md`, `REVIEW_PROTOCOL.md`, plus
 `examples/dosage_calculator/RECONCILIATION.md`) checked against the
@@ -22,8 +39,8 @@ binding-authorship question as open five weeks after it was resolved,
 and `OPERATIONS_MANUAL.md`'s component map missing
 `drug_interaction_checker` entirely with a 154-test count untouched
 across several sessions' worth of example-adding work. Full account:
-`DEVLOG.md`'s 2026-07-11 "Documentation audit" entry (above the Phase 3
-entry below). PR #33, merged same day; 205 tests pass throughout, no
+`DEVLOG.md`'s 2026-07-11 "Documentation audit" entry. PR #33, merged
+same day; 205 tests pass throughout, no
 regressions. **Prior update, preserved below — Phase 3 (evidence
 packaging) built for
 `renal_adjustment` and `drug_interaction_checker`, the two examples
