@@ -1,0 +1,8 @@
+{
+  "drug_interaction_checker.dfy::CheckInteraction": {
+    "spec_source_path": "drug_interaction_checker.dfy",
+    "raw_output_path": "raw_dafny_output_ddi.txt",
+    "manifest_path": "run_manifest_dafny_ddi.json",
+    "dafny_method": "CheckInteraction"
+  }
+}

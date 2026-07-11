@@ -58,7 +58,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^REQ-[A-Z0-9-]+(\\.(concrete|formal)-[0-9]+)?$"
+            "pattern": "^REQ-[A-Za-z0-9-]+(\\.(concrete|formal)-[0-9]+)?$"
           },
           "text": {
             "type": "string"
@@ -77,7 +77,7 @@
           },
           "parent_requirement": {
             "type": "string",
-            "pattern": "^REQ-[A-Z0-9-]+$"
+            "pattern": "^REQ-[A-Za-z0-9-]+$"
           },
           "kernel_scope": {
             "type": "string"
@@ -111,9 +111,6 @@
     },
     "toolchain": {
       "type": "object",
-      "required": [
-        "crosshair_bounds"
-      ],
       "properties": {
         "crosshair_bounds": {
           "type": "object",

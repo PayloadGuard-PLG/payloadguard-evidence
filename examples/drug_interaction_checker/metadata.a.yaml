@@ -1,0 +1,90 @@
+# VARIANT A metadata (T4-A) for the drug-drug interaction checker.
+# Dafny-only (no crosshair/concrete_test evidence exists for this example -
+# see toolchain below and evidence/cli.py's own docstring for how the
+# pipeline handles that honestly, not by fabricating bounds data).
+# Validated by evidence/schema/metadata.schema.a.json.
+device:
+  name: DOAC Drug-Drug Interaction Checker (POC)
+  intended_use: >
+    Check a specific direct oral anticoagulant (DOAC) and concomitant
+    agent pairing against a known interactions table, returning an
+    outcome/risk-direction classification. Not a numeric dose calculator
+    - see REQ-DDI-6.
+  safety_classification: B
+  classification_rationale: >
+    DECLARED - not assigned by the NHS SPS source, which classifies
+    interaction severity per pairing but does not assign IEC 62304
+    classes or ISO 14971 severity/probability scores. Provisional:
+    failure could contribute to a missed contraindication or an
+    over-cautious restriction, given clinician oversight. Requires a
+    manufacturer-specific ISO 14971 risk file before this can be
+    upgraded from DECLARED to sourced.
+requirements:
+  - id: REQ-DDI-1
+    text: >
+      The checker returns an InteractionResult(outcome, direction) pair,
+      never a bare boolean. outcome is one of NoInteractionExpected,
+      Caution, CautionLowRelevance, Avoid, Contraindicated,
+      DoseReductionAdvised, NotCovered; direction is BleedingRisk,
+      ThrombosisRisk, NoRisk, or UnknownRisk - every one of the source's
+      17 sections is headed by exactly this distinction.
+    implementation: drug_interaction_checker.dfy::CheckInteraction
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: drug_interaction_checker.dfy
+        dafny_method: CheckInteraction
+  - id: REQ-DDI-2
+    text: >
+      CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) is a
+      total, hardcoded pairwise lookup covering 15 of the source's 17
+      named sections with no extra caller input, excluding via
+      precondition the two still-blocked apixaban cells (REQ-DDI-5).
+    implementation: drug_interaction_checker.dfy::CheckInteraction
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: drug_interaction_checker.dfy
+        dafny_method: CheckInteraction
+  - id: REQ-DDI-3
+    text: >
+      SSRIs/SNRIs: dabigatran's dose-reduction advice is conditional on a
+      caller-supplied hasOtherBleedingRiskFactors flag - both branches
+      proven, not just the one exercised first.
+    implementation: drug_interaction_checker.dfy::CheckInteraction
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: drug_interaction_checker.dfy
+        dafny_method: CheckInteraction
+  - id: REQ-DDI-4
+    text: >
+      Fail-safe: any (doac, agent) pair not present in the source's
+      named set - including within-source gaps like
+      apixaban+dronedarone - returns NotCovered, never silently
+      NoInteractionExpected.
+    implementation: drug_interaction_checker.dfy::CheckInteraction
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: drug_interaction_checker.dfy
+        dafny_method: CheckInteraction
+  - id: REQ-DDI-5
+    text: >
+      Rifampicin and carbamazepine/phenytoin/phenobarbital both make
+      apixaban's outcome depend on a third axis, clinical indication (AF
+      stroke prevention / DVT-PE recurrence prevention vs. other
+      indications) - named, sourced, feasible, not built in v1 (the two
+      affected cells are excluded via CheckInteraction's precondition,
+      REQ-DDI-2, rather than given a silently wrong answer).
+    implementation: "none - deferred, not built in v1"
+    intended_method: PROVEN
+  - id: REQ-DDI-6
+    text: >
+      The DoseReductionAdvised outcome kind is proven in v1; the
+      specific numeric dose-reduction target per (doac, agent) is v1
+      informational text only, not a proven output. Staged v2, not
+      dropped.
+    implementation: "none - v1 is classify-only, staged for v2"
+    intended_method: PROVEN
+toolchain: {}

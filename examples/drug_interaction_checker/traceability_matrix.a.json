@@ -1,0 +1,129 @@
+{
+  "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
+  "generated_utc": "2026-07-11T15:12:43.500106+00:00",
+  "tool_versions": {
+    "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
+  },
+  "crosshair_bounds": null,
+  "bounds": {
+    "declared": null,
+    "effective": null,
+    "enforcement_note": ""
+  },
+  "rows": [
+    {
+      "requirement_id": "REQ-DDI-1",
+      "requirement_text": "The checker returns an InteractionResult(outcome, direction) pair, never a bare boolean. outcome is one of NoInteractionExpected, Caution, CautionLowRelevance, Avoid, Contraindicated, DoseReductionAdvised, NotCovered; direction is BleedingRisk, ThrombosisRisk, NoRisk, or UnknownRisk - every one of the source's 17 sections is headed by exactly this distinction.",
+      "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-DDI-2",
+      "requirement_text": "CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) is a total, hardcoded pairwise lookup covering 15 of the source's 17 named sections with no extra caller input, excluding via precondition the two still-blocked apixaban cells (REQ-DDI-5).",
+      "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-DDI-3",
+      "requirement_text": "SSRIs/SNRIs: dabigatran's dose-reduction advice is conditional on a caller-supplied hasOtherBleedingRiskFactors flag - both branches proven, not just the one exercised first.",
+      "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-DDI-4",
+      "requirement_text": "Fail-safe: any (doac, agent) pair not present in the source's named set - including within-source gaps like apixaban+dronedarone - returns NotCovered, never silently NoInteractionExpected.",
+      "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "drug_interaction_checker.dfy::CheckInteraction",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-DDI-5",
+      "requirement_text": "Rifampicin and carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication (AF stroke prevention / DVT-PE recurrence prevention vs. other indications) - named, sourced, feasible, not built in v1 (the two affected cells are excluded via CheckInteraction's precondition, REQ-DDI-2, rather than given a silently wrong answer).",
+      "code_location": "none - deferred, not built in v1",
+      "evidence": [],
+      "intent_ok": false,
+      "notes": [
+        "no evidence bound for this requirement",
+        "intended PROVEN, realized GAP"
+      ]
+    },
+    {
+      "requirement_id": "REQ-DDI-6",
+      "requirement_text": "The DoseReductionAdvised outcome kind is proven in v1; the specific numeric dose-reduction target per (doac, agent) is v1 informational text only, not a proven output. Staged v2, not dropped.",
+      "code_location": "none - v1 is classify-only, staged for v2",
+      "evidence": [],
+      "intent_ok": false,
+      "notes": [
+        "no evidence bound for this requirement",
+        "intended PROVEN, realized GAP"
+      ]
+    }
+  ]
+}

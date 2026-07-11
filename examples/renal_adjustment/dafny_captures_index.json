@@ -1,0 +1,44 @@
+{
+  "renal_adjustment.dfy::RoundHalfUp": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "RoundHalfUp"
+  },
+  "renal_adjustment.dfy::GStage": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "GStage"
+  },
+  "renal_adjustment.dfy::SelectFormula": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "SelectFormula"
+  },
+  "renal_adjustment.dfy::ComposedCeiling": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "ComposedCeiling"
+  },
+  "renal_adjustment.dfy::AssessRenalFunction": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "AssessRenalFunction"
+  },
+  "renal_adjustment.dfy::CockcroftGaultCrClMlPerMin": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "CockcroftGaultCrClMlPerMin"
+  },
+  "renal_adjustment.dfy::AssessRenalFunctionFromInputs": {
+    "spec_source_path": "renal_adjustment.dfy",
+    "raw_output_path": "raw_dafny_output_renal.txt",
+    "manifest_path": "run_manifest_dafny_renal.json",
+    "dafny_method": "AssessRenalFunctionFromInputs"
+  }
+}

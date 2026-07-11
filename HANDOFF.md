@@ -8,7 +8,43 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-11 — `renal_adjustment.dfy`'s Gate C6 sign-off
+**Last updated:** 2026-07-11 — Phase 3 (evidence packaging) built for
+`renal_adjustment` and `drug_interaction_checker`, the two examples
+whose Phase 2 (Gate C1-C6) closed the same day. `dosage_calculator`'s
+existing pipeline (`metadata.yaml` → `evidence.cli` →
+`traceability_matrix.a.json/.md`) was the template, but had never faced
+a Dafny-only metadata file (zero crosshair/concrete_test evidence) —
+running it for real surfaced three genuine gaps in shared code, all
+fixed rather than worked around: `evidence/cli.py`'s
+`--manifest`/`--concrete` were hard-required all the way down to a
+crosshair-manifest `effective_bounds` lookup, now optional
+(`manifest=None` mirrors `dafny_store`'s own already-established `None`
+convention, never fabricated fake bounds data); the schema's
+`toolchain.crosshair_bounds` was unconditionally required, now optional;
+the schema's `id` pattern rejected `REQ-RENAL-1a`'s lowercase suffix —
+the same class of gap already fixed once in `dafny_nl_summary.py`
+(2026-07-08), now found independently in the schema too. A fourth,
+unrelated bug fixed in the same pass:
+`evidence/conflict.py::symbolic_binding_conflicts` never skipped a
+`.dfy`-targeted implementation, a real gap for any future mixed
+crosshair+dafny example. Every change reverified against zero
+regression — `dosage_calculator`'s real artifacts regenerated and
+diffed byte-for-byte (timestamps aside) before and after each fix, every
+time. Both new examples' real matrices are now committed: 9 requirement
+rows for `renal_adjustment` (including the first-ever dual-cited
+evidence binding and two genuinely different flavors of honest GAP row
+— `PROVEN`-intended for real future formalization candidates vs.
+`DECLARED`-intended for a permanent trust-boundary decision), 6 rows for
+`drug_interaction_checker` (the first many-requirements-to-one-proof
+binding this repo's matrix binder has exercised). 9 new tests, 205
+total (up from 190). Full account: `KNOWN_LIMITATIONS.md`'s "Phase 3 —
+evidence packaging" section. A separate, pre-existing, unrelated finding
+surfaced during regression testing and deliberately not touched here:
+`dosage_calculator/artifact_index.json`'s committed hash for `dosage.dfy`
+is stale relative to its current content — named, not fixed in passing.
+
+**Prior update, preserved: 2026-07-11** — `renal_adjustment.dfy`'s Gate
+C6 sign-off
 is now confirmed and closed. Steven reviewed the six checkpoints from
 `nl_confirmation_renal_adjustment_dfy.md` (RoundHalfUp's tie-break
 framing, GStage's boundaries, SelectFormula's BMI thresholds, the Gate
@@ -223,7 +259,8 @@ unless something new demands it — it's the reference implementation the
 second example was built to prove the pipeline generalizes to.
 
 **`examples/renal_adjustment/` — Phase 2 done: all six Gates C1–C6
-built AND confirmed.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
+built AND confirmed. Phase 3 (evidence packaging) also built,
+2026-07-11.** Read `examples/renal_adjustment/PHASE1_PLAN.md`
 top to bottom before touching this example — it's the living status
 document for this example specifically and is kept current, unlike this
 handoff file's example-agnostic summary. As of this writing:
@@ -270,14 +307,28 @@ handoff file's example-agnostic summary. As of this writing:
   fixed along the way (missing tokenizer chars, int/real literal typing)
   — see `run_mutation_suite_renal.py`'s module docstring.
 - **All six Gate C1–C6 pipeline steps are now built and confirmed —
-  this example's Phase 2 is done.** What remains: the named,
-  deliberately unbuilt requirements (`REQ-RENAL-3`, `REQ-RENAL-4`,
-  `REQ-RENAL-6`, `REQ-RENAL-7`) and `REQ-RENAL-8`'s classification-flag
-  provenance question (reclassified as a Phase 3 concern, not a Phase 2
-  blocker).
+  this example's Phase 2 is done.** The named, deliberately unbuilt
+  requirements (`REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`,
+  `REQ-RENAL-7`) and `REQ-RENAL-8`'s classification-flag provenance
+  question remain unbuilt, but are no longer blocking anything — see
+  Phase 3 below.
+- **Phase 3 (evidence packaging) built, 2026-07-11.**
+  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
+  committed — 9 requirement rows: REQ-RENAL-1/1a/2/5 with real dafny
+  evidence (`AssessRenalFunction` dual-cited to both REQ-RENAL-1 and
+  REQ-RENAL-2, matching the `.dfy` file's own inline citation),
+  REQ-RENAL-3/4/6/7 as honest GAP rows intending `PROVEN` (real future
+  formalization candidates), REQ-RENAL-8 as a GAP row intending
+  `DECLARED` (a permanent trust-boundary decision, not a proof target —
+  a deliberately different treatment, not the same gap category). Built
+  against a Dafny-only metadata file — the first time this repo's
+  evidence-packaging pipeline has faced zero crosshair/concrete_test
+  evidence, which found and fixed three real gaps in shared code (see
+  `KNOWN_LIMITATIONS.md`'s "Phase 3" section). 9 new tests,
+  `tests/test_renal_adjustment_matrix.py`.
 
-**`examples/drug_interaction_checker/` — Phase 2 underway, all six
-Gates C1–C6 built or confirmed.** Read
+**`examples/drug_interaction_checker/` — Phase 2 done, all six
+Gates C1–C6 built and confirmed. Phase 3 also built, 2026-07-11.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -366,11 +417,26 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   "source gap" — the precondition itself was always correct). See
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C6 sign-off" section.
 - **All six Gate C1–C6 pipeline steps built and confirmed for this
-  example — Gate C6 is closed.** What remains:
-  two explicitly out-of-scope v2 items, not built:
-  `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
-  cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction
-  targets, staged as v2 — "both but in order of difficulty").
+  example — Gate C6 is closed.** Two explicitly out-of-scope v2 items
+  remain unbuilt: `REQ-DDI-5` (an indication-dependent axis for two
+  agents' apixaban cells) and `REQ-DDI-6` (proving the specific numeric
+  dose-reduction targets, staged as v2 — "both but in order of
+  difficulty").
+- **Phase 3 (evidence packaging) built, 2026-07-11.**
+  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
+  committed — 6 requirement rows: REQ-DDI-1/2/3/4 all sharing the SAME
+  one `dafny_captures_index.json` entry (the first
+  many-requirements-to-one-proof binding this repo's matrix binder has
+  ever been exercised against — confirmed working end to end, not
+  assumed from the schema allowing it in principle), REQ-DDI-5/6 as
+  honest GAP rows intending `PROVEN`. Built first (the simpler,
+  single-capture shape), ahead of `renal_adjustment`'s own Phase 3 build
+  — this is where the three real shared-code gaps (`--manifest`/
+  `--concrete` hard-required, schema's `crosshair_bounds` hard-required,
+  schema's `id` pattern rejecting lowercase) were actually found and
+  fixed, before `renal_adjustment`'s own build benefited from the
+  already-fixed pipeline. See `KNOWN_LIMITATIONS.md`'s "Phase 3"
+  section. 6 new tests, `tests/test_drug_interaction_checker_matrix.py`.
 
 ## One thing explicitly left open, not forgotten
 
@@ -473,7 +539,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  190 as of this writing.
+  205 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch

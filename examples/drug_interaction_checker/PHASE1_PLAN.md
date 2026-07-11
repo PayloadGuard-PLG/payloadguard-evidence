@@ -81,6 +81,23 @@ sections for the full account.
 Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read
 that file for the general pattern this one follows.
 
+**Phase 3 (evidence packaging) also built 2026-07-11** —
+`metadata.a.yaml`, `dafny_captures_index.json`, and
+`traceability_matrix.a.json`/`.md` committed: 6 requirement rows,
+REQ-DDI-1/2/3/4 all sharing the one real `CheckInteraction` proof
+(the first time this repo has exercised a many-requirements-to-one-proof
+binding), REQ-DDI-5/6 as honest GAP rows intending `PROVEN` (deferred
+v2 work — the indication axis and numeric dose targets — both real
+future formalization candidates, not permanent trust-boundary
+decisions). Building this against a Dafny-only metadata file (zero
+crosshair/concrete_test evidence) found and fixed three real gaps in
+shared code (`evidence/cli.py`'s hard-required `--manifest`/`--concrete`
+flags, the metadata schemas' unconditionally-required
+`toolchain.crosshair_bounds`, and the schemas' lowercase-rejecting `id`
+pattern) — see `KNOWN_LIMITATIONS.md`'s "Phase 3 — evidence packaging"
+section for the full account. 6 new tests,
+`tests/test_drug_interaction_checker_matrix.py`.
+
 ## Objective
 
 Third worked example, PayloadGuard-Evidence's third independent
