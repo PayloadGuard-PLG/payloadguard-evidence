@@ -8,8 +8,26 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-11 — Two named-not-fixed items closed, both
-surfaced (but deliberately left open) by the documentation audit just
+**Last updated:** 2026-07-11 — Scoped `REQ-RENAL-8` (classification-flag
+provenance) and made the honest framing refinement its scoping implied.
+Structural finding worth knowing: as the system stands, REQ-RENAL-8 can
+only ever be a GAP — the schema's evidence-method enum is
+`['crosshair', 'concrete_test', 'dafny']` with no `declared` method, and
+no binder produces a *realized* `DECLARED` record, so `DECLARED` is only
+ever an intent. Steven's decision: leave the row an explicit GAP while
+he gathers the real-world process data (who populates the flags —
+clinician form / EHR lookup / static list) by talking to people; don't
+build DECLARED-evidence machinery yet. The only change made was a
+framing fix (no code): the docs had called this "permanent, nobody ever
+intends to resolve," conflating the trust boundary (permanently never a
+Dafny proof — true) with the provenance answer (being actively gathered
+— so "parked pending data," not "permanent"). Refined across
+`metadata.a.yaml` (+ matrix regenerated), `KNOWN_LIMITATIONS.md`,
+`renal_adjustment/README.md`, `PHASE1_PLAN.md`, this file, and the matrix
+test's docstrings. Full account: `DEVLOG.md`'s top 2026-07-11 entry. 205
+tests pass. **Prior update, preserved below** — Two named-not-fixed
+items closed, both
+surfaced (but deliberately left open) by the documentation audit further
 below. **`dosage_calculator/artifact_index.json`'s stale provenance
 hashes for `dosage.dfy`/`run_manifest_dafny.json` are fixed** — root
 cause was a real, legitimate `dosage.dfy` edit (commit `0dc2715`,
@@ -477,9 +495,16 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
 
 1. **Classification-flag provenance** (`REQ-RENAL-8`): who sets
    `SelectFormula`'s caller-supplied boolean flags, by what process.
-   Reclassified as a Phase 3 integration concern, not a Phase 2 proof
-   blocker — doesn't block the Dafny work, but is a real open item for
-   whenever Phase 3 (evidence packaging) starts.
+   The trust boundary itself is permanent and will never be a Dafny
+   proof target; the open part is only the operational process
+   (clinician form / EHR lookup / static versioned list). Scoped
+   2026-07-11: **Steven is actively gathering that real-world process
+   data** (talking to the relevant people), so the Phase 3 matrix row is
+   deliberately parked as an explicit `DECLARED`-intent GAP until it's
+   in hand — parked, not abandoned. When the answer lands it will be a
+   DECLARED process fact packaged as evidence, not a proof. No code
+   change was made or needed to leave the GAP honest; see
+   `KNOWN_LIMITATIONS.md`'s "Phase 3 — evidence packaging" section.
 
 **Closed, 2026-07-09 — CrCl/eGFR value computation** (Gate 1c "Finding
 1"): Cockcroft-Gault CrCl is now computed

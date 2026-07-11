@@ -6,6 +6,57 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-11 — Scoped REQ-RENAL-8 (classification-flag provenance): decision to leave an explicit GAP, framing refined from "permanent" to "parked pending data"
+
+Direct instruction: "scope out REQ-RENAL-8's classification-flag
+provenance." Entered plan mode, ran a documentation-history Explore
+agent, and read the spec/schema/binder directly. The scoping surfaced a
+real structural finding worth recording: **REQ-RENAL-8 can never render
+as anything but a GAP as the system currently stands.** The schema's
+evidence-method enum is exactly `['crosshair', 'concrete_test',
+'dafny']` — there is no `declared` method — and while `DECLARED` exists
+in the `Strength` enum with a caveat, no binder ever produces a
+*realized* `DECLARED` record. So `DECLARED` is only ever an intent,
+never a realized strength; a legitimate evidence level per the repo's
+own taxonomy (README's ladder lists it) with no path to actually
+realize it. Closing REQ-RENAL-8 therefore splits into two genuinely
+separate things: (a) the real-world process decision — who populates
+`SelectFormula`'s flags (clinician form / EHR lookup / static versioned
+list) — which is Steven's, not code's; and (b) machinery to represent a
+DECLARED decision as bound evidence rather than a bare GAP (a new
+shared-code path, the untrodden ground the Phase 3 plan already
+flagged).
+
+Put the fork to Steven (permanent honest GAP / add a real DECLARED
+evidence path / prose-only decision). **His call: "I'll try and get the
+data, it doesn't need to be immediate if we can explicitly leave the gap
+until I talk to people."** So: no machinery built, no process answer
+forced — the row stays an explicit GAP while he gathers the real data by
+talking to the relevant people.
+
+The one honest refinement that decision implied, and that this session
+made (no code change): the docs had framed REQ-RENAL-8 as *permanent —
+"nobody ever intends to resolve"* the provenance question, conflating
+two things that are actually separate. The **trust boundary** (flags
+caller-supplied, never computed or proven inside the spec) is permanent
+and will never be a Dafny proof target — that stays. But the
+**provenance answer** is *not* permanently unresolvable; Steven is
+actively gathering it, and it will land as a DECLARED process fact, not
+a proof. Refined that framing across `metadata.a.yaml` (REQ-RENAL-8
+`text`, then the matrix regenerated via `evidence.cli`, not hand-edited
+— only `requirement_text` and `generated_utc` changed, the derived
+"intended DECLARED, realized GAP" note untouched), `KNOWN_LIMITATIONS.md`
+(three spots), `examples/renal_adjustment/README.md`, `PHASE1_PLAN.md`
+(fallback section + requirements row), `HANDOFF.md`, and
+`tests/test_renal_adjustment_matrix.py` (docstrings; one test renamed
+from `..._is_a_permanent_declared_gap...` to
+`..._is_a_declared_gap_parked_for_process_data...`, assertions
+unchanged — still GAP, still DECLARED intent). The `intended_method:
+DECLARED` label and the distinction from REQ-RENAL-3/4/6/7's PROVEN-intent
+gaps both stay correct. Dated snapshot `dashboards/status-findings.html`
+deliberately left as-is per its own "regenerate, don't trust" discipline.
+205 tests pass, no regressions.
+
 ## 2026-07-11 — Two named-not-fixed items closed: dosage_calculator's stale provenance hash, drug_interaction_checker's missing README
 
 Direct instruction, following straight on from the documentation-audit

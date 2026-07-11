@@ -6,9 +6,10 @@ pipeline works end to end for this example's one-row-per-function shape
 REQ-RENAL-1, REQ-RENAL-2 inline citation), and two distinct kinds of
 deliberately-unbuilt requirement: REQ-RENAL-3/4/6/7 (prose only, a real
 future Dafny-formalization candidate - intended_method PROVEN) and
-REQ-RENAL-8 (a permanent trust-boundary/process decision that will never
-be Dafny-checkable - intended_method DECLARED). Both render as honest
-GAP rows either way, but with different note text.
+REQ-RENAL-8 (a permanent trust boundary that will never be
+Dafny-checkable, whose provenance answer is parked pending real-world
+process data - intended_method DECLARED). Both render as honest GAP rows
+either way, but with different note text.
 
 Like drug_interaction_checker's own matrix test, this example omits
 --manifest/--concrete entirely (no crosshair/concrete_test evidence
@@ -154,13 +155,16 @@ def test_prose_only_requirements_render_as_honest_gaps_intending_proven():
         assert "intended PROVEN, realized GAP" in row["notes"]
 
 
-def test_req_renal_8_is_a_permanent_declared_gap_not_a_proof_target():
-    """REQ-RENAL-8 (classification-flag provenance) is a deliberate,
-    permanent trust-boundary/process decision - genuinely different from
-    REQ-RENAL-3/4/6/7's "not yet formalized" gaps, since nobody ever
-    intends to Dafny-prove who populates a caller-supplied boolean.
-    intended_method DECLARED, so the note correctly reads "intended
-    DECLARED, realized GAP", not PROVEN."""
+def test_req_renal_8_is_a_declared_gap_parked_for_process_data_not_a_proof_target():
+    """REQ-RENAL-8 (classification-flag provenance): its trust boundary
+    is permanent and will never be a Dafny proof target - genuinely
+    different from REQ-RENAL-3/4/6/7's "not yet formalized" gaps, since
+    nobody ever intends to Dafny-prove who populates a caller-supplied
+    boolean. Its provenance answer is parked pending real-world process
+    data (being gathered 2026-07-11), so it stays a GAP for now; when it
+    lands it will be a DECLARED process fact, not a proof. intended_method
+    DECLARED, so the note correctly reads "intended DECLARED, realized
+    GAP", not PROVEN."""
     matrix = json.loads((ART_DIR / "traceability_matrix.a.json").read_text())
     row = _row(matrix, "REQ-RENAL-8")
     assert row["intent_ok"] is False

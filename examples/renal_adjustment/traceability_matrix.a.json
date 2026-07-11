@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
-  "generated_utc": "2026-07-11T15:16:49.923490+00:00",
+  "generated_utc": "2026-07-11T19:19:30.544590+00:00",
   "tool_versions": {
     "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
   },
@@ -205,7 +205,7 @@
     },
     {
       "requirement_id": "REQ-RENAL-8",
-      "requirement_text": "SelectFormula's boolean drug-classification inputs are caller-supplied, not computed inside renal_adjustment.dfy - a deliberate, permanent trust-boundary decision (MHRA's own drug lists are illustrative, not closed or exhaustive; hardcoding them would embed a false-completeness claim inside a formally \"proven\" artifact), not a temporary gap awaiting future formalization. Who populates the flags operationally (clinician form / EHR lookup / static list) is reclassified as a Phase 3 integration concern, not a proof question - see PHASE1_PLAN.md's \"Still open\" section.",
+      "requirement_text": "SelectFormula's boolean drug-classification inputs are caller-supplied, not computed inside renal_adjustment.dfy - a deliberate, permanent trust boundary (MHRA's own drug lists are illustrative, not closed or exhaustive; hardcoding them would embed a false-completeness claim inside a formally \"proven\" artifact). The trust boundary itself is settled and will never be a Dafny proof target. What remains open is only who populates the flags operationally (clinician form / EHR lookup / static list) - a real-world process decision, currently being gathered and deliberately parked as an explicit GAP until that data is in hand. Even once it lands it will be a DECLARED process fact, not a proof (contrast REQ-RENAL-3/4/6/7, which await Dafny formalization). See PHASE1_PLAN.md's \"Still open\" section.",
       "code_location": "none - a process decision, not a Dafny-checkable claim",
       "evidence": [],
       "intent_ok": false,
