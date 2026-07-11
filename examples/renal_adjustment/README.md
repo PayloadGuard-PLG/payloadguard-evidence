@@ -303,9 +303,13 @@ Not resolved here — named, not guessed at, per this repo's discipline:
 1. **`REQ-RENAL-8` classification-flag provenance.** Who sets
    `SelectFormula`'s caller-supplied boolean flags
    (`isDirectActingOralAnticoagulant`, etc.), by what process (clinician
-   form, EHR lookup, static versioned list). Reclassified as a Phase 3
-   integration concern, not a Phase 2 proof blocker — the proof itself
-   doesn't need it resolved.
+   form, EHR lookup, static versioned list). The trust boundary itself
+   is settled and permanent (the flags are caller-supplied, never proven
+   inside the spec); what's open is only the operational process, which
+   the proof itself doesn't need resolved. As of 2026-07-11 that process
+   data is being actively gathered — the row is deliberately parked as an
+   explicit GAP until it's in hand, and will resolve to a DECLARED
+   process fact rather than a Dafny proof.
 2. **CKD-EPI eGFR computation** remains caller-supplied, not because
    it's unscoped but because it's empirically unprovable in this
    toolchain — see the 2026-07-10 amendment above (`run_verify_pow_probes.py`).

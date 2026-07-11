@@ -139,7 +139,7 @@ directly by WebFetch earlier in this work and are cited as such below).
 | REQ-RENAL-5 | Monotonicity and bound composition against `dosage.dfy`'s existing clamp, via a new, explicitly built and proven function, `ComposedCeiling` (see Gate 1b) — the more conservative of the two bounds provably wins. **Settled as a built, proven function, not left as prose or a caller convention.** | Design invariant; `ComposedCeiling` checked directly against `dosage.dfy`'s actual `CalculateHourlyDose` signature (single `maxSafeDoseMgPerHr: real` parameter — no internal bound pair to intersect, so composition has to happen upstream of it) and verified against real Dafny 4.11.0, 2026-07-08: 1 verified, 0 errors. |
 | REQ-RENAL-6 | Reassessment flag on rapidly changing renal function (AKI) — a single value must not be treated as authoritative in that situation. Absorbs the "unstable renal function" language originally proposed as part of REQ-RENAL-3, since both describe the same underlying steady-state assumption failing; that half was never independently corroborated by any source fetched (MHRA's actual stated caveat is specifically about rapid change / AKI reassessment, which is this requirement, not a separately-sourced general "unstable" flag). | MHRA Drug Safety Update, vol. 13, issue 3 (Oct 2019); merge decision recorded here rather than left as an unresolved gap in `sources/kdigo-2024-gfr-staging.md`. |
 | REQ-RENAL-7 | For narrow-therapeutic-index drugs specifically (already one of REQ-RENAL-2's five conditions), when the eGFR branch is selected, BSA-nonindexed eGFR (ml/min, not ml/min/1.73m²) may be needed at extremes of body weight — indexed eGFR can over/under-estimate actual drug clearance in very small or large individuals. | KDIGO 2024, p. S164, Practice Point 4.2.4; see `sources/kdigo-2024-gfr-staging.md`. New requirement, not in the original scoping draft. |
-| REQ-RENAL-8 | `SelectFormula`'s boolean drug-classification inputs (`isDirectActingOralAnticoagulant`, `isOnNephrotoxicDrug`, `isNarrowTherapeuticIndexDrug`) are **caller-supplied, not computed inside `renal_adjustment.dfy`.** The proof establishes correct OR-logic branching given the flags — including the case where more than one flag is true simultaneously, which earns an explicit test vector rather than an assumption — not the correctness of the classification itself. Same trust-boundary pattern as the per-drug-factors non-goal, below. Reason: MHRA's own drug lists are illustrative ("such as vancomycin and amphotericin B"), not closed or exhaustive; hardcoding them into the spec would embed a false-completeness claim inside a formally "proven" artifact. | Design/trust-boundary decision, settled 2026-07-08. **Renumbered from a proposed `REQ-RENAL-7` in the uploaded research-findings document to `REQ-RENAL-8`** — `REQ-RENAL-7` was already committed above (BSA de-normalization, KDIGO Practice Point 4.2.4) before that document arrived; flagged and resolved here rather than silently overwritten. This settles *that* the flags are caller-supplied but explicitly does not settle *who* sets them or by what process — see "Still open," below. |
+| REQ-RENAL-8 | `SelectFormula`'s boolean drug-classification inputs (`isDirectActingOralAnticoagulant`, `isOnNephrotoxicDrug`, `isNarrowTherapeuticIndexDrug`) are **caller-supplied, not computed inside `renal_adjustment.dfy`.** The proof establishes correct OR-logic branching given the flags — including the case where more than one flag is true simultaneously, which earns an explicit test vector rather than an assumption — not the correctness of the classification itself. Same trust-boundary pattern as the per-drug-factors non-goal, below. Reason: MHRA's own drug lists are illustrative ("such as vancomycin and amphotericin B"), not closed or exhaustive; hardcoding them into the spec would embed a false-completeness claim inside a formally "proven" artifact. | Design/trust-boundary decision, settled 2026-07-08. **Renumbered from a proposed `REQ-RENAL-7` in the uploaded research-findings document to `REQ-RENAL-8`** — `REQ-RENAL-7` was already committed above (BSA de-normalization, KDIGO Practice Point 4.2.4) before that document arrived; flagged and resolved here rather than silently overwritten. This settles *that* the flags are caller-supplied (permanently, never a proof target) but explicitly does not settle *who* sets them or by what process — that provenance answer is being gathered 2026-07-11, parked as an explicit GAP until in hand, see "Still open," below. |
 
 **Explicit non-goal.** Per-drug numeric dose-reduction factors are not
 sourced or proven in this gate — BNF/SPC/Renal Drug Handbook disagree at
@@ -338,9 +338,18 @@ blocker.** `SelectFormula`'s flags were always caller-supplied
 parameters — the open question is *who* populates them operationally
 (clinician form, EHR lookup, static versioned list), which is an
 external-integration decision the proof itself doesn't need resolved.
-Still a real, unscoped item — not dropped, just correctly placed in
-Phase 3 rather than treated as blocking Phase 2's proof work, which it
-never structurally was.
+Still a real item — not dropped, just correctly placed in Phase 3
+rather than treated as blocking Phase 2's proof work, which it never
+structurally was. **Scoped 2026-07-11** (after Phase 3 packaging built
+it as a `DECLARED`-intent GAP row): the trust boundary is permanent and
+will never be a Dafny proof target, but the provenance answer is *not*
+permanently unresolvable — Steven is actively gathering the real-world
+process data (talking to the relevant people), and the row is
+deliberately parked as an explicit GAP until that data is in hand. When
+it lands it will be a DECLARED process fact, packaged as evidence, not a
+proof — see `KNOWN_LIMITATIONS.md`'s "Phase 3 — evidence packaging"
+section and this repo's scoping conversation for the decision to leave
+the GAP explicit rather than force a premature answer.
 
 ~~2. CrCl/eGFR value computation scope (Gate 1c finding 1).~~
 **Defaulted 2026-07-08 to caller-supplied for both formulas in Phase 2

@@ -123,13 +123,17 @@ requirements:
     text: >
       SelectFormula's boolean drug-classification inputs are
       caller-supplied, not computed inside renal_adjustment.dfy - a
-      deliberate, permanent trust-boundary decision (MHRA's own drug
-      lists are illustrative, not closed or exhaustive; hardcoding them
-      would embed a false-completeness claim inside a formally "proven"
-      artifact), not a temporary gap awaiting future formalization. Who
-      populates the flags operationally (clinician form / EHR lookup /
-      static list) is reclassified as a Phase 3 integration concern, not
-      a proof question - see PHASE1_PLAN.md's "Still open" section.
+      deliberate, permanent trust boundary (MHRA's own drug lists are
+      illustrative, not closed or exhaustive; hardcoding them would
+      embed a false-completeness claim inside a formally "proven"
+      artifact). The trust boundary itself is settled and will never be
+      a Dafny proof target. What remains open is only who populates the
+      flags operationally (clinician form / EHR lookup / static list) -
+      a real-world process decision, currently being gathered and
+      deliberately parked as an explicit GAP until that data is in hand.
+      Even once it lands it will be a DECLARED process fact, not a proof
+      (contrast REQ-RENAL-3/4/6/7, which await Dafny formalization). See
+      PHASE1_PLAN.md's "Still open" section.
     implementation: "none - a process decision, not a Dafny-checkable claim"
     intended_method: DECLARED
 toolchain: {}
