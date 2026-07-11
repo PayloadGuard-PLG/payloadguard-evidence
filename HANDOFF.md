@@ -151,15 +151,34 @@ an inline `REQ-DDI-*` citation — unlike `dosage.dfy`/`renal_adjustment.dfy`'s
 per-clause style, this spec is validated as a whole lookup table, so
 every `*(no requirement cited)*` is accurate, flagged explicitly for
 Steven to confirm at sign-off. Presented in
-`examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`
-— **pending Steven's review, not yet confirmed**, same discipline as
-`renal_adjustment`'s own still-open Gate C6 sign-off above. 3 new/changed
+`examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`.
+3 new/changed
 tests in `tests/test_dafny_nl_summary.py`, 190 total (up from 188). See
-`KNOWN_LIMITATIONS.md`'s "Phase E Gate C6" section. **All six Gate C1–C6
-pipeline steps have now been built or confirmed for this example** —
-what remains is Steven's actual sign-off decision (recorded in the
-`nl_confirmation_*.md` document, not this file), plus the explicitly
-out-of-scope v2 items (`REQ-DDI-5`/`REQ-DDI-6`).
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C6" section.
+
+**Seventh same-day addendum: Gate C6 sign-off confirmed by Steven —
+against the raw source directly, and it caught a real doc-accuracy bug
+in the sign-off document's own text along the way.** Not a rubber
+stamp: Steven checked the sign-off document's four numbered items
+against `sources/sps-doac-interactions-2024.md` directly and found item
+1 mislabeled the precondition's exclusion as apixaban's "real source
+gap" — that phrase belongs to a different, genuinely-silent cell
+(apixaban+dronedarone), already correctly labeled that way in both the
+`.dfy` spec and the STP suite. The precondition's actual exclusion
+(`Apixaban` + `{Rifampicin, Carbamazepine, Phenytoin, Phenobarbital}`)
+is indication-dependent, not silence — confirmed verbatim against source
+lines 80-84/135-136: "use apixaban with caution" for two named
+indications, an explicit branch v1 doesn't model (`REQ-DDI-5`). Fixed in
+the sign-off document (no `.dfy` change needed — the precondition was
+always correct, only the rationale needed tightening). Every other
+sign-off item was independently re-verified against the real source, not
+taken on faith, and a programmatic cross-reference confirmed the 60
+`ensures` clauses, the NL summary, and the STP suite's 11 lemmas are
+mutually consistent. Full account: `KNOWN_LIMITATIONS.md`'s "Phase E
+Gate C6 sign-off" section. **All six Gate C1–C6 pipeline steps have now
+been built AND confirmed for this example — Gate C6 is closed.** What
+remains is only the explicitly out-of-scope v2 items
+(`REQ-DDI-5`/`REQ-DDI-6`).
 
 ## What this repo is, in one paragraph
 
@@ -308,11 +327,14 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   formatting, so reformatting would have meant re-committing all three
   for a cosmetic change). Verified end-to-end against the real spec;
   presented for sign-off in
-  `nl_confirmation_drug_interaction_checker_dfy.md` — **pending
-  Steven's review, not yet confirmed**. See `KNOWN_LIMITATIONS.md`'s
-  "Phase E Gate C6" section.
-- All six Gate C1–C6 pipeline steps built or confirmed for this
-  example. What remains: Steven's actual Gate C6 sign-off decision, and
+  `nl_confirmation_drug_interaction_checker_dfy.md` — **confirmed by
+  Steven, against the raw source directly**, which caught and fixed a
+  real doc-accuracy bug in the sign-off document's own text (item 1
+  mislabeled an indication-dependent precondition exclusion as apixaban's
+  "source gap" — the precondition itself was always correct). See
+  `KNOWN_LIMITATIONS.md`'s "Phase E Gate C6 sign-off" section.
+- **All six Gate C1–C6 pipeline steps built and confirmed for this
+  example — Gate C6 is closed.** What remains:
   two explicitly out-of-scope v2 items, not built:
   `REQ-DDI-5` (an indication-dependent axis for two agents' apixaban
   cells) and `REQ-DDI-6` (proving the specific numeric dose-reduction

@@ -156,9 +156,21 @@ deliberately rather than skimming past:
 
 1. **The precondition's exact scope.** It excludes exactly
    `(Apixaban, {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})` —
-   confirm this still matches the intended Gate 1c Finding 2 resolution
-   (apixaban's real source gap for these four enzyme-inducer interactions,
-   not assumed safe by omission).
+   confirm this still matches the intended Gate 1c Finding 2 resolution.
+   **Correction, 2026-07-10**: an earlier draft of this item mislabeled
+   this as apixaban's "real source gap" — that phrase is reserved
+   elsewhere in this repo's own docs (correctly) for apixaban+dronedarone,
+   where the source never mentions apixaban at all. This precondition's
+   exclusion is a different thing: the source *does* address apixaban
+   for these four agents — "use apixaban with caution" — but only for
+   two named indications (AF stroke prevention; recurrent DVT/PE
+   prevention), an explicit indication-dependent branch v1 doesn't model
+   (`REQ-DDI-5`), not silence. Confirmed verbatim against
+   `sources/sps-doac-interactions-2024.md` lines 80-84 (rifampicin) and
+   135-136 (carbamazepine/phenytoin/phenobarbital), which the source
+   itself flags as sharing "the same indication-dependent structure."
+   The precondition itself was never wrong — it correctly excludes this
+   region either way — only this item's own rationale needed tightening.
 2. **Postconditions 27/28** are the one caller-supplied-flag-conditional
    pair (`hasOtherBleedingRiskFactors` true vs. false for
    Dabigatran+SSRIOrSNRI) — confirm the direction (flag true → dose
@@ -178,6 +190,45 @@ deliberately rather than skimming past:
 
 ## Decision
 
-**Pending Steven's review** — presented, not yet confirmed. Per this
-repo's standing discipline (`HANDOFF.md`), this document is not to be
-treated as closed until an actual recorded decision is added here.
+**Confirmed, 2026-07-10** — Steven, against the raw SPS source directly,
+addressing all four items above:
+
+1. **Precondition scope** — confirmed correct as written. The item-1
+   correction above stands: the exclusion is indication-dependent
+   (source explicitly addresses apixaban here, conditionally), not
+   source silence. Both reasons independently justify v1's exclusion of
+   this cell; the precondition makes it a provable exclusion at every
+   call site, not a silently-wrong default, regardless of which reason
+   applies.
+2. **Postconditions 27/28 (Dabigatran+SSRIOrSNRI)** — direction
+   confirmed against `sources/sps-doac-interactions-2024.md` lines
+   96-102: dose reduction is conditional on the caller-supplied
+   bleeding-risk-factor flag exactly as the source states it, no mg
+   figure given (defers to the SmPC, matching `REQ-DDI-6`'s v2 scoping).
+3. **Postconditions 36/40 (Contraindicated)** — confirmed against
+   `sources/sps-doac-interactions-2024.md` lines 113-121:
+   itraconazole/ketoconazole are "contraindicated with dabigatran"
+   verbatim. Separately, the three `CautionLowRelevance` cells
+   (verapamil+rivaroxaban, verapamil+apixaban, fluconazole+rivaroxaban)
+   were independently re-checked against lines 57-58 and 104-111:
+   "unlikely to be clinically relevant" (verapamil) and "not considered
+   to be clinically relevant" (fluconazole) — confirmed verbatim, and
+   correctly distinct from both unqualified `Caution` and digoxin's
+   clean `NoInteractionExpected`.
+4. **Whole-table validation model** — confirmed correct. The source
+   states its own scope explicitly (line 26: "not comprehensive for all
+   potential interactions"), making a per-clause `REQ-ID` citation false
+   precision; validating `CheckInteraction` against the source as a
+   whole structured table is the right model for this spec's shape,
+   unlike `dosage.dfy`/`renal_adjustment.dfy`'s per-clause citations.
+
+**Cross-reference check (2026-07-10, before closing this sign-off):**
+`CheckInteraction`'s 60 `ensures` clauses, this NL summary, and the
+11-lemma STP suite (`drug_interaction_checker_stp_suite.dfy`) were
+checked against each other programmatically, not just re-read — every
+one of the STP suite's 7 ACCEPT lemmas' claimed outcome matches exactly
+one real `ensures` clause, and every one of its 4 REJECT lemmas' claimed
+(wrong) outcome is confirmed genuinely absent from the real `ensures`
+clauses for that cell. All mutually consistent; no drift found.
+
+Gate C6 is now closed for `drug_interaction_checker.dfy`.
