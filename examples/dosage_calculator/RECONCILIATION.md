@@ -54,15 +54,20 @@ facts in different shapes.
    parents, C-symbolic, and C-concrete
    (REQ-GIP-1-4-12 false / REQ-GIP-1-8-1 false / REQ-DOSE-003 true),
    and the same-facts check still holds (7 facts, set-equal).
-2. **Binding authorship differs — OPEN, deferred to Phase B.** In A and
-   B the requirement↔evidence binding is authored in the metadata file
+2. **Binding authorship differs — RESOLVED by Gate 4 (2026-07-05):
+   option 3, both models cross-checked.** In A and B the
+   requirement↔evidence binding is authored in the metadata file
    (evidence arrays / shadow entries); in C the concrete binding is
    carried by the evidence store itself (`requirement_id` in each
    concrete_results.json case) and the metadata is byte-identical in
-   facts to the base file. Same facts, different place of authorship —
-   affects who can introduce a binding error and where a reviewer must
-   look. Per the Phase A closeout ruling this is explicitly NOT fixed
-   here; Phase B (vocabulary-agnostic binder) owns the decision.
+   facts to the base file. Rather than picking one authorship model over
+   the other, the decision (`KNOWN_LIMITATIONS.md`'s "Gate 4" section)
+   keeps both: metadata declarations are authoritative where present,
+   store-carried ids are validated against them, and a disagreement is a
+   hard generation failure (Tier 1) — this is Gate 2's Type 1 CONFLICT
+   check, built in `evidence/conflict.py` and folded into
+   `build_matrix()`. Same facts, different place of authorship, now a
+   consistency check rather than an open asymmetry.
 3. **B duplicates inputs into prose.** Shadow requirement `text` fields
    restate the case inputs/expected that also exist structurally in
    concrete_results.json (and in B's own row fields). Redundant but

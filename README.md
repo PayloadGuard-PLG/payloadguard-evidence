@@ -237,7 +237,7 @@ word.
   requirement traces back to, archived so a claim can always be checked
   against the actual document, not a paraphrase of it.
 - **`tests/`** — the automated regression suite protecting every rule
-  above (190 tests as of this writing).
+  above (205 tests as of this writing).
 
 ## Quick start
 
@@ -273,14 +273,15 @@ reference for operating this system.
   caught and fixed a real inaccuracy in its own supporting text before
   being recorded. The worked example above walks this one through every
   gate with real, verbatim evidence.
-- **Renal-function dose adjustment**: nearly complete. Clinical sourcing
-  and the formal specification (proof, spec-lint, mutation testing) are
-  all built and proof-checked, including a proven Cockcroft-Gault CrCl
+- **Renal-function dose adjustment**: complete. All six verification
+  gates built and confirmed, including a proven Cockcroft-Gault CrCl
   computation from raw patient inputs; CKD-EPI eGFR remains
   caller-supplied (a real Dafny/Z3 expressiveness gap, confirmed
-  empirically, not a choice). The only thing left is the recorded human
-  sign-off for the plain-English confirmation step — presented, not yet
-  rubber-stamped.
+  empirically, not a choice). The Gate C6 human sign-off is recorded —
+  reviewed against the raw KDIGO/MHRA sources directly, not
+  rubber-stamped. The named, deliberately unbuilt requirements
+  (`REQ-RENAL-3/4/6/7`, `REQ-RENAL-8`'s classification-flag provenance)
+  remain open but no longer block anything.
 - Full, dated build history: [`DEVLOG.md`](DEVLOG.md). Current open
   items and known gaps: [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
 

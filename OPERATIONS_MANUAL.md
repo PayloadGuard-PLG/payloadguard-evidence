@@ -33,10 +33,11 @@ payloadguard-evidence/
 │   ├── dafny_mutate.py        Mutation-testing engine for Dafny specs
 │   └── citation_gate.py       Mechanical citation verification (§4.7)
 ├── examples/
-│   ├── dosage_calculator/     Worked example 1 (complete)
-│   └── renal_adjustment/      Worked example 2 (in progress)
+│   ├── dosage_calculator/          Worked example 1 (complete)
+│   ├── renal_adjustment/           Worked example 2 (complete)
+│   └── drug_interaction_checker/   Worked example 3 (complete)
 ├── sources/                   Primary source documents, archived verbatim
-└── tests/                     Regression suite (154 tests)
+└── tests/                     Regression suite (205 tests)
 ```
 
 `evidence/` is deliberately vocabulary-agnostic: nothing in it knows
@@ -442,6 +443,14 @@ python -m evidence.cli build --variant a \
     --out-json /tmp/out.json --out-md /tmp/out.md
 # --dafny-captures <path> is required once the target metadata declares
 # any method: dafny evidence.
+
+# --manifest and --concrete are optional (2026-07-11) - omit both for a
+# Dafny-only example with zero crosshair/concrete_test evidence, as
+# renal_adjustment and drug_interaction_checker both are:
+python -m evidence.cli build --variant a \
+    --metadata examples/renal_adjustment/metadata.a.yaml \
+    --dafny-captures examples/renal_adjustment/dafny_captures_index.json \
+    --out-json /tmp/out.json --out-md /tmp/out.md
 
 # --- Raw Dafny commands, useful when developing a new spec ---
 dafny verify path/to/spec.dfy                      # verify a spec directly
