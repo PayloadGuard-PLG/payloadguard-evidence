@@ -42,11 +42,11 @@ to be rediscovered.
 | Reason class | Where to look |
 |---|---|
 | Intent mismatches | rows with `intent_ok: false` and their notes (e.g. `intended PROVEN, realized BOUNDED_CHECKED, EXAMPLE_CHECKED`) |
-| GAP rows | rows whose strength is `GAP` (no evidence bound; currently none) |
+| GAP rows | rows whose strength is `GAP` (no evidence bound) — as of 2026-07-11, `examples/renal_adjustment/traceability_matrix.a.json` (`REQ-RENAL-3/4/6/7/8`) and `examples/drug_interaction_checker/traceability_matrix.a.json` (`REQ-DDI-5/6`) are the first artifacts to carry real ones; each row's `notes` state whether it's `intended PROVEN, realized GAP` (a real future formalization candidate) or `intended DECLARED, realized GAP` (a permanent, non-provable decision) |
 | DECLARED-strength records | metadata fields marked DECLARED (e.g. safety classification rationale, REQ-DOSE-003 provenance) |
 | Bounds block | each matrix's `bounds` field: declared (intent) vs effective (demonstrated) plus the enforcement note (`max_iterations`/`seed` not CLI-enforceable at crosshair-tool 0.0.107) |
 | Honesty exhibits | `exhibit_pin_naive_widening.json` / `exhibit_pin_overflow_probe.json` — the paired measurement scoping what BOUNDED_CHECKED can miss; claims are version-contingent |
-| Open reconciliation asymmetries | `examples/dosage_calculator/RECONCILIATION.md` — currently: binding authorship (deferred to Phase B) |
+| Open reconciliation asymmetries | `examples/dosage_calculator/RECONCILIATION.md` — currently: B's shadow rows duplicating case inputs/expected into prose (finding 3), and variant C's single-evidence-type acceptance property being enforced by construction but not yet exercised by this dataset (finding 4). Binding authorship (the former finding 2) was resolved by Gate 4 (`KNOWN_LIMITATIONS.md`) — no longer open. |
 
 ## Not reviewable as findings
 

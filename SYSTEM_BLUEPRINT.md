@@ -1,6 +1,29 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-11 (`renal_adjustment.dfy`'s Gate C6 sign-off
+Last updated: 2026-07-11 (Phase 3 — evidence packaging — built for
+`renal_adjustment` and `drug_interaction_checker`, the first two
+Dafny-only examples to reach this stage. Running `evidence.cli build`
+against a metadata file with zero crosshair/concrete_test evidence
+found and fixed three real gaps in shared code: `evidence/cli.py`'s
+`--manifest`/`--concrete` were hard-required all the way down to
+`derive_bounds_block()`'s unconditional `effective_bounds` lookup, now
+optional; the metadata schema's `toolchain.crosshair_bounds` was
+unconditionally required in `metadata.schema.a/b/c.json`, now optional;
+the schema's `id` pattern rejected `REQ-RENAL-1a`'s lowercase suffix,
+widened in all four schema files. A fourth, independent bug
+(`evidence/conflict.py::symbolic_binding_conflicts` missing a `.dfy`
+skip) was fixed in the same pass. `renal_adjustment`: 9 requirement
+rows (REQ-RENAL-1/1a/2/5 with real dafny evidence, REQ-RENAL-3/4/6/7
+as GAP rows intending `PROVEN`, REQ-RENAL-8 as a GAP row intending
+`DECLARED`). `drug_interaction_checker`: 6 requirement rows
+(REQ-DDI-1/2/3/4 sharing one proof, REQ-DDI-5/6 as GAP rows intending
+`PROVEN`). Both matrices are the first in this repo with real GAP rows.
+15 new tests, 205 total (up from 190). See `KNOWN_LIMITATIONS.md`'s
+"Phase 3 — evidence packaging" section for the full account; component-
+map entries for both examples' `schema/`, `conflict.py`, `cli.py`, and
+`render/matrix_variants.py` below are updated accordingly). Prior
+header, preserved: Last updated 2026-07-11 (`renal_adjustment.dfy`'s
+Gate C6 sign-off
 confirmed and closed — Steven checked all six checkpoints
 (RoundHalfUp's tie-break framing, GStage's boundaries, SelectFormula's
 BMI thresholds, the Gate C4 pinning fixes, the eGFR/CrCl split) against
@@ -1179,7 +1202,8 @@ manifest/concrete-store path rather than the hardcoded worked-example
 paths the generator scripts use. See `KNOWN_LIMITATIONS.md` for the live
 gate ledger.
 
-Phase C (in progress): restructured 2026-07-06 from a two-mechanism sketch
+Phase C (COMPLETE — all six Gates C1–C6 built and signed off for
+`dosage_calculator`, see Gate C6 below): restructured 2026-07-06 from a two-mechanism sketch
 into a gate-sequenced plan (Gates C1–C6, build order specified) in
 `payloadguard-evidence-roadmap-phaseB-to-C.md`. Gate C1's Dafny
 toolchain blocker is resolved: Z3 4.16.0 is present and Dafny 4.11.0 was
@@ -1466,7 +1490,8 @@ per-session), `GATE_1C_AUDIT.md`, `gate_c4_stp_plan.md`, `DEVLOG.md`
 conditional-branching logic, using a UK-jurisdiction clinical example
 (renal-function dose adjustment, sourced from MHRA/KDIGO/NICE).
 
-**Status as of 2026-07-09:**
+**Status as of 2026-07-11 (last updated 2026-07-09, extended since — see
+Gate C6 and Phase 3 entries below):**
 
 - Gate 1 (clinical sourcing, spec skeleton, consistency audit): closed,
   under two named, deliberately provisional fallback assumptions — not
@@ -1581,7 +1606,8 @@ distinct from `dosage.dfy`'s arithmetic clamping and
 UK-jurisdiction (NHS Specialist Pharmacy Service DOAC-interaction
 guidance), consistent with `renal_adjustment`'s sourcing convention.
 
-**Status as of 2026-07-10:**
+**Status as of 2026-07-11 (last updated 2026-07-10, extended since — see
+Gate C6 and Phase 3 entries below):**
 
 - Gate 1a (clinical source audit): done. Single primary source (NHS SPS,
   chosen over BNF/MHRA DSU after direct comparison — bounded, versioned,
@@ -1702,13 +1728,6 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   proved 3 such mutants survive) and was corrected in place, left
   visible rather than silently rewritten. Full account:
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section.
-- **Phase 3 (evidence packaging) built, 2026-07-11.**
-  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
-  committed — REQ-DDI-1/2/3/4 (4 rows) all sharing the SAME one dafny
-  evidence entry, the first many-requirements-to-one-proof binding this
-  repo's matrix binder has exercised; REQ-DDI-5/6 render as honest GAP
-  rows (intended `PROVEN`, staged v2). See Section 5's Phase 3 evidence
-  table above.
 - **Gate C6 (NL-dialogue confirmation): built.** `evidence/dafny_nl_summary.py::summarize_method`
   refused outright on first attempt — `CheckInteraction`'s one `requires`
   clause is the first genuinely multi-line clause this repo has pointed
@@ -1743,3 +1762,11 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   `REQ-DDI-6` (proving the specific numeric dose-reduction targets,
   staged as v2 per direct instruction — "both but in order of
   difficulty").
+- **Phase 3 (evidence packaging) built, 2026-07-11**, once all six
+  Gates C1–C6 above were built and confirmed.
+  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
+  committed — REQ-DDI-1/2/3/4 (4 rows) all sharing the SAME one dafny
+  evidence entry, the first many-requirements-to-one-proof binding this
+  repo's matrix binder has exercised; REQ-DDI-5/6 render as honest GAP
+  rows (intended `PROVEN`, staged v2 — the two items named directly
+  above). See Section 5's Phase 3 evidence table above.

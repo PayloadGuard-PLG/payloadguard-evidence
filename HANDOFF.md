@@ -36,8 +36,9 @@ evidence binding and two genuinely different flavors of honest GAP row
 — `PROVEN`-intended for real future formalization candidates vs.
 `DECLARED`-intended for a permanent trust-boundary decision), 6 rows for
 `drug_interaction_checker` (the first many-requirements-to-one-proof
-binding this repo's matrix binder has exercised). 9 new tests, 205
-total (up from 190). Full account: `KNOWN_LIMITATIONS.md`'s "Phase 3 —
+binding this repo's matrix binder has exercised). 15 new tests (9 for
+`renal_adjustment`, 6 for `drug_interaction_checker`), 205 total (up
+from 190). Full account: `KNOWN_LIMITATIONS.md`'s "Phase 3 —
 evidence packaging" section. A separate, pre-existing, unrelated finding
 surfaced during regression testing and deliberately not touched here:
 `dosage_calculator/artifact_index.json`'s committed hash for `dosage.dfy`
