@@ -6,6 +6,85 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-10 — Gate C6 sign-off confirmed for drug_interaction_checker: the review itself caught a real doc-accuracy bug
+
+Same day, later still. Steven's actual Gate C6 review of
+`nl_confirmation_drug_interaction_checker_dfy.md` - not a rubber stamp,
+per this repo's standing rule that a sign-off document is not closed
+until an actual decision is recorded and confirmed against real
+evidence, not just presented.
+
+**A real bug found, in a place worth being precise about.** Steven
+flagged that item 1 of the sign-off document's "worth Steven's
+attention" section, and the fix needed, appeared to conflate two
+distinct exclusion reasons the source itself distinguishes. Investigated
+before accepting the premise, per this repo's own standing discipline
+about not trusting an external claim (or, here, one framed as coming
+from a separate review) without checking it against the real committed
+artifacts first - the same discipline that's caught fabricated
+citations in outside documents before.
+
+The investigation found the bug was real, but narrower than first
+framed: `drug_interaction_checker.dfy`'s own precondition comment
+already correctly says the `(Apixaban, {Rifampicin, Carbamazepine,
+Phenytoin, Phenobarbital})` exclusion is about "clinical indication
+(REQ-DDI-5, not built in v1)" - not a source gap. The STP suite's own
+"real source gap" comment is also already correctly scoped, reserved
+for a different cell entirely (`ApixabanDronedarone`, where the source
+never mentions apixaban at all). Neither the `.dfy` spec nor the STP
+suite needed any change. The actual bug was narrower: item 1 of the
+sign-off document I generated during Gate C6's build had mislabeled the
+precondition's exclusion as apixaban's "real source gap," conflating it
+with the genuinely-silent Dronedarone case - both happen to justify v1
+exclusion, but for materially different reasons, and the source itself
+draws the distinction explicitly.
+
+Confirmed verbatim against `sources/sps-doac-interactions-2024.md`:
+lines 80-84 (rifampicin) and 135-136 (carbamazepine/phenytoin/
+phenobarbital) both state apixaban gets "use apixaban with caution" for
+two named indications specifically (AF stroke prevention; recurrent
+DVT/PE prevention) - an explicit indication-dependent branch, which the
+source's own text (line 84, line 134) flags as sharing "the same
+indication-dependent structure" across both rows. This is categorically
+different from line 53's "Apixaban is never mentioned in this section
+at all - a real gap in the source" for dronedarone. Fixed in place in
+the sign-off document, left visible as a correction rather than
+silently rewritten.
+
+**Every other item in the sign-off was independently re-verified
+against the real source, not accepted on the strength of having been
+written carefully the first time:**
+- `CautionLowRelevance` (verapamil+rivaroxaban, verapamil+apixaban,
+  fluconazole+rivaroxaban) - confirmed verbatim against source lines
+  57-58 ("unlikely to be clinically relevant") and 104-111 ("not
+  considered to be clinically relevant").
+- `Contraindicated` (dabigatran+itraconazole/ketoconazole) - confirmed
+  against source lines 113-121 ("contraindicated with dabigatran").
+- Whole-table validation (no per-clause `REQ-ID` citations) - confirmed
+  correct against the source's own explicit scope statement (line 26:
+  "not comprehensive for all potential interactions"), which is exactly
+  what makes per-clause citation false precision for this spec.
+
+**A programmatic cross-reference, not just a careful re-read.** Wrote a
+short script to check `CheckInteraction`'s 60 `ensures` clauses against
+the STP suite's 11 lemmas directly: every one of the 7 ACCEPT lemmas'
+claimed outcome matches exactly one real `ensures` clause; every one of
+the 4 REJECT lemmas' claimed (wrong) outcome is confirmed genuinely
+absent from the real `ensures` clause for that cell. All three artifacts
+(spec, NL summary, STP suite) mutually consistent; no drift found.
+
+**Gate C6's Decision section recorded, closing the gate for this
+example** - all four numbered sign-off items confirmed, the item-1
+correction noted explicitly rather than silently fixed. Full
+documentation ripple: `SYSTEM_BLUEPRINT.md`, `KNOWN_LIMITATIONS.md`
+(new "Phase E Gate C6 sign-off" section), `HANDOFF.md`, `PHASE1_PLAN.md`.
+
+**All six Gate C1-C6 pipeline steps are now both built and confirmed**
+for `drug_interaction_checker` - the only remaining work on this
+example is the explicitly out-of-scope v2 items, `REQ-DDI-5`/`REQ-DDI-6`.
+
+No `.dfy` file or code changed - docs-only, 190 tests unchanged.
+
 ## 2026-07-10 — Gate C6 for drug_interaction_checker: genuinely extended the shared NL-summary generator, a different call than renal_adjustment's own equivalent gap
 
 Same day, later still. Direct instruction: "buiod out c6 please." First

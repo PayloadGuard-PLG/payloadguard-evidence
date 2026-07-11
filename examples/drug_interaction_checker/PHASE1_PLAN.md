@@ -61,11 +61,23 @@ multi-line clauses (ending accumulation at a blank line, a standalone
 comment line, or the next clause keyword, so a free-floating block
 comment between two clauses is never misattributed as either one's
 citation). Presented for Steven's sign-off in
-`nl_confirmation_drug_interaction_checker_dfy.md` — **pending**, not yet
-confirmed, matching this repo's standing discipline of never
-rubber-stamping a Gate C6 document in the same pass that generated it.
+`nl_confirmation_drug_interaction_checker_dfy.md`, matching this repo's
+standing discipline of never rubber-stamping a Gate C6 document in the
+same pass that generated it — and it wasn't: **Steven's actual review
+(2026-07-10), checking against `sources/sps-doac-interactions-2024.md`
+directly, caught and fixed a real doc-accuracy bug in the sign-off
+document's own text** (item 1 mislabeled the precondition's
+`(Apixaban, {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})`
+exclusion as apixaban's "real source gap" — that's actually
+indication-dependent per the source, distinct from the genuinely-silent
+apixaban+dronedarone cell the `.dfy` spec and STP suite already
+correctly reserve that phrase for). The precondition itself was never
+wrong; a programmatic cross-reference confirmed the 60 `ensures`
+clauses, the NL summary, and the STP suite's 11 lemmas are mutually
+consistent. **Gate C6 is now confirmed and closed for this example.**
 See `KNOWN_LIMITATIONS.md`'s "Phase E Gate C2"/"Phase E Gate
-C3"/"Phase E Gate C5"/"Phase E Gate C6" sections for the full account.
+C3"/"Phase E Gate C5"/"Phase E Gate C6"/"Phase E Gate C6 sign-off"
+sections for the full account.
 Mirrors `examples/renal_adjustment/PHASE1_PLAN.md`'s structure; read
 that file for the general pattern this one follows.
 
@@ -267,9 +279,11 @@ the one item the audit didn't independently re-raise:
   `tests/test_dafny_nl_summary.py` (extended: one obsolete refusal test
   rewritten to reflect the new correct behavior, two new tests added).
   `nl_confirmation_drug_interaction_checker_dfy.md` (new, Gate C6 — the
-  actual sign-off deliverable, currently **pending** Steven's review).
+  actual sign-off deliverable, **confirmed by Steven 2026-07-10**,
+  which caught and fixed a real doc-accuracy bug in the document's own
+  text before the decision was recorded).
 
 Not yet updated: nothing — all six Gate C1–C6 pipeline steps have now
-been built or confirmed for this example. Remaining, explicitly named,
-not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged), and Gate C6's own
-Decision section (pending Steven's actual sign-off, not yet closed).
+been built AND confirmed for this example. Remaining, explicitly named,
+not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged) — the only work left on
+this worked example.

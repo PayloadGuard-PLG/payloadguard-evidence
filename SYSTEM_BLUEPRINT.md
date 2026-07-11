@@ -22,10 +22,14 @@ extended `evidence/dafny_nl_summary.py` to support multi-line clauses
 for the first time — a deliberately different call than
 `renal_adjustment`'s own equivalent gap (fixed there by reformatting the
 spec instead), made because this spec already had Gate C1/C4/C5
-captures bound to its current formatting; its sign-off document is
-presented but still pending Steven's review. See
-`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5"/"Phase E Gate C6" sections. A
-real content
+captures bound to its current formatting; its sign-off document was
+then confirmed by Steven the same day, against the raw source directly
+— which caught and fixed a real doc-accuracy bug in the sign-off
+document's own text (an item mislabeling an indication-dependent
+precondition exclusion as a source "gap"), closing Gate C6 for this
+example. See
+`KNOWN_LIMITATIONS.md`'s "Phase E Gate C5"/"Phase E Gate C6 sign-off"
+sections. A real content
 review earlier the
 same day, not a bare date
 bump: Gate 1c Finding 1's eGFR/Dafny-expressiveness half is now
@@ -707,9 +711,16 @@ payloadguard-evidence/
 │   │                            unclassifiable (genuine Dafny type
 │   │                            errors, not a parser ambiguity)
 │   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
-│                                actual sign-off deliverable. Presented,
-│                                pending Steven's review, not yet
-│                                confirmed. Documents a real tooling
+│                                actual sign-off deliverable. Confirmed
+│                                by Steven 2026-07-10 - closed, not
+│                                rubber-stamped: the review itself
+│                                caught and fixed a real doc-accuracy bug
+│                                in this document's own text (an item
+│                                mislabeling an indication-dependent
+│                                precondition exclusion as apixaban's
+│                                "source gap" - the .dfy spec and STP
+│                                suite already had it right). Also
+│                                documents a real tooling
 │                                extension found along the way:
 │                                CheckInteraction's one requires clause
 │                                is the first genuinely multi-line clause
@@ -1553,10 +1564,15 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   different, byte-precise use of it. Verified end-to-end: all 60
   `ensures` clauses and the one multi-line `requires` clause reconstruct
   correctly. Presented for sign-off in
-  `nl_confirmation_drug_interaction_checker_dfy.md` — **pending
-  Steven's review**, not yet confirmed. 3 new/changed tests, 190 total
+  `nl_confirmation_drug_interaction_checker_dfy.md` — **confirmed by
+  Steven, against the raw source directly, not a rubber stamp**: the
+  review caught and fixed a real doc-accuracy bug in the sign-off
+  document's own text (item 1 mislabeled the precondition's exclusion as
+  apixaban's "source gap"; it's actually indication-dependent per the
+  source, confirmed verbatim — the precondition itself was always
+  correct). 3 new/changed tests, 190 total
   (up from 188). Full account: `KNOWN_LIMITATIONS.md`'s "Phase E Gate
-  C6" section.
+  C6 sign-off" section. **Gate C6 is closed for this example.**
 - Two items explicitly named, not built: `REQ-DDI-5` (an
   indication-dependent third axis for two agents' apixaban cells) and
   `REQ-DDI-6` (proving the specific numeric dose-reduction targets,
