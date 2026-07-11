@@ -8,7 +8,24 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-11 — Phase 3 (evidence packaging) built for
+**Last updated:** 2026-07-11 — Documentation audit: every main doc
+(`README.md`, this file, `OPERATIONS_MANUAL.md`, `SYSTEM_BLUEPRINT.md`,
+`KNOWN_LIMITATIONS.md`, `REVIEW_PROTOCOL.md`, plus
+`examples/dosage_calculator/RECONCILIATION.md`) checked against the
+actual repo state and fixed where wrong, not just re-dated. Real finds:
+an arithmetic bug ("9 new tests" next to a correct "205 total, up from
+190" in three places — 9+6 is 15, not 9), two docs (`README.md`,
+`SYSTEM_BLUEPRINT.md`) still describing `renal_adjustment`/Phase C as
+incomplete or in-progress after they'd actually closed, two docs
+(`REVIEW_PROTOCOL.md`, `RECONCILIATION.md`) still citing the Gate 4
+binding-authorship question as open five weeks after it was resolved,
+and `OPERATIONS_MANUAL.md`'s component map missing
+`drug_interaction_checker` entirely with a 154-test count untouched
+across several sessions' worth of example-adding work. Full account:
+`DEVLOG.md`'s 2026-07-11 "Documentation audit" entry (above the Phase 3
+entry below). PR #33, merged same day; 205 tests pass throughout, no
+regressions. **Prior update, preserved below — Phase 3 (evidence
+packaging) built for
 `renal_adjustment` and `drug_interaction_checker`, the two examples
 whose Phase 2 (Gate C1-C6) closed the same day. `dosage_calculator`'s
 existing pipeline (`metadata.yaml` → `evidence.cli` →
