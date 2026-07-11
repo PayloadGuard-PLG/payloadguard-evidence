@@ -6,7 +6,21 @@ pipeline steps built AND confirmed** (Gate C6's sign-off recorded
 2026-07-11, six checkpoints independently re-verified against the raw
 KDIGO/MHRA sources directly, one unverifiable supporting citation
 flagged rather than absorbed — see
-`nl_confirmation_renal_adjustment_dfy.md`'s Decision section). Gate 1a
+`nl_confirmation_renal_adjustment_dfy.md`'s Decision section). **Phase
+3 (evidence packaging) also built 2026-07-11** — `metadata.a.yaml`,
+`dafny_captures_index.json`, and `traceability_matrix.a.json`/`.md`
+committed: 9 requirement rows, REQ-RENAL-1/1a/2/5 with real dafny
+evidence (`AssessRenalFunction` dual-cited to both REQ-RENAL-1 and
+REQ-RENAL-2, matching its own `.dfy`-file inline citation), REQ-RENAL-3/4/6/7
+as honest GAP rows intending `PROVEN` (real future formalization
+candidates), REQ-RENAL-8 as a GAP row intending `DECLARED` (a permanent
+trust-boundary decision, deliberately not the same treatment as the
+other four). Building this against a Dafny-only metadata file (zero
+crosshair/concrete_test evidence) found and fixed three real gaps in
+shared code (`evidence/cli.py`, the metadata schemas,
+`evidence/conflict.py`) — see `KNOWN_LIMITATIONS.md`'s "Phase 3 —
+evidence packaging" section for the full account. 9 new tests,
+`tests/test_renal_adjustment_matrix.py`. Gate 1a
 and 1b closed; Gate
 1c performed (`examples/renal_adjustment/GATE_1C_AUDIT.md`) and found
 two real gaps, one resolved by redesign (`AssessRenalFunction`'s

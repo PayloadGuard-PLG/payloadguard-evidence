@@ -1,0 +1,135 @@
+# VARIANT A metadata (T4-A) for renal-function dose adjustment.
+# Dafny-only (no crosshair/concrete_test evidence exists for this example -
+# see toolchain below and evidence/cli.py's own docstring for how the
+# pipeline handles that honestly, not by fabricating bounds data).
+# Validated by evidence/schema/metadata.schema.a.json.
+device:
+  name: Renal-Function Dose Adjustment - GFR Staging and Formula Selection (POC)
+  intended_use: >
+    Stage a patient's renal function (KDIGO G1-G5), select the correct
+    formula (eGFR vs. Cockcroft-Gault CrCl) per drug-classification
+    flags, and compose the resulting bound with an existing dose
+    ceiling. Not a full dosing calculator - see REQ-RENAL-3/4/6/7 for
+    named, unbuilt extensions.
+  safety_classification: B
+  classification_rationale: >
+    DECLARED - not assigned by KDIGO or MHRA, which specify clinical
+    thresholds but do not assign IEC 62304 classes or ISO 14971
+    severity/probability scores. Provisional: failure could contribute
+    to a non-serious renal dose-adjustment error given clinician
+    oversight. Requires a manufacturer-specific ISO 14971 risk file
+    before this can be upgraded from DECLARED to sourced.
+requirements:
+  - id: REQ-RENAL-1
+    text: >
+      GFR category assignment: G1 >=90, G2 60-89, G3a 45-59, G3b 30-44,
+      G4 15-29, G5 <15 mL/min/1.73m^2. AssessRenalFunction's tagged-union
+      return type makes staging a Cockcroft-Gault CrCl value (which is
+      never itself G-staged) a type-level impossibility, not a calling
+      convention a future caller has to remember (Gate 1c Finding 2).
+    implementation: renal_adjustment.dfy::GStage
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: GStage
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: AssessRenalFunction
+  - id: REQ-RENAL-1a
+    text: >
+      eGFR is reported rounded to the nearest whole number before
+      staging, shifting the effective continuous G-stage boundaries to
+      89.5/59.5/44.5/29.5/14.5. The base rounding requirement is
+      KDIGO-sourced; the round-half-up tie-break specifically is a
+      named, uncited design decision - KDIGO states no tie-break rule.
+    implementation: renal_adjustment.dfy::RoundHalfUp
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: RoundHalfUp
+  - id: REQ-RENAL-2
+    text: >
+      Formula selection: Cockcroft-Gault CrCl required instead of eGFR
+      for direct-acting oral anticoagulants, nephrotoxic drugs, age
+      >=75, extremes of muscle mass (BMI <18 or >40, strict inequality,
+      verbatim MHRA wording), or narrow-therapeutic-index drugs; eGFR
+      otherwise. On the Cockcroft-Gault branch, CrCl is now computed
+      from raw inputs rather than caller-supplied (Gate 1c Finding 1,
+      closed 2026-07-09 for Cockcroft-Gault only - CKD-EPI eGFR remains
+      caller-supplied, a real Dafny/Z3 expressiveness gap, confirmed
+      empirically, not a choice).
+    implementation: renal_adjustment.dfy::SelectFormula
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: SelectFormula
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: AssessRenalFunction
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: CockcroftGaultCrClMlPerMin
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: AssessRenalFunctionFromInputs
+  - id: REQ-RENAL-3
+    text: >
+      Cockcroft-Gault is unreliable when weight is distorted by obesity
+      or oedema (it is a weight-based formula) - should flag rather than
+      silently compute. Named, sourced (KDIGO), not yet formalized as a
+      Dafny signature.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: PROVEN
+  - id: REQ-RENAL-4
+    text: >
+      Fail-safe on missing/invalid renal-function data: never default to
+      unadjusted/full dose. Design invariant, same category as
+      dosage.dfy's own fail-safe defaults. Named, not yet formalized as
+      a Dafny signature.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: PROVEN
+  - id: REQ-RENAL-5
+    text: >
+      Bound composition against dosage.dfy's existing ceiling: the more
+      conservative of the two bounds provably wins, pinned to exactly
+      one of the two inputs, not just bounded above by both (Gate C4
+      finding and fix, 2026-07-09).
+    implementation: renal_adjustment.dfy::ComposedCeiling
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: renal_adjustment.dfy
+        dafny_method: ComposedCeiling
+  - id: REQ-RENAL-6
+    text: >
+      Reassessment flag on rapidly changing renal function (AKI) - a
+      single value must not be treated as authoritative in that
+      situation. Named, sourced (MHRA), not yet formalized as a Dafny
+      signature.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: PROVEN
+  - id: REQ-RENAL-7
+    text: >
+      For narrow-therapeutic-index drugs on the eGFR branch,
+      BSA-nonindexed eGFR (mL/min, not mL/min/1.73m^2) may be needed at
+      extremes of body weight. Named, sourced (KDIGO Practice Point
+      4.2.4), not yet formalized as a Dafny signature.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: PROVEN
+  - id: REQ-RENAL-8
+    text: >
+      SelectFormula's boolean drug-classification inputs are
+      caller-supplied, not computed inside renal_adjustment.dfy - a
+      deliberate, permanent trust-boundary decision (MHRA's own drug
+      lists are illustrative, not closed or exhaustive; hardcoding them
+      would embed a false-completeness claim inside a formally "proven"
+      artifact), not a temporary gap awaiting future formalization. Who
+      populates the flags operationally (clinician form / EHR lookup /
+      static list) is reclassified as a Phase 3 integration concern, not
+      a proof question - see PHASE1_PLAN.md's "Still open" section.
+    implementation: "none - a process decision, not a Dafny-checkable claim"
+    intended_method: DECLARED
+toolchain: {}

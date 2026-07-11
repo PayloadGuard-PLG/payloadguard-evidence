@@ -122,7 +122,13 @@ def symbolic_binding_conflicts(metadata, manifest):
     implementation file agree with the file the crosshair capture manifest
     actually ran against? File-level only — crosshair's manifest records
     the file passed to `crosshair check`, not a per-method target, so this
-    cannot detect a method-level mismatch within the same file."""
+    cannot detect a method-level mismatch within the same file.
+
+    `manifest` may be `None` (a metadata file that declares no crosshair
+    evidence at all — the first Dafny-only worked examples, 2026-07):
+    callers must skip this check entirely in that case, mirroring
+    `dafny_binding_conflicts`' own `dafny_store is None` no-op, rather
+    than call in here and hit an unconditional `manifest["target"]`."""
     conflicts = []
     manifest_file = manifest["target"]
     for req in metadata["requirements"]:
@@ -132,6 +138,9 @@ def symbolic_binding_conflicts(metadata, manifest):
         if impl is None:
             continue  # not a code-verified requirement (e.g. a threat entry)
         impl_file = impl.split("::")[0]
+        if impl_file.endswith(".dfy"):
+            continue  # dafny-backed requirement, not crosshair-checkable —
+            # mirrors _declared_concrete_bindings' own .dfy skip above
         if impl_file != manifest_file:
             conflicts.append(
                 {
@@ -255,10 +264,16 @@ def run_conflict_gate(metadata, concrete_store, manifest, dafny_store=None):
     `dafny_store` defaults to None (skips the dafny check entirely) for
     backward compatibility with every call site that predates Gate 2/C2-
     C4 wiring (the frozen base matrix, variants A/B, and variant C's own
-    symbolic/concrete sub-views, none of which bind dafny evidence)."""
+    symbolic/concrete sub-views, none of which bind dafny evidence).
+    `manifest` may likewise be None (2026-07, the first Dafny-only worked
+    examples — no crosshair evidence declared anywhere in metadata),
+    skipping the symbolic check the same way — a caller that never
+    intends to bind crosshair evidence at all must not be penalized for
+    metadata that declares none, mirroring dafny_store's own precedent
+    exactly rather than inventing a new convention."""
     conflicts = (
         concrete_binding_conflicts(metadata, concrete_store)
-        + symbolic_binding_conflicts(metadata, manifest)
+        + (symbolic_binding_conflicts(metadata, manifest) if manifest is not None else [])
         + dafny_binding_conflicts(metadata, dafny_store)
     )
     if conflicts:

@@ -54,6 +54,18 @@ CONFLICT Type 1 - folded into build_matrix() itself, see
 matrix_variants.py - or the structural PROVEN check) exits non-zero with
 a message on stderr, not a raw traceback, matching this repo's
 convention for Tier-1 stops (REVIEW_PROTOCOL.md).
+
+--manifest and --concrete are both optional (2026-07, Phase 3 for the
+first Dafny-only worked examples - renal_adjustment/drug_interaction_checker
+declare no crosshair or concrete_test evidence anywhere in their
+metadata). Omitting --manifest passes None through to build_matrix(),
+mirroring --dafny-captures' own already-established "None = this
+evidence type isn't in play" convention rather than a new one; omitting
+--concrete passes an empty-but-honest {"cases": []} (an empty test list
+is a real state, not a fabrication, unlike a fabricated crosshair
+manifest would be). dosage_calculator's own real crosshair+concrete
+evidence is unaffected either way - both flags still work exactly as
+before when passed.
 """
 
 import argparse
@@ -107,12 +119,22 @@ def _build(args):
     metadata = yaml.safe_load(pathlib.Path(args.metadata).read_text())
     jsonschema.validate(metadata, schema)
 
-    manifest = json.loads(pathlib.Path(args.manifest).read_text())
-    concrete_store = json.loads(pathlib.Path(args.concrete).read_text())
+    # --manifest is optional (2026-07, the first Dafny-only worked
+    # examples): None means "no crosshair evidence anywhere in this
+    # metadata", the same convention --dafny-captures already established
+    # for the dafny side. --concrete stays a real, empty-but-honest
+    # {"cases": []} rather than None when omitted - an empty test list is
+    # a genuine state (no concrete_test evidence), not a fabrication, so
+    # every binder's unconditional `concrete_store["cases"]` lookup still
+    # works without a None-check ripple through that code path too.
+    manifest = json.loads(pathlib.Path(args.manifest).read_text()) if args.manifest else None
+    concrete_store = (
+        json.loads(pathlib.Path(args.concrete).read_text()) if args.concrete else {"cases": []}
+    )
     # Derived from the manifest's own declared tool name rather than a
     # hardcoded "crosshair" key, so a differently-tooled evidence set
     # (Phase C's Dafny/Z3 adapters) doesn't need this CLI changed.
-    tool_versions = {manifest["tool"]: manifest["tool_version"]} if "tool" in manifest else {}
+    tool_versions = {manifest["tool"]: manifest["tool_version"]} if manifest and "tool" in manifest else {}
 
     dafny_store = None
     if args.dafny_captures:
@@ -172,8 +194,18 @@ def build_arg_parser():
         "--variant", required=True, choices=sorted(_SCHEMA_SUFFIX_BY_VARIANT)
     )
     build_parser.add_argument("--metadata", required=True)
-    build_parser.add_argument("--manifest", required=True)
-    build_parser.add_argument("--concrete", required=True)
+    build_parser.add_argument(
+        "--manifest",
+        default=None,
+        help="Path to a crosshair run manifest. Optional (2026-07) - "
+        "omit entirely for metadata declaring no crosshair evidence.",
+    )
+    build_parser.add_argument(
+        "--concrete",
+        default=None,
+        help="Path to a concrete_results.json. Optional (2026-07) - "
+        "omit entirely for metadata declaring no concrete_test evidence.",
+    )
     build_parser.add_argument(
         "--schema",
         default=None,

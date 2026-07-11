@@ -272,7 +272,18 @@ def derive_bounds_block(metadata, manifest):
     """Turn 2.0 (B1): declared bounds are the intended envelope authored in
     metadata; effective bounds are what the capture invocation actually
     enforced, read from the run manifest (single source of truth). Derived
-    once at the model level; every view carries the block read-only."""
+    once at the model level; every view carries the block read-only.
+
+    A metadata file that declares no crosshair evidence at all (2026-07,
+    the first Dafny-only worked examples) has no `toolchain.crosshair_bounds`
+    and is called with `manifest=None` — there is no crosshair run to have
+    "effective bounds" for, and fabricating a zero/empty bounds block would
+    falsely imply a search happened. Returned as `None`/`None` instead,
+    never guessed at: absence is the honest signal, matching this repo's
+    own "Gap" strength label, not a value to paper over."""
+    declared = metadata.get("toolchain", {}).get("crosshair_bounds")
+    if declared is None or manifest is None:
+        return {"declared": declared, "effective": None, "enforcement_note": ""}
     if "effective_bounds" not in manifest:
         raise SystemExit(
             "capture manifest lacks effective_bounds; re-run the Turn 2.0 "
@@ -281,7 +292,7 @@ def derive_bounds_block(metadata, manifest):
     effective = dict(manifest["effective_bounds"])
     note = effective.pop("enforcement_note", "")
     return {
-        "declared": metadata["toolchain"]["crosshair_bounds"],
+        "declared": declared,
         "effective": effective,
         "enforcement_note": note,
     }
@@ -292,7 +303,7 @@ def _header(variant_key, metadata, tool_versions, bounds_block):
         "artifact": _ARTIFACT_TITLES[variant_key],
         "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "tool_versions": tool_versions or {},
-        "crosshair_bounds": metadata["toolchain"]["crosshair_bounds"],
+        "crosshair_bounds": metadata.get("toolchain", {}).get("crosshair_bounds"),
         "bounds": bounds_block,
     }
 
@@ -428,13 +439,20 @@ def _detail(rec):
 
 def _md_head(matrix):
     bounds = matrix["bounds"]
+    # None (not a missing/omitted value) means this metadata declares no
+    # crosshair evidence anywhere - print that explicitly rather than a
+    # bare "None", which would read as a data gap instead of the honest
+    # "not applicable" it actually is (2026-07, the first Dafny-only
+    # worked examples to exercise this path).
+    declared = bounds["declared"] if bounds["declared"] is not None else "N/A (no crosshair evidence in this metadata)"
+    effective = bounds["effective"] if bounds["effective"] is not None else "N/A (no crosshair evidence in this metadata)"
     return [
         f"# {matrix['artifact']}",
         "",
         f"Generated (UTC): {matrix['generated_utc']}",
         f"Tool versions: {matrix['tool_versions']}",
-        f"Declared bounds (intended envelope): {bounds['declared']}",
-        f"Effective bounds (demonstrated by capture): {bounds['effective']}",
+        f"Declared bounds (intended envelope): {declared}",
+        f"Effective bounds (demonstrated by capture): {effective}",
         f"Enforcement note: {bounds['enforcement_note']}",
         "",
     ]
@@ -812,7 +830,12 @@ def build_matrix(variant_key, metadata, manifest, concrete_store, tool_versions=
     None` vs. truthiness distinction this all rests on."""
     run_conflict_gate(metadata, concrete_store, manifest, dafny_store=dafny_store)
     spec = _VARIANT_SPECS[variant_key]
-    bounds = metadata["toolchain"]["crosshair_bounds"]
+    # .get(), not [...]: a Dafny-only metadata file (no crosshair evidence
+    # anywhere) has no toolchain.crosshair_bounds at all - None here is
+    # safe, since symbolic_record() (the only consumer of `bounds`) is
+    # only ever called from a `method: crosshair` evidence branch, which
+    # such a metadata file never has.
+    bounds = metadata.get("toolchain", {}).get("crosshair_bounds")
 
     if spec["binder"] == "declared":
         records_by_req = _bind_declared(

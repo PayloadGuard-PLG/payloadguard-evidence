@@ -58,7 +58,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^REQ-[A-Z0-9-]+$"
+            "pattern": "^REQ-[A-Za-z0-9-]+$"
           },
           "text": {
             "type": "string"
@@ -152,9 +152,6 @@
     },
     "toolchain": {
       "type": "object",
-      "required": [
-        "crosshair_bounds"
-      ],
       "properties": {
         "crosshair_bounds": {
           "type": "object",

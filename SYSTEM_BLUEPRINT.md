@@ -212,7 +212,23 @@ payloadguard-evidence/
 │   │                            _declared_dafny_bindings for dafny
 │   │                            evidence across all three metadata
 │   │                            shapes, 2026-07-07) and Type 2 (outcome
-│   │                            mismatch across manifests); Tier 1
+│   │                            mismatch across manifests); Tier 1.
+│   │                            Extended 2026-07-11 (Phase 3 for the
+│   │                            first Dafny-only examples):
+│   │                            run_conflict_gate skips
+│   │                            symbolic_binding_conflicts entirely when
+│   │                            manifest is None (mirrors
+│   │                            dafny_binding_conflicts' own dafny_store
+│   │                            is None precedent exactly); a separate,
+│   │                            real bug also fixed in the same pass -
+│   │                            symbolic_binding_conflicts never skipped
+│   │                            a .dfy-targeted implementation the way
+│   │                            _declared_concrete_bindings already did,
+│   │                            so a future mixed example (some
+│   │                            requirements crosshair, others dafny)
+│   │                            would have false-flagged a dafny
+│   │                            requirement's implementation against the
+│   │                            crosshair manifest's target file
 │   ├── cli.py                   Gate 2 CLI (`python -m evidence.cli
 │   │                            build`): vocabulary-agnostic wrapper
 │   │                            around build_matrix() - takes metadata/
@@ -222,20 +238,53 @@ payloadguard-evidence/
 │   │                            once metadata.a.yaml/b.yaml declared
 │   │                            dafny evidence) points at a small JSON
 │   │                            index of paths (not inlined content) for
-│   │                            the real dafny_store the CLI assembles
+│   │                            the real dafny_store the CLI assembles.
+│   │                            --manifest/--concrete both made optional
+│   │                            2026-07-11 (Phase 3 for renal_adjustment/
+│   │                            drug_interaction_checker, both Dafny-only
+│   │                            - no crosshair or concrete_test evidence
+│   │                            exists for either): omitting --manifest
+│   │                            passes None through, mirroring
+│   │                            --dafny-captures' own established
+│   │                            convention; omitting --concrete passes
+│   │                            an empty-but-honest {"cases": []}, not
+│   │                            None, since concrete_store["cases"] is
+│   │                            dereferenced unconditionally by every
+│   │                            binder. dosage_calculator's own real
+│   │                            evidence unaffected either way -
+│   │                            confirmed by regenerating its real
+│   │                            artifacts before/after and diffing
+│   │                            byte-for-byte
 │   ├── schema/
-│   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12)
+│   │   ├── metadata.schema.json     Base metadata contract (draft 2020-12).
+│   │   │                            id pattern widened 2026-07-11 to
+│   │   │                            allow lowercase (REQ-RENAL-1a is the
+│   │   │                            first lowercase-suffixed REQ-ID this
+│   │   │                            schema was ever validated against -
+│   │   │                            same class of gap as the
+│   │   │                            dafny_nl_summary.py _REQ_ID_RE fix
+│   │   │                            from 2026-07-08, now found in a
+│   │   │                            second, independent place)
 │   │   ├── metadata.schema.a.json   T4-A: evidence[] per requirement,
 │   │   │                            + dafny method (2026-07-07, same fix
-│   │   │                            as schema.c.json)
+│   │   │                            as schema.c.json). toolchain.crosshair_bounds
+│   │   │                            made optional 2026-07-11 (a metadata
+│   │   │                            file with zero crosshair evidence
+│   │   │                            anywhere has nothing to declare
+│   │   │                            bounds for); id pattern widened,
+│   │   │                            same as base schema above
 │   │   ├── metadata.schema.b.json   T4-B: shadow ids + parent_requirement;
 │   │   │                            shadow-id pattern extended to allow
 │   │   │                            .formal-N (2026-07-07) alongside
 │   │   │                            .concrete-N, for dafny shadow rows
-│   │   │                            distinguished by a .dfy implementation
+│   │   │                            distinguished by a .dfy implementation.
+│   │   │                            Same crosshair_bounds/id-pattern
+│   │   │                            widening as schema.a.json, 2026-07-11
 │   │   └── metadata.schema.c.json   T4-C: base shape, dual-matrix notes,
 │   │                            + dafny evidence entries (spec_target,
-│   │                            dafny_method required together), 2026-07-07
+│   │                            dafny_method required together), 2026-07-07.
+│   │                            Same crosshair_bounds/id-pattern
+│   │                            widening as schema.a.json, 2026-07-11
 │   └── render/
 │       ├── manual_matrix.py     Base binder/renderer (Phase A, hand-reviewed)
 │       └── matrix_variants.py   build_matrix() - Gate 2's vocabulary-
@@ -278,7 +327,30 @@ payloadguard-evidence/
 │                                _bind_shadow() distinguishes a dafny
 │                                shadow row from a concrete one by
 │                                checking whether the implementation file
-│                                ends in .dfy - no new declared field
+│                                ends in .dfy - no new declared field.
+│                                Extended 2026-07-11 (Phase 3 for the
+│                                first Dafny-only worked examples,
+│                                renal_adjustment/drug_interaction_checker):
+│                                derive_bounds_block()/_header()/
+│                                build_matrix() all use .get() instead of
+│                                [...] for toolchain.crosshair_bounds, and
+│                                derive_bounds_block() returns
+│                                declared=effective=None (never fabricated
+│                                zero/empty bounds) when either the
+│                                metadata declares no crosshair_bounds or
+│                                manifest is None - a metadata file with
+│                                zero crosshair evidence anywhere has no
+│                                "effective bounds" to report, and
+│                                inventing one would falsely imply a
+│                                search happened. _md_head() renders this
+│                                as an explicit "N/A (no crosshair
+│                                evidence in this metadata)" rather than a
+│                                bare "None" that could misread as a data
+│                                gap. dosage_calculator's own real
+│                                crosshair-backed matrices are unaffected
+│                                - confirmed by regenerating them and
+│                                diffing byte-for-byte (timestamps aside)
+│                                before and after this extension
 │   ├── dafny_adapter.py         Gate C1 (+ C3 vector 3 hardening):
 │                                 parse_dafny_capture() - the false-zero
 │                                 guard, regex on the verifier's own
@@ -593,7 +665,8 @@ payloadguard-evidence/
 │   ├── README.md                Audit-trail record (citations, caveats,
 │   │                            amendments, exhibits, open questions)
 │   └── RECONCILIATION.md        Cross-variant same-facts note + findings
-├── examples/renal_adjustment/   Worked example 2 (Phase D, in progress -
+├── examples/renal_adjustment/   Worked example 2 (Phase D - Phase 2 built
+│   │                            AND confirmed, Phase 3 built 2026-07-11 -
 │   │                            see Section 7 below and
 │   │                            PHASE1_PLAN.md for current status; this
 │   │                            entry is a structural listing, not a
@@ -663,10 +736,28 @@ payloadguard-evidence/
 │   │                            Pow — an axiom wearing PROVEN's clothing,
 │   │                            the exact failure mode Gate C2 refuses
 │   ├── run_verify_pow_probes.py  Capture runner for both probes above
-│   └── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
+│   ├── raw_dafny_output*/run_manifest*  Verbatim captures + manifests
+│   ├── dafny_captures_index.json  Phase 3 (built 2026-07-11): 7 entries,
+│   │                            all seven functions, all sharing the
+│   │                            one real capture (raw_dafny_output_renal.txt)
+│   ├── metadata.a.yaml          Phase 3: 9 requirement rows - 4 with real
+│   │                            dafny evidence (REQ-RENAL-1/1a/2/5,
+│   │                            AssessRenalFunction dual-cited to both
+│   │                            REQ-RENAL-1 and REQ-RENAL-2), 5 honest
+│   │                            GAP rows (REQ-RENAL-3/4/6/7 intended
+│   │                            PROVEN; REQ-RENAL-8 intended DECLARED -
+│   │                            a permanent trust-boundary decision, not
+│   │                            a future proof target)
+│   └── traceability_matrix.a.json/.md  Phase 3: real, committed output of
+│                                `evidence.cli build --variant a`, no
+│                                --manifest/--concrete (no crosshair/
+│                                concrete_test evidence exists for this
+│                                Dafny-only example) - see
+│                                tests/test_renal_adjustment_matrix.py
 ├── examples/drug_interaction_checker/  Worked example 3 (Phase E, all
 │   │                            six Gates C1-C6 built or confirmed
-│   │                            2026-07-10 — see Section 8 below and
+│   │                            2026-07-10, Phase 3 built 2026-07-11 —
+│   │                            see Section 8 below and
 │   │                            PHASE1_PLAN.md for current status;
 │   │                            structural listing only)
 │   ├── PHASE1_PLAN.md           Living status document — Gate 1a/1c
@@ -751,6 +842,22 @@ payloadguard-evidence/
 │                                since that spec had no other gate's
 │                                captures riding on its exact formatting
 │                                yet)
+│   ├── dafny_captures_index.json  Phase 3 (built 2026-07-11): 1 entry
+│   │                            (CheckInteraction), reused by all 4
+│   │                            requirement rows below - the first
+│   │                            many-requirements-to-one-proof binding
+│   │                            this repo's matrix binder has exercised
+│   ├── metadata.a.yaml          Phase 3: 6 requirement rows -
+│   │                            REQ-DDI-1/2/3/4 all sharing the SAME
+│   │                            one dafny evidence entry, REQ-DDI-5/6
+│   │                            honest GAP rows (intended PROVEN,
+│   │                            staged v2)
+│   └── traceability_matrix.a.json/.md  Phase 3: real, committed output
+│                                of `evidence.cli build --variant a`, no
+│                                --manifest/--concrete (no crosshair/
+│                                concrete_test evidence exists for this
+│                                Dafny-only example) - see
+│                                tests/test_drug_interaction_checker_matrix.py
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -976,6 +1083,20 @@ payloadguard-evidence/
         traceability_matrix.symbolic|concrete (variant C, method-partitioned)
 ```
 
+**A second, real entry point exists (2026-07, Phase 3 for `renal_adjustment`/
+`drug_interaction_checker`): `python -m evidence.cli build --variant a
+--metadata ... --dafny-captures ...`, no per-example generator script and
+no crosshair/concrete evidence at all.** Both new examples are Dafny-only
+(no `.py` implementation, no crosshair run, no concrete test suite) - the
+CLI's `--manifest`/`--concrete` flags are genuinely optional now (were
+hard-required until this same change), and `derive_bounds_block()`/`_header()`
+render `null`/"N/A (no crosshair evidence in this metadata)" for such a
+metadata file rather than require a fabricated crosshair manifest just to
+satisfy the pipeline. `dosage_calculator`'s own generator-script path
+(`generate_matrix*.py`, diagrammed above) is completely unaffected -
+confirmed by regenerating its real artifacts before and after this
+extension and diffing byte-for-byte (timestamps aside).
+
 ## 4. Invariants
 
 1. Strength originates in evidence records only; `intended_method` never
@@ -1018,6 +1139,19 @@ Requirements bound (from GIP v1.0 unless DECLARED): REQ-GIP-1-4-12 (dose
 limit), REQ-GIP-1-8-1 (reverse delivery, fault-modelled), REQ-DOSE-003
 (finite in-range result, DECLARED). Intent status: 1-4-12 and 1-8-1 intend
 PROVEN → realized weaker (intent_ok false, honest); DOSE-003 intent met.
+
+**Phase 3 evidence, `renal_adjustment` and `drug_interaction_checker`
+(2026-07, variant A only - see Section 8/9's own status blocks for the
+full account):**
+
+| Example | Requirements bound | Evidence | Realized GAP rows |
+|---|---|---|---|
+| `renal_adjustment` | REQ-RENAL-1/1a/2/5 (4 rows, 8 dafny evidence entries - `AssessRenalFunction` dual-cited to both REQ-RENAL-1 and REQ-RENAL-2, mirroring the `.dfy` file's own inline citation) | `dafny_captures_index.json`, 7 entries, all sharing one real capture (`raw_dafny_output_renal.txt`, `7 verified, 0 errors`) | REQ-RENAL-3/4/6/7 (intended PROVEN - named future formalization candidates); REQ-RENAL-8 (intended DECLARED - a permanent trust-boundary decision, not a proof target) |
+| `drug_interaction_checker` | REQ-DDI-1/2/3/4 (4 rows, all sharing the SAME one dafny evidence entry - the first many-requirements-to-one-proof binding this repo's matrix binder has exercised) | `dafny_captures_index.json`, 1 entry (`raw_dafny_output_ddi.txt`, `1 verified, 0 errors`) | REQ-DDI-5/6 (intended PROVEN - staged v2 items) |
+
+Both matrices pass `assert_no_realized_proven` (R3) and were built via
+`evidence.cli` directly with `--manifest`/`--concrete` omitted entirely -
+see `tests/test_renal_adjustment_matrix.py`/`test_drug_interaction_checker_matrix.py`.
 
 ## 6. Phase boundary
 
@@ -1382,11 +1516,12 @@ conditional-branching logic, using a UK-jurisdiction clinical example
   (`REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`, `REQ-RENAL-7`) and
   `REQ-RENAL-8`'s classification-flag provenance question (a Phase 3
   concern, not a Phase 2 blocker).
-- Not wired into the metadata/capture/generate pipeline (no
-  `metadata.yaml`, no traceability matrix) — this example hasn't
-  reached that part of the system yet; Section 3's data-flow diagram
-  and Section 5's evidence inventory remain `dosage_calculator`-only
-  until it does.
+- **Phase 3 (evidence packaging) built, 2026-07-11.**
+  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
+  committed — 4 rows with real evidence, 5 honest GAP rows
+  (`REQ-RENAL-3/4/6/7` intended `PROVEN`; `REQ-RENAL-8` intended
+  `DECLARED`, a permanent trust-boundary decision, not a future proof
+  target). See Section 5's Phase 3 evidence table above.
 
 **Gate 1c Finding 1 closed for Cockcroft-Gault, 2026-07-09.** Source
 re-verification first (direct re-fetch of the MHRA and NICE NG203 pages,
@@ -1567,10 +1702,13 @@ guidance), consistent with `renal_adjustment`'s sourcing convention.
   proved 3 such mutants survive) and was corrected in place, left
   visible rather than silently rewritten. Full account:
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C5" section.
-- Not wired into the metadata/capture/generate pipeline (no
-  `metadata.yaml`, no traceability matrix) — same status
-  `renal_adjustment` had at this point; Section 3's data-flow diagram
-  and Section 5's evidence inventory remain `dosage_calculator`-only.
+- **Phase 3 (evidence packaging) built, 2026-07-11.**
+  `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
+  committed — REQ-DDI-1/2/3/4 (4 rows) all sharing the SAME one dafny
+  evidence entry, the first many-requirements-to-one-proof binding this
+  repo's matrix binder has exercised; REQ-DDI-5/6 render as honest GAP
+  rows (intended `PROVEN`, staged v2). See Section 5's Phase 3 evidence
+  table above.
 - **Gate C6 (NL-dialogue confirmation): built.** `evidence/dafny_nl_summary.py::summarize_method`
   refused outright on first attempt — `CheckInteraction`'s one `requires`
   clause is the first genuinely multi-line clause this repo has pointed
