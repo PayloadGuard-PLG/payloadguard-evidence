@@ -8,8 +8,41 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-11 — Scoped `REQ-RENAL-8` (classification-flag
-provenance) and made the honest framing refinement its scoping implied.
+**Last updated:** 2026-07-12 — Verified an external REQ-DDI-5/6 scoping
+document ("Can Apixaban Indication-Dependent Dosing and Numeric
+Dose-Reduction Rules Be Built From Public, Citable Sources?") against
+primary sources before any build decision — direct instruction: "verify
+first, then we'll consider the solutions." Ran the document's claimed
+quotes against `sources/sps-doac-interactions-2024.md` (already
+committed) through `evidence/citation_gate.py`: all five real claims
+CONFIRMED, and a deliberate false control ("apixaban decreased by 50%,"
+which the document itself says does not exist in UK sources) correctly
+returned NOT_FOUND. Fetched and verbatim-verified three new external
+sources: both eMC apixaban SmPCs (products 2878/4756, confirming the
+NVAF "2-of-3" dose-reduction rule, that it's NVAF-only, the hip/knee
+VTE-prophylaxis regimen, and — independently — that apixaban interaction
+dosing is qualitative-only even on the legal SmPC itself), the MHRA DSU
+vol 16 iss 10 renal table (confirming the same indication-branching
+pattern generalizes beyond drug interactions to renal dosing), and the
+US FDA ELIQUIS label §7.1 (confirming the genuine UK/US divergence — the
+US states a numeric 50% interaction reduction UK sources never state).
+**Central finding: the research document's spine holds.** REQ-DDI-5
+(indication-dependent branching) and REQ-DDI-6 (numeric dose-reduction
+targets) are buildable from public UK sources; apixaban's absent
+numeric interaction rule is a genuine, correctly-identified gap, not an
+oversight or an incomplete search. Archived the three new sources under
+`sources/`, per the folder's own convention (dates, URLs, fetch
+provenance, verbatim extracts, explicit confirms/extends notes — the
+FDA one flagged explicitly as a non-UK contrast source, never a
+substitute for UK guidance). `PHASE1_PLAN.md`'s REQ-DDI-5/6 rows now
+point to this verified material. **No code changed, no requirement
+built, no matrix regenerated** — per direct instruction, this session
+stopped at verification and archival; the build/scoping decision is a
+deliberately separate, later conversation. Full account: `DEVLOG.md`'s
+top 2026-07-12 entry. 205 tests pass (no code touched, confirmed
+unaffected). **Prior update, preserved below** — Scoped `REQ-RENAL-8`
+(classification-flag provenance) and made the honest framing refinement
+its scoping implied.
 Structural finding worth knowing: as the system stands, REQ-RENAL-8 can
 only ever be a GAP — the schema's evidence-method enum is
 `['crosshair', 'concrete_test', 'dafny']` with no `declared` method, and

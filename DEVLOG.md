@@ -6,6 +6,83 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-12 — Verified an external REQ-DDI-5/6 scoping document against primary sources; archived four new sources, no requirement built
+
+Direct instruction: review of an externally-supplied research document
+("Scoping REQ-DDI-5/6: Can Apixaban Indication-Dependent Dosing and
+Numeric Dose-Reduction Rules Be Built From Public, Citable Sources?"),
+then "verify first, then we'll consider the solutions" — deliberately
+deferring any build decision until every load-bearing claim was checked
+against a primary source, following this repo's standing rule
+(`HANDOFF.md`) that external research documents have carried fabricated
+or misattributed citations here more than once.
+
+**In-repo verification (`sources/sps-doac-interactions-2024.md`,
+already committed):** ran the document's own claimed quotes through
+`evidence/citation_gate.py` directly. All five real claims returned
+`CONFIRMED` — edoxaban's "30mg daily" numeric target (4 occurrences),
+dabigatran's "110mg twice daily" target, apixaban's qualitative-only
+interaction language, the complete absence of any apixaban+mg
+co-occurrence anywhere in the source, and the REQ-DDI-5 indication
+branching (rifampicin/carbamazepine "use apixaban with caution" scoped
+to two named indications only). **A deliberate false control** —
+"decrease the dose of apixaban by 50%," a claim the research document
+says does NOT exist in UK sources — correctly returned `NOT_FOUND`,
+independently confirming the gate isn't rubber-stamping and that the
+central negative claim (no UK numeric apixaban interaction rule) holds.
+One self-correction along the way: an initial doubt about whether the
+dabigatran "110mg" figure was actually in-source was wrong — it hadn't
+been read yet; the mechanical grep caught the gap in review, not a
+defect in the research document.
+
+**External verification (fetched directly, verbatim extraction
+requested, then citation-gated where practical):**
+- eMC SmPC, both apixaban strengths (product 2878, 5 mg, revised 04 Jan
+  2024; product 4756, 2.5 mg) — confirmed the NVAF "2-of-3" dose-
+  reduction rule verbatim on both pages, confirmed it is NVAF-only (the
+  VTEt heading carries no such criteria), confirmed the 2.5 mg SmPC's
+  own hip/knee VTE-prophylaxis indication and regimen, and independently
+  corroborated (from the legal SmPC itself, not just SPS's derived page)
+  that apixaban interaction dosing is qualitative-only — "not
+  recommended," no percentage or mg figure anywhere.
+- MHRA Drug Safety Update, volume 16, issue 10 (May 2023) — confirmed
+  the renal-severity dosing table's apixaban row, and confirmed the
+  table itself branches by indication at the same renal-severity band
+  (SPAF gets a numeric dose reduction at CrCl 15-29; VTEp/VTEt get
+  qualitative "caution" only) — the same indication-conditional pattern
+  REQ-DDI-5's scoping identified for drug interactions, here shown to
+  generalize to renal dosing too, a third independent primary source
+  making the same structural point.
+- US FDA ELIQUIS label §7.1 (via DailyMed, cross-referenced against
+  FDA's own hosted PDF) — confirmed verbatim the "decrease by 50%"
+  interaction rule the UK sources lack, establishing the jurisdictional
+  divergence is real, not an artifact of incomplete UK source coverage.
+
+**Archived as new sources, per `sources/README.md`'s own convention**
+(citation with dates/URLs, fetch provenance, verbatim extraction,
+explicit confirms/corrects/extends notes): `emc-smpc-apixaban-posology-
+2024.md`, `mhra-dsu-doac-renal-dosing-2023.md`, and
+`fda-eliquis-label-interactions-2016.md` (the last explicitly flagged as
+a non-UK contrast source, not a substitute for UK guidance — every other
+apixaban source in this folder is UK-jurisdiction, matching this
+example's established sourcing convention). `sources/README.md`'s
+Contents list updated with matching entries.
+
+**`examples/drug_interaction_checker/PHASE1_PLAN.md`'s REQ-DDI-5/6 rows
+updated with pointers to the newly-verified sources** — not built, not
+scoped as a new requirement yet, just linked so the verified ground is
+visible exactly where a future session would look. REQ-DDI-6's row now
+states explicitly that apixaban's absence of a numeric interaction
+target was checked against three independent UK primary sources, not
+assumed from one.
+
+No code changed, no new requirement built, no matrix regenerated —
+per direct instruction, this session stopped at verification and
+archival. The solutions/scoping conversation (extend
+`drug_interaction_checker` vs. a new dosing-calculator example; how to
+represent apixaban's genuine gap) is deliberately deferred to a
+follow-up session.
+
 ## 2026-07-11 — Scoped REQ-RENAL-8 (classification-flag provenance): decision to leave an explicit GAP, framing refined from "permanent" to "parked pending data"
 
 Direct instruction: "scope out REQ-RENAL-8's classification-flag
