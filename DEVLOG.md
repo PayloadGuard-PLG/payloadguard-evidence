@@ -6,6 +6,158 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-12 — REQ-DDI-5 and REQ-DDI-6 built for real: both v2 items closed, no GAP rows remain in drug_interaction_checker
+
+Follow-on from the same-day source-verification entry below: instruction
+"scope out extending drug_interaction_checker with REQ-DDI-5/6" produced
+a full plan (`/root/.claude/plans/stateless-weaving-firefly.md`),
+approved after two `AskUserQuestion` resolutions — `TreatmentIndication`
+gets exactly 2 constructors (only the indications the interaction source
+itself names, not a third VTE-prophylaxis case that exists only in a
+different, posology source with no stated interaction outcome), and
+both requirements are built in one pass, sequenced by risk.
+
+**REQ-DDI-5 (indication axis).** Added
+`datatype TreatmentIndication = AFStrokePrevention |
+RecurrentVTEPrevention` to `drug_interaction_checker.dfy`, as
+`CheckInteraction`'s fourth parameter. Both named indications give
+apixaban the identical sourced "use with caution" outcome for the
+rifampicin/carbamazepine/phenytoin/phenobarbital rows — so once the type
+is closed to exactly those two values, every constructible input is
+provable, and `CheckInteraction`'s previous `requires` clause (excluding
+the four apixaban+inducer cells outright) is removed entirely, not
+narrowed. Four previously-unreachable match arms become real, reachable
+arms; 4 new `ensures` clauses added (60→64 total). All 60 pre-existing
+`ensures` clauses' recursive calls updated to the new 4-arg signature.
+Re-verified clean.
+
+**REQ-DDI-6 (numeric dose-reduction targets).** New companion function
+`DoseReductionTargetMg(doac, agent): int`, requires-gated bare-`int`
+(deliberately matching `renal_adjustment.dfy`'s `SelectFormula`/
+`AssessRenalFunction` precedent rather than introducing this repo's
+first `Option<int>` pattern — resolved in `PHASE1_PLAN.md`'s own "Still
+open" section), pinning the five real sourced figures:
+Dabigatran+Verapamil→110mg, Edoxaban+{Dronedarone,
+ErythromycinSystemic, Ketoconazole, Ciclosporin}→30mg each. Apixaban
+never appears in this function's precondition — a direct, confirmed
+consequence of `CheckInteraction` never producing `DoseReductionAdvised`
+for apixaban anywhere in its match arms, not a hand-written exclusion.
+Dabigatran+SSRIOrSNRI deliberately excluded permanently (the source
+gives no mg figure for that cell). A `case _ => 0 // unreachable`
+wildcard arm was added before ever running Dafny, since a `match` on
+`(doac, agent)` must be exhaustive over the full type regardless of the
+`requires` clause — caught by direct grep-counting during implementation
+(4 unreachable match arms existed at that point, not the 3 the plan text
+predicted; corrected before editing, not trusted from the plan's prose).
+Both functions verify together in one invocation: `2 verified, 0
+errors`.
+
+**A real engineering boundary found and deliberately not fixed:**
+`evidence/dafny_mutate.py`'s `generate_aor_mutants`/`generate_lvr_mutants`
+body-scanning mode refused outright on `DoseReductionTargetMg`'s body —
+a `//` comment on the wildcard arm ("refusing to locate mutation sites
+rather than risk a misaligned offset or a comment slash mistaken for
+division"). Clause-level LVR alone (omitting `function_name`) gave 10
+real mutants covering all 5 pinned figures exactly, all killed —
+equivalent coverage without new shared-module engineering; named
+explicitly in `run_mutation_suite_ddi.py`'s own docstring rather than
+silently worked around, matching `renal_adjustment`'s own precedent for
+naming (not always fixing) engine limitations.
+
+**All six gates re-run for real, for both requirements, in the
+established order:**
+- **C1**: re-verified, re-captured (`raw_dafny_output_ddi.txt`,
+  `run_manifest_dafny_ddi.json` — one real invocation covers both
+  functions now).
+- **C6**: two new addenda drafted in
+  `nl_confirmation_drug_interaction_checker_dfy.md`, each explicitly
+  marked "not yet confirmed — pending review" — drafted, not
+  self-signed-off in the same pass that generated them.
+- **C4**: `drug_interaction_checker_stp_suite.dfy` gained 6 new lemmas
+  (2 ACCEPT + 1 REJECT per requirement); all 11 pre-existing
+  `CheckInteraction` calls updated with a placeholder 4th argument
+  (`AFStrokePrevention`). `20 verified, 0 errors` (up from 14).
+- **C3**: spec lint re-run — `TreatmentIndication` got Z3 `EnumSort`
+  treatment automatically, no code change needed (confirmed empirically,
+  not assumed from the shared translator's generality);
+  weak-postcondition count bumped 60→64; `DoseReductionTargetMg`'s
+  precondition confirmed satisfiable.
+- **C5**: mutation testing restructured from a single-`FUNCTION`
+  constant to a `FUNCTIONS` tuple-driven loop in
+  `run_mutation_suite_ddi.py`, mirroring `run_mutation_suite_renal.py`'s
+  established precedent (including fixing
+  `check_precondition_satisfiability`'s call to use the loop variable,
+  not a hardcoded constant). Real run: **1178 mutants — 634 killed, 472
+  filtered_static, 68 survived, 4 unclassifiable.**
+  `CheckInteraction`'s own 31 survivors are byte-for-byte the same set
+  REQ-DDI-5's own build already established (confirmed directly, not
+  assumed unaffected): 28 are a new category (the `treatmentIndication`
+  disjunction — a redundant guard, since both named indications give the
+  identical outcome and the match arm doesn't inspect the value at all
+  for these four cells), 3 are the pre-existing SSRIOrSNRI antecedent
+  category, unchanged. `DoseReductionTargetMg` contributes 37 new
+  survivors (7 requires-clause + 30 ensures-clause guard-antecedent
+  mutations — the same "weakening not load-bearing" shape
+  `CheckInteraction`'s own now-removed requires clause used to fall
+  into, confirmed via a byte-identical-consequent check, not assumed)
+  and all 4 unclassifiable results (a real, expected REAPPEARANCE of the
+  datatype-vs-datatype ROR type-error category REQ-DDI-5 had made
+  disappear entirely, since `DoseReductionTargetMg`'s own new `requires`
+  clause reintroduces a `doac`/`agent` datatype comparison — a structural
+  consequence of adding a new requires clause with a datatype comparison,
+  not a regression in either function). All 10 LVR mutants on the five
+  pinned mg figures killed, none survived — proof the figures are exact,
+  not just roughly right.
+
+**Phase 3 regenerated, not hand-edited.** `metadata.a.yaml`: REQ-DDI-5
+gained a real `implementation`/`evidence` block reusing the
+`CheckInteraction` capture (a fifth requirement sharing one proof);
+REQ-DDI-6 gained its own block binding `DoseReductionTargetMg` — the
+first time this repo's matrix binder has bound two different Dafny
+methods from the same spec file across two requirements in one metadata
+file. `dafny_captures_index.json` gained a second key
+(`drug_interaction_checker.dfy::DoseReductionTargetMg`) pointing at the
+same physical capture files as the `CheckInteraction` key — both
+functions verify together in one Dafny invocation, mirroring
+`renal_adjustment`'s own established multi-key-same-capture precedent.
+`traceability_matrix.a.json`/`.md` regenerated via the real
+`evidence.cli build` — all 6 rows now `intent_ok: true` with real
+`PROVEN` evidence, no GAP rows remain in this example; `assert_no_realized_proven`
+(R3) independently re-checked against the committed artifact.
+
+**Test suite updated in place, not just re-run:**
+`tests/test_drug_interaction_checker_spec_lint.py` (renamed/rewrote the
+removed-requires-clause test, bumped the weak-postcondition count to 64,
+added 2 new tests for `DoseReductionTargetMg`);
+`tests/test_drug_interaction_checker_mutation_report.py` (rewritten
+twice across the two requirements — final: total/outcome-count test,
+per-category survivor tests for both new categories, the unclassifiable
+type-error test, an LVR-all-killed test, and a closing
+all-survivors-accounted-for test); `tests/test_dafny_nl_summary.py` (the
+now-obsolete "multiline requires clause" test rewritten to assert "(none
+declared)," since REQ-DDI-5 removed the clause it was testing — the
+underlying multi-line-reconstruction capability stays separately
+protected by its own synthetic fixture test, confirmed unaffected);
+`tests/test_drug_interaction_checker_matrix.py` (the old "deferred
+requirements render as honest gaps" test replaced with real PROVEN-row
+assertions for both requirements plus a no-GAP-rows-remain check).
+
+Documentation ripple: `PHASE1_PLAN.md` (REQ-DDI-5/6 rows moved from
+"named, deferred"/"staged v2" to "built 2026-07-12," full gate-by-gate
+account, "Still open" item 1 resolved and struck through),
+`GATE_1C_AUDIT.md` (a dated update note added near the REQ-by-REQ trace
+table, the historical 2026-07-10 rows themselves left untouched as a
+frozen record), `KNOWN_LIMITATIONS.md` (new "Phase E REQ-DDI-5/REQ-DDI-6"
+table row and section), `SYSTEM_BLUEPRINT.md` (component-map entries for
+`DoseReductionTargetMg`, the second `dafny_captures_index.json` key, the
+restructured mutation suite, and the summary table row), `HANDOFF.md`
+(new top entry, `drug_interaction_checker` status block updated).
+
+213 tests pass (up from 205 — no code regression; the increase is new
+`DoseReductionTargetMg`/REQ-DDI-5/6-specific coverage).
+
+---
+
 ## 2026-07-12 — Verified an external REQ-DDI-5/6 scoping document against primary sources; archived four new sources, no requirement built
 
 Direct instruction: review of an externally-supplied research document

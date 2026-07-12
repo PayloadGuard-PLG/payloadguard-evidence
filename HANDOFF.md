@@ -8,7 +8,46 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-12 — Verified an external REQ-DDI-5/6 scoping
+**Last updated:** 2026-07-12 — **REQ-DDI-5 and REQ-DDI-6 built for
+real**, closing the two v2 items `drug_interaction_checker` had left
+explicitly staged. Added `datatype TreatmentIndication =
+AFStrokePrevention | RecurrentVTEPrevention` (closed to exactly the two
+indications the interaction source names — a real scoping decision,
+confirmed via `AskUserQuestion` before building) as `CheckInteraction`'s
+fourth parameter; since both named indications give the identical
+sourced outcome, every constructible `TreatmentIndication` value is now
+provable, so `CheckInteraction`'s previous `requires` clause is removed
+entirely, not narrowed — the function is now total (REQ-DDI-5). Added a
+new companion function `DoseReductionTargetMg(doac, agent): int`
+(requires-gated bare-`int`, matching `renal_adjustment.dfy`'s
+`SelectFormula` precedent rather than introducing this repo's first
+`Option<int>` pattern), pinning the five real sourced mg figures;
+apixaban never appears in its precondition — a direct, confirmed
+consequence of `CheckInteraction` never producing `DoseReductionAdvised`
+for apixaban, not a hand-written exclusion (REQ-DDI-6). Both functions
+verify clean (`2 verified, 0 errors`). All six gates re-run for real for
+both requirements — C1 (re-capture), C6 (two new sign-off addenda,
+explicitly marked "not yet confirmed — pending review," not
+self-signed-off), C4 (6 new STP lemmas, `20 verified, 0 errors`), C3
+(spec lint — `TreatmentIndication` got `EnumSort` treatment for free,
+weak-postcondition count 60→64), and C5 (mutation testing restructured
+to a multi-function loop: 1178 mutants, 634 killed, 472 filtered_static,
+68 survived — all in 3 named categories, none new — 4 unclassifiable, a
+real, expected reappearance of the datatype-ordering type-error category
+REQ-DDI-5 had made disappear, since `DoseReductionTargetMg`'s own new
+`requires` clause reintroduces a datatype comparison). A real engineering
+boundary named, not fixed: the mutation engine's body-scanning mode
+refuses on a `//` comment in `DoseReductionTargetMg`'s body — worked
+around with clause-level-only LVR (equivalent coverage, no new
+shared-module engineering needed), named explicitly in
+`run_mutation_suite_ddi.py`'s docstring. **Phase 3 regenerated**:
+`metadata.a.yaml`/`dafny_captures_index.json`/
+`traceability_matrix.a.json`/`.md` all rebuilt via the real CLI (never
+hand-edited) — all 6 requirement rows in this example now render real
+`PROVEN` evidence, no GAP rows remain. Full account:
+`KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/REQ-DDI-6" section;
+`DEVLOG.md`'s top 2026-07-12 entry. 213 tests pass. **Prior update,
+preserved below** — Verified an external REQ-DDI-5/6 scoping
 document ("Can Apixaban Indication-Dependent Dosing and Numeric
 Dose-Reduction Rules Be Built From Public, Citable Sources?") against
 primary sources before any build decision — direct instruction: "verify
@@ -414,7 +453,8 @@ handoff file's example-agnostic summary. As of this writing:
   `tests/test_renal_adjustment_matrix.py`.
 
 **`examples/drug_interaction_checker/` — Phase 2 done, all six
-Gates C1–C6 built and confirmed. Phase 3 also built, 2026-07-11.** Read
+Gates C1–C6 built and confirmed. Phase 3 also built, 2026-07-11;
+REQ-DDI-5/REQ-DDI-6 built 2026-07-12, no GAP rows remain.** Read
 `examples/drug_interaction_checker/PHASE1_PLAN.md` top to bottom before
 touching this example. Third worked example, testing whether the
 pipeline generalizes to **set/list-membership logic** — sourced from
@@ -503,26 +543,35 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   "source gap" — the precondition itself was always correct). See
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C6 sign-off" section.
 - **All six Gate C1–C6 pipeline steps built and confirmed for this
-  example — Gate C6 is closed.** Two explicitly out-of-scope v2 items
-  remain unbuilt: `REQ-DDI-5` (an indication-dependent axis for two
-  agents' apixaban cells) and `REQ-DDI-6` (proving the specific numeric
-  dose-reduction targets, staged as v2 — "both but in order of
-  difficulty").
-- **Phase 3 (evidence packaging) built, 2026-07-11.**
+  example — Gate C6 is closed.** Both previously out-of-scope v2 items
+  are now built (2026-07-12): `REQ-DDI-5` (the `TreatmentIndication` axis
+  for the two apixaban+inducer cells — `CheckInteraction`'s `requires`
+  clause removed entirely, the function is now total) and `REQ-DDI-6`
+  (the numeric dose-reduction targets, proven by the new
+  `DoseReductionTargetMg` companion function). See the 2026-07-12
+  "Last updated" entry at the top of this file for the full build
+  account.
+- **Phase 3 (evidence packaging) built, 2026-07-11; regenerated
+  2026-07-12 after REQ-DDI-5/6.**
   `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
-  committed — 6 requirement rows: REQ-DDI-1/2/3/4 all sharing the SAME
+  committed — 6 requirement rows: REQ-DDI-1/2/3/4/5 all sharing the SAME
   one `dafny_captures_index.json` entry (the first
   many-requirements-to-one-proof binding this repo's matrix binder has
   ever been exercised against — confirmed working end to end, not
-  assumed from the schema allowing it in principle), REQ-DDI-5/6 as
-  honest GAP rows intending `PROVEN`. Built first (the simpler,
-  single-capture shape), ahead of `renal_adjustment`'s own Phase 3 build
-  — this is where the three real shared-code gaps (`--manifest`/
-  `--concrete` hard-required, schema's `crosshair_bounds` hard-required,
-  schema's `id` pattern rejecting lowercase) were actually found and
-  fixed, before `renal_adjustment`'s own build benefited from the
-  already-fixed pipeline. See `KNOWN_LIMITATIONS.md`'s "Phase 3"
-  section. 6 new tests, `tests/test_drug_interaction_checker_matrix.py`.
+  assumed from the schema allowing it in principle), REQ-DDI-6 binding
+  its own separate `DoseReductionTargetMg` capture (the first time this
+  repo's matrix binder has bound two different Dafny methods from the
+  same spec file across two requirements in one metadata file). **No GAP
+  rows remain in this example as of 2026-07-12** — every requirement now
+  has real, bound `PROVEN` evidence. Originally built first (the
+  simpler, single-capture shape), ahead of `renal_adjustment`'s own
+  Phase 3 build — this is where the three real shared-code gaps
+  (`--manifest`/`--concrete` hard-required, schema's `crosshair_bounds`
+  hard-required, schema's `id` pattern rejecting lowercase) were
+  actually found and fixed, before `renal_adjustment`'s own build
+  benefited from the already-fixed pipeline. See `KNOWN_LIMITATIONS.md`'s
+  "Phase 3" and "Phase E REQ-DDI-5/REQ-DDI-6" sections.
+  `tests/test_drug_interaction_checker_matrix.py`.
 
 ## One thing explicitly left open, not forgotten
 
@@ -632,7 +681,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  205 as of this writing.
+  213 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch

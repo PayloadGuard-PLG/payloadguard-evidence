@@ -157,6 +157,12 @@ worth naming rather than making silently.
 | REQ-DDI-6 (numeric dose targets, v2) | Not built — explicitly staged | Unchanged from `PHASE1_PLAN.md`; no new finding here |
 | *(unnumbered)* | Risk-direction axis | **New gap, Finding 1 — not covered by the current `Outcome` datatype at all** |
 
+> **Update 2026-07-12**: REQ-DDI-5 and REQ-DDI-6 are now both built —
+> see `PHASE1_PLAN.md`'s current REQ-DDI-5/REQ-DDI-6 rows and
+> `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/6" section for the full
+> account. The two rows above are left as-is, a frozen record of this
+> audit's state on 2026-07-10; they are no longer the current status.
+
 ## Worked-example hand-traces
 
 1. **`(Dabigatran, Ketoconazole)`** → per source: "contraindicated with

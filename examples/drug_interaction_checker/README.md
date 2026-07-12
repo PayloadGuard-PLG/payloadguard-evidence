@@ -28,11 +28,11 @@ doesn't duplicate that and isn't kept in lockstep with it turn by turn.
 | ID | Requirement | Built? |
 |---|---|---|
 | `REQ-DDI-1` | The checker returns an `InteractionResult(outcome, direction)` pair, never a bare boolean. `outcome` is one of `NoInteractionExpected`, `Caution`, `CautionLowRelevance`, `Avoid`, `Contraindicated`, `DoseReductionAdvised`, `NotCovered`; `direction` is `BleedingRisk \| ThrombosisRisk \| NoRisk \| UnknownRisk`. | `CheckInteraction` — proven |
-| `REQ-DDI-2` | A total, hardcoded pairwise lookup over 15 of the source's 17 named sections in v1 (14 uniform + SSRIs/SNRIs, `REQ-DDI-3`'s own row), with a precondition excluding the two still-deferred apixaban cells (`REQ-DDI-5`) as a provable impossibility rather than a silent gap. | `CheckInteraction` — proven |
+| `REQ-DDI-2` | A total, hardcoded pairwise lookup over all 17 of the source's named sections as of REQ-DDI-5 (2026-07-12) — no precondition at all: the four apixaban+inducer cells that used to be excluded as a provable impossibility are now provable for every constructible `TreatmentIndication` value, so the exclusion was removed rather than kept as dead code. | `CheckInteraction` — proven |
 | `REQ-DDI-3` | SSRIs/SNRIs: dabigatran's dose-reduction advice is conditional on a caller-supplied `hasOtherBleedingRiskFactors: bool` — both branches proven, not just the one exercised first. Same trust-boundary shape as `renal_adjustment.dfy`'s `REQ-RENAL-8`. | `CheckInteraction` — proven |
 | `REQ-DDI-4` | Fail-safe: any `(doac, agent)` pair outside the source's named set — including within-source gaps like apixaban+dronedarone — returns `NotCovered`, never silently `NoInteractionExpected`. Same "never default to the safe-looking answer on missing data" principle as `renal_adjustment.dfy`'s `REQ-RENAL-4`. | `CheckInteraction` — proven |
-| `REQ-DDI-5` | Rifampicin and carbamazepine/phenytoin/phenobarbital make apixaban's outcome depend on a third axis, clinical indication (AF-stroke-prevention/DVT-PE-recurrence-prevention vs. other indications) — genuinely new modeling (a `TreatmentIndication` caller input), not a cheap flag addition. | Prose only — not built in v1, named and deferred |
-| `REQ-DDI-6` | The `DoseReductionAdvised` outcome *kind* is proven in v1; the specific numeric dose-reduction target (e.g. dabigatran→110 mg BD with verapamil) is v1 informational text only, not a proven output. | Not built — staged v2, per direct instruction ("both but in order of difficulty") |
+| `REQ-DDI-5` | Rifampicin and carbamazepine/phenytoin/phenobarbital make apixaban's outcome depend on a third axis, clinical indication — `TreatmentIndication` (`AFStrokePrevention \| RecurrentVTEPrevention`), deliberately closed to exactly the two indications the interaction source names for these rows. Both named indications give apixaban the identical "use with caution" outcome, so once the type is closed to exactly those two values, every constructible input is provable — `CheckInteraction`'s precondition (`REQ-DDI-2`) is removed entirely as a result. | `CheckInteraction` — proven, built 2026-07-12 |
+| `REQ-DDI-6` | The `DoseReductionAdvised` outcome *kind* is proven by `CheckInteraction` itself; `DoseReductionTargetMg` proves the specific numeric mg figure for the five real cells the source states one for: Dabigatran+Verapamil (110mg BD), Edoxaban+{Dronedarone, ErythromycinSystemic, Ketoconazole, Ciclosporin} (30mg each). Dabigatran+SSRIOrSNRI deliberately excluded, permanently — the source gives no mg figure for that cell. Apixaban never appears in this function's precondition — a direct consequence of `CheckInteraction` never producing `DoseReductionAdvised` for apixaban anywhere in its match arms, not a hand-written exclusion. | `DoseReductionTargetMg` — proven, built 2026-07-12 |
 
 **Explicit non-goal, not deferred:** allergy/cross-sensitivity checking
 (e.g. penicillin-class cross-reactivity) is a related but distinct
@@ -61,17 +61,20 @@ requirements table.
    concern from most other interactions on the source page (bleeding
    risk). Resolved by adding the `direction` field, not by treating the
    stronger-outcome axis as sufficient on its own.
-3. **`CheckInteraction`'s precondition, excluding `(Apixaban,
-   {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})`, is an
-   indication-dependent scope exclusion, not a source gap.** The source
-   *does* address apixaban for these four agents ("use apixaban with
-   caution") but only for two named indications, an explicit
-   branch `REQ-DDI-5` doesn't model in v1 — genuinely different from
-   the apixaban+dronedarone cell, where the source never mentions
-   apixaban at all (a real, sourced silence, correctly labeled
-   `NotCovered`). An earlier draft of the Gate C6 sign-off document
-   conflated these two; caught and corrected during Steven's own review
-   — see the Gate C6 sign-off amendment below.
+3. **`CheckInteraction`'s v1 precondition, which used to exclude
+   `(Apixaban, {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})`,
+   was an indication-dependent scope exclusion, not a source gap — now
+   resolved, not just correctly labeled.** The source *does* address
+   apixaban for these four agents ("use apixaban with caution") for two
+   named indications; `REQ-DDI-5` (built 2026-07-12) models that axis
+   directly via `TreatmentIndication`, so the precondition is gone
+   entirely rather than staying a documented exclusion. This remains
+   genuinely different from the apixaban+dronedarone cell, where the
+   source never mentions apixaban at all (a real, sourced silence,
+   correctly labeled `NotCovered`, unaffected by REQ-DDI-5). An earlier
+   draft of the Gate C6 sign-off document conflated these two; caught
+   and corrected during Steven's own review — see the Gate C6 sign-off
+   amendment below.
 4. **The two `CautionLowRelevance` cells (rivaroxaban+verapamil,
    rivaroxaban+fluconazole) are a genuine three-way ambiguity in the
    primary source, not a gap in reading it.** The source hedges
@@ -326,6 +329,85 @@ lowercase-rejecting `id` pattern), plus one independent latent bug
 skip its sibling function already had). Full account:
 `KNOWN_LIMITATIONS.md`'s "Phase 3 — evidence packaging" section.
 
+## Amendment 2026-07-12 — REQ-DDI-5 and REQ-DDI-6 built for real; no GAP rows remain
+
+Preceded the same day by full source verification of an externally-
+supplied scoping document: `sources/sps-doac-interactions-2024.md`'s
+claims checked via `evidence/citation_gate.py` (including a deliberate
+false control, correctly `NOT_FOUND`), plus three newly-fetched,
+verbatim-verified sources (both eMC apixaban SmPCs, the MHRA DSU renal
+table, the US FDA ELIQUIS label as a non-UK contrast) — confirmed both
+requirements are buildable from public UK sources before any code
+changed. Full account: `KNOWN_LIMITATIONS.md`'s 2026-07-12 entries.
+
+**REQ-DDI-5.** Added `datatype TreatmentIndication = AFStrokePrevention
+| RecurrentVTEPrevention` as `CheckInteraction`'s fourth parameter,
+deliberately closed to exactly the two indications the interaction
+source names for the rifampicin/carbamazepine/phenytoin/phenobarbital
+rows — not a third VTE-prophylaxis case that exists only in the
+posology sources, with no stated interaction outcome here (a real
+scoping decision, confirmed via `AskUserQuestion` before building).
+Both named indications give apixaban the identical sourced outcome, so
+every constructible `TreatmentIndication` value is now provable —
+`CheckInteraction`'s previous `requires` clause (caveat 3, above) is
+removed entirely, not narrowed. Four previously-unreachable match arms
+become real, reachable arms; `ensures` clause count 60→64.
+
+**REQ-DDI-6.** New companion function `DoseReductionTargetMg(doac,
+agent): int`, requires-gated bare-`int` (matching `renal_adjustment.dfy`'s
+`SelectFormula`/`AssessRenalFunction` precedent rather than introducing
+this repo's first `Option<int>` pattern), pinning the five real sourced
+mg figures — see the requirement table above for the exact pairs and
+values. Apixaban never appears in this function's precondition — a
+direct, confirmed consequence of `CheckInteraction` never producing
+`DoseReductionAdvised` for apixaban anywhere in its match arms, not a
+hand-written exclusion. Both functions verify together in one
+invocation: `2 verified, 0 errors`.
+
+**A real engineering boundary named, not fixed:**
+`evidence/dafny_mutate.py`'s body-scanning AOR/LVR generators refuse
+outright on a `//` comment inside `DoseReductionTargetMg`'s body (the
+wildcard match arm's `// unreachable` comment) — clause-level LVR alone
+(omitting `function_name`) already gave equivalent coverage (10 real
+mutants across the five pinned figures, all killed), used instead of
+new shared-module engineering; named explicitly in
+`run_mutation_suite_ddi.py`'s own docstring.
+
+**All six gates re-run for real, for both requirements:** C1
+re-verified/re-captured (one invocation now covers both functions); C6
+gained two new addenda in `nl_confirmation_drug_interaction_checker_dfy.md`,
+each explicitly marked "not yet confirmed — pending review"; C4 added 6
+new STP lemmas (`drug_interaction_checker_stp_suite.dfy`, `20 verified,
+0 errors`, up from 14); C3 confirmed `TreatmentIndication` gets `EnumSort`
+treatment automatically (weak-postcondition count 60→64,
+`DoseReductionTargetMg`'s precondition confirmed satisfiable); C5's
+mutation suite was restructured to a multi-function loop (mirroring
+`run_mutation_suite_renal.py`'s precedent) — real run: **1178 mutants —
+634 killed, 472 filtered_static, 68 survived, 4 unclassifiable.**
+`CheckInteraction`'s own 31 survivors are byte-for-byte the same set
+REQ-DDI-5 alone already established (28 a new "redundant guard"
+category on the `treatmentIndication` disjunction, 3 the pre-existing
+SSRIOrSNRI category, unchanged). `DoseReductionTargetMg` contributes 37
+new survivors (the same guard-antecedent-weakening shape
+`CheckInteraction`'s own now-removed `requires` clause used to fall
+into) and all 4 unclassifiable results — a real, expected reappearance
+of the datatype-ordering type-error category REQ-DDI-5 had made
+disappear, since `DoseReductionTargetMg`'s own new `requires` clause
+reintroduces a datatype comparison. All 10 LVR mutants on the five
+pinned figures killed, none survived.
+
+**Phase 3 regenerated, not hand-edited.** `metadata.a.yaml`: REQ-DDI-5
+now binds the same `CheckInteraction` capture as REQ-DDI-1–4 (a fifth
+requirement sharing one proof); REQ-DDI-6 binds its own
+`DoseReductionTargetMg` capture — the first time this repo's matrix
+binder has bound two different Dafny methods from the same spec file
+across two requirements in one metadata file.
+`traceability_matrix.a.json`/`.md` regenerated via the real CLI: **all 6
+rows now render real `PROVEN` evidence — no GAP rows remain in this
+example.** `assert_no_realized_proven` (R3) independently re-checked.
+Full account: `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/REQ-DDI-6"
+section.
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s and `renal_adjustment/`'s discipline:
@@ -334,12 +416,15 @@ every capture below is the verbatim output of a real, installed Dafny
 fixtures exist for this example (Dafny-only, `metadata.a.yaml`'s
 `toolchain: {}`).
 
-- **`drug_interaction_checker.dfy`** — the committed spec: one
-  function, `CheckInteraction`, 63 match arms across 15 v1-scoped
-  agents, 60 pinning `ensures` clauses plus the one `requires` clause
-  excluding two agents' still-deferred apixaban cells. Captured by
-  `run_verify_ddi.py` → `raw_dafny_output_ddi.txt` /
-  `run_manifest_dafny_ddi.json`.
+- **`drug_interaction_checker.dfy`** — the committed spec: two
+  functions as of 2026-07-12. `CheckInteraction`, 63 match arms across
+  15 v1-scoped agents, 64 pinning `ensures` clauses, no `requires`
+  clause (REQ-DDI-5 made the four apixaban+inducer cells provable for
+  every `TreatmentIndication` value, so the prior exclusion was
+  removed). `DoseReductionTargetMg` (REQ-DDI-6), requires-gated bare-
+  `int`, 5 pinned mg figures. Both verify together: `2 verified, 0
+  errors`. Captured by `run_verify_ddi.py` → `raw_dafny_output_ddi.txt`
+  / `run_manifest_dafny_ddi.json`.
 - **`drug_interaction_checker_underconstrained.dfy`** — Gate C4
   honesty exhibit: the pre-fix spec (Gate C1's original 3 `ensures`
   clauses only), preserved verbatim, never updated after the fix.
@@ -370,22 +455,15 @@ fixtures exist for this example (Dafny-only, `metadata.a.yaml`'s
 
 Not resolved here — named, not guessed at, per this repo's discipline:
 
-1. **`REQ-DDI-5`** (the indication-dependent third axis for two
-   agents' apixaban cells) is a real, sourced, feasible extension, not
-   built because it doesn't change whether the core pipeline
-   generalizes — genuinely new modeling (a `TreatmentIndication` caller
-   input), not a cheap flag addition.
-2. **`REQ-DDI-6`** (the specific numeric dose-reduction targets) is
-   staged v2, per direct instruction ("both but in order of
-   difficulty") — `DoseReductionAdvised` the outcome *kind* is proven;
-   the exact mg/frequency target per `(doac, agent)` is v1
-   informational text only.
-3. **Whether `DoseReductionAdvised` should carry the outcome-kind
-   payload differently once `REQ-DDI-6` is built, or whether a
-   same-named companion function returning the numeric target is
-   cleaner** — a design call better made once v1 is real and verified,
-   not guessed at now.
-4. **Allergy/cross-sensitivity checking** is an explicit non-goal, not
+1. **Allergy/cross-sensitivity checking** is an explicit non-goal, not
    a deferred item — a related but clinically distinct concern from
    pharmacokinetic drug-drug interaction, out of scope for this example
    entirely.
+
+**Resolved, 2026-07-12** (previously listed here as open):
+`REQ-DDI-5` (the `TreatmentIndication` axis) and `REQ-DDI-6` (the
+numeric dose-reduction targets, via the `DoseReductionTargetMg`
+companion function — the design question of "same function vs.
+companion function" resolved in favor of a companion function) are both
+built — see the 2026-07-12 amendment above. No requirement in this
+example remains unbuilt.

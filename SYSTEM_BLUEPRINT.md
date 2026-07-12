@@ -1,6 +1,15 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-12 (three new sources added under `sources/` —
+Last updated: 2026-07-12 (REQ-DDI-5 and REQ-DDI-6 built for real —
+`TreatmentIndication` datatype and `DoseReductionTargetMg` companion
+function added to `drug_interaction_checker.dfy`, all six Gate C1–C6
+steps re-run for both requirements, Phase 3 regenerated: all 6
+requirement rows in this example now render as real PROVEN evidence, no
+GAP rows remain. See `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/6"
+section for the full account; the updated `drug_interaction_checker`
+component-map entries and summary table row below reflect the built
+state. Prior header, preserved: Last updated 2026-07-12 (three new
+sources added under `sources/` —
 `emc-smpc-apixaban-posology-2024.md`, `mhra-dsu-doac-renal-dosing-2023.md`,
 `fda-eliquis-label-interactions-2016.md` — verifying an externally-
 supplied REQ-DDI-5/6 scoping document against primary sources before
@@ -803,11 +812,21 @@ payloadguard-evidence/
 │   │                            every worked-example hand-trace against
 │   │                            the redesigned sketch
 │   ├── drug_interaction_checker.dfy  The committed spec: DOAC/Agent/
-│   │                            RiskDirection/Outcome/InteractionResult
-│   │                            datatypes, CheckInteraction (63 match
-│   │                            arms, 15 v1 agents, 60 pinning ensures
-│   │                            clauses — one per match arm) — verifies
-│   │                            clean (1 verified, 0 errors). No set/seq
+│   │                            RiskDirection/Outcome/InteractionResult/
+│   │                            TreatmentIndication (added 2026-07-12,
+│   │                            REQ-DDI-5, deliberately closed to exactly
+│   │                            2 constructors) datatypes, CheckInteraction
+│   │                            (63 match arms, 15 v1 agents, 64 pinning
+│   │                            ensures clauses — 60 original + 4 added
+│   │                            2026-07-12 for the apixaban+inducer
+│   │                            indication-dependent cells; no requires
+│   │                            clause as of 2026-07-12 — REQ-DDI-5 made
+│   │                            it provably unnecessary and removed it) —
+│   │                            plus DoseReductionTargetMg (added
+│   │                            2026-07-12, REQ-DDI-6: requires-gated
+│   │                            bare-int, 5 pinned mg figures, apixaban
+│   │                            excluded by construction) — both verify
+│   │                            clean (2 verified, 0 errors). No set/seq
 │   │                            Dafny types needed (Gate 1b finding).
 │   │                            The ensures clauses aren't decoration:
 │   │                            Gate C4 found the original 3-clause
@@ -834,23 +853,35 @@ payloadguard-evidence/
 │   │                            renal_adjustment's exact discipline
 │   ├── raw_dafny_output_ddi*/run_manifest_dafny_ddi*  Verbatim captures
 │   │                            + manifests
-│   ├── run_mutation_suite_ddi.py  Gate C5: 962 mutants (ROR/LOR/COI;
-│   │                            AOR/LVR both confirmed contributing
-│   │                            zero — no arithmetic operator or numeric
-│   │                            literal anywhere in CheckInteraction).
-│   │                            Found and fixed a real crash bug in
-│   │                            dafny_spec_lint.py's _apply_cmp along the
-│   │                            way (ordering operators on datatype
-│   │                            operands weren't modeled by Z3's Python
-│   │                            bindings)
+│   ├── run_mutation_suite_ddi.py  Gate C5: restructured 2026-07-12 to a
+│   │                            multi-function loop (FUNCTIONS tuple,
+│   │                            mirroring run_mutation_suite_renal.py's
+│   │                            precedent) covering both CheckInteraction
+│   │                            and DoseReductionTargetMg. Also names a
+│   │                            real, deliberately-not-fixed engine
+│   │                            boundary: generate_aor_mutants/
+│   │                            generate_lvr_mutants' body-scanning mode
+│   │                            refuses on DoseReductionTargetMg's body
+│   │                            (a `//` comment on the wildcard match
+│   │                            arm) — clause-level LVR alone already
+│   │                            gave equivalent coverage, used instead of
+│   │                            new shared-module engineering
 │   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
-│   │                            Gate C5: real captured outcome of all
-│   │                            962 mutants — 564 killed, 389
-│   │                            filtered_static, 7 survived (both
-│   │                            explained categories already established
-│   │                            by renal_adjustment's own Gate C5), 2
-│   │                            unclassifiable (genuine Dafny type
-│   │                            errors, not a parser ambiguity)
+│   │                            Gate C5: real captured outcome, re-run
+│   │                            2026-07-12 across both functions — 1178
+│   │                            mutants: 634 killed, 472 filtered_static,
+│   │                            68 survived (3 named categories: 28
+│   │                            REQ-DDI-5 indication-disjunction
+│   │                            redundant-guard survivors, 3 pre-existing
+│   │                            SSRIOrSNRI survivors unchanged, 37
+│   │                            DoseReductionTargetMg guard-antecedent
+│   │                            survivors), 4 unclassifiable (the
+│   │                            datatype-ordering type-error category
+│   │                            REQ-DDI-5 had made disappear, reappearing
+│   │                            via DoseReductionTargetMg's own new
+│   │                            requires clause — expected, not a
+│   │                            regression). All 10 LVR mutants on the 5
+│   │                            pinned mg figures killed, none survived
 │   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
 │                                actual sign-off deliverable. Confirmed
 │                                by Steven 2026-07-10 - closed, not
@@ -873,21 +904,29 @@ payloadguard-evidence/
 │                                since that spec had no other gate's
 │                                captures riding on its exact formatting
 │                                yet)
-│   ├── dafny_captures_index.json  Phase 3 (built 2026-07-11): 1 entry
-│   │                            (CheckInteraction), reused by all 4
-│   │                            requirement rows below - the first
-│   │                            many-requirements-to-one-proof binding
-│   │                            this repo's matrix binder has exercised
-│   ├── metadata.a.yaml          Phase 3: 6 requirement rows -
-│   │                            REQ-DDI-1/2/3/4 all sharing the SAME
-│   │                            one dafny evidence entry, REQ-DDI-5/6
-│   │                            honest GAP rows (intended PROVEN,
-│   │                            staged v2)
+│   ├── dafny_captures_index.json  Phase 3 (built 2026-07-11; extended
+│   │                            2026-07-12): 2 entries - CheckInteraction
+│   │                            (reused by 5 requirement rows, REQ-DDI-
+│   │                            1/2/3/4/5) and DoseReductionTargetMg
+│   │                            (REQ-DDI-6) - the first time this repo's
+│   │                            matrix binder has bound two different
+│   │                            Dafny methods from the same spec file
+│   │                            across two requirements in one metadata
+│   │                            file; both keys point at the same
+│   │                            physical capture files (one Dafny
+│   │                            invocation verifies both functions)
+│   ├── metadata.a.yaml          Phase 3: 6 requirement rows - REQ-DDI-
+│   │                            1/2/3/4/5 all sharing the SAME one
+│   │                            CheckInteraction evidence entry,
+│   │                            REQ-DDI-6 binding DoseReductionTargetMg
+│   │                            separately. No GAP rows remain as of
+│   │                            2026-07-12 (REQ-DDI-5/6 built for real)
 │   ├── traceability_matrix.a.json/.md  Phase 3: real, committed output
 │   │                            of `evidence.cli build --variant a`, no
 │   │                            --manifest/--concrete (no crosshair/
 │   │                            concrete_test evidence exists for this
-│   │                            Dafny-only example) - see
+│   │                            Dafny-only example) - regenerated
+│   │                            2026-07-12, all 6 rows PROVEN, see
 │   │                            tests/test_drug_interaction_checker_matrix.py
 │   └── README.md                Fixed audit-trail record (added
 │                                2026-07-11, closing a named-but-open
@@ -1207,7 +1246,7 @@ full account):**
 | Example | Requirements bound | Evidence | Realized GAP rows |
 |---|---|---|---|
 | `renal_adjustment` | REQ-RENAL-1/1a/2/5 (4 rows, 8 dafny evidence entries - `AssessRenalFunction` dual-cited to both REQ-RENAL-1 and REQ-RENAL-2, mirroring the `.dfy` file's own inline citation) | `dafny_captures_index.json`, 7 entries, all sharing one real capture (`raw_dafny_output_renal.txt`, `7 verified, 0 errors`) | REQ-RENAL-3/4/6/7 (intended PROVEN - named future formalization candidates); REQ-RENAL-8 (intended DECLARED - a permanent trust-boundary decision, not a proof target) |
-| `drug_interaction_checker` | REQ-DDI-1/2/3/4 (4 rows, all sharing the SAME one dafny evidence entry - the first many-requirements-to-one-proof binding this repo's matrix binder has exercised) | `dafny_captures_index.json`, 1 entry (`raw_dafny_output_ddi.txt`, `1 verified, 0 errors`) | REQ-DDI-5/6 (intended PROVEN - staged v2 items) |
+| `drug_interaction_checker` | REQ-DDI-1/2/3/4/5 (5 rows, all sharing the SAME one dafny evidence entry - the first many-requirements-to-one-proof binding this repo's matrix binder has exercised) plus REQ-DDI-6 (its own DoseReductionTargetMg entry - the first two-different-methods-in-one-file binding) | `dafny_captures_index.json`, 2 entries (`raw_dafny_output_ddi.txt`, `2 verified, 0 errors`, both keys sharing the one capture) | None - all 6 rows PROVEN as of 2026-07-12 |
 
 Both matrices pass `assert_no_realized_proven` (R3) and were built via
 `evidence.cli` directly with `--manifest`/`--concrete` omitted entirely -
