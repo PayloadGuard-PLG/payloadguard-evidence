@@ -1,6 +1,6 @@
 # Gate C5: mutation testing report — `drug_interaction_checker.dfy` (CheckInteraction, DoseReductionTargetMg)
 
-Generated 2026-07-12T20:46:42.840902+00:00. 1178 mutants total. Counts: filtered_static=472, killed=634, survived=68, unclassifiable=4
+Generated 2026-07-12T21:51:09.864542+00:00. 1178 mutants total. Counts: filtered_static=472, killed=641, survived=61, unclassifiable=4
 
 SOR: 0 mutants (no set-typed operations in this spec) — NOT APPLICABLE, checked.
 HOR: 0 mutants (no heap/object state, old()/reads/modifies) — NOT APPLICABLE, checked.
@@ -1083,14 +1083,14 @@ LVR: 0 mutants for CheckInteraction (no numeric literal anywhere) — checked, n
 | CheckInteraction | COI | `ensures` | COI: negate ensures clause '(doac == Rivaroxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)' | **killed** | 1 verified, 3 errors |
 | DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> <= | **unclassifiable** | <mutant>.dfy(315,17): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC) |
 | DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> >= | **unclassifiable** | <mutant>.dfy(315,17): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC) |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> != | **survived** | 2 verified, 0 errors |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> < | **survived** | 2 verified, 0 errors |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> > | **survived** | 2 verified, 0 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> != | **killed** | 1 verified, 3 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> < | **killed** | 1 verified, 3 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> > | **killed** | 1 verified, 3 errors |
 | DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> <= | **unclassifiable** | <mutant>.dfy(315,40): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent) |
 | DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> >= | **unclassifiable** | <mutant>.dfy(315,40): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent) |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> != | **survived** | 2 verified, 0 errors |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> < | **survived** | 2 verified, 0 errors |
-| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> > | **survived** | 2 verified, 0 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> != | **killed** | 1 verified, 5 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> < | **killed** | 1 verified, 5 errors |
+| DoseReductionTargetMg | ROR | `requires` | ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> > | **killed** | 1 verified, 5 errors |
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110': == -> <= | **filtered_static** | statically weaker (ensures) |
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110': == -> >= | **filtered_static** | statically weaker (ensures) |
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110': == -> != | **survived** | 2 verified, 0 errors |
@@ -1166,7 +1166,7 @@ LVR: 0 mutants for CheckInteraction (no numeric literal anywhere) — checked, n
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30': == -> != | **killed** | 1 verified, 1 errors |
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30': == -> < | **killed** | 1 verified, 1 errors |
 | DoseReductionTargetMg | ROR | `ensures` | ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30': == -> > | **killed** | 1 verified, 1 errors |
-| DoseReductionTargetMg | LOR | `requires` | LOR on requires clause '(doac == Dabigatran && agent == Verapamil)': && -> || | **survived** | 2 verified, 0 errors |
+| DoseReductionTargetMg | LOR | `requires` | LOR on requires clause '(doac == Dabigatran && agent == Verapamil)': && -> || | **killed** | 1 verified, 5 errors |
 | DoseReductionTargetMg | LOR | `ensures` | LOR on ensures clause '(doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110': && -> || | **filtered_static** | statically weaker (ensures) |
 | DoseReductionTargetMg | LOR | `ensures` | LOR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent) == 30': && -> || | **filtered_static** | statically weaker (ensures) |
 | DoseReductionTargetMg | LOR | `ensures` | LOR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent) == 30': && -> || | **filtered_static** | statically weaker (ensures) |

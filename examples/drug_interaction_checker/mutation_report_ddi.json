@@ -11387,9 +11387,9 @@
     "original_clause": "(doac == Dabigatran && agent == Verapamil)",
     "mutated_clause": "(doac != Dabigatran && agent == Verapamil)",
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 3 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -11400,9 +11400,9 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> <",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac < Dabigatran && agent == Verapamil)\\n        || (doac == Edoxaban && agent == Dronedarone)\\n        || (doac == Edoxaban && agent == ErythromycinSystemic)\\n        || (doac == Edoxaban && agent == Ketoconazole)\\n        || (doac == Edoxaban && agent == Ciclosporin)'): 'LT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 3 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -11413,9 +11413,9 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> >",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac > Dabigatran && agent == Verapamil)\\n        || (doac == Edoxaban && agent == Dronedarone)\\n        || (doac == Edoxaban && agent == ErythromycinSystemic)\\n        || (doac == Edoxaban && agent == Ketoconazole)\\n        || (doac == Edoxaban && agent == Ciclosporin)'): 'GT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 3 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -11450,9 +11450,9 @@
     "original_clause": "(doac == Dabigatran && agent == Verapamil)",
     "mutated_clause": "(doac == Dabigatran && agent != Verapamil)",
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 5 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -11463,9 +11463,9 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> <",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent < Verapamil)\\n        || (doac == Edoxaban && agent == Dronedarone)\\n        || (doac == Edoxaban && agent == ErythromycinSystemic)\\n        || (doac == Edoxaban && agent == Ketoconazole)\\n        || (doac == Edoxaban && agent == Ciclosporin)'): 'LT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 5 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -11476,9 +11476,9 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil)': == -> >",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent > Verapamil)\\n        || (doac == Edoxaban && agent == Dronedarone)\\n        || (doac == Edoxaban && agent == ErythromycinSystemic)\\n        || (doac == Edoxaban && agent == Ketoconazole)\\n        || (doac == Edoxaban && agent == Ciclosporin)'): 'GT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 5 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12282,9 +12282,9 @@
     "original_clause": "(doac == Dabigatran && agent == Verapamil)",
     "mutated_clause": "(doac == Dabigatran || agent == Verapamil)",
     "description": "LOR on requires clause '(doac == Dabigatran && agent == Verapamil)': && -> ||",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 5 errors",
+    "exit_code": 4
   },
   {
     "function": "DoseReductionTargetMg",

@@ -333,6 +333,10 @@ function DoseReductionTargetMg(doac: DOAC, agent: Agent): int
   // type regardless of the requires clause above -- every other
   // combination is genuinely unreachable at any real call site, the
   // same pattern CheckInteraction itself no longer needs (REQ-DDI-5)
-  // but this narrower-precondition function still does.
-  case _ => 0 // unreachable: excluded by the precondition above
+  // but this narrower-precondition function still does. `assert false`
+  // makes Dafny prove this branch is unreachable rather than silently
+  // returning a plausible-looking 0mg value on a hypothetical
+  // precondition-violating call from unverified code -- verified
+  // empirically to still type-check and verify cleanly.
+  case _ => (assert false; 0) // unreachable: excluded by the precondition above
 }

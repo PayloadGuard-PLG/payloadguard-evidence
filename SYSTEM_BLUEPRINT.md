@@ -869,19 +869,29 @@ payloadguard-evidence/
 │   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
 │   │                            Gate C5: real captured outcome, re-run
 │   │                            2026-07-12 across both functions — 1178
-│   │                            mutants: 634 killed, 472 filtered_static,
-│   │                            68 survived (3 named categories: 28
+│   │                            mutants: 641 killed, 472 filtered_static,
+│   │                            61 survived (3 named categories: 28
 │   │                            REQ-DDI-5 indication-disjunction
 │   │                            redundant-guard survivors, 3 pre-existing
-│   │                            SSRIOrSNRI survivors unchanged, 37
-│   │                            DoseReductionTargetMg guard-antecedent
-│   │                            survivors), 4 unclassifiable (the
-│   │                            datatype-ordering type-error category
-│   │                            REQ-DDI-5 had made disappear, reappearing
-│   │                            via DoseReductionTargetMg's own new
-│   │                            requires clause — expected, not a
-│   │                            regression). All 10 LVR mutants on the 5
-│   │                            pinned mg figures killed, none survived
+│   │                            SSRIOrSNRI survivors unchanged, 30
+│   │                            DoseReductionTargetMg ensures-only
+│   │                            guard-antecedent survivors), 4
+│   │                            unclassifiable (the datatype-ordering
+│   │                            type-error category REQ-DDI-5 had made
+│   │                            disappear, reappearing via
+│   │                            DoseReductionTargetMg's own new requires
+│   │                            clause — expected, not a regression).
+│   │                            All 10 LVR mutants on the 5 pinned mg
+│   │                            figures killed, none survived. A same-day
+│   │                            Qodo review finding on PR #39 (the
+│   │                            wildcard match arm's bare 0 fallback)
+│   │                            was fixed with `case _ => (assert
+│   │                            false; 0)`, which killed the 7
+│   │                            requires-clause survivors an earlier run
+│   │                            had found (down from 68 total/37 on this
+│   │                            function to 61 total/30 on this
+│   │                            function) — a real strengthening, not a
+│   │                            cosmetic count change
 │   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
 │                                actual sign-off deliverable. Confirmed
 │                                by Steven 2026-07-10 - closed, not

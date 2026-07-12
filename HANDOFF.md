@@ -31,22 +31,33 @@ explicitly marked "not yet confirmed — pending review," not
 self-signed-off), C4 (6 new STP lemmas, `20 verified, 0 errors`), C3
 (spec lint — `TreatmentIndication` got `EnumSort` treatment for free,
 weak-postcondition count 60→64), and C5 (mutation testing restructured
-to a multi-function loop: 1178 mutants, 634 killed, 472 filtered_static,
-68 survived — all in 3 named categories, none new — 4 unclassifiable, a
-real, expected reappearance of the datatype-ordering type-error category
-REQ-DDI-5 had made disappear, since `DoseReductionTargetMg`'s own new
-`requires` clause reintroduces a datatype comparison). A real engineering
-boundary named, not fixed: the mutation engine's body-scanning mode
-refuses on a `//` comment in `DoseReductionTargetMg`'s body — worked
-around with clause-level-only LVR (equivalent coverage, no new
-shared-module engineering needed), named explicitly in
-`run_mutation_suite_ddi.py`'s docstring. **Phase 3 regenerated**:
-`metadata.a.yaml`/`dafny_captures_index.json`/
+to a multi-function loop: 1178 mutants, first run 634 killed, 472
+filtered_static, 68 survived — all in 3 named categories, none new — 4
+unclassifiable, a real, expected reappearance of the datatype-ordering
+type-error category REQ-DDI-5 had made disappear, since
+`DoseReductionTargetMg`'s own new `requires` clause reintroduces a
+datatype comparison). A real engineering boundary named, not fixed: the
+mutation engine's body-scanning mode refuses on a `//` comment in
+`DoseReductionTargetMg`'s body — worked around with clause-level-only
+LVR (equivalent coverage, no new shared-module engineering needed),
+named explicitly in `run_mutation_suite_ddi.py`'s docstring. **A Qodo
+code-review finding on the resulting PR (#39) then improved the proof
+itself**: the wildcard match arm's bare `0` fallback (a reliability risk
+if this spec were ever compiled and called from unverified code with the
+precondition violated) was replaced with `case _ => (assert false; 0)`,
+verified to still compile and verify cleanly — and it made the 7
+requires-clause survivors from the first C5 run genuinely unprovable
+(killed) instead of silently surviving, since a mutated requires clause
+can now admit a pair that falls into the wildcard arm, defeating the
+`assert false`. **Re-run: 1178 mutants, 641 killed, 472 filtered_static,
+61 survived, 4 unclassifiable** — `DoseReductionTargetMg` now contributes
+exactly 30 survivors (ensures-only, no requires-clause survivors left).
+**Phase 3 regenerated**: `metadata.a.yaml`/`dafny_captures_index.json`/
 `traceability_matrix.a.json`/`.md` all rebuilt via the real CLI (never
 hand-edited) — all 6 requirement rows in this example now render real
 `PROVEN` evidence, no GAP rows remain. Full account:
 `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/REQ-DDI-6" section;
-`DEVLOG.md`'s top 2026-07-12 entry. 213 tests pass. **Prior update,
+`DEVLOG.md`'s top 2026-07-12 entry. 214 tests pass. **Prior update,
 preserved below** — Verified an external REQ-DDI-5/6 scoping
 document ("Can Apixaban Indication-Dependent Dosing and Numeric
 Dose-Reduction Rules Be Built From Public, Citable Sources?") against
@@ -681,7 +692,7 @@ constant at all — see `GATE_1C_AUDIT.md`'s 2026-07-09 addendum and
 ## Working conventions specific to this environment
 
 - Tests: `python -m pytest tests/ -q` — must pass before any commit.
-  213 as of this writing.
+  214 as of this writing.
 - Dafny 4.11.0 / Z3 are installed; `dafny verify <file>.dfy` works
   directly.
 - Branch workflow used this session: create a `claude/<topic>` branch

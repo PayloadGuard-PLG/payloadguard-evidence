@@ -130,7 +130,7 @@ comment) — not fixed, since clause-level LVR already proves all five
 figures exact and body-level would be redundant; named explicitly
 rather than forcing new shared-module engineering. `run_mutation_suite_ddi.py`
 restructured to the multi-function loop pattern
-`run_mutation_suite_renal.py` already established. Final real mutation
+`run_mutation_suite_renal.py` already established. First real mutation
 run: 1178 mutants, 634 killed, 472 filtered_static, 68 survived (all
 explained — 28 pre-existing REQ-DDI-5 disjunction survivors, 3
 pre-existing SSRIOrSNRI survivors, 37 new DoseReductionTargetMg
@@ -138,7 +138,16 @@ guard-antecedent survivors, same structural blind-spot category
 throughout), 4 unclassifiable (the datatype-ordering type-error
 category REQ-DDI-5 had made disappear entirely, reappearing as an
 expected consequence of `DoseReductionTargetMg`'s own new requires
-clause). Phase 3 regenerated: all six requirements now render
+clause). **Refined the same day** via a Qodo code-review finding on the
+resulting PR (#39): the wildcard match arm's bare `0` fallback was
+replaced with `case _ => (assert false; 0)` (verified to still compile
+and verify cleanly), which killed the 7 requires-clause survivors
+outright — a mutated requires clause can now admit a pair that falls
+into the wildcard arm, defeating the assertion. Re-run: 1178 mutants,
+641 killed, 472 filtered_static, 61 survived, 4 unclassifiable (unchanged
+counts confirm a real strengthening, not a shift elsewhere);
+`DoseReductionTargetMg` now contributes exactly 30 survivors,
+ensures-only. Phase 3 regenerated: all six requirements now render
 `intent_ok: true` with real `PROVEN` evidence, no GAP rows remain in
 this example. See `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/6" section
 for the full account.

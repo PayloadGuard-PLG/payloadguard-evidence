@@ -5,7 +5,7 @@ re-invoke Dafny, mirroring tests/test_mutation_report.py's/
 test_renal_mutation_report.py's exact discipline.
 
 Re-run for real 2026-07-12 after REQ-DDI-6 (DoseReductionTargetMg) was
-built on top of REQ-DDI-5: 68 real survivors and 4 real unclassifiable
+built on top of REQ-DDI-5: 61 real survivors and 4 real unclassifiable
 results across BOTH functions now mutation-tested in this file, all
 explained and categorized here, not silently accepted as "some mutants
 survived" - a future change that introduces a genuinely different,
@@ -13,12 +13,30 @@ unexplained survivor should fail this test, not slip through.
 CheckInteraction's own 31 survivors are byte-for-byte the same set
 REQ-DDI-5's own build already established (confirmed below, not just
 assumed unaffected) - this run didn't touch that function again.
-DoseReductionTargetMg contributes 37 new survivors and all 4
+DoseReductionTargetMg contributes 30 new survivors and all 4
 unclassifiable results - a real, expected REAPPEARANCE of the datatype-
 ordering type-error category REQ-DDI-5 had made disappear entirely (see
 test_dose_reduction_target_mg_unclassifiable_results_are_the_same_named_type_error_case
 below for why a new requires clause bringing it back is expected, not a
-regression)."""
+regression).
+
+Re-run a second time the same day, after a Qodo code-review finding on
+PR #39: the wildcard match arm's bare `0` literal was replaced with
+`(assert false; 0)`, making Dafny prove the arm is genuinely
+unreachable rather than silently returning a specious value on a
+hypothetical precondition-violating call from unverified code. This
+had a real, positive side effect on Gate C5's own results, not just a
+body-level safety improvement: the 7 requires-clause ROR survivors the
+first run found (widening/narrowing doac==Dabigatran/agent==Verapamil
+"not load-bearing" against the ensures clauses) are now ALL KILLED,
+because a mutated requires clause can admit a (doac, agent) pair that
+falls into the wildcard arm, and Dafny can no longer prove `assert
+false` there - the previously-silent requires-clause weakening is now
+a genuine, caught verification failure. Survivor count dropped 68->61
+(all 7 fewer are the former requires-clause category); killed rose
+634->641; filtered_static (472) and unclassifiable (4) both unchanged,
+confirming this was a real strengthening of the proof, not a shift in
+unrelated mutant classes."""
 
 import json
 import pathlib
@@ -38,9 +56,9 @@ def test_report_total_and_outcome_counts():
     for r in records:
         counts[r["outcome"]] = counts.get(r["outcome"], 0) + 1
     assert counts == {
-        "killed": 634,
+        "killed": 641,
         "filtered_static": 472,
-        "survived": 68,
+        "survived": 61,
         "unclassifiable": 4,
     }
 
@@ -160,33 +178,37 @@ def test_check_interaction_survivors_unchanged_by_req_ddi_6():
     assert len(ci_survivors) == 31
 
 
-def test_dose_reduction_target_mg_survivors_are_the_same_guard_antecedent_pattern():
-    """New category (37 survivors, all on DoseReductionTargetMg -
-    REQ-DDI-6, built 2026-07-12): 7 on the requires clause's own
-    doac==Dabigatran/agent==Verapamil comparisons (widening or narrowing
-    which inputs are admitted never forces a wrong claim, since no
-    ensures clause claims anything about a newly-admitted or newly-
-    excluded pair - the same "requires-clause weakening not load-bearing"
-    category CheckInteraction's own (now-removed) requires clause used to
-    fall into), plus 30 on the five ensures clauses' own doac/agent
-    identity comparisons (6 per clause: narrowing an antecedent to a pair
-    outside the function's actual 5-pair domain makes it vacuously
-    unsatisfiable within that domain, not wrong). The RESULT comparison
-    in every ensures clause (`== 110`, `== 30`) is never a ROR survivor -
-    confirmed directly below, not assumed - because mutating THAT specific
-    equality really would force a false claim Dafny correctly refuses.
-    LVR (the literal itself, 109/111, 29/31) also has zero survivors -
-    all 10 killed, confirmed in test_dose_reduction_target_mg_lvr_mutants_all_killed
+def test_dose_reduction_target_mg_survivors_are_ensures_only_guard_antecedent_pattern():
+    """30 survivors, all on DoseReductionTargetMg (REQ-DDI-6, built
+    2026-07-12), all on the five ensures clauses' own doac/agent identity
+    comparisons (6 per clause: narrowing an antecedent to a pair outside
+    the function's actual 5-pair domain makes it vacuously unsatisfiable
+    within that domain, not wrong). The RESULT comparison in every
+    ensures clause (`== 110`, `== 30`) is never a ROR survivor - confirmed
+    directly below, not assumed - because mutating THAT specific equality
+    really would force a false claim Dafny correctly refuses. LVR (the
+    literal itself, 109/111, 29/31) also has zero survivors - all 10
+    killed, confirmed in test_dose_reduction_target_mg_lvr_mutants_all_killed
     below - proving the five pinned figures are exact, not just roughly
-    right."""
+    right.
+
+    A FOURTH category - requires-clause ROR mutations on doac==Dabigatran/
+    agent==Verapamil - existed here in the first real run (7 survivors,
+    "requires-clause weakening not load-bearing", the same shape
+    CheckInteraction's own now-removed requires clause used to fall into)
+    but is gone as of the second run, confirmed directly below: fixing a
+    Qodo-flagged reliability finding (the wildcard match arm's bare `0`
+    literal replaced with `assert false; 0`, so Dafny proves that branch
+    unreachable rather than silently returning a specious value) had the
+    side effect of making a widened/narrowed requires clause a genuine,
+    caught verification failure instead of a silent survivor - a real
+    strengthening of the proof, not a coincidental count change."""
     records = _report()
     ddi6_survivors = [r for r in records if r["outcome"] == "survived" and r["function"] == "DoseReductionTargetMg"]
-    assert len(ddi6_survivors) == 37
+    assert len(ddi6_survivors) == 30
 
     requires_survivors = [r for r in ddi6_survivors if r["keyword"] == "requires"]
-    assert len(requires_survivors) == 7
-    for r in requires_survivors:
-        assert "Dabigatran" in r["original_clause"] and "Verapamil" in r["original_clause"]
+    assert requires_survivors == []
 
     ensures_survivors = [r for r in ddi6_survivors if r["keyword"] == "ensures"]
     assert len(ensures_survivors) == 30
@@ -199,6 +221,23 @@ def test_dose_reduction_target_mg_survivors_are_the_same_guard_antecedent_patter
         orig_consequent = r["original_clause"].split("==>", 1)[1]
         mut_consequent = r["mutated_clause"].split("==>", 1)[1]
         assert orig_consequent == mut_consequent, r
+
+
+def test_dose_reduction_target_mg_requires_clause_ror_mutants_are_now_all_killed():
+    """The assert-false fix (see module docstring) makes every ROR mutant
+    of DoseReductionTargetMg's requires clause either unclassifiable (the
+    4 datatype-comparison type errors, unaffected by this fix and tested
+    separately above) or killed - none survive. Confirmed directly
+    against the requires clause's own ROR mutants, not inferred from the
+    survivor count alone."""
+    records = _report()
+    requires_ror = [
+        r for r in records
+        if r["function"] == "DoseReductionTargetMg" and r["keyword"] == "requires" and r["operator"] == "ROR"
+    ]
+    assert len(requires_ror) > 0
+    for r in requires_ror:
+        assert r["outcome"] in ("killed", "unclassifiable"), r
 
 
 def test_dose_reduction_target_mg_lvr_mutants_all_killed():
@@ -217,11 +256,11 @@ def test_dose_reduction_target_mg_lvr_mutants_all_killed():
 def test_all_survivors_are_accounted_for_by_the_three_named_categories():
     """No fourth, unexplained survivor category exists - the 28 REQ-DDI-5
     disjunction survivors, the 3 pre-existing SSRIOrSNRI survivors, and
-    the 37 DoseReductionTargetMg guard-antecedent survivors add up to the
-    full 68, not just a subset each test happens to find."""
+    the 30 DoseReductionTargetMg ensures-only guard-antecedent survivors
+    add up to the full 61, not just a subset each test happens to find."""
     records = _report()
     survivors = [r for r in records if r["outcome"] == "survived"]
-    assert len(survivors) == 68
+    assert len(survivors) == 61
 
     ddi5 = [r for r in survivors if "treatmentIndication == AFStrokePrevention" in r["original_clause"]]
     ssri = [r for r in survivors if "doac == Dabigatran" in r["original_clause"] and "SSRIOrSNRI" in r["original_clause"]]

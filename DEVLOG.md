@@ -87,15 +87,15 @@ established order:**
   `run_mutation_suite_ddi.py`, mirroring `run_mutation_suite_renal.py`'s
   established precedent (including fixing
   `check_precondition_satisfiability`'s call to use the loop variable,
-  not a hardcoded constant). Real run: **1178 mutants — 634 killed, 472
-  filtered_static, 68 survived, 4 unclassifiable.**
+  not a hardcoded constant). First real run: **1178 mutants — 634
+  killed, 472 filtered_static, 68 survived, 4 unclassifiable.**
   `CheckInteraction`'s own 31 survivors are byte-for-byte the same set
   REQ-DDI-5's own build already established (confirmed directly, not
   assumed unaffected): 28 are a new category (the `treatmentIndication`
   disjunction — a redundant guard, since both named indications give the
   identical outcome and the match arm doesn't inspect the value at all
   for these four cells), 3 are the pre-existing SSRIOrSNRI antecedent
-  category, unchanged. `DoseReductionTargetMg` contributes 37 new
+  category, unchanged. `DoseReductionTargetMg` contributed 37 new
   survivors (7 requires-clause + 30 ensures-clause guard-antecedent
   mutations — the same "weakening not load-bearing" shape
   `CheckInteraction`'s own now-removed requires clause used to fall
@@ -108,6 +108,32 @@ established order:**
   not a regression in either function). All 10 LVR mutants on the five
   pinned mg figures killed, none survived — proof the figures are exact,
   not just roughly right.
+
+  **Refined the same day, via a Qodo code-review finding on PR #39**:
+  `DoseReductionTargetMg`'s wildcard match arm's bare `0` literal
+  (returned for any out-of-domain `(doac, agent)` pair, genuinely
+  unreachable given the `requires` clause but still a real fallback
+  value) was flagged as a reliability risk — if this spec were ever
+  compiled and called from unverified code with the precondition
+  violated, `0mg` is not a meaningful dose and would fail silently
+  rather than loudly. Fixed with `case _ => (assert false; 0)`,
+  verified empirically against the real Dafny 4.11.0 toolchain to still
+  compile and verify cleanly (Dafny proves the branch unreachable given
+  the requires clause, a vacuous-truth argument, not just accepted on
+  faith). **A real, positive side effect on Gate C5's own results**: the
+  7 requires-clause ROR survivors are now ALL KILLED — a mutated
+  requires clause can admit a `(doac, agent)` pair that falls into the
+  wildcard arm, and Dafny can no longer prove `assert false` there, so
+  the previously-silent "requires-clause weakening not load-bearing"
+  survivor category is now a genuine, caught verification failure.
+  **Re-run for real: 1178 mutants — 641 killed, 472 filtered_static, 61
+  survived, 4 unclassifiable** (`filtered_static`/`unclassifiable`
+  unchanged, confirming this was a real strengthening of the proof, not
+  a shift in unrelated mutant classes). `DoseReductionTargetMg` now
+  contributes exactly 30 survivors (ensures-only), not 37.
+  `tests/test_drug_interaction_checker_mutation_report.py` updated to
+  match, including a new test pinning that every requires-clause ROR
+  mutant is now killed or unclassifiable, never a survivor.
 
 **Phase 3 regenerated, not hand-edited.** `metadata.a.yaml`: REQ-DDI-5
 gained a real `implementation`/`evidence` block reusing the

@@ -382,19 +382,33 @@ new STP lemmas (`drug_interaction_checker_stp_suite.dfy`, `20 verified,
 treatment automatically (weak-postcondition count 60→64,
 `DoseReductionTargetMg`'s precondition confirmed satisfiable); C5's
 mutation suite was restructured to a multi-function loop (mirroring
-`run_mutation_suite_renal.py`'s precedent) — real run: **1178 mutants —
-634 killed, 472 filtered_static, 68 survived, 4 unclassifiable.**
-`CheckInteraction`'s own 31 survivors are byte-for-byte the same set
-REQ-DDI-5 alone already established (28 a new "redundant guard"
-category on the `treatmentIndication` disjunction, 3 the pre-existing
-SSRIOrSNRI category, unchanged). `DoseReductionTargetMg` contributes 37
-new survivors (the same guard-antecedent-weakening shape
-`CheckInteraction`'s own now-removed `requires` clause used to fall
-into) and all 4 unclassifiable results — a real, expected reappearance
-of the datatype-ordering type-error category REQ-DDI-5 had made
-disappear, since `DoseReductionTargetMg`'s own new `requires` clause
-reintroduces a datatype comparison. All 10 LVR mutants on the five
-pinned figures killed, none survived.
+`run_mutation_suite_renal.py`'s precedent) — first real run: **1178
+mutants — 634 killed, 472 filtered_static, 68 survived, 4
+unclassifiable.** `CheckInteraction`'s own 31 survivors are byte-for-byte
+the same set REQ-DDI-5 alone already established (28 a new "redundant
+guard" category on the `treatmentIndication` disjunction, 3 the
+pre-existing SSRIOrSNRI category, unchanged). `DoseReductionTargetMg`
+contributed 37 new survivors (7 requires-clause + 30 ensures-clause,
+the same guard-antecedent-weakening shape `CheckInteraction`'s own
+now-removed `requires` clause used to fall into) and all 4
+unclassifiable results — a real, expected reappearance of the
+datatype-ordering type-error category REQ-DDI-5 had made disappear,
+since `DoseReductionTargetMg`'s own new `requires` clause reintroduces a
+datatype comparison. All 10 LVR mutants on the five pinned figures
+killed, none survived.
+
+**Refined the same day, via a Qodo code-review finding on PR #39:** the
+wildcard match arm's bare `0` fallback (a reliability risk if this spec
+were ever compiled and called from unverified code with the precondition
+violated) was replaced with `case _ => (assert false; 0)`, verified
+empirically to still compile and verify cleanly. This had a real,
+positive side effect on Gate C5: a mutated requires clause can now admit
+a pair that falls into the wildcard arm, defeating the `assert false` —
+so the 7 requires-clause ROR survivors from the first run are now ALL
+KILLED. **Re-run: 1178 mutants — 641 killed, 472 filtered_static, 61
+survived, 4 unclassifiable** (`filtered_static`/`unclassifiable`
+unchanged); `DoseReductionTargetMg` now contributes exactly 30 survivors,
+ensures-only.
 
 **Phase 3 regenerated, not hand-edited.** `metadata.a.yaml`: REQ-DDI-5
 now binds the same `CheckInteraction` capture as REQ-DDI-1–4 (a fifth
