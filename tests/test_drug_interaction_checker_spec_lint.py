@@ -72,7 +72,8 @@ def test_check_interaction_weak_postcondition_count_matches_the_real_spec():
     AssessRenalFunction: each clause dispatches on an exhaustive,
     mutually-exclusive antecedent (one Agent, or one (DOAC, Agent) pair,
     or -- new for REQ-DDI-5 -- one (DOAC, Agent, TreatmentIndication)
-    triple), and Gate C4's real STP suite (14 verified, 0 errors)
+    triple), and Gate C4's real STP suite (20 verified, 0 errors, after
+    REQ-DDI-6's own lemmas joined REQ-DDI-5's)
     independently proves a representative set of them pinning, not just
     satisfied -- a stronger, proof-based check than this heuristic lint
     provides on its own. The function's clean Dafny verification (1
@@ -88,3 +89,23 @@ def test_check_interaction_weak_postcondition_count_matches_the_real_spec():
     change to any ensures clause is caught, not silently absorbed."""
     warnings = scan_weak_postconditions(SPEC, "CheckInteraction")
     assert len(warnings) == 64, len(warnings)
+
+
+# --------------------------------------- DoseReductionTargetMg (REQ-DDI-6)
+
+def test_dose_reduction_target_mg_precondition_is_satisfiable():
+    """DoseReductionTargetMg's requires clause -- exactly the five real
+    (doac, agent) pairs sources/sps-doac-interactions-2024.md states a
+    numeric target for -- is not vacuous: a real Z3 model exists (unlike
+    an accidentally-unsatisfiable precondition, which would make the
+    function's clean Dafny pass trivially true rather than a real
+    proof)."""
+    verdict, detail = check_precondition_satisfiability(SPEC, "DoseReductionTargetMg")
+    assert verdict == "sat", detail
+
+
+def test_dose_reduction_target_mg_weak_postcondition_count():
+    """All 5 pinning ensures clauses use a one-way ==>, same pattern as
+    CheckInteraction's own clauses -- expected, not a regression."""
+    warnings = scan_weak_postconditions(SPEC, "DoseReductionTargetMg")
+    assert len(warnings) == 5, len(warnings)

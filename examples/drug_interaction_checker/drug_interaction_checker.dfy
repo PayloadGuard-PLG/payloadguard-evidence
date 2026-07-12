@@ -285,3 +285,54 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   case (Edoxaban, Tacrolimus) => InteractionResult(Caution, BleedingRisk)
   case (Rivaroxaban, Tacrolimus) => InteractionResult(Caution, BleedingRisk)
 }
+
+// REQ-DDI-6 (built 2026-07-12): CheckInteraction's 60+ ensures clauses
+// prove the OUTCOME KIND (DoseReductionAdvised) for six real cells, but
+// not the specific mg figure -- that was v1 informational text only.
+// This function proves the figure, scoped to exactly the five cells
+// where sources/sps-doac-interactions-2024.md actually states a number:
+// (Dabigatran, Verapamil) -> 110mg twice daily; (Edoxaban, Dronedarone),
+// (Edoxaban, ErythromycinSystemic), (Edoxaban, Ketoconazole), (Edoxaban,
+// Ciclosporin) -> 30mg daily/once daily each (sourced individually per
+// row, not one shared constant -- confirmed the figure is the same
+// value for unrelated reasons in each case, not because they're the
+// same rule).
+//
+// (Dabigatran, SSRIOrSNRI) is deliberately EXCLUDED even though it also
+// yields DoseReductionAdvised (when hasOtherBleedingRiskFactors is
+// true): the source only says "consider a dose reduction (as per the
+// Summary of Product Characteristics)" for that cell, no mg figure --
+// it is v1/v2 informational text forever, not a temporary gap. Apixaban
+// never appears in this function's precondition at all -- not a special
+// case written in, but a direct consequence of CheckInteraction never
+// producing a DoseReductionAdvised outcome for apixaban anywhere in its
+// 63 match arms.
+//
+// requires-gated bare-int totality, matching SelectFormula/
+// AssessRenalFunction's existing precedent in renal_adjustment.dfy,
+// rather than introducing this repo's first Option<int> pattern.
+function DoseReductionTargetMg(doac: DOAC, agent: Agent): int
+  requires (doac == Dabigatran && agent == Verapamil)
+        || (doac == Edoxaban && agent == Dronedarone)
+        || (doac == Edoxaban && agent == ErythromycinSystemic)
+        || (doac == Edoxaban && agent == Ketoconazole)
+        || (doac == Edoxaban && agent == Ciclosporin)
+  ensures (doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110
+  ensures (doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent) == 30
+  ensures (doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent) == 30
+  ensures (doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent) == 30
+  ensures (doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30
+{
+  match (doac, agent)
+  case (Dabigatran, Verapamil) => 110
+  case (Edoxaban, Dronedarone) => 30
+  case (Edoxaban, ErythromycinSystemic) => 30
+  case (Edoxaban, Ketoconazole) => 30
+  case (Edoxaban, Ciclosporin) => 30
+  // Dafny's match requires exhaustiveness over the full (DOAC, Agent)
+  // type regardless of the requires clause above -- every other
+  // combination is genuinely unreachable at any real call site, the
+  // same pattern CheckInteraction itself no longer needs (REQ-DDI-5)
+  // but this narrower-precondition function still does.
+  case _ => 0 // unreachable: excluded by the precondition above
+}

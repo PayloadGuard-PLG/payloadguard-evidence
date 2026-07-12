@@ -35,10 +35,35 @@ lemma STP_Accept_CheckInteraction_DabigatranKetoconazole(hasFlag: bool)
 {}
 
 // GATE_1C_AUDIT.md hand-trace 2: edoxaban + ciclosporin gets a dose
-// reduction -- the outcome KIND is proven; the specific "30mg daily"
-// figure is REQ-DDI-6 (v2, not built).
+// reduction -- the outcome KIND is proven here; the specific "30mg
+// daily" figure is proven separately below (REQ-DDI-6, built
+// 2026-07-12).
 lemma STP_Accept_CheckInteraction_EdoxabanCiclosporin(hasFlag: bool)
   ensures CheckInteraction(Edoxaban, Ciclosporin, hasFlag, AFStrokePrevention) == InteractionResult(DoseReductionAdvised, BleedingRisk)
+{}
+
+// REQ-DDI-6 (built 2026-07-12): DoseReductionTargetMg's two real,
+// sourced figures, one worked example per DOAC rather than restating
+// all five cells (matching this suite's own stated non-exhaustive
+// discipline) -- continues the EdoxabanCiclosporin hand-trace above
+// with the actual mg figure, plus the other DOAC's own figure so both
+// real values in this function are proven at least once, not just one.
+lemma STP_Accept_DoseReductionTargetMg_EdoxabanCiclosporin()
+  ensures DoseReductionTargetMg(Edoxaban, Ciclosporin) == 30
+{}
+
+lemma STP_Accept_DoseReductionTargetMg_DabigatranVerapamil()
+  ensures DoseReductionTargetMg(Dabigatran, Verapamil) == 110
+{}
+
+// REJECT: guards against the real authoring mistake this two-DOAC,
+// two-figure function invites -- swapping which constant belongs to
+// which DOAC. 110 is real (Dabigatran+Verapamil), but wrong for this
+// cell; proves it's genuinely excluded, not just absent from the match
+// arm by coincidence.
+lemma STP_Reject_DoseReductionTargetMg_EdoxabanCiclosporin_Not110()
+  requires DoseReductionTargetMg(Edoxaban, Ciclosporin) == 110 // wrong: real answer is 30, dabigatran's figure not edoxaban's
+  ensures false
 {}
 
 // GATE_1C_AUDIT.md hand-trace 3: apixaban + dronedarone is the one real

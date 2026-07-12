@@ -292,3 +292,60 @@ from the regenerated summary, not re-derived from memory):**
 **Not yet confirmed — pending review against the real source, following
 this document's own established discipline of not rubber-stamping a
 Gate C6 addendum in the same pass that generated it.**
+
+## Addendum 2, 2026-07-12: REQ-DDI-6 built — new sign-off needed, not yet confirmed
+
+A second, new function, `DoseReductionTargetMg(doac: DOAC, agent:
+Agent): int`, proves the specific mg figure for the five real cells
+where `sources/sps-doac-interactions-2024.md` states a number:
+Dabigatran+Verapamil (110mg twice daily), and
+Edoxaban+{Dronedarone, ErythromycinSystemic, Ketoconazole, Ciclosporin}
+(30mg each). Ran `evidence.dafny_nl_summary.summarize_method` against
+this brand-new function — regenerated cleanly, unmodified tool, second
+confirmation the same session that this module's machinery needs no
+extension for a new function or a new closed-enum parameter shape.
+
+**What's new, for review:**
+
+1. **The five pinned figures** — confirm each against the real source
+   text directly, not against this document's own restatement:
+   `sources/sps-doac-interactions-2024.md` lines 57-65 (Dabigatran +
+   Verapamil, "Reduce the dose of dabigatran to 110mg twice daily"),
+   lines 49-55 (Edoxaban + Dronedarone, "30mg once daily"), lines 67-75
+   (Edoxaban + ErythromycinSystemic, "30mg daily"), lines 113-121
+   (Edoxaban + Ketoconazole, "30mg daily"), lines 152-157 (Edoxaban +
+   Ciclosporin, "30mg daily with ciclosporin"). The four Edoxaban
+   figures are all "30mg" but sourced from four separate rows, not one
+   shared rule — worth confirming that's read as four independent facts
+   that happen to share a value, not a single citation duplicated four
+   times.
+2. **The one deliberate exclusion**: (Dabigatran, SSRIOrSNRI) also
+   yields `DoseReductionAdvised` (when the caller-supplied
+   `hasOtherBleedingRiskFactors` flag is true) but is NOT covered by
+   this function — the source gives no mg figure for that cell ("as per
+   the Summary of Product Characteristics," no specific number stated
+   on this page). Confirm this reads as an honest scope boundary, not a
+   silently dropped case — the outcome KIND is still proven by
+   `CheckInteraction` itself, only the number is out of scope, and stays
+   out of scope permanently (not staged for a future v3).
+3. **Apixaban's total absence from this function's precondition** —
+   worth confirming this reads correctly as a *structural* consequence
+   (apixaban never produces `DoseReductionAdvised` anywhere in
+   `CheckInteraction`'s 64 ensures clauses, confirmed by direct grep
+   against the real committed spec, not assumed) rather than a
+   hand-written exclusion that could drift out of sync with the main
+   function if either one changes later.
+4. **The `requires`-gated bare-`int` design itself** — this is a
+   genuinely different shape from `CheckInteraction` (which is now
+   total, no precondition at all, after REQ-DDI-5). Confirm this
+   asymmetry is the right call: `CheckInteraction` covers every
+   `(doac, agent, ...)` triple because the source addresses every pair
+   (even if only to say `NotCovered`), while `DoseReductionTargetMg`
+   is genuinely partial because the source simply doesn't state a
+   number for most pairs — a `NotCovered`-style total return isn't
+   available here since "no number" isn't itself a value this function
+   could honestly return (unlike `InteractionResult`'s enumerated
+   `Outcome`).
+
+**Not yet confirmed — pending review against the real source, same
+discipline as Addendum 1 above.**
