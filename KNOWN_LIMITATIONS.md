@@ -4,7 +4,21 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-11 (Phase 3 — evidence packaging — built for
+Last updated: 2026-07-12 (an externally-supplied REQ-DDI-5/6 scoping
+document was verified against primary sources before any build
+decision, per direct instruction — "verify first, then we'll consider
+the solutions." All claimed quotes against the already-committed
+`sources/sps-doac-interactions-2024.md` passed
+`evidence/citation_gate.py`, including a deliberate false control that
+correctly returned NOT_FOUND. Three new sources fetched, verbatim-
+verified, and archived — both eMC apixaban SmPCs, the MHRA DSU renal
+table, and the US FDA ELIQUIS label (flagged as a non-UK contrast
+source) — see `sources/README.md`'s 2026-07-12 entries for the full
+account. Finding: REQ-DDI-5/REQ-DDI-6 are buildable from public UK
+sources; apixaban's absent numeric interaction rule is a genuine,
+sourced gap, not an oversight. No code changed, no requirement built —
+this is a sourcing-only update, not a new gate. Prior entry, preserved:
+Last updated 2026-07-11 (Phase 3 — evidence packaging — built for
 `renal_adjustment` and `drug_interaction_checker`, the first two
 Dafny-only examples to reach this stage; `dosage_calculator` remains the
 only example with a full three-evidence-type packaging. Found and fixed

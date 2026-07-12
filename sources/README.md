@@ -93,6 +93,38 @@ requirements documents, standards excerpts) that ground the claims in
   practice is heterogeneous and in transition, not settled on any single
   equation version.
 
+- `emc-smpc-apixaban-posology-2024.md` — added 2026-07-12. Two eMC
+  Summaries of Product Characteristics (products 2878, 5 mg; 4756, 2.5
+  mg), revised 04 January 2024. Verifies an external research document's
+  claims about apixaban's NVAF "2-of-3" dose-reduction rule and the
+  hip/knee VTE-prophylaxis regimen. Per rule 2 above: **confirms**, from
+  a second independent primary source, `sps-doac-interactions-2024.md`'s
+  own finding that apixaban drug-interaction guidance is qualitative
+  only (no numeric dose figure anywhere on either SmPC); **extends** the
+  requirements table with new, citable ground for a posology axis
+  `examples/drug_interaction_checker/` does not currently model. Does
+  not resolve `REQ-DDI-6`'s interaction-numeric gap for apixaban — see
+  `fda-eliquis-label-interactions-2016.md` below.
+- `mhra-dsu-doac-renal-dosing-2023.md` — added 2026-07-12. MHRA Drug
+  Safety Update volume 16, issue 10, May 2023, renal-impairment dosing
+  table. Per rule 2 above: **confirms**, from a third independent
+  primary source, that apixaban's UK dosing guidance is genuinely
+  indication-branched (the same structural pattern `REQ-DDI-5`'s scoping
+  identified for drug interactions, here shown for renal severity
+  instead); **extends** the posology picture with the renal-severity
+  axis. Not currently cited by any requirement.
+- `fda-eliquis-label-interactions-2016.md` — added 2026-07-12. US FDA
+  ELIQUIS prescribing information §7.1, accessed via DailyMed.
+  Deliberately a non-UK contrast source, not a substitute for UK
+  guidance — every other apixaban/DOAC source in this folder is
+  UK-jurisdiction. Per rule 2 above: **confirms** a genuine
+  jurisdictional divergence an external research document identified:
+  the US label states a numeric (50%) interaction-based dose reduction
+  for apixaban that no UK source states. Not currently cited by any
+  requirement; recorded to support an explicit, citable statement of
+  where UK and US guidance diverge, should that ever become relevant to
+  a scoping decision.
+
 ## Resolved questions
 
 - **`FRN` pump-type tag (resolved 2026-07-05):** the GIP v1.0 source tags

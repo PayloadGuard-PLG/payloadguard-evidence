@@ -1,6 +1,14 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-11 (Phase 3 — evidence packaging — built for
+Last updated: 2026-07-12 (three new sources added under `sources/` —
+`emc-smpc-apixaban-posology-2024.md`, `mhra-dsu-doac-renal-dosing-2023.md`,
+`fda-eliquis-label-interactions-2016.md` — verifying an externally-
+supplied REQ-DDI-5/6 scoping document against primary sources before
+any build decision. No requirement built, no code changed; see the
+updated `sources/` component-map entries below and
+`KNOWN_LIMITATIONS.md`'s 2026-07-12 header for the full account. Prior
+header, preserved: Last updated 2026-07-11 (Phase 3 — evidence
+packaging — built for
 `renal_adjustment` and `drug_interaction_checker`, the first two
 Dafny-only examples to reach this stage. Running `evidence.cli build`
 against a metadata file with zero crosshair/concrete_test evidence
@@ -910,12 +918,33 @@ payloadguard-evidence/
 │   │                            equation citations - confirms the real
 │   │                            ones, corrects a fabricated NICE NG203
 │   │                            citation
-│   └── sps-doac-interactions-2024.md  drug_interaction_checker's
-│                                primary source (NHS SPS DOAC-interaction
-│                                guidance) - raw-text extraction, not an
-│                                AI-summarized pass, after the summary was
-│                                found to flatten real per-DOAC/indication
-│                                structure the raw fetch caught
+│   ├── sps-doac-interactions-2024.md  drug_interaction_checker's
+│   │                            primary source (NHS SPS DOAC-interaction
+│   │                            guidance) - raw-text extraction, not an
+│   │                            AI-summarized pass, after the summary was
+│   │                            found to flatten real per-DOAC/indication
+│   │                            structure the raw fetch caught
+│   ├── emc-smpc-apixaban-posology-2024.md  Added 2026-07-12: verifies
+│   │                            an external REQ-DDI-5/6 research
+│   │                            document's SmPC claims against both
+│   │                            apixaban strengths (products 2878/4756);
+│   │                            confirms the NVAF "2-of-3" dose-
+│   │                            reduction rule is NVAF-only, and that
+│   │                            interaction dosing is qualitative-only
+│   │                            even on the legal SmPC. Not cited by any
+│   │                            requirement yet
+│   ├── mhra-dsu-doac-renal-dosing-2023.md  Added 2026-07-12: MHRA DSU
+│   │                            vol 16 iss 10 renal table, confirms the
+│   │                            same indication-branching pattern
+│   │                            REQ-DDI-5 identified for interactions
+│   │                            generalizes to renal dosing. Not cited
+│   │                            by any requirement yet
+│   └── fda-eliquis-label-interactions-2016.md  Added 2026-07-12:
+│                                deliberate non-UK contrast source (every
+│                                other apixaban/DOAC source here is
+│                                UK-jurisdiction) - confirms the US label
+│                                states a numeric 50% interaction dose
+│                                reduction that no UK source states
 └── tests/
     ├── conftest.py              Import-path plumbing
     ├── test_dosage_concrete.py  T4-0 CASES (single source of concrete truth)
