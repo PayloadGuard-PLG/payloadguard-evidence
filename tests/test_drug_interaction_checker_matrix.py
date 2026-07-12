@@ -1,9 +1,15 @@
 """Phase 3 (evidence packaging) for drug_interaction_checker: proves the
 real, committed metadata.a.yaml -> evidence.cli -> traceability_matrix.a
 pipeline works end to end for this example's genuinely new shape - one
-Dafny function (CheckInteraction) backing four requirement rows
-(REQ-DDI-1/2/3/4), plus two deliberately-unbuilt requirements
-(REQ-DDI-5/6) rendered as honest GAP rows, not hidden or faked.
+Dafny function (CheckInteraction) backing five requirement rows
+(REQ-DDI-1/2/3/4/5, REQ-DDI-5 built 2026-07-12), plus a second Dafny
+function (DoseReductionTargetMg) backing a sixth (REQ-DDI-6, also built
+2026-07-12) - the first time this repo's matrix binder has bound two
+different Dafny methods from the same spec file to two different
+requirements in one metadata file. No GAP rows remain in this example
+as of REQ-DDI-6 - see git history / DEVLOG.md for the earlier state
+where REQ-DDI-5/6 were honest, deliberate GAP rows before either was
+built.
 
 This example is also the first real exercise of evidence/cli.py's
 --manifest/--concrete becoming optional (2026-07): no crosshair or
@@ -102,18 +108,52 @@ def test_four_requirements_share_the_one_real_proof():
         assert rec["code_location"] == "drug_interaction_checker.dfy::CheckInteraction"
 
 
-def test_deferred_requirements_render_as_honest_gaps_not_hidden():
-    """REQ-DDI-5/6 (indication axis, numeric dose targets) are genuinely
-    unbuilt in v1 - the matrix must say so explicitly, not omit the rows
-    or silently mark them satisfied."""
+def test_req_ddi_5_shares_check_interaction_capture_as_a_fifth_binding():
+    """REQ-DDI-5 (the TreatmentIndication axis, built 2026-07-12) binds
+    the SAME CheckInteraction capture REQ-DDI-1/2/3/4 already bind - a
+    fifth requirement sharing one proof, not a new capture. Real,
+    PROVEN evidence, not a GAP row - this requirement was a deliberate
+    GAP until REQ-DDI-5 was actually built."""
     matrix = json.loads((ART_DIR / "traceability_matrix.a.json").read_text())
     by_id = {row["requirement_id"]: row for row in matrix["rows"]}
-    for req_id in ("REQ-DDI-5", "REQ-DDI-6"):
-        row = by_id[req_id]
-        assert row["intent_ok"] is False
-        assert row["evidence"] == []
-        assert "no evidence bound for this requirement" in row["notes"]
-        assert "intended PROVEN, realized GAP" in row["notes"]
+    row = by_id["REQ-DDI-5"]
+    assert row["intent_ok"] is True
+    assert len(row["evidence"]) == 1
+    rec = row["evidence"][0]
+    assert rec["method"] == "dafny"
+    assert rec["strength"] == "PROVEN"
+    assert rec["verifier_completion_status"] == "completed"
+    assert rec["code_location"] == "drug_interaction_checker.dfy::CheckInteraction"
+
+
+def test_req_ddi_6_binds_its_own_separate_dose_reduction_capture():
+    """REQ-DDI-6 (the numeric dose-reduction targets, built 2026-07-12)
+    binds DoseReductionTargetMg - a DIFFERENT Dafny method than
+    CheckInteraction, the first time this repo's matrix binder has
+    bound two different methods from the same spec file across two
+    requirements in one metadata file. Real, PROVEN evidence, not a
+    GAP row."""
+    matrix = json.loads((ART_DIR / "traceability_matrix.a.json").read_text())
+    by_id = {row["requirement_id"]: row for row in matrix["rows"]}
+    row = by_id["REQ-DDI-6"]
+    assert row["intent_ok"] is True
+    assert len(row["evidence"]) == 1
+    rec = row["evidence"][0]
+    assert rec["method"] == "dafny"
+    assert rec["strength"] == "PROVEN"
+    assert rec["verifier_completion_status"] == "completed"
+    assert rec["code_location"] == "drug_interaction_checker.dfy::DoseReductionTargetMg"
+
+
+def test_no_gap_rows_remain_in_this_example():
+    """As of REQ-DDI-6 (2026-07-12), every one of this example's six
+    requirements has real, bound evidence - confirmed directly across
+    the whole matrix, not just the two rows the tests above check
+    individually."""
+    matrix = json.loads((ART_DIR / "traceability_matrix.a.json").read_text())
+    for row in matrix["rows"]:
+        assert row["intent_ok"] is True, row["requirement_id"]
+        assert len(row["evidence"]) >= 1, row["requirement_id"]
 
 
 def test_no_crosshair_evidence_renders_bounds_as_explicitly_not_applicable():
