@@ -232,3 +232,63 @@ one real `ensures` clause, and every one of its 4 REJECT lemmas' claimed
 clauses for that cell. All mutually consistent; no drift found.
 
 Gate C6 is now closed for `drug_interaction_checker.dfy`.
+
+## Addendum, 2026-07-12: REQ-DDI-5 built — new sign-off needed, not yet confirmed
+
+`CheckInteraction` gained a fourth parameter,
+`treatmentIndication: TreatmentIndication` (`AFStrokePrevention` |
+`RecurrentVTEPrevention` — exactly the two indications
+`sources/sps-doac-interactions-2024.md` names for apixaban's
+rifampicin/carbamazepine/phenytoin/phenobarbital rows, deliberately not
+a third VTE-prophylaxis case, which exists only in the posology sources,
+not this interaction one). The precondition that previously excluded
+all four apixaban+{these agents} cells outright is now **removed
+entirely** — every constructible `TreatmentIndication` value makes the
+cell provable, so the function is now total, no `requires` clause at
+all. Re-ran `evidence.dafny_nl_summary.summarize_method` against the
+real, current source — regenerated cleanly, unmodified tool, confirming
+the research finding that this module's `EnumSort`-aware machinery
+(built 2026-07-10 for `DOAC`/`Agent`) generalizes to a new
+zero-argument-constructor datatype with no code changes.
+
+**What changed, for review (mirroring this document's own numbering
+from the regenerated summary, not re-derived from memory):**
+
+1. **Postcondition 27** (new):
+   `(doac == Apixaban && agent == Rifampicin && (treatmentIndication ==
+   AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention))
+   ==> ... == InteractionResult(Caution, ThrombosisRisk)`. Source:
+   `sources/sps-doac-interactions-2024.md` lines 80-84 — "use apixaban
+   with caution... for the following indications: prevention of stroke
+   and systemic embolism in people with non-valvular atrial
+   fibrillation; prevention of recurrent deep vein thrombosis (DVT) and
+   pulmonary embolism (PE)." Both named indications get the identical
+   outcome, which is why the postcondition doesn't need to distinguish
+   between them once the type is closed to exactly those two — worth
+   confirming this reads as intended, not as an accidental simplification
+   that lost the indication-dependence the requirement is named for.
+2. **Postcondition 48** (new, Carbamazepine), **52** (Phenytoin), **56**
+   (Phenobarbital): same shape, same two-indication citation, source
+   lines 135-136 ("Same indication-dependent structure as rifampicin").
+3. **The precondition's removal itself** — worth an explicit sign-off,
+   not just the four new postconditions. Confirm the reasoning holds:
+   removing the exclusion is correct *because* `TreatmentIndication` is
+   closed to exactly two constructors and the source gives the same
+   outcome for both, not because the underlying clinical caution was
+   ever wrong — the four previously-"unreachable" match arms
+   (`drug_interaction_checker.dfy`, now real arms returning `Caution,
+   ThrombosisRisk`) should read as the same clinical claim newly made
+   provable, not a different one.
+4. **Scope check**: confirm the two-constructor `TreatmentIndication`
+   choice (excluding VTE-prophylaxis) is still the right call — the
+   scoping decision (2026-07-12, prior session) was that VTE-prophylaxis
+   belongs to a different source document (the eMC SmPC's posology
+   material) with no stated interaction outcome for these agent rows,
+   so adding a third constructor here would either need an uncited
+   `ensures` clause or reintroduce an exclusion — worth confirming this
+   reasoning still holds now that the actual spec change is in front of
+   you, not just the plan.
+
+**Not yet confirmed — pending review against the real source, following
+this document's own established discipline of not rubber-stamping a
+Gate C6 addendum in the same pass that generated it.**

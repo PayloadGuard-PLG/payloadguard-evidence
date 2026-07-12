@@ -6,14 +6,13 @@
     "verify",
     "<mutant>.dfy"
   ],
-  "started_utc": "2026-07-10T14:10:24.246090+00:00",
+  "started_utc": "2026-07-12T20:13:01.891176+00:00",
   "target": "drug_interaction_checker.dfy",
   "function": "CheckInteraction",
-  "total_mutants": 962,
+  "total_mutants": 1072,
   "counts": {
-    "unclassifiable": 2,
-    "survived": 7,
-    "filtered_static": 389,
-    "killed": 564
+    "filtered_static": 437,
+    "killed": 604,
+    "survived": 31
   }
 }

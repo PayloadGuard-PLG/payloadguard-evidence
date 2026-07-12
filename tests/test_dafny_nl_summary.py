@@ -111,20 +111,26 @@ def test_standalone_comment_inside_a_multiline_clause_still_refuses():
         summarize_method(source, "Split")
 
 
-def test_real_ddi_spec_multiline_requires_clause_summarizes_correctly():
-    """End-to-end confirmation against the real, committed spec that
-    motivated this extension: CheckInteraction's one requires clause
-    spans three physical lines and carries no inline REQ-ID citation (a
-    real, notable fact about this function worth surfacing at sign-off -
-    unlike dosage.dfy/renal_adjustment.dfy, none of this spec's clauses
-    cite a per-clause REQ-ID; the source is validated as a whole table
-    instead)."""
+def test_real_ddi_spec_has_no_requires_clause_since_req_ddi_5():
+    """End-to-end confirmation against the real, committed spec.
+    CheckInteraction's one requires clause -- the three-physical-line
+    clause that originally motivated this module's multi-line extension
+    (2026-07-10) -- was removed entirely by REQ-DDI-5 (2026-07-12): once
+    TreatmentIndication closed the indication axis to exactly the two
+    values the source names, every constructible input became provable,
+    so the exclusion this requires clause used to encode was no longer
+    needed. The multi-line-reconstruction capability itself stays
+    protected by the synthetic fixture tests above -- this test confirms
+    the real spec's summary correctly reflects having no precondition at
+    all, not that it still exercises the multi-line path. Also confirms
+    a still-true, separate fact: no ensures clause here carries an inline
+    REQ-ID citation (unlike dosage.dfy/renal_adjustment.dfy, this spec is
+    validated as a whole table instead)."""
     source = (DDI_ART_DIR / "drug_interaction_checker.dfy").read_text()
     summary = summarize_method(source, "CheckInteraction")
-    assert (
-        "`!(doac == Apixaban && (agent == Rifampicin || agent == Carbamazepine "
-        "|| agent == Phenytoin || agent == Phenobarbital))`" in summary
-    )
+    assert "## Preconditions (must hold before the method runs)\n- (none declared)" in summary
+    assert "*(no requirement cited)*" in summary
+    assert "REQ-DDI" not in summary
 
 
 def test_method_with_no_requires_or_ensures_still_summarizes():
