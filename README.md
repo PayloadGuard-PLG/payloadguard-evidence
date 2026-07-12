@@ -94,7 +94,7 @@ the verbatim captured output at each step, is committed under
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (205 tests).
+- **`tests/`** — regression suite (214 tests).
 
 ## Quick start
 

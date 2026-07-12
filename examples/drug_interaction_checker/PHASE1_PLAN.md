@@ -98,6 +98,60 @@ pattern) — see `KNOWN_LIMITATIONS.md`'s "Phase 3 — evidence packaging"
 section for the full account. 6 new tests,
 `tests/test_drug_interaction_checker_matrix.py`.
 
+**REQ-DDI-5 and REQ-DDI-6 built 2026-07-12, closing what Phase 3 had
+left as honest GAP rows.** An externally-supplied research document
+asked whether either was buildable from public sources; verified first
+against five independent primary sources (`sources/sps-doac-interactions-2024.md`,
+both eMC apixaban SmPCs, the MHRA DSU renal table, and the US FDA label
+as a deliberate non-UK contrast) before any build decision — see
+`sources/README.md`'s 2026-07-12 entries. **REQ-DDI-5**: a new
+`TreatmentIndication` datatype (`AFStrokePrevention` |
+`RecurrentVTEPrevention`, deliberately closed to exactly the two
+indications the source names — not a third VTE-prophylaxis case, which
+belongs to a different source document with no stated interaction
+outcome here) as `CheckInteraction`'s fourth parameter. Both named
+indications give apixaban the identical outcome, so once the type is
+closed to exactly those two values, every constructible input is
+provable — the precondition that used to exclude the four
+apixaban+{Rifampicin, Carbamazepine, Phenytoin, Phenobarbital} cells is
+removed entirely, `CheckInteraction` is now total. **REQ-DDI-6**: a new
+companion function, `DoseReductionTargetMg(doac, agent): int`, proves
+the exact mg figure for the five real cells the source states one for
+(Dabigatran+Verapamil, 110mg; Edoxaban+{Dronedarone, ErythromycinSystemic,
+Ketoconazole, Ciclosporin}, 30mg each) — this spec's first-ever numeric
+literals. Dabigatran+SSRIOrSNRI is deliberately, permanently excluded
+(the source gives no mg figure for it); apixaban never appears in this
+function's precondition at all, a direct consequence of never producing
+`DoseReductionAdvised` for apixaban anywhere, not a hand-written
+exclusion. Full Gate C1–C6 re-run for both, twice (once per
+requirement): Gate C5 found a real new engineering boundary applying
+LVR to the new function (refuses on the match body's own explanatory
+comment) — not fixed, since clause-level LVR already proves all five
+figures exact and body-level would be redundant; named explicitly
+rather than forcing new shared-module engineering. `run_mutation_suite_ddi.py`
+restructured to the multi-function loop pattern
+`run_mutation_suite_renal.py` already established. First real mutation
+run: 1178 mutants, 634 killed, 472 filtered_static, 68 survived (all
+explained — 28 pre-existing REQ-DDI-5 disjunction survivors, 3
+pre-existing SSRIOrSNRI survivors, 37 new DoseReductionTargetMg
+guard-antecedent survivors, same structural blind-spot category
+throughout), 4 unclassifiable (the datatype-ordering type-error
+category REQ-DDI-5 had made disappear entirely, reappearing as an
+expected consequence of `DoseReductionTargetMg`'s own new requires
+clause). **Refined the same day** via a Qodo code-review finding on the
+resulting PR (#39): the wildcard match arm's bare `0` fallback was
+replaced with `case _ => (assert false; 0)` (verified to still compile
+and verify cleanly), which killed the 7 requires-clause survivors
+outright — a mutated requires clause can now admit a pair that falls
+into the wildcard arm, defeating the assertion. Re-run: 1178 mutants,
+641 killed, 472 filtered_static, 61 survived, 4 unclassifiable (unchanged
+counts confirm a real strengthening, not a shift elsewhere);
+`DoseReductionTargetMg` now contributes exactly 30 survivors,
+ensures-only. Phase 3 regenerated: all six requirements now render
+`intent_ok: true` with real `PROVEN` evidence, no GAP rows remain in
+this example. See `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/6" section
+for the full account.
+
 ## Objective
 
 Third worked example, PayloadGuard-Evidence's third independent
@@ -133,11 +187,11 @@ built from the raw re-fetch, not the summary.
 | ID | Requirement | Source |
 |---|---|---|
 | REQ-DDI-1 | The checker returns an `InteractionResult(outcome, direction)` pair, never a bare boolean. `outcome` is one of `NoInteractionExpected`, `Caution`, `CautionLowRelevance`, `Avoid`, `Contraindicated`, `DoseReductionAdvised`, `NotCovered`. `CautionLowRelevance` added 2026-07-10 (Gate 1c Finding 3, resolved by explicit decision) — distinct from plain `Caution`, for the two cells where the source hedges ("unlikely to be clinically relevant") without ever giving digoxin's clean, unqualified negative; distinct from `NoInteractionExpected` too, since the source never actually states a negative for those two cells the way it does for digoxin. `direction` is `BleedingRisk \| ThrombosisRisk \| NoRisk \| UnknownRisk`, added 2026-07-10 (Gate 1c Finding 1, resolved by explicit decision) — every one of the source's 17 sections is headed by exactly this distinction, and it's clinically load-bearing (the correct thing to monitor for differs). `NotCovered` is distinct from `NoInteractionExpected`: digoxin gets an explicit stated negative; an agent never mentioned on the source page (e.g. apixaban+dronedarone, see REQ-DDI-2) gets `NotCovered`, not an assumed negative. | `sources/sps-doac-interactions-2024.md`, digoxin entry + scope statement; `GATE_1C_AUDIT.md`'s Findings 1 and 3. |
-| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent, hasOtherBleedingRiskFactors: bool): InteractionResult` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering 14 of the source's 17 named sections with no extra caller input needed, plus SSRIs/SNRIs (REQ-DDI-3, its own row) = 15 of 17 in v1. **As of 2026-07-10 (Gate 1c Finding 2, resolved by explicit decision), the function also carries `requires !(doac == Apixaban && agent in {Rifampicin, Carbamazepine, Phenytoin, Phenobarbital})`** — recovering 6 of those two agents' 8 total DOAC cells as real, provable v1 cells (dabigatran/edoxaban/rivaroxaban for both), while making their still-blocked apixaban cells (REQ-DDI-5, the indication axis) a provable precondition violation rather than a silently undefined match arm. 17 of 17 named sections now have *something* defined for every cell they can have defined without REQ-DDI-5 — the only true gaps left are the 2 apixaban cells the precondition explicitly excludes, and the 1 real source gap (apixaban+dronedarone, `NotCovered`). Each cell's outcome is per-DOAC where the source differentiates — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections; `GATE_1C_AUDIT.md`'s Finding 2. |
-| REQ-DDI-3 | SSRIs/SNRIs are in v1 scope despite carrying an extra factor: dabigatran's dose-reduction advice is conditional on a **caller-supplied** `hasOtherBleedingRiskFactors: bool` — "consider a dose reduction... if the individual also has other risk factors for bleeding." Same trust-boundary shape as `renal_adjustment.dfy`'s `REQ-RENAL-8` (caller-supplied classification flags): the proof establishes correct branching given the flag, not the correctness of the flag's clinical determination. Cheap enough to include in v1 rather than deferred, unlike REQ-DDI-5 below. | `sources/sps-doac-interactions-2024.md`, SSRIs/SNRIs entry. |
+| REQ-DDI-2 | `CheckInteraction(doac: DOAC, agent: Agent, hasOtherBleedingRiskFactors: bool, treatmentIndication: TreatmentIndication): InteractionResult` — a total, hardcoded pairwise lookup (mirrors `GStage`'s hardcoded boundary table in `renal_adjustment.dfy`) covering all 17 of the source's named sections. **As of 2026-07-10 (Gate 1c Finding 2, resolved by explicit decision), the function briefly carried a precondition excluding the two agents' apixaban cells; as of 2026-07-12 (REQ-DDI-5, built), that precondition is removed entirely** — the fourth parameter, `treatmentIndication`, makes those cells provable for every constructible value, so `CheckInteraction` is now total with no requires clause at all. 17 of 17 named sections now have something defined for every cell, including the 1 real source gap (apixaban+dronedarone, `NotCovered`). Each cell's outcome is per-DOAC where the source differentiates — **not** a single outcome per agent regardless of DOAC. | `sources/sps-doac-interactions-2024.md`, per-drug sections; `GATE_1C_AUDIT.md`'s Finding 2. |
+| REQ-DDI-3 | SSRIs/SNRIs are in v1 scope despite carrying an extra factor: dabigatran's dose-reduction advice is conditional on a **caller-supplied** `hasOtherBleedingRiskFactors: bool` — "consider a dose reduction... if the individual also has other risk factors for bleeding." Same trust-boundary shape as `renal_adjustment.dfy`'s `REQ-RENAL-8` (caller-supplied classification flags): the proof establishes correct branching given the flag, not the correctness of the flag's clinical determination. Cheap enough to include in v1 directly (a boolean flag addition), unlike REQ-DDI-5 below, which needed a genuinely new datatype and was deferred to its own later build. | `sources/sps-doac-interactions-2024.md`, SSRIs/SNRIs entry. |
 | REQ-DDI-4 | Fail-safe: any `(doac, agent)` pair not present in the source's named set — including within-source gaps like apixaban+dronedarone — returns `NotCovered`, never silently `NoInteractionExpected`. Same "never default to the safe-looking answer on missing data" principle as `renal_adjustment.dfy`'s `REQ-RENAL-4`. | Design invariant, same category as `REQ-RENAL-4`; grounded in REQ-DDI-1's `NotCovered`/`NoInteractionExpected` distinction. |
-| REQ-DDI-5 (**named, deferred — not built in v1**) | Rifampicin and Carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication (AF-stroke-prevention/DVT-PE-recurrence-prevention vs. other indications) — genuinely new modeling (a `TreatmentIndication` caller input), not a cheap flag addition like REQ-DDI-3. Same pattern as `renal_adjustment`'s combined creatinine-cystatin-C eGFR: named as a real, sourced, feasible extension, not built because it doesn't change whether the core pipeline generalizes. | `sources/sps-doac-interactions-2024.md`, rifampicin + carbamazepine/phenytoin/phenobarbital entries. Additionally verified 2026-07-12 against two independent primary sources — `sources/emc-smpc-apixaban-posology-2024.md` (the same indication branching stated directly on the SmPC) and `sources/mhra-dsu-doac-renal-dosing-2023.md` (confirms the indication-conditional pattern generalizes beyond drug interactions to renal dosing too) — not yet reflected in this requirement's own text or a build. |
-| REQ-DDI-6 (**staged v2, per direct instruction — "both but in order of difficulty"**) | The `DoseReductionAdvised` outcome kind is proven in v1; the *specific numeric target* (e.g. dabigatran→110mg BD with verapamil, edoxaban→30mg OD/daily with dronedarone/erythromycin/ketoconazole/ciclosporin) is v1 informational text only, not a proven output. v2 extends the same lookup to prove the correct numeric target per `(doac, agent)` where the source states one. Explicitly staged, not dropped — the harder half comes after the classify-only core is real. **Apixaban is a genuine exception, not an oversight**: no UK source states a numeric interaction-based dose for apixaban (confirmed 2026-07-12 against three independent UK primary sources — SPS, both eMC SmPCs, MHRA DSU); the US FDA label does (`sources/fda-eliquis-label-interactions-2016.md`, a deliberate non-UK contrast source, not a build input). | `sources/sps-doac-interactions-2024.md`, per-drug dose-reduction cells. |
+| REQ-DDI-5 (**built 2026-07-12**) | Rifampicin and Carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication — a new `TreatmentIndication` datatype (`AFStrokePrevention` \| `RecurrentVTEPrevention`), deliberately closed to exactly the two indications the source names for these rows, not a third VTE-prophylaxis case (a different source document, no stated interaction outcome here). Both named indications give apixaban the identical outcome, so once the type is closed to exactly those two values, `CheckInteraction`'s precondition is removed entirely — every constructible input is now provable. | `sources/sps-doac-interactions-2024.md`, rifampicin + carbamazepine/phenytoin/phenobarbital entries. Additionally verified 2026-07-12 against two independent primary sources — `sources/emc-smpc-apixaban-posology-2024.md` (the same indication branching stated directly on the SmPC) and `sources/mhra-dsu-doac-renal-dosing-2023.md` (confirms the indication-conditional pattern generalizes beyond drug interactions to renal dosing too). |
+| REQ-DDI-6 (**built 2026-07-12**) | The `DoseReductionAdvised` outcome kind is proven by `CheckInteraction` itself; a new companion function, `DoseReductionTargetMg(doac, agent): int`, proves the specific numeric mg target for the five real cells the source states one for: Dabigatran+Verapamil (110mg BD), Edoxaban+{Dronedarone, ErythromycinSystemic, Ketoconazole, Ciclosporin} (30mg each, sourced individually per row, not one shared constant). Dabigatran+SSRIOrSNRI is deliberately, permanently excluded (the source gives no mg figure for it, deferring to the SmPC). **Apixaban is a genuine exception, not an oversight**: no UK source states a numeric interaction-based dose for apixaban (confirmed 2026-07-12 against three independent UK primary sources — SPS, both eMC SmPCs, MHRA DSU); the US FDA label does (`sources/fda-eliquis-label-interactions-2016.md`, a deliberate non-UK contrast source, not a build input) — apixaban never appears in `DoseReductionTargetMg`'s precondition at all, a direct consequence of `CheckInteraction` never producing `DoseReductionAdvised` for apixaban anywhere, not a hand-written exclusion. | `sources/sps-doac-interactions-2024.md`, per-drug dose-reduction cells. |
 
 **Explicit non-goal.** Allergy/cross-sensitivity checking (e.g.
 penicillin-class cross-reactivity) is a related but distinct clinical
@@ -265,11 +319,18 @@ judgment calls" section — see that file for the current, complete list
 rather than this one, which predates the audit. Retained below only for
 the one item the audit didn't independently re-raise:
 
-1. Whether `DoseReductionAdvised` should carry the outcome-kind payload
+1. ~~Whether `DoseReductionAdvised` should carry the outcome-kind payload
    differently once REQ-DDI-6 (v2) is built, or whether a same-named
-   companion function returning the numeric target is cleaner — a Gate
-   1b-level design call better made once v1 is real and verified, not
-   guessed at now.
+   companion function returning the numeric target is cleaner.~~
+   **Resolved 2026-07-12, when REQ-DDI-6 was actually built**: a
+   separate companion function, `DoseReductionTargetMg(doac, agent):
+   int`, requires-gated bare-`int` totality — matching
+   `renal_adjustment.dfy`'s `SelectFormula`/`AssessRenalFunction`
+   precedent exactly rather than introducing this repo's first
+   `Option<int>` pattern. `CheckInteraction` itself is unchanged by
+   this — `DoseReductionAdvised` still means only "the source names a
+   number for this cell," the companion function is where that number
+   gets proven.
 
 ## Documentation set updated so far
 
@@ -307,6 +368,7 @@ the one item the audit didn't independently re-raise:
 
 Not yet updated: nothing — all six Gate C1–C6 pipeline steps have now
 been built AND confirmed for this example, Phase 3 (evidence packaging)
-is built, and this example now has its own `README.md`. Remaining,
-explicitly named, not built: `REQ-DDI-5`/`REQ-DDI-6` (v2, staged) — the
-only work left on this worked example.
+is built, and this example now has its own `README.md`. As of
+2026-07-12, `REQ-DDI-5` and `REQ-DDI-6` are also both built (see the
+status block at the top of this file for the full account) — no
+requirement in this worked example remains deliberately unbuilt.
