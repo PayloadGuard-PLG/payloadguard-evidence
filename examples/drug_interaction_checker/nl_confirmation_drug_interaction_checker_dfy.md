@@ -951,9 +951,11 @@ defect: the "Summary presented, regenerated 2026-07-13 (current spec,
 both functions)" section header (above Addendum 1) still asserted its
 numbering "matches exactly" and "no renumbering was needed" — true when
 that paragraph was written, but false after Addendum 4 added four new
-`CheckInteraction` postconditions. Two of the four apixaban+inducer
+`CheckInteraction` postconditions. Three of the four apixaban+inducer
 cells' original `Caution` clauses shifted position (Carbamazepine 48→49,
-Phenytoin 52→54, Phenobarbital 56→59; Rifampicin's stayed at 27).
+Phenytoin 52→54, Phenobarbital 56→59); Rifampicin's stayed at 27 — the
+same three-shifted, one-unchanged split Addendum 1's own numbering
+correction (below) already recorded.
 
 Independently re-verified live before writing this addendum, not
 accepted on the finding's word alone: re-ran
