@@ -231,6 +231,27 @@ ordinary `killed`). Full account: `KNOWN_LIMITATIONS.md`'s "Gate C5
 extended: STP-suite escalation, 2026-07-13" section. 215 tests pass (up
 from 214).
 
+**Gate C6 confirmed and closed, 2026-07-13 (later still).** A full,
+independent, line-by-line review — all 68 `CheckInteraction`
+postconditions and all 5 `DoseReductionTargetMg` postconditions
+cross-checked directly against every one of `sources/sps-doac-interactions-2024.md`'s
+17 sections plus `sources/emc-smpc-dabigatran-indications-2025.md` for
+the indication-scoping cells — found no discrepancy. Two drafts of an
+externally-produced technical review report were independently
+cross-checked against the real artifacts; the first had four real
+errors (a lemma-count/task-count miscount, a reversed requires-clause-
+removal causality claim, a wrong tooling attribution for the
+multi-line-clause fix, and a conflation of two unrelated concepts), all
+confirmed by direct inspection; the corrected draft fixed all four,
+with one further precision point preserved rather than merged away
+(the established three-way distinction between vacuous-antecedent,
+redundant-consequent, and requires-domain-restriction mutation-survivor
+mechanisms). **Decision — Confirmed, 2026-07-13, by Steven.** All six
+Gate C1–C6 pipeline steps are now built AND confirmed for this example.
+Full account: `KNOWN_LIMITATIONS.md`'s "Gate C6 confirmed and closed"
+section; `nl_confirmation_drug_interaction_checker_dfy.md`'s final
+"Decision" section. 216 tests pass.
+
 ## Objective
 
 Third worked example, PayloadGuard-Evidence's third independent

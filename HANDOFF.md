@@ -8,7 +8,31 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **A pre-sign-off numbering-currency
+**Last updated:** 2026-07-13 — **Gate C6 confirmed and closed for
+`drug_interaction_checker.dfy`, against the raw sources directly.** A
+full, independent, line-by-line review (all 68 `CheckInteraction`
+postconditions + all 5 `DoseReductionTargetMg` postconditions, cross-
+checked against every one of `sources/sps-doac-interactions-2024.md`'s
+17 sections plus `sources/emc-smpc-dabigatran-indications-2025.md` for
+the indication-scoping cells) found no discrepancy. Live re-verification:
+`2 verified, 0 errors` (main spec), `25 verified, 0 errors` / 21 real
+lemmas (STP suite). Two drafts of an externally-produced "Gate C
+Technical Review Report" were independently cross-checked before being
+trusted — the first had four real errors (a lemma-count/task-count
+miscount, a reversed requires-clause-removal causality claim, a wrong
+attribution of the multi-line-clause fix, and a conflation of two
+unrelated concepts — "unclassifiable" static failures vs. "survived"
+function-transparency limits); the corrected draft fixed all four,
+verified precisely, with one further precision point preserved rather
+than merged away (the established three-way distinction between
+vacuous-antecedent, redundant-consequent, and requires-domain-
+restriction survivor mechanisms, only the last of which "function
+transparency" actually names). **Decision — Confirmed, 2026-07-13, by
+Steven.** Recorded in `nl_confirmation_drug_interaction_checker_dfy.md`'s
+final "Decision" section. **All six Gate C1–C6 pipeline steps are now
+built AND confirmed for `drug_interaction_checker` — Gate C6 is
+closed.** 216 tests pass. **Prior update, preserved below** —
+2026-07-13 — **A pre-sign-off numbering-currency
 review of the C6 doc caught a stale claim, fixed (Addendum 5).** The
 "Summary presented, regenerated 2026-07-13 (current spec, both
 functions)" section still asserted its postcondition numbering
@@ -709,9 +733,10 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   mislabeled an indication-dependent precondition exclusion as apixaban's
   "source gap" — the precondition itself was always correct). See
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C6 sign-off" section.
-- **All six Gate C1–C6 pipeline steps built for this example. Gate C6's
-  sign-off document is ready for Steven's actual review, but that
-  review — a recorded human decision — still hasn't happened.** Both
+- **All six Gate C1–C6 pipeline steps built AND confirmed for this
+  example, as of 2026-07-13 (later) — Gate C6 is closed.** See the
+  2026-07-13 "Last updated" entry at the top of this file for the full
+  final-review and sign-off account. Both
   previously out-of-scope v2 items are built (2026-07-12) and refined
   (2026-07-13): `REQ-DDI-5` (the `TreatmentIndication` axis for the two
   apixaban+inducer cells — `CheckInteraction`'s `requires` clause
