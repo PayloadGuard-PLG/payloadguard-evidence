@@ -160,7 +160,27 @@ to.**
 60. `(doac == Rivaroxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) == InteractionResult(Caution, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Tacrolimus) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
 ```
 
-## Summary presented, regenerated 2026-07-13 (current spec, both functions)
+## Summary presented, regenerated 2026-07-13 (current spec, both functions) — SUPERSEDED, historical record only
+
+**Marked historical 2026-07-13 (later, same day) — a numbering-currency
+review before Steven's actual C6 sign-off caught this.** The
+`CheckInteraction` block below is superseded by the "regenerated a
+third time" block further down (Addendum 4's fix); the
+`DoseReductionTargetMg` block below it is superseded by the
+"Regenerated a second time" block that follows it (Fix 2A). Both
+supersessions are already correctly noted in the prose at those later
+points — what wasn't caught until this pass is that **this section's
+own paragraph, immediately below, actively overclaims currency** and
+must not be read as accurate: it says the numbering "matches exactly"
+and "no renumbering was needed," which was true when written but is no
+longer true after Addendum 4 added four new postconditions to
+`CheckInteraction`. Left in place, unedited, as the frozen record of
+what this document claimed at that point — per this document's own
+"leave the history alone, re-anchor it" discipline — not silently
+corrected here. **The real, current numbering is 27/49/54/59** (not
+27/48/52/56) — see Addendum 1's own "Numbering correction" note below
+for the full account, and the "regenerated a third time" block further
+down for the actual current 68-postcondition summary.
 
 Regenerated for real via `evidence.dafny_nl_summary.summarize_method`
 against the current, committed `drug_interaction_checker.dfy` (post
@@ -171,6 +191,8 @@ cross-checked directly and confirmed the numbering matches exactly
 (`CheckInteraction`'s postconditions 27/48/52/56 below are the four
 REQ-DDI-5 apixaban+inducer cells, unchanged from what Addendum 1 already
 said — no renumbering was needed, only presenting the block itself).
+**This paragraph is the stale claim described in the header above — do
+not rely on it.**
 
 ```
 # Plain-English summary: `CheckInteraction`
@@ -919,3 +941,53 @@ supersedes the `CheckInteraction` block; the "Summary presented,
 regenerated a third time" block (following Addendum 2's own second
 `DoseReductionTargetMg` regeneration) is the one that matches the
 currently-committed spec exactly for both functions.
+
+## Addendum 5, 2026-07-13 (later still): a numbering-currency review, done before Steven's actual sign-off, caught a stale claim Addendum 4 left behind — fixed
+
+A pre-sign-off pass specifically checking whether the document's own
+numbering claims were still current (not whether the spec itself was
+correct — that was Addendum 4's job, already done) found one real
+defect: the "Summary presented, regenerated 2026-07-13 (current spec,
+both functions)" section header (above Addendum 1) still asserted its
+numbering "matches exactly" and "no renumbering was needed" — true when
+that paragraph was written, but false after Addendum 4 added four new
+`CheckInteraction` postconditions. Three of the four apixaban+inducer
+cells' original `Caution` clauses shifted position (Carbamazepine 48→49,
+Phenytoin 52→54, Phenobarbital 56→59); Rifampicin's stayed at 27 — the
+same three-shifted, one-unchanged split Addendum 1's own numbering
+correction (below) already recorded.
+
+Independently re-verified live before writing this addendum, not
+accepted on the finding's word alone: re-ran
+`evidence.dafny_nl_summary.summarize_method` against the real, current
+`drug_interaction_checker.dfy` directly — confirms 27/28, 49/50, 54/55,
+59/60 exactly, matching both this finding and the correction already
+recorded in Addendum 1 below (added when Addendum 4 was written, but
+never propagated to this earlier section's own header and paragraph).
+
+**Real risk this posed**: Addendum 1's own numbering claim was already
+corrected in place — a reader following Addendum 1 top to bottom lands
+on the truth. But the stale claim sitting directly above the actual
+68-postcondition block (the "Summary presented, regenerated 2026-07-13"
+section) was never corrected, and it's the more dangerous copy of the
+same error precisely because it sits at the point of use, asserting
+false confidence right next to the numbers a reviewer would actually be
+reading.
+
+**Fixed**: the section header marked `— SUPERSEDED, historical record
+only` (matching the 2026-07-10 section's own established convention);
+a new paragraph inserted immediately below it explaining the stale
+claim, not deleting or rewriting the original paragraph — left in
+place, unedited, per this document's own "leave the history alone,
+re-anchor it" discipline, with an explicit "do not rely on this" flag
+appended directly to the stale paragraph itself so it can't be
+mistaken for current on a skim.
+
+No `.dfy` spec content is affected by this — this is a documentation-
+currency fix only, the same category as Addendum 3's Finding 1 (a stale
+NL summary) and this file's own established "dated correction, not
+silent rewrite" pattern used throughout. Full risk this addendum
+closes: nothing — Addendum 1's numbers were already correct at the
+point a real C6 reviewer would rely on them; this closes the one
+remaining path to the same wrong answer, not a previously-uncaught
+factual error in the spec itself.

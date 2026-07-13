@@ -8,7 +8,23 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **Gate C5 extended to re-verify the
+**Last updated:** 2026-07-13 — **A pre-sign-off numbering-currency
+review of the C6 doc caught a stale claim, fixed (Addendum 5).** The
+"Summary presented, regenerated 2026-07-13 (current spec, both
+functions)" section still asserted its postcondition numbering
+"matched exactly" after Addendum 4 shifted three of the four
+apixaban+inducer `Caution` clauses (48→49, 52→54, 56→59). Addendum 1's
+own numbering claim had already been corrected when Addendum 4 was
+written, but this earlier, more dangerously-placed copy (sitting
+directly above the actual block, not deferred to a cross-reference)
+was missed. Independently re-verified live before fixing: re-ran the
+NL summary generator against the real spec, confirmed 27/28, 49/50,
+54/55, 59/60 exactly. Fixed: section marked `— SUPERSEDED, historical
+record only`, a new paragraph explaining the stale claim inserted, the
+original left in place unedited (this document's own established
+discipline) with a "do not rely on this" flag. No spec content
+affected — documentation-currency only. 216 tests pass. **Prior
+update, preserved below** — 2026-07-13 — **Gate C5 extended to re-verify the
 committed STP suite against every mutation-testing survivor, not just
 the bare spec — caught a real, previously-latent scope-leak class before
 it could ever become a regression.** Asked, during Gate C6 sign-off
