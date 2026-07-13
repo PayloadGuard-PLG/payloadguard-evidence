@@ -6,6 +6,37 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-13 — Pre-sign-off numbering-currency review of the C6 doc caught a stale claim Addendum 4 left behind; fixed
+
+A pre-sign-off review of `nl_confirmation_drug_interaction_checker_dfy.md`,
+checking specifically whether the document's own numbering claims were
+still current (not the spec itself — Addendum 4 already covered that),
+found one real defect: the "Summary presented, regenerated 2026-07-13
+(current spec, both functions)" section's header and paragraph still
+asserted its postcondition numbering "matches exactly" and "no
+renumbering was needed" — true when written, false after Addendum 4
+added four new `CheckInteraction` postconditions and shifted three of
+the four apixaban+inducer `Caution` clauses (Carbamazepine 48→49,
+Phenytoin 52→54, Phenobarbital 56→59). Addendum 1's own numbering claim
+had already been corrected in place when Addendum 4 was written, but
+that correction was never propagated to this earlier section, whose
+stale claim sits directly above the actual 68-postcondition block —
+the more dangerous copy of the same error, since it's positioned at the
+point of use rather than deferred to a cross-reference.
+
+Independently re-verified live before acting, not accepted on the
+finding's word alone: re-ran `evidence.dafny_nl_summary.summarize_method`
+against the real, current spec directly, confirming 27/28, 49/50, 54/55,
+59/60 exactly. **Fixed**: the section header marked `— SUPERSEDED,
+historical record only` (matching this document's own established
+2026-07-10 convention); a new paragraph explaining the stale claim
+inserted immediately below, the original paragraph left in place,
+unedited, per this document's own "leave the history alone, re-anchor
+it" discipline, with an explicit "do not rely on this" flag appended
+directly to the stale text. Recorded as Addendum 5. No `.dfy` spec
+content affected — a documentation-currency fix only. 216 tests pass
+(unaffected, doc-only change).
+
 ## 2026-07-13 — Gate C5 extended to re-verify the STP suite against every mutation-testing survivor; caught a real latent scope-leak class before it could ever become a regression
 
 Continuation of the same day's work (see the entry immediately below,
