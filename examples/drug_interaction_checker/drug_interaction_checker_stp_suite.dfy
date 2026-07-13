@@ -49,11 +49,11 @@ lemma STP_Accept_CheckInteraction_EdoxabanCiclosporin(hasFlag: bool)
 // with the actual mg figure, plus the other DOAC's own figure so both
 // real values in this function are proven at least once, not just one.
 lemma STP_Accept_DoseReductionTargetMg_EdoxabanCiclosporin()
-  ensures DoseReductionTargetMg(Edoxaban, Ciclosporin) == 30
+  ensures DoseReductionTargetMg(Edoxaban, Ciclosporin, AFStrokePrevention) == 30
 {}
 
 lemma STP_Accept_DoseReductionTargetMg_DabigatranVerapamil()
-  ensures DoseReductionTargetMg(Dabigatran, Verapamil) == 110
+  ensures DoseReductionTargetMg(Dabigatran, Verapamil, AFStrokePrevention) == 110
 {}
 
 // REJECT: guards against the real authoring mistake this two-DOAC,
@@ -62,8 +62,23 @@ lemma STP_Accept_DoseReductionTargetMg_DabigatranVerapamil()
 // cell; proves it's genuinely excluded, not just absent from the match
 // arm by coincidence.
 lemma STP_Reject_DoseReductionTargetMg_EdoxabanCiclosporin_Not110()
-  requires DoseReductionTargetMg(Edoxaban, Ciclosporin) == 110 // wrong: real answer is 30, dabigatran's figure not edoxaban's
+  requires DoseReductionTargetMg(Edoxaban, Ciclosporin, AFStrokePrevention) == 110 // wrong: real answer is 30, dabigatran's figure not edoxaban's
   ensures false
+{}
+
+// REQ-DDI-6 EXTENDED 2026-07-13 (Gate C6 review, Finding 2):
+// DoseReductionTargetMg's Dabigatran+Verapamil cell is now
+// indication-scoped, matching the real source
+// (sources/sps-doac-interactions-2024.md lines 57-65: "for AF-stroke-
+// prevention and DVT/PE-prevention-and-treatment indications
+// specifically"). Second ACCEPT lemma proves the other admitted
+// indication gives the identical figure (both named indications get
+// the same 110mg rule, confirmed against
+// sources/emc-smpc-dabigatran-indications-2025.md), mirroring how
+// REQ-DDI-5's own apixaban clauses get two ACCEPT lemmas, one per
+// admitted indication, not just one.
+lemma STP_Accept_DoseReductionTargetMg_DabigatranVerapamil_RecurrentVTEPrevention()
+  ensures DoseReductionTargetMg(Dabigatran, Verapamil, RecurrentVTEPrevention) == 110
 {}
 
 // GATE_1C_AUDIT.md hand-trace 3: apixaban + dronedarone is the one real
@@ -152,4 +167,38 @@ lemma STP_Reject_CheckInteraction_RivaroxabanVerapamil_NotNoInteractionExpected(
 lemma STP_Reject_CheckInteraction_ApixabanRifampicin_NotStillNotCovered(hasFlag: bool)
   requires CheckInteraction(Apixaban, Rifampicin, hasFlag, AFStrokePrevention) == InteractionResult(NotCovered, UnknownRisk) // wrong: was the pre-REQ-DDI-5 unreachable-arm default
   ensures false
+{}
+
+// ============================================== Domain-coherence lemma
+
+// Gate C6 review, Fix 2B (2026-07-13, nl_confirmation_drug_interaction_
+// checker_dfy.md's "Addendum 3"): proves DoseReductionTargetMg's
+// precondition domain EXACTLY equals "CheckInteraction says
+// DoseReductionAdvised" minus the two known, deliberate exclusions --
+// not asserted by grep against the real spec (the review's own original
+// wording), a real theorem instead. Self-maintaining: adding a new
+// DoseReductionAdvised cell to CheckInteraction, or a new pinned figure
+// to DoseReductionTargetMg, without updating the other, breaks this
+// lemma's own verification -- nothing else in this suite would catch
+// that drift.
+//
+// A real, caught mistake while building this, not smoothed over: the
+// review's own proposed lemma text (before the third
+// TreatmentIndication constructor and its indication guard on the
+// Dabigatran+Verapamil requires clause existed) omitted the third
+// conjunct below -- and would NOT verify once that guard was added.
+// CheckInteraction's own (Dabigatran, Verapamil) ensures clause claims
+// DoseReductionAdvised unconditionally, for every TreatmentIndication
+// value including OrthopaedicVTEProphylaxis (the OUTCOME KIND doesn't
+// depend on indication -- verapamil interacts with dabigatran
+// regardless of what it's prescribed for); only the exact MG FIGURE is
+// indication-scoped. Confirmed by hand-deriving and independently
+// verifying a standalone probe before editing this file, not assumed
+// from the review's text transferring unchanged.
+lemma DoseTargetDomainAgreesWithCheckInteraction(doac: DOAC, agent: Agent, f: bool, ti: TreatmentIndication)
+  ensures (CheckInteraction(doac, agent, f, ti).outcome == DoseReductionAdvised
+           && !(doac == Dabigatran && agent == SSRIOrSNRI)
+           && !(doac == Dabigatran && agent == Verapamil && ti == OrthopaedicVTEProphylaxis))
+      <==> ((doac == Dabigatran && agent == Verapamil && (ti == AFStrokePrevention || ti == RecurrentVTEPrevention))
+         || (doac == Edoxaban && (agent == Dronedarone || agent == ErythromycinSystemic || agent == Ketoconazole || agent == Ciclosporin)))
 {}

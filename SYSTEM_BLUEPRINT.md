@@ -1,6 +1,29 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-12 (REQ-DDI-5 and REQ-DDI-6 built for real —
+Last updated: 2026-07-13 (a Gate C6 review's real spec-scope finding
+resolved: `TreatmentIndication` gained a third constructor,
+`OrthopaedicVTEProphylaxis`, for dabigatran's real, current, UK-licensed
+third indication (confirmed via `sources/emc-smpc-dabigatran-indications
+-2025.md`), and `DoseReductionTargetMg` gained a `treatmentIndication`
+parameter with an indication guard on its Dabigatran+Verapamil cell —
+decided by Steven, not an assistant, after primary-source verification.
+A second, independent finding surfaced while building this:
+`evidence/dafny_mutate.py`'s clause-site locator silently truncated the
+new multi-line clauses, a real mutation-testing coverage regression;
+fixed by reformatting to single lines, matching `renal_adjustment.dfy`'s
+own precedent. All six gates re-run for real; STP suite `23 verified, 0
+errors` (up from 20, a new domain-coherence lemma); mutation suite 1250
+mutants — 668 killed, 482 filtered_static, 74 survived, 26
+unclassifiable. Phase 3 regenerated, still 6/6 PROVEN. See
+`KNOWN_LIMITATIONS.md`'s "Gate C6 review, 2026-07-13" section for the
+full account; the updated `drug_interaction_checker` component-map
+entries below reflect this. Prior header, preserved: Last updated
+2026-07-13 (a pre-sign-off review of REQ-DDI-5/REQ-DDI-6's Gate C6
+addenda found two real doc defects — a stale NL summary, a missing
+review item — both fixed, plus one genuine spec-scope finding left
+open, later resolved as described above). Prior header, preserved: Last
+updated 2026-07-12 (REQ-DDI-5
+and REQ-DDI-6 built for real —
 `TreatmentIndication` datatype and `DoseReductionTargetMg` companion
 function added to `drug_interaction_checker.dfy`, all six Gate C1–C6
 steps re-run for both requirements, Phase 3 regenerated: all 6
@@ -814,8 +837,13 @@ payloadguard-evidence/
 │   ├── drug_interaction_checker.dfy  The committed spec: DOAC/Agent/
 │   │                            RiskDirection/Outcome/InteractionResult/
 │   │                            TreatmentIndication (added 2026-07-12,
-│   │                            REQ-DDI-5, deliberately closed to exactly
-│   │                            2 constructors) datatypes, CheckInteraction
+│   │                            REQ-DDI-5, AFStrokePrevention |
+│   │                            RecurrentVTEPrevention; extended
+│   │                            2026-07-13 with a third constructor,
+│   │                            OrthopaedicVTEProphylaxis, for REQ-DDI-6's
+│   │                            own indication scoping - apixaban's own
+│   │                            rows are unaffected, still guard on only
+│   │                            the first two) datatypes, CheckInteraction
 │   │                            (63 match arms, 15 v1 agents, 64 pinning
 │   │                            ensures clauses — 60 original + 4 added
 │   │                            2026-07-12 for the apixaban+inducer
@@ -825,7 +853,12 @@ payloadguard-evidence/
 │   │                            plus DoseReductionTargetMg (added
 │   │                            2026-07-12, REQ-DDI-6: requires-gated
 │   │                            bare-int, 5 pinned mg figures, apixaban
-│   │                            excluded by construction) — both verify
+│   │                            excluded by construction; extended
+│   │                            2026-07-13 with a treatmentIndication
+│   │                            parameter and an indication guard on its
+│   │                            Dabigatran+Verapamil cell, the four
+│   │                            Edoxaban cells staying deliberately
+│   │                            indication-free) — both verify
 │   │                            clean (2 verified, 0 errors). No set/seq
 │   │                            Dafny types needed (Gate 1b finding).
 │   │                            The ensures clauses aren't decoration:
@@ -865,33 +898,50 @@ payloadguard-evidence/
 │   │                            (a `//` comment on the wildcard match
 │   │                            arm) — clause-level LVR alone already
 │   │                            gave equivalent coverage, used instead of
-│   │                            new shared-module engineering
+│   │                            new shared-module engineering. A second,
+│   │                            independent engine gap found 2026-07-13
+│   │                            while adding DoseReductionTargetMg's
+│   │                            treatmentIndication parameter:
+│   │                            evidence/dafny_mutate.py's clause-site
+│   │                            locator silently truncates a
+│   │                            requires/ensures clause at its first
+│   │                            physical line - a real coverage
+│   │                            regression (1178 mutants dropped to
+│   │                            1171 with entire disjuncts missing),
+│   │                            not caught by Dafny or by pinned-count-
+│   │                            only pytest assertions, diagnosed by
+│   │                            reading original_clause text directly.
+│   │                            Fixed by reformatting the two new
+│   │                            clauses to single lines (matching
+│   │                            renal_adjustment.dfy's own established
+│   │                            precedent for this exact gap), not by
+│   │                            extending the tool.
 │   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
-│   │                            Gate C5: real captured outcome, re-run
-│   │                            2026-07-12 across both functions — 1178
-│   │                            mutants: 641 killed, 472 filtered_static,
-│   │                            61 survived (3 named categories: 28
-│   │                            REQ-DDI-5 indication-disjunction
-│   │                            redundant-guard survivors, 3 pre-existing
-│   │                            SSRIOrSNRI survivors unchanged, 30
-│   │                            DoseReductionTargetMg ensures-only
-│   │                            guard-antecedent survivors), 4
-│   │                            unclassifiable (the datatype-ordering
-│   │                            type-error category REQ-DDI-5 had made
-│   │                            disappear, reappearing via
-│   │                            DoseReductionTargetMg's own new requires
-│   │                            clause — expected, not a regression).
-│   │                            All 10 LVR mutants on the 5 pinned mg
-│   │                            figures killed, none survived. A same-day
-│   │                            Qodo review finding on PR #39 (the
-│   │                            wildcard match arm's bare 0 fallback)
-│   │                            was fixed with `case _ => (assert
-│   │                            false; 0)`, which killed the 7
-│   │                            requires-clause survivors an earlier run
-│   │                            had found (down from 68 total/37 on this
-│   │                            function to 61 total/30 on this
-│   │                            function) — a real strengthening, not a
-│   │                            cosmetic count change
+│   │                            Gate C5: real captured outcome, final
+│   │                            re-run 2026-07-13 across both functions
+│   │                            (after DoseReductionTargetMg gained a
+│   │                            treatmentIndication parameter and both
+│   │                            new clauses were reformatted to single
+│   │                            lines - see run_mutation_suite_ddi.py's
+│   │                            entry below for why) — 1250 mutants: 668
+│   │                            killed, 482 filtered_static, 74
+│   │                            survived, 26 unclassifiable.
+│   │                            CheckInteraction's own 31 survivors
+│   │                            unchanged throughout (28 REQ-DDI-5
+│   │                            indication-disjunction + 3 pre-existing
+│   │                            SSRIOrSNRI). DoseReductionTargetMg
+│   │                            contributes 43 survivors (6
+│   │                            requires-clause indication-guard + 37
+│   │                            ensures-clause guard-antecedent, both
+│   │                            the same established "never load-
+│   │                            bearing" category) and all 26
+│   │                            unclassifiable results (24 ROR
+│   │                            datatype-ordering type errors + 2 LOR
+│   │                            parser-ambiguity refusals, both at full
+│   │                            scale now that every disjunct is
+│   │                            correctly scanned). All 10 LVR mutants
+│   │                            on the 5 pinned mg figures killed, none
+│   │                            survived throughout every rerun.
 │   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
 │                                actual sign-off deliverable. Confirmed
 │                                by Steven 2026-07-10 - closed, not
@@ -913,7 +963,17 @@ payloadguard-evidence/
 │                                equivalent gap was fixed the other way,
 │                                since that spec had no other gate's
 │                                captures riding on its exact formatting
-│                                yet)
+│                                yet). Gained two dated addenda 2026-07-12
+│                                for REQ-DDI-5/REQ-DDI-6 (built, not yet
+│                                confirmed) and an "Addendum 3" 2026-07-13
+│                                documenting a pre-sign-off review that
+│                                found and resolved four real defects
+│                                (two doc-content, one real spec-scope
+│                                gap fixed on Steven's decision, one
+│                                independent mutation-testing tooling
+│                                gap) - the document is now ready for
+│                                Steven's actual REQ-DDI-5/6 sign-off,
+│                                which still hasn't happened
 │   ├── dafny_captures_index.json  Phase 3 (built 2026-07-11; extended
 │   │                            2026-07-12): 2 entries - CheckInteraction
 │   │                            (reused by 5 requirement rows, REQ-DDI-

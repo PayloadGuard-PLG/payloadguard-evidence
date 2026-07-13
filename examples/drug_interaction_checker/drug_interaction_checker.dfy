@@ -46,14 +46,39 @@ datatype InteractionResult = InteractionResult(outcome: Outcome, direction: Risk
 // "prevention of stroke and systemic embolism in people with
 // non-valvular atrial fibrillation" and "prevention of recurrent deep
 // vein thrombosis (DVT) and pulmonary embolism (PE)" -- and *only*
-// these two. Deliberately closed to exactly what the source names, not
-// a third case for VTE-prophylaxis (hip/knee replacement): that
-// indication exists in the eMC SmPC's posology material
-// (sources/emc-smpc-apixaban-posology-2024.md) but the interaction
-// source this function is scoped to never states an apixaban outcome
-// for it -- adding it here would conflate two different source
-// documents' scope, not extend this one honestly.
-datatype TreatmentIndication = AFStrokePrevention | RecurrentVTEPrevention
+// these two, for apixaban. Originally closed to exactly these two
+// (2026-07-12), on the reasoning that a third VTE-prophylaxis
+// (hip/knee replacement) case belonged only to a different source
+// document (posology, not interactions) with no stated apixaban
+// interaction outcome.
+//
+// EXTENDED 2026-07-13 (Gate C6 review, Finding 2): REQ-DDI-6's
+// DoseReductionTargetMg proves the dabigatran+verapamil 110mg figure,
+// and sources/sps-doac-interactions-2024.md scopes THAT figure to "AF-
+// stroke-prevention and DVT/PE-prevention-and-treatment indications
+// specifically" -- the same two categories above. But dabigatran (unlike
+// apixaban in this interaction source) genuinely has a third, current,
+// UK-licensed indication -- primary VTE prevention after elective
+// hip/knee replacement surgery -- confirmed via
+// sources/emc-smpc-dabigatran-indications-2025.md (eMC SmPC, revision
+// 16 January 2025), and confirmed source-silent for verapamil (the real
+// SmPC states the dose-reduction instruction only under the two
+// twice-daily indications, never the orthopaedic one). Adding
+// OrthopaedicVTEProphylaxis makes that silence a provable exclusion at
+// every call site (matching how CheckInteraction already handles
+// apixaban+dronedarone's silence via NotCovered), rather than a value
+// this type simply cannot represent. Apixaban's own two-constructor
+// scoping (above) is unaffected -- apixaban's own orthopaedic-VTE-
+// prophylaxis indication was already known and deliberately excluded on
+// different grounds (a different source document's scope, not source
+// silence within this one) when REQ-DDI-5 was built; adding a third
+// constructor here does not reopen that decision, since CheckInteraction
+// never inspects TreatmentIndication for any cell but the four
+// apixaban+inducer ones, and none of those ensures clauses reference
+// the new constructor at all -- it is simply an additional value for
+// which those four clauses' antecedent is false, the same as any other
+// unlisted case.
+datatype TreatmentIndication = AFStrokePrevention | RecurrentVTEPrevention | OrthopaedicVTEProphylaxis
 
 // Gate 1c Finding 2 / REQ-DDI-5 (built 2026-07-12): Rifampicin and
 // Carbamazepine/Phenytoin/Phenobarbital each make apixaban's outcome
@@ -311,17 +336,28 @@ function CheckInteraction(doac: DOAC, agent: Agent,
 // requires-gated bare-int totality, matching SelectFormula/
 // AssessRenalFunction's existing precedent in renal_adjustment.dfy,
 // rather than introducing this repo's first Option<int> pattern.
-function DoseReductionTargetMg(doac: DOAC, agent: Agent): int
-  requires (doac == Dabigatran && agent == Verapamil)
-        || (doac == Edoxaban && agent == Dronedarone)
-        || (doac == Edoxaban && agent == ErythromycinSystemic)
-        || (doac == Edoxaban && agent == Ketoconazole)
-        || (doac == Edoxaban && agent == Ciclosporin)
-  ensures (doac == Dabigatran && agent == Verapamil) ==> DoseReductionTargetMg(doac, agent) == 110
-  ensures (doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent) == 30
-  ensures (doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent) == 30
-  ensures (doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent) == 30
-  ensures (doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30
+//
+// EXTENDED 2026-07-13 (Gate C6 review, Finding 2 -- see
+// nl_confirmation_drug_interaction_checker_dfy.md's "Addendum 3"):
+// gained a treatmentIndication parameter. sources/sps-doac-interactions
+// -2024.md scopes the (Dabigatran, Verapamil) 110mg figure to "AF-
+// stroke-prevention and DVT/PE-prevention-and-treatment indications
+// specifically" -- confirmed via sources/emc-smpc-dabigatran-indications
+// -2025.md that this genuinely excludes dabigatran's third, real,
+// UK-licensed indication (orthopaedic VTE prophylaxis), for which the
+// real SmPC's own dosing section never mentions verapamil at all. The
+// four Edoxaban clauses stay deliberately indication-free -- the source
+// states no indication scope for those rows, confirmed directly, not
+// assumed uniform with the Dabigatran row -- so the asymmetry below is
+// the spec reflecting the SOURCE's actual shape, not a uniform shape
+// imposed on it.
+function DoseReductionTargetMg(doac: DOAC, agent: Agent, treatmentIndication: TreatmentIndication): int
+  requires (doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)
+  ensures (doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110
+  ensures (doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30
+  ensures (doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30
+  ensures (doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30
+  ensures (doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30
 {
   match (doac, agent)
   case (Dabigatran, Verapamil) => 110
