@@ -569,3 +569,40 @@ not accepted on the review's word alone:
 the wildcard-arm change (finding 2 fixed), but finding 3 is a real,
 open spec-scope question that must resolve before Gate C6 can close for
 REQ-DDI-6.
+
+**Update, 2026-07-13, later the same session — primary source fetched,
+one sub-question resolved, the design decision still open.**
+`sources/emc-smpc-dabigatran-indications-2025.md` (new, eMC SmPC for
+Pradaxa, both 110mg and 150mg products, revision date 16 January 2025)
+was fetched and archived. Two things confirmed directly against it,
+independent of the review's own claims:
+
+1. **Resolved**: `RecurrentVTEPrevention` does correctly cover the
+   verapamil row's "DVT/PE-prevention-and-treatment" phrase — both that
+   phrase and the rifampicin row's "prevention of recurrent DVT and PE"
+   are partial phrasings of the *same* single eMC-licensed indication
+   category ("Treatment of DVT/PE, and prevention of recurrent DVT/PE,"
+   one indication line in the real SmPC). No third constructor is
+   needed to resolve *this* specific naming worry.
+2. **Confirmed as real, not resolved**: dabigatran has a third, current,
+   UK-licensed indication (primary VTE prevention after elective
+   hip/knee replacement surgery, a structurally different once-daily
+   regimen) that `TreatmentIndication` doesn't represent at all. The
+   verapamil dose-reduction instruction is stated only under the two
+   twice-daily indications (NVAF, DVT/PE) in the real SmPC's own §4.2 —
+   never mentioned under the orthopaedic regimen — confirming
+   `sources/sps-doac-interactions-2024.md`'s own stated scope is
+   accurate, and that the orthopaedic indication is a genuine
+   source-silent cell, structurally the same as `(Apixaban,
+   Dronedarone)`'s already-modeled silence, just not currently
+   representable by either `TreatmentIndication` or
+   `DoseReductionTargetMg`'s design.
+
+**Still genuinely open, still not for an assistant to decide**: whether
+to add a third `TreatmentIndication` constructor now, what shape
+`DoseReductionTargetMg` should take if so (Fix 2A adds an indication
+parameter; a `NotCovered`-style total return isn't directly available
+for a bare `int`), and whether the currently-merged, currently-PROVEN
+REQ-DDI-6 matrix row should be flagged, amended, or left as-is while
+this is decided. Presented to Steven for a decision, not implemented
+here.

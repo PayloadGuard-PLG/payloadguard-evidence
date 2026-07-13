@@ -125,6 +125,28 @@ requirements documents, standards excerpts) that ground the claims in
   where UK and US guidance diverge, should that ever become relevant to
   a scoping decision.
 
+- `emc-smpc-dabigatran-indications-2025.md` — added 2026-07-13. Two eMC
+  Summaries of Product Characteristics for Pradaxa (dabigatran; product
+  6229, 110 mg, revised 16 January 2025; product 4703, 150 mg, for
+  §4.1 comparison). Fetched to verify a Gate C6 review finding
+  questioning whether `TreatmentIndication`'s two constructors cover
+  dabigatran's real licensed indication set. Per rule 2 above:
+  **confirms** `sps-doac-interactions-2024.md`'s own stated scope for
+  the verapamil dose-reduction row (tied specifically to the two
+  twice-daily indications, NVAF and DVT/PE) and that its two partial
+  phrasings of the DVT/PE indication refer to the same single
+  eMC-licensed category `RecurrentVTEPrevention` already models — no
+  new constructor needed for that specific naming concern. **Corrects/
+  extends**: dabigatran has a real, current, third UK-licensed
+  indication (primary VTE prevention after elective hip/knee
+  replacement, a structurally different once-daily regimen) that
+  `TreatmentIndication` does not represent at all, and that
+  `sps-doac-interactions-2024.md`'s verapamil row is silent on. Does
+  not resolve, by itself, whether `TreatmentIndication` should gain a
+  third constructor — see
+  `examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`'s
+  "Addendum 3" for the open design decision this leaves for Steven.
+
 ## Resolved questions
 
 - **`FRN` pump-type tag (resolved 2026-07-05):** the GIP v1.0 source tags
