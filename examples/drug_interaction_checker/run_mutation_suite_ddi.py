@@ -55,6 +55,34 @@
 # into) and the rest were killed (an unconstrained antecedent doesn't
 # save a mutant when the consequent's truth actually depends on which
 # specific case triggered it).
+#
+# STP-suite escalation (2026-07-13, built after a real, empirically-
+# confirmed finding during Gate C6 sign-off review): every mutant that
+# survives the bare-spec `dafny verify` is now also re-verified against
+# the committed `drug_interaction_checker_stp_suite.dfy` (Gate C4's own
+# ACCEPT/REJECT lemmas, reused verbatim -- no new lemma authored for
+# this), by redirecting the suite's `include` at the mutant file instead
+# of the real spec. Confirmed by hand-probing before building this: a
+# `requires`-clause ROR mutant that silently widens
+# DoseReductionTargetMg's Dabigatran+Verapamil indication guard (exactly
+# the class of scope-leak Addendum 4 fixed on CheckInteraction) still
+# verifies clean against the bare spec, but makes the STP suite's own
+# `STP_Accept_DoseReductionTargetMg_DabigatranVerapamil_...` ACCEPT
+# lemma fail outright (`function precondition could not be proved`) --
+# a real, previously-uncaught kill this escalation now captures.
+# **Confirmed NOT to help for the great majority of survivors, and this
+# is a genuine Dafny semantics fact, not a shortfall of this escalation
+# to fix later**: both functions here are plain (non-`{:opaque}`)
+# `function`s, so a same-module STP lemma calling one with concrete
+# literal arguments gets verified by Dafny unfolding the function body
+# directly -- the `ensures` clause text a mutation touches is provably
+# irrelevant to that proof. Hand-probed and confirmed empirically for
+# one `ensures`-clause ROR mutant and one LOR mutant on each function
+# before committing to this scope: all four still verified clean against
+# the STP suite too. Closing that class would require marking these
+# functions `{:opaque}` with explicit `reveal` calls everywhere they're
+# used -- a much larger, invasive redesign disproportionate to a
+# testing-methodology limitation, deliberately not attempted here.
 import datetime
 import json
 import pathlib
@@ -77,6 +105,8 @@ from evidence.dafny_spec_lint import check_precondition_satisfiability
 
 HERE = pathlib.Path(__file__).parent
 TARGET = HERE / "drug_interaction_checker.dfy"
+STP_SUITE = HERE / "drug_interaction_checker_stp_suite.dfy"
+_STP_INCLUDE_LINE = f'include "{TARGET.name}"'
 
 # (function_name, use_body_level_lvr) - see module docstring for why
 # DoseReductionTargetMg gets clause-level LVR only, not body-level.
@@ -136,6 +166,45 @@ def _real_verify(mutated_source):
         return outcome, detail, proc.returncode, raw
     finally:
         tmp_path.unlink(missing_ok=True)
+
+
+def _stp_verify(mutated_source):
+    """Re-verify the committed drug_interaction_checker_stp_suite.dfy (Gate
+    C4's real ACCEPT/REJECT lemmas, unmodified) against a mutated main spec,
+    by writing the mutant to a temp .dfy file in this directory and pointing
+    a temp copy of the STP suite's own `include` at it. Same (outcome,
+    detail, exit_code, raw) shape as _real_verify -- "killed" here means the
+    STP suite's existing lemmas caught what the bare spec alone did not."""
+    stp_source = STP_SUITE.read_text()
+    if _STP_INCLUDE_LINE not in stp_source:
+        raise RuntimeError(
+            f"{STP_SUITE.name}'s include line no longer reads {_STP_INCLUDE_LINE!r} "
+            "-- update this wiring, don't silently skip the escalation"
+        )
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".dfy", delete=False, dir=HERE
+    ) as mutant_f:
+        mutant_f.write(mutated_source)
+        mutant_path = pathlib.Path(mutant_f.name)
+    try:
+        redirected = stp_source.replace(
+            _STP_INCLUDE_LINE, f'include "{mutant_path.name}"', 1
+        )
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".dfy", delete=False, dir=HERE
+        ) as stp_f:
+            stp_f.write(redirected)
+            stp_path = pathlib.Path(stp_f.name)
+        try:
+            cmd = ["dafny", "verify", str(stp_path)]
+            proc = subprocess.run(cmd, capture_output=True, text=True)
+            raw = (proc.stdout or "") + (proc.stderr or "")
+            outcome, detail = _classify(raw, proc.returncode)
+            return outcome, detail, proc.returncode, raw
+        finally:
+            stp_path.unlink(missing_ok=True)
+    finally:
+        mutant_path.unlink(missing_ok=True)
 
 
 def _filtered_outcome(reason):
@@ -206,6 +275,46 @@ def main():
             record["outcome"] = outcome
             record["detail"] = detail
             record["exit_code"] = exit_code
+
+            if outcome == "survived":
+                # Escalate to the real, committed STP suite before accepting
+                # this as a genuine survivor -- see module docstring for why
+                # this catches some (a real requires-clause scope-widening
+                # class) but not most (Dafny's function-transparency makes
+                # ensures-clause wording provably irrelevant to a same-module
+                # concrete-literal lemma call, confirmed empirically, not a
+                # gap in this escalation itself).
+                #
+                # Three-way, not two-way: a Qodo review on this PR caught a
+                # real gap in an earlier draft -- only "killed" was handled,
+                # so an inconclusive STP-suite run (unclassifiable: timeout,
+                # unexpected exit code, an ambiguous or missing summary line)
+                # silently stayed "survived", indistinguishable from the STP
+                # suite genuinely having verified clean. Confirmed empirically
+                # this never actually happens against the real, current
+                # mutant set (see test_dose_reduction_target_mg... below and
+                # KNOWN_LIMITATIONS.md), but the code shouldn't rely on that
+                # holding forever -- an inconclusive check must never be
+                # silently treated as a confirmed one.
+                stp_outcome, stp_detail, stp_exit_code, _ = _stp_verify(m.mutated_source)
+                record["stp_suite_detail"] = stp_detail
+                record["stp_suite_outcome"] = stp_outcome
+                if stp_outcome == "killed":
+                    record["outcome"] = "killed_via_stp_suite"
+                    record["detail"] = (
+                        f"bare spec survived ({detail}); "
+                        f"STP suite caught it ({stp_detail})"
+                    )
+                    record["exit_code"] = stp_exit_code
+                elif stp_outcome == "unclassifiable":
+                    record["outcome"] = "unclassifiable_via_stp_suite"
+                    record["detail"] = (
+                        f"bare spec survived ({detail}); "
+                        f"STP suite escalation was inconclusive, not "
+                        f"confirmed either way ({stp_detail})"
+                    )
+                    record["exit_code"] = stp_exit_code
+
             records.append(record)
 
     counts = {}
@@ -235,6 +344,20 @@ def main():
         "the same five figures exactly and body-level would be redundant, "
         "not a different class of bug — see module docstring.",
         "",
+        "STP-suite escalation (2026-07-13): every mutant that survives the "
+        "bare-spec `dafny verify` is re-checked against the committed "
+        "`drug_interaction_checker_stp_suite.dfy` (Gate C4's real "
+        "ACCEPT/REJECT lemmas, reused verbatim). A `killed_via_stp_suite` "
+        "outcome means the bare spec alone missed it but the STP suite's "
+        "existing lemmas caught it — see module docstring for the real, "
+        "hand-verified boundary of what this escalation does and does not "
+        "catch. A distinct `unclassifiable_via_stp_suite` outcome (never "
+        "observed against this run's real mutant set, but handled "
+        "explicitly rather than assumed away) means the STP-suite "
+        "escalation itself was inconclusive — never silently folded into "
+        "`survived`, which would misrepresent an unchecked mutant as a "
+        "confirmed one.",
+        "",
         "| Function | Operator | Clause | Mutation | Outcome | Detail |",
         "|---|---|---|---|---|---|",
     ]
@@ -258,6 +381,11 @@ def main():
     (HERE / "run_manifest_mutation_ddi.json").write_text(json.dumps(manifest, indent=2) + "\n")
 
     print(f"mutation suite complete; {len(records)} mutants, counts={counts}")
+    killed_via_stp = [r for r in records if r["outcome"] == "killed_via_stp_suite"]
+    if killed_via_stp:
+        print(f"KILLED VIA STP SUITE ({len(killed_via_stp)}) — bare spec missed these:")
+        for r in killed_via_stp:
+            print(f"  - {r['function']}: {r['description']}")
     survivors = [r for r in records if r["outcome"] == "survived"]
     if survivors:
         print(f"SURVIVORS ({len(survivors)}) — real findings, not filtered:")
@@ -267,6 +395,11 @@ def main():
     if unclassifiable:
         print(f"UNCLASSIFIABLE ({len(unclassifiable)}) — refused, needs review:")
         for r in unclassifiable:
+            print(f"  - {r['function']}: {r['description']}: {r['detail']}")
+    unclassifiable_via_stp = [r for r in records if r["outcome"] == "unclassifiable_via_stp_suite"]
+    if unclassifiable_via_stp:
+        print(f"UNCLASSIFIABLE VIA STP SUITE ({len(unclassifiable_via_stp)}) — STP escalation inconclusive, needs review:")
+        for r in unclassifiable_via_stp:
             print(f"  - {r['function']}: {r['description']}: {r['detail']}")
 
 

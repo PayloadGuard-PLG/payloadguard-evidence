@@ -98,6 +98,32 @@ surviving by coincidence. Final real run: **1342 mutants - 744 killed,
 `DoseReductionTargetMg` entirely unaffected (untouched by this fix) -
 still 43 survivors, still 26 unclassifiable, confirmed unchanged below,
 not assumed.
+
+**Run 5 (2026-07-13, Gate C5 -> STP-suite escalation, built after a
+Gate C6 sign-off review):** `run_mutation_suite_ddi.py` now re-verifies
+the committed `drug_interaction_checker_stp_suite.dfy` (Gate C4's real
+ACCEPT/REJECT lemmas, reused verbatim, no new lemma authored) against
+every mutant that survives the bare-spec check, before accepting it as
+a genuine survivor. Hand-probed and empirically confirmed before
+building: this catches a real, previously-uncaught scope-widening class
+on `DoseReductionTargetMg`'s own `requires` clause - the exact same
+class of bug Run 4 fixed on `CheckInteraction` - but does NOT catch the
+great majority of survivors, for a genuine Dafny-semantics reason (both
+functions here are plain, non-`{:opaque}` functions, so a same-module
+STP lemma calling one with concrete literal arguments gets verified by
+Dafny unfolding the body directly - the mutated `ensures`-clause text is
+provably irrelevant to that proof). Confirmed by hand-probing one
+`ensures`-clause ROR mutant and one LOR mutant on each function before
+committing to this scope: all four still verified clean against the STP
+suite too - not assumed, tested. Final real run: **1342 mutants - 744
+killed, 522 filtered_static, 44 survived, 26 unclassifiable, 6
+killed_via_stp_suite** (all 6 the `DoseReductionTargetMg` requires-clause
+indication-guard ROR mutants Run 1-4 left as survivors - see
+`test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught_by_the_stp_suite`
+below). `CheckInteraction`'s 7 survivors and the rest of
+`DoseReductionTargetMg`'s 37 survivors are unaffected - the escalation
+was hand-verified not to touch them, confirmed here at full report
+scale too, not just the probe.
 """
 
 import json
@@ -120,8 +146,9 @@ def test_report_total_and_outcome_counts():
     assert counts == {
         "killed": 744,
         "filtered_static": 522,
-        "survived": 50,
+        "survived": 44,
         "unclassifiable": 26,
+        "killed_via_stp_suite": 6,
     }
 
 
@@ -284,30 +311,21 @@ def test_check_interaction_survivors_dropped_sharply_after_the_scope_leak_fix():
 
 
 def test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full_scale():
-    """43 survivors, all on DoseReductionTargetMg, now that the
-    truncation bug (module docstring) no longer hides most of the
-    requires clause from mutation testing. Two categories, both the same
-    established "guard antecedent, never load-bearing" shape - none on
-    the consequent (the pinned mg value's own == comparison), confirmed
-    directly below for every survivor, not assumed:
-
-    1. **6 requires-clause ROR survivors**, all on the indication guard's
-       own comparisons (`treatmentIndication == AFStrokePrevention`,
-       `treatmentIndication == RecurrentVTEPrevention`, 3 ROR variants
-       each: !=, <, >). Mutating only the indication sub-condition never
-       changes which (doac, agent) pairs the requires clause admits (the
-       outer `doac == Dabigatran && agent == Verapamil` conjunct is
-       untouched), so the wildcard match arm's `assert false` proof -
-       which depends only on (doac, agent) admission, not on
-       treatmentIndication's exact bound - remains valid regardless. The
-       doac==Dabigatran/agent==Verapamil comparisons THEMSELVES are never
-       survivors here (tested in the next function) - only the
-       indication sub-condition is redundant in this specific sense.
-    2. **37 ensures-clause survivors** (13 on the Dabigatran+Verapamil
-       clause - 6 doac/agent antecedent comparisons + 6 indication-guard
-       comparisons + 1 LOR; 24 on the four Edoxaban clauses, 6 doac/agent
-       antecedent comparisons each): every one leaves the consequent
-       (`== 110` or `== 30`) byte-identical, confirmed directly below.
+    """37 survivors, all on DoseReductionTargetMg's ensures clauses
+    (down from 43 - the 6 requires-clause indication-guard survivors are
+    no longer counted as survivors as of Run 5, since the STP-suite
+    escalation now catches them; see
+    test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught_by_the_stp_suite
+    below). The remaining 37 are the same established "guard antecedent,
+    never load-bearing" shape - none on the consequent (the pinned mg
+    value's own == comparison), confirmed directly below for every
+    survivor, not assumed: 13 on the Dabigatran+Verapamil clause (6
+    doac/agent antecedent comparisons + 6 indication-guard comparisons +
+    1 LOR; the indication-guard ones survive here for a different reason
+    than the requires-clause ones do - see the module docstring's Run 5
+    account of why the STP escalation is hand-confirmed NOT to reach
+    ensures-clause mutations at all), 24 on the four Edoxaban clauses (6
+    doac/agent antecedent comparisons each).
 
     LVR (the literal itself, 109/111, 29/31) has zero survivors - all 10
     killed, confirmed in test_dose_reduction_target_mg_lvr_mutants_all_killed
@@ -315,24 +333,10 @@ def test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full
     right."""
     records = _report()
     ddi6_survivors = [r for r in records if r["outcome"] == "survived" and r["function"] == "DoseReductionTargetMg"]
-    assert len(ddi6_survivors) == 43
+    assert len(ddi6_survivors) == 37
+    assert all(r["keyword"] == "ensures" for r in ddi6_survivors)
 
-    requires_survivors = [r for r in ddi6_survivors if r["keyword"] == "requires"]
-    assert len(requires_survivors) == 6
-    for r in requires_survivors:
-        assert r["operator"] == "ROR"
-        # The mutation touched one of the two indication comparisons
-        # specifically (not a doac/agent comparison elsewhere in the same
-        # multi-disjunct clause) - detected by the "treatmentIndication =="
-        # occurrence count dropping from 2 to 1, not substring presence
-        # alone (every mutant's full clause text still contains both
-        # indication names regardless of which token was actually mutated).
-        assert r["original_clause"].count("treatmentIndication ==") == 2
-        assert r["mutated_clause"].count("treatmentIndication ==") == 1
-
-    ensures_survivors = [r for r in ddi6_survivors if r["keyword"] == "ensures"]
-    assert len(ensures_survivors) == 37
-    for r in ensures_survivors:
+    for r in ddi6_survivors:
         # Every survivor mutates the antecedent (before ==>); the
         # consequent (the pinned mg value's own == comparison) is always
         # untouched - confirmed directly, not assumed, by checking the
@@ -341,10 +345,73 @@ def test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full
         mut_consequent = r["mutated_clause"].split("==>", 1)[1]
         assert orig_consequent == mut_consequent, r
 
-    dabigatran_ensures = [r for r in ensures_survivors if "Dabigatran" in r["original_clause"]]
+    dabigatran_ensures = [r for r in ddi6_survivors if "Dabigatran" in r["original_clause"]]
     assert len(dabigatran_ensures) == 13
-    edoxaban_ensures = [r for r in ensures_survivors if "Edoxaban" in r["original_clause"]]
+    edoxaban_ensures = [r for r in ddi6_survivors if "Edoxaban" in r["original_clause"]]
     assert len(edoxaban_ensures) == 24
+
+
+def test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught_by_the_stp_suite():
+    """Run 5's real, measured effect: the 6 requires-clause ROR mutants
+    on the indication guard's own comparisons
+    (`treatmentIndication == AFStrokePrevention`,
+    `treatmentIndication == RecurrentVTEPrevention`, 3 ROR variants each:
+    !=, <, >) no longer survive - the STP suite's own
+    `STP_Accept_DoseReductionTargetMg_DabigatranVerapamil_...` ACCEPT
+    lemma (already committed, no new lemma authored for this) fails to
+    verify against each mutant, since the mutation widens the requires
+    clause to admit the orthopaedic indication while simultaneously
+    excluding the lemma's own witness call - the exact class of
+    scope-leak bug Run 4 fixed on CheckInteraction, caught here as a
+    latent gap on DoseReductionTargetMg's sibling clause before it could
+    ever become a real, committed regression."""
+    records = _report()
+    killed_via_stp = [r for r in records if r["outcome"] == "killed_via_stp_suite"]
+    assert len(killed_via_stp) == 6
+    for r in killed_via_stp:
+        assert r["function"] == "DoseReductionTargetMg"
+        assert r["keyword"] == "requires"
+        assert r["operator"] == "ROR"
+        assert r["original_clause"].count("treatmentIndication ==") == 2
+        assert r["mutated_clause"].count("treatmentIndication ==") == 1
+        assert "bare spec survived" in r["detail"]
+        assert "STP suite caught it" in r["detail"]
+        assert r["stp_suite_detail"] is not None
+        assert r["stp_suite_outcome"] == "killed"
+
+
+def test_stp_escalation_never_silently_folds_an_inconclusive_check_into_survived():
+    """A Qodo code-review finding on this PR's own diff (not part of the
+    original hand-probing): an earlier draft of the escalation only
+    handled `stp_outcome == "killed"`, silently leaving a mutant
+    `survived` if the STP-suite re-verification itself came back
+    `unclassifiable` (timeout, unexpected exit code, an ambiguous or
+    missing summary line) - indistinguishable from the STP suite having
+    genuinely verified clean, which would misrepresent an unchecked
+    mutant as a confirmed one. Fixed: a distinct
+    `unclassifiable_via_stp_suite` outcome, handled explicitly, never
+    folded into `survived`. Confirmed empirically against the real,
+    current mutant set (re-run after the fix, not assumed unaffected):
+    the escalation itself was inconclusive for zero mutants here, so
+    this test can't exercise the reclassification path directly against
+    real data - but it locks in the structural invariant the bug
+    violated: every `survived` record's own `stp_suite_outcome` must
+    read `survived`, never anything else, confirming the three-way
+    branch is exhaustive and correctly wired, not just coincidentally
+    unexercised."""
+    records = _report()
+    unclassifiable_via_stp = [r for r in records if r["outcome"] == "unclassifiable_via_stp_suite"]
+    assert unclassifiable_via_stp == []
+
+    survivors = [r for r in records if r["outcome"] == "survived"]
+    assert len(survivors) == 44
+    for r in survivors:
+        assert r["stp_suite_outcome"] == "survived", r
+        assert r["stp_suite_detail"] is not None
+
+    killed_via_stp = [r for r in records if r["outcome"] == "killed_via_stp_suite"]
+    for r in killed_via_stp:
+        assert r["stp_suite_outcome"] == "killed", r
 
 
 def test_dose_reduction_target_mg_doac_agent_requires_comparisons_are_all_killed():
@@ -395,12 +462,14 @@ def test_dose_reduction_target_mg_lvr_mutants_all_killed():
 def test_all_survivors_are_accounted_for_by_the_three_named_categories():
     """No fourth, unexplained survivor category exists - the 4 REQ-DDI-5
     LOR-vacuity survivors, the 3 pre-existing SSRIOrSNRI survivors, and
-    the 43 DoseReductionTargetMg guard-antecedent survivors (6 requires +
-    37 ensures) add up to the full 50, not just a subset each test
-    happens to find."""
+    the 37 DoseReductionTargetMg ensures-clause guard-antecedent
+    survivors add up to the full 44, not just a subset each test happens
+    to find. The 6 requires-clause indication-guard mutants that used to
+    be counted here are now killed_via_stp_suite (Run 5), tested
+    separately above."""
     records = _report()
     survivors = [r for r in records if r["outcome"] == "survived"]
-    assert len(survivors) == 50
+    assert len(survivors) == 44
 
     ddi5 = [r for r in survivors if "treatmentIndication == AFStrokePrevention" in r["original_clause"] and r["function"] == "CheckInteraction"]
     ssri = [r for r in survivors if "doac == Dabigatran" in r["original_clause"] and "SSRIOrSNRI" in r["original_clause"]]

@@ -885,6 +885,24 @@ Documentation ripple (`metadata.a.yaml`, `traceability_matrix.a.json/.md`,
 `DEVLOG.md`, `HANDOFF.md`, `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
 `PHASE1_PLAN.md`, `README.md`) updated alongside this addendum.
 
+**Correction, 2026-07-13 (later, same day) — the C5 bullet's "50
+survived" is now stale, a test-methodology improvement, not a spec
+change.** `run_mutation_suite_ddi.py` was extended to re-verify the
+committed STP suite against every bare-spec survivor (reused verbatim,
+no new lemma authored) — hand-probed empirically first, confirmed to
+catch the 6 `DoseReductionTargetMg` requires-clause indication-guard
+survivors (the same class of scope-leak this addendum fixed on
+`CheckInteraction`, caught here as a latent gap on a sibling function
+before it could ever become a real regression) and confirmed NOT to
+help the other 44 (a genuine Dafny function-transparency limit, not a
+shortfall). Real run: 1342 mutants (unchanged) — 744 killed, 522
+filtered_static, **44 survived** (down from 50), 26 unclassifiable, **6
+killed_via_stp_suite** (a new, distinct outcome). No `.dfy` spec content
+changed by this — `CheckInteraction`'s postcondition count, the STP
+suite's lemma count, and every claim above about the spec itself are
+unaffected. Full account: `KNOWN_LIMITATIONS.md`'s "Gate C5 extended:
+STP-suite escalation, 2026-07-13" section.
+
 **Not yet confirmed — pending Steven's sign-off, same discipline as
 every other addendum above.** Addendum 3's own findings (including
 Finding 3, the `RecurrentVTEPrevention` scope question) were already

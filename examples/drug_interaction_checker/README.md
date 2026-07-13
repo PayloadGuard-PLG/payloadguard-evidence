@@ -534,6 +534,49 @@ C6 sign-off is still open — every finding across Addenda 3 and 4 is
 resolved, but Steven's actual review of the current spec shape (a
 recorded human decision) still hasn't happened.
 
+## Amendment 2026-07-13 (later) — Gate C5 extended to re-verify the STP suite against every survivor, catching a real latent gap
+
+Asked, during Gate C6 sign-off review, whether the 50 survivors above
+could be reduced under current constraints. Diagnosed all 50 by
+category first: `CheckInteraction`'s 7 (3 SSRIOrSNRI + 4 LOR-vacuity,
+both already-established categories) and `DoseReductionTargetMg`'s 43
+(6 `requires`-clause indication-guard ROR + 37 `ensures`-clause
+guard-antecedent).
+
+**Hand-probed empirically before building.** Applied one of the 6
+`requires`-clause survivor mutations to a scratch copy and re-verified
+the committed STP suite against it by redirecting its own `include` at
+the mutant: the mutant still verifies clean against the bare spec, but
+the STP suite's own ACCEPT lemma for
+`DoseReductionTargetMg(Dabigatran, Verapamil, AFStrokePrevention)`
+fails (`function precondition could not be proved`) — the mutation
+widens the requires clause to admit the orthopaedic indication (the
+exact class of scope-leak the amendment above fixed on
+`CheckInteraction`) while simultaneously excluding the lemma's own
+witness call. Also hand-probed one `ensures`-clause ROR mutant and one
+LOR mutant on each function: confirmed the escalation does **not** help
+there, since both functions are plain (non-`{:opaque}`) Dafny
+`function`s — a same-module STP lemma calling one with concrete literal
+arguments gets verified by Dafny unfolding the body directly, making
+mutated `ensures`-clause text provably irrelevant. A genuine Dafny
+semantics limit, not a shortfall to fix later; closing it would need an
+invasive `{:opaque}`/`reveal` redesign, disproportionate here.
+
+**Implemented**: `run_mutation_suite_ddi.py` gained a new `_stp_verify`
+helper — re-verifies the committed STP suite (reused verbatim, no new
+lemma authored) against every bare-spec survivor. A mutant it catches
+is reclassified to a new, distinct `killed_via_stp_suite` outcome, kept
+separate from ordinary `killed` so the report stays honest about which
+check caught each one.
+
+**Real run**: 1342 mutants (unchanged) — 744 killed, 522
+filtered_static, **44 survived** (down from 50), 26 unclassifiable, **6
+killed_via_stp_suite** (exactly the 6 hand-predicted mutants).
+`CheckInteraction`'s 7 survivors and `DoseReductionTargetMg`'s remaining
+37 `ensures`-clause survivors are unaffected.
+`tests/test_drug_interaction_checker_mutation_report.py` updated
+accordingly. 215 tests pass (up from 214).
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s and `renal_adjustment/`'s discipline:
@@ -581,9 +624,11 @@ fixtures exist for this example (Dafny-only, `metadata.a.yaml`'s
   / **`run_manifest_mutation_ddi.json`** — Gate C5: capture runner and
   the real, committed outcome of every mutant — 962 originally
   (2026-07-10, `CheckInteraction` alone), 1342 as of the current
-  committed capture (2026-07-13, both functions, after the post-merge
-  orthopaedic-indication leak fix — see the 2026-07-13 amendments above
-  for the full count history).
+  committed capture (2026-07-13, both functions), now with a
+  `_stp_verify` escalation re-checking every bare-spec survivor against
+  the committed STP suite (`killed_via_stp_suite`, 6 mutants, added
+  2026-07-13 later — see the 2026-07-13 amendments above for the full
+  count history).
 - **`GATE_1C_AUDIT.md`** — the internal-consistency audit that found
   the three Gate 1c findings above, including the six worked-example
   hand-traces re-derived against the redesigned spec.

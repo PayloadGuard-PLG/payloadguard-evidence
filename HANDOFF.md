@@ -8,7 +8,35 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **A second Qodo review, run against PR
+**Last updated:** 2026-07-13 — **Gate C5 extended to re-verify the
+committed STP suite against every mutation-testing survivor, not just
+the bare spec — caught a real, previously-latent scope-leak class before
+it could ever become a regression.** Asked, during Gate C6 sign-off
+review, whether `drug_interaction_checker`'s 50 survivors could be
+reduced under current constraints. Hand-probed before building: applying
+one of the 6 `DoseReductionTargetMg` requires-clause indication-guard
+survivor mutations to a scratch copy and re-verifying the already-
+committed STP suite (`drug_interaction_checker_stp_suite.dfy`) against it
+showed the suite's own ACCEPT lemma fails — the mutation widens the
+requires clause to admit the orthopaedic indication (the exact class of
+scope-leak the entry below fixed on `CheckInteraction`) while excluding
+the lemma's own witness call. Also hand-probed one `ensures`-clause ROR
+mutant and one LOR mutant on each function: confirmed the STP suite does
+**not** help there, since both functions are plain (non-`{:opaque}`)
+Dafny `function`s and same-module STP lemmas get verified by Dafny
+unfolding the body directly, making mutated `ensures`-clause text
+provably irrelevant — a genuine Dafny-semantics limit, not a shortfall
+to fix (closing it would need an invasive `{:opaque}`/`reveal` redesign,
+disproportionate here). **Built**: `run_mutation_suite_ddi.py` now
+re-verifies the committed STP suite (reused verbatim, no new lemma
+authored) against every bare-spec survivor, reclassifying any it catches
+to a new, distinct `killed_via_stp_suite` outcome. Real run: 1342
+mutants — 744 killed, 522 filtered_static, **44 survived** (down from
+50), 26 unclassifiable, **6 killed_via_stp_suite** (exactly the 6
+hand-predicted mutants). `tests/test_drug_interaction_checker_mutation_report.py`
+updated with a new test and updated counts. 215 tests pass (up from
+214). **Prior update, preserved below** — 2026-07-13 — **A second Qodo
+review, run against PR
 #40 after it merged, found a real scope-leak bug in `CheckInteraction`'s
 own apixaban rows — fixed, all six gates re-run for real.** PR #40 (the
 entry immediately below) merged with `TreatmentIndication` gaining its
@@ -724,6 +752,20 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   C6 sign-off still open — all findings across both Addenda 3 and 4 are
   resolved, but Steven's actual review of the current spec shape (a
   recorded human decision) still hasn't happened.
+- **Gate C5 extended, 2026-07-13 (later): re-verifies the STP suite
+  against every mutation-testing survivor, catching a real latent gap.**
+  Hand-probed before building: the STP suite's own ACCEPT lemmas (reused
+  verbatim) catch the 6 `DoseReductionTargetMg` requires-clause
+  indication-guard survivors — the same class of scope-leak the entry
+  above fixed on `CheckInteraction`, here caught as a latent gap before
+  it could ever become a real regression. Confirmed the escalation does
+  NOT help for the other 44 survivors (both functions are plain,
+  non-`{:opaque}` Dafny `function`s, so same-module STP lemmas verify by
+  Dafny unfolding the body directly, making mutated `ensures`-clause
+  text provably irrelevant — a genuine semantics limit, not a shortfall).
+  Real run: 1342 mutants — 744 killed, 522 filtered_static, **44
+  survived** (down from 50), 26 unclassifiable, **6
+  killed_via_stp_suite**. 215 tests pass (up from 214).
 - **Phase 3 (evidence packaging) built, 2026-07-11; regenerated
   2026-07-12 after REQ-DDI-5/6.**
   `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`

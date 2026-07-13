@@ -4215,7 +4215,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -4226,7 +4228,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -4237,7 +4241,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -11043,7 +11049,9 @@
     "description": "LOR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': || -> &&",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -11314,7 +11322,9 @@
     "description": "LOR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': || -> &&",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -11395,7 +11405,9 @@
     "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': || -> &&",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -11476,7 +11488,9 @@
     "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': || -> &&",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "CheckInteraction",
@@ -12485,9 +12499,11 @@
     "original_clause": "(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "mutated_clause": "(doac == Dabigatran && agent == Verapamil && (treatmentIndication != AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12498,9 +12514,11 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> <",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication < AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12511,9 +12529,11 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> >",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication > AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12548,9 +12568,11 @@
     "original_clause": "(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "mutated_clause": "(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication != RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12561,9 +12583,11 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> <",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication < RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -12574,9 +12598,11 @@
     "description": "ROR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': == -> >",
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication > RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GT' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed_via_stp_suite",
+    "detail": "bare spec survived (2 verified, 0 errors); STP suite caught it (24 verified, 1 errors)",
+    "exit_code": 4,
+    "stp_suite_detail": "24 verified, 1 errors",
+    "stp_suite_outcome": "killed"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13111,7 +13137,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13122,7 +13150,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13133,7 +13163,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13164,7 +13196,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13175,7 +13209,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13186,7 +13222,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13217,7 +13255,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13228,7 +13268,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13239,7 +13281,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13270,7 +13314,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13281,7 +13327,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13292,7 +13340,9 @@
     "description": "ROR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13376,7 +13426,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13387,7 +13439,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13398,7 +13452,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13429,7 +13485,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13440,7 +13498,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13451,7 +13511,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13535,7 +13597,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13546,7 +13610,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13557,7 +13623,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13588,7 +13656,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13599,7 +13669,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13610,7 +13682,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13694,7 +13768,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13705,7 +13781,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13716,7 +13794,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13747,7 +13827,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13758,7 +13840,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13769,7 +13853,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13853,7 +13939,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13864,7 +13952,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13875,7 +13965,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13906,7 +13998,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> !=",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13917,7 +14011,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> <",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -13928,7 +14024,9 @@
     "description": "ROR on ensures clause '(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30': == -> >",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
@@ -14128,7 +14226,9 @@
     "description": "LOR on ensures clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110': || -> &&",
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "exit_code": 0,
+    "stp_suite_detail": "25 verified, 0 errors",
+    "stp_suite_outcome": "survived"
   },
   {
     "function": "DoseReductionTargetMg",
