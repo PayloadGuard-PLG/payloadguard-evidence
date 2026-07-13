@@ -377,6 +377,41 @@ def test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught
         assert "bare spec survived" in r["detail"]
         assert "STP suite caught it" in r["detail"]
         assert r["stp_suite_detail"] is not None
+        assert r["stp_suite_outcome"] == "killed"
+
+
+def test_stp_escalation_never_silently_folds_an_inconclusive_check_into_survived():
+    """A Qodo code-review finding on this PR's own diff (not part of the
+    original hand-probing): an earlier draft of the escalation only
+    handled `stp_outcome == "killed"`, silently leaving a mutant
+    `survived` if the STP-suite re-verification itself came back
+    `unclassifiable` (timeout, unexpected exit code, an ambiguous or
+    missing summary line) - indistinguishable from the STP suite having
+    genuinely verified clean, which would misrepresent an unchecked
+    mutant as a confirmed one. Fixed: a distinct
+    `unclassifiable_via_stp_suite` outcome, handled explicitly, never
+    folded into `survived`. Confirmed empirically against the real,
+    current mutant set (re-run after the fix, not assumed unaffected):
+    the escalation itself was inconclusive for zero mutants here, so
+    this test can't exercise the reclassification path directly against
+    real data - but it locks in the structural invariant the bug
+    violated: every `survived` record's own `stp_suite_outcome` must
+    read `survived`, never anything else, confirming the three-way
+    branch is exhaustive and correctly wired, not just coincidentally
+    unexercised."""
+    records = _report()
+    unclassifiable_via_stp = [r for r in records if r["outcome"] == "unclassifiable_via_stp_suite"]
+    assert unclassifiable_via_stp == []
+
+    survivors = [r for r in records if r["outcome"] == "survived"]
+    assert len(survivors) == 44
+    for r in survivors:
+        assert r["stp_suite_outcome"] == "survived", r
+        assert r["stp_suite_detail"] is not None
+
+    killed_via_stp = [r for r in records if r["outcome"] == "killed_via_stp_suite"]
+    for r in killed_via_stp:
+        assert r["stp_suite_outcome"] == "killed", r
 
 
 def test_dose_reduction_target_mg_doac_agent_requires_comparisons_are_all_killed():

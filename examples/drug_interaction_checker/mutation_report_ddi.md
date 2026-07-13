@@ -1,13 +1,13 @@
 # Gate C5: mutation testing report — `drug_interaction_checker.dfy` (CheckInteraction, DoseReductionTargetMg)
 
-Generated 2026-07-13T13:13:38.668029+00:00. 1342 mutants total. Counts: filtered_static=522, killed=744, killed_via_stp_suite=6, survived=44, unclassifiable=26
+Generated 2026-07-13T14:00:32.435713+00:00. 1342 mutants total. Counts: filtered_static=522, killed=744, killed_via_stp_suite=6, survived=44, unclassifiable=26
 
 SOR: 0 mutants (no set-typed operations in this spec) — NOT APPLICABLE, checked.
 HOR: 0 mutants (no heap/object state, old()/reads/modifies) — NOT APPLICABLE, checked.
 AOR: 0 mutants for either function — CheckInteraction has no arithmetic operator anywhere; DoseReductionTargetMg's body is bare literal returns (no +/-/*// operator to mutate) — checked, not assumed.
 LVR: 0 mutants for CheckInteraction (no numeric literal anywhere) — checked, not assumed. 10 mutants for DoseReductionTargetMg, clause-level only (the literal directly adjacent to each ensures clause's ==) — body-level scanning refuses on the match body's own explanatory comment (dafny_mutate.py's deliberate comment-safety boundary); not fixed, since clause-level coverage already proves the same five figures exactly and body-level would be redundant, not a different class of bug — see module docstring.
 
-STP-suite escalation (2026-07-13): every mutant that survives the bare-spec `dafny verify` is re-checked against the committed `drug_interaction_checker_stp_suite.dfy` (Gate C4's real ACCEPT/REJECT lemmas, reused verbatim). A `killed_via_stp_suite` outcome means the bare spec alone missed it but the STP suite's existing lemmas caught it — see module docstring for the real, hand-verified boundary of what this escalation does and does not catch.
+STP-suite escalation (2026-07-13): every mutant that survives the bare-spec `dafny verify` is re-checked against the committed `drug_interaction_checker_stp_suite.dfy` (Gate C4's real ACCEPT/REJECT lemmas, reused verbatim). A `killed_via_stp_suite` outcome means the bare spec alone missed it but the STP suite's existing lemmas caught it — see module docstring for the real, hand-verified boundary of what this escalation does and does not catch. A distinct `unclassifiable_via_stp_suite` outcome (never observed against this run's real mutant set, but handled explicitly rather than assumed away) means the STP-suite escalation itself was inconclusive — never silently folded into `survived`, which would misrepresent an unchecked mutant as a confirmed one.
 
 | Function | Operator | Clause | Mutation | Outcome | Detail |
 |---|---|---|---|---|---|

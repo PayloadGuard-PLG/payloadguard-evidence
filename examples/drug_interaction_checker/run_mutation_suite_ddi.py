@@ -284,13 +284,34 @@ def main():
                 # ensures-clause wording provably irrelevant to a same-module
                 # concrete-literal lemma call, confirmed empirically, not a
                 # gap in this escalation itself).
+                #
+                # Three-way, not two-way: a Qodo review on this PR caught a
+                # real gap in an earlier draft -- only "killed" was handled,
+                # so an inconclusive STP-suite run (unclassifiable: timeout,
+                # unexpected exit code, an ambiguous or missing summary line)
+                # silently stayed "survived", indistinguishable from the STP
+                # suite genuinely having verified clean. Confirmed empirically
+                # this never actually happens against the real, current
+                # mutant set (see test_dose_reduction_target_mg... below and
+                # KNOWN_LIMITATIONS.md), but the code shouldn't rely on that
+                # holding forever -- an inconclusive check must never be
+                # silently treated as a confirmed one.
                 stp_outcome, stp_detail, stp_exit_code, _ = _stp_verify(m.mutated_source)
                 record["stp_suite_detail"] = stp_detail
+                record["stp_suite_outcome"] = stp_outcome
                 if stp_outcome == "killed":
                     record["outcome"] = "killed_via_stp_suite"
                     record["detail"] = (
                         f"bare spec survived ({detail}); "
                         f"STP suite caught it ({stp_detail})"
+                    )
+                    record["exit_code"] = stp_exit_code
+                elif stp_outcome == "unclassifiable":
+                    record["outcome"] = "unclassifiable_via_stp_suite"
+                    record["detail"] = (
+                        f"bare spec survived ({detail}); "
+                        f"STP suite escalation was inconclusive, not "
+                        f"confirmed either way ({stp_detail})"
                     )
                     record["exit_code"] = stp_exit_code
 
@@ -330,7 +351,12 @@ def main():
         "outcome means the bare spec alone missed it but the STP suite's "
         "existing lemmas caught it — see module docstring for the real, "
         "hand-verified boundary of what this escalation does and does not "
-        "catch.",
+        "catch. A distinct `unclassifiable_via_stp_suite` outcome (never "
+        "observed against this run's real mutant set, but handled "
+        "explicitly rather than assumed away) means the STP-suite "
+        "escalation itself was inconclusive — never silently folded into "
+        "`survived`, which would misrepresent an unchecked mutant as a "
+        "confirmed one.",
         "",
         "| Function | Operator | Clause | Mutation | Outcome | Detail |",
         "|---|---|---|---|---|---|",
@@ -369,6 +395,11 @@ def main():
     if unclassifiable:
         print(f"UNCLASSIFIABLE ({len(unclassifiable)}) — refused, needs review:")
         for r in unclassifiable:
+            print(f"  - {r['function']}: {r['description']}: {r['detail']}")
+    unclassifiable_via_stp = [r for r in records if r["outcome"] == "unclassifiable_via_stp_suite"]
+    if unclassifiable_via_stp:
+        print(f"UNCLASSIFIABLE VIA STP SUITE ({len(unclassifiable_via_stp)}) — STP escalation inconclusive, needs review:")
+        for r in unclassifiable_via_stp:
             print(f"  - {r['function']}: {r['description']}: {r['detail']}")
 
 
