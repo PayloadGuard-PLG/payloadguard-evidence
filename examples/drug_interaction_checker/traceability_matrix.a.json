@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
-  "generated_utc": "2026-07-13T04:43:39.699155+00:00",
+  "generated_utc": "2026-07-13T12:12:13.504278+00:00",
   "tool_versions": {
     "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
   },
@@ -105,7 +105,7 @@
     },
     {
       "requirement_id": "REQ-DDI-5",
-      "requirement_text": "Rifampicin and carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication - TreatmentIndication (AFStrokePrevention | RecurrentVTEPrevention | OrthopaedicVTEProphylaxis, the third constructor added 2026-07-13 for REQ-DDI-6's own indication scoping, not apixaban's - see REQ-DDI-6 below). Apixaban's own rows are unaffected by that addition and still guard on exactly the two indications the interaction source names for these rows, not the third VTE-prophylaxis case (that indication exists only in the posology sources, with no stated interaction outcome for these agents). Both named indications give apixaban the identical \"use with caution\" outcome, so once the type is closed to exactly those two values (for apixaban's own cells), every constructible input is provable - CheckInteraction's precondition (REQ-DDI-2) is removed entirely as a result.",
+      "requirement_text": "Rifampicin and carbamazepine/phenytoin/phenobarbital both make apixaban's outcome depend on a third axis, clinical indication - TreatmentIndication (AFStrokePrevention | RecurrentVTEPrevention | OrthopaedicVTEProphylaxis, the third constructor added 2026-07-13 for REQ-DDI-6's own indication scoping, not apixaban's - see REQ-DDI-6 below). Both named indications give apixaban the identical \"use with caution\" outcome, so every constructible input is provable - CheckInteraction's precondition (REQ-DDI-2) is removed entirely as a result. For the orthopaedic-VTE-prophylaxis indication specifically (added for REQ-DDI-6, not sourced for apixaban here), all four apixaban+inducer cells return NotCovered rather than a fabricated Caution - fixed 2026-07-13 after a code review found the original implementation's match arms computed Caution unconditionally, without inspecting treatmentIndication at all, silently returning an unproven outcome once the third constructor made that indication constructible. Matches (Apixaban, Dronedarone)'s established silent-cell convention: the interaction source never states an apixaban outcome for the hip/knee-replacement indication, so NotCovered is the honest answer, not a value this function should fabricate.",
       "code_location": "drug_interaction_checker.dfy::CheckInteraction",
       "evidence": [
         {

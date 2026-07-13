@@ -6,6 +6,77 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-13 — Second Qodo review (on merged PR #40) found a real scope-leak in CheckInteraction's own apixaban rows; fixed, all six gates re-run
+
+Continuation of the same day's earlier work (see the entry immediately
+below): PR #40 (the `TreatmentIndication` third-constructor fix,
+`OrthopaedicVTEProphylaxis`) merged externally. A second Qodo code
+review, run against the merged code, found a real bug in a sibling
+function to the one PR #40 was written for.
+
+**The bug.** `CheckInteraction`'s four apixaban+inducer match arms
+(Rifampicin, Carbamazepine, Phenytoin, Phenobarbital) computed `Caution`
+unconditionally — the match body never inspected `treatmentIndication`
+at all, even though the corresponding `ensures` clause explicitly
+guarded on `treatmentIndication == AFStrokePrevention ||
+treatmentIndication == RecurrentVTEPrevention`. This was harmless while
+`TreatmentIndication` had only those two constructors (the guard was
+always true for every constructible value — already a known mutation-
+testing "redundant guard" survivor category). Adding
+`OrthopaedicVTEProphylaxis` (for `DoseReductionTargetMg`'s own indication
+guard, the actual point of PR #40) silently reopened the gap: calling
+`CheckInteraction` with the new indication now returned a fabricated
+`Caution` instead of the honest `NotCovered` this repo's own established
+silent-cell convention (`(Apixaban, Dronedarone)`) calls for — exactly
+the failure mode Addendum 3's Finding 3 had already named as the general
+risk of widening a match statement's input domain without re-checking
+every existing arm against it, caught here on a different function than
+the one that finding was about.
+
+**Independently re-verified before acting**, per this repo's own
+standing discipline: read the actual merged `.dfy` source directly
+(not the review's word) and confirmed the mismatch — an unambiguous bug,
+not a design judgment call, so fixed directly rather than raised as a
+question (per this session's own established practice: "if you feel
+confident in how to resolve an event... push the fix").
+
+**Fix**: each of the four match arms now branches on
+`treatmentIndication`, matching `(Apixaban, Dronedarone)`'s
+`NotCovered` pattern exactly. Four new `ensures` clauses added, pinning
+`NotCovered` for `OrthopaedicVTEProphylaxis` on each inducer.
+
+**All six gates re-run for real, on a branch restarted from
+`origin/main` post-merge** (new work on already-merged code, not a
+reopening of PR #40's own change): C1 `2 verified, 0 errors`; C4/STP two
+new lemmas, `25 verified, 0 errors` (up from 23); C3
+`scan_weak_postconditions` count for `CheckInteraction` now 68 (up from
+64); C5 real re-run of `run_mutation_suite_ddi.py` — **1342 mutants: 744
+killed, 522 filtered_static, 50 survived, 26 unclassifiable**.
+`CheckInteraction`'s own survivors dropped sharply, 31 → 7 (the four
+REQ-DDI-5 indication-disjunction survivors collapsed from a broad
+"redundant guard" pattern to a narrower LOR-vacuity case now that the
+guard is actually load-bearing; the pre-existing 3 SSRIOrSNRI survivors
+are unchanged). `DoseReductionTargetMg`'s own 43 survivors are
+unaffected — this fix didn't touch that function.
+`tests/test_drug_interaction_checker_mutation_report.py` and
+`tests/test_drug_interaction_checker_spec_lint.py` updated accordingly;
+full suite (214 tests) passing throughout.
+
+Documentation ripple: `metadata.a.yaml`'s REQ-DDI-5 text rewritten to
+describe the fix; `traceability_matrix.a.json`/`.md` regenerated (still
+6/6 `PROVEN`, no GAP rows);
+`nl_confirmation_drug_interaction_checker_dfy.md` gained a fresh
+regenerated NL summary (68 postconditions) and "Addendum 4" documenting
+the finding, the independent re-verification, and the fix — Addendum 1's
+stale postcondition-numbering references (48/52/56) corrected in place
+to their new positions (49/54/59) with the renumbering explained, not
+silently changed. Gate C6 remains open — not because any finding is
+still unresolved (Addendum 3's four findings, including the
+`RecurrentVTEPrevention` scope question, were all resolved before it
+closed), but because Steven's actual sign-off review of the current
+spec shape still hasn't happened; this addendum adds a new finding on
+top of an otherwise-ready document, it doesn't reopen Addendum 3.
+
 ## 2026-07-13 — REQ-DDI-6's real spec-scope finding fixed: TreatmentIndication's third constructor, plus an independent mutation-testing tooling gap found and fixed
 
 Continuation of the same day's earlier Gate C6 review work (see the

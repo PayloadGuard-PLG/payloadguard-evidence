@@ -127,6 +127,17 @@ lemma STP_Accept_CheckInteraction_ApixabanRifampicin_RecurrentVTEPrevention(hasF
   ensures CheckInteraction(Apixaban, Rifampicin, hasFlag, RecurrentVTEPrevention) == InteractionResult(Caution, ThrombosisRisk)
 {}
 
+// Corrected 2026-07-13 (Qodo review, PR #40): OrthopaedicVTEProphylaxis
+// (added for REQ-DDI-6's own scoping, a different cell entirely) made
+// this cell silently callable with a third indication the interaction
+// source never addresses for apixaban -- the match arm used to return
+// Caution unconditionally, a real scope leak. Proves the fix: the same
+// cell is now NotCovered for the orthopaedic indication, matching
+// (Apixaban, Dronedarone)'s established silent-cell convention.
+lemma STP_Accept_CheckInteraction_ApixabanRifampicin_OrthopaedicVTEProphylaxis_NotCovered(hasFlag: bool)
+  ensures CheckInteraction(Apixaban, Rifampicin, hasFlag, OrthopaedicVTEProphylaxis) == InteractionResult(NotCovered, UnknownRisk)
+{}
+
 // ============================================ Safety-critical REJECT set
 //
 // The three Contraindicated cells are the highest-stakes rows in this
@@ -166,6 +177,16 @@ lemma STP_Reject_CheckInteraction_RivaroxabanVerapamil_NotNoInteractionExpected(
 // destination value.
 lemma STP_Reject_CheckInteraction_ApixabanRifampicin_NotStillNotCovered(hasFlag: bool)
   requires CheckInteraction(Apixaban, Rifampicin, hasFlag, AFStrokePrevention) == InteractionResult(NotCovered, UnknownRisk) // wrong: was the pre-REQ-DDI-5 unreachable-arm default
+  ensures false
+{}
+
+// A sixth REJECT, specific to the 2026-07-13 Qodo-review fix: before
+// this fix, OrthopaedicVTEProphylaxis silently fell through to the same
+// Caution the two named indications get, since the match arm never
+// inspected treatmentIndication at all. Proves that regression is now
+// genuinely excluded, not just replaced by a comment.
+lemma STP_Reject_CheckInteraction_ApixabanRifampicin_OrthopaedicVTEProphylaxis_NotCaution(hasFlag: bool)
+  requires CheckInteraction(Apixaban, Rifampicin, hasFlag, OrthopaedicVTEProphylaxis) == InteractionResult(Caution, ThrombosisRisk) // wrong: was the pre-fix scope-leak default
   ensures false
 {}
 

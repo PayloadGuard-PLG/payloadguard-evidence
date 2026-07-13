@@ -5,8 +5,9 @@ re-invoke Dafny, mirroring tests/test_mutation_report.py's/
 test_renal_mutation_report.py's exact discipline.
 
 Re-run for real 2026-07-12 after REQ-DDI-6 (DoseReductionTargetMg) was
-built on top of REQ-DDI-5, then twice more 2026-07-13 (a Qodo review
-fix, then a Gate C6 review's Fix 2A) - see the three-part history below.
+built on top of REQ-DDI-5, then three more times 2026-07-13 (a Qodo
+review fix, a Gate C6 review's Fix 2A, then a second Qodo review finding
+a real correctness bug in that fix) - see the four-part history below.
 Every survivor and unclassifiable result is explained and categorized
 here, not silently accepted as "some mutants survived" - a future
 change that introduces a genuinely different, unexplained result should
@@ -53,11 +54,50 @@ reformatting both clauses to single lines, matching this repo's own
 established precedent (`renal_adjustment.dfy`'s equivalent Gate C6 gap,
 fixed the same way rather than extending the tool, since no committed
 capture yet depended on the multi-line formatting). Re-ran clean:
-**1250 mutants - 668 killed, 482 filtered_static, 74 survived, 26
-unclassifiable.** The jump in every count reflects real, previously-
+1250 mutants - 668 killed, 482 filtered_static, 74 survived, 26
+unclassifiable. The jump in every count reflected real, previously-
 missing coverage of the full 5-disjunct requires clause and the full
-indication-guarded ensures clause, not a new class of finding -
-confirmed below, category by category.
+indication-guarded ensures clause, not a new class of finding.
+
+**Run 4 (2026-07-13, second Qodo review on PR #40 - a real correctness
+bug, not a false positive, independently re-verified before acting):**
+adding `OrthopaedicVTEProphylaxis` (Run 3) silently broke an invariant
+`CheckInteraction`'s own apixaban+inducer match arms depended on. Those
+four arms (Rifampicin/Carbamazepine/Phenytoin/Phenobarbital) compute
+`Caution` unconditionally, never inspecting `treatmentIndication` at
+all - correct while the type had only the two indications the source
+names for apixaban (every constructible value satisfied the guard), but
+once the third constructor existed, the same arms became silently
+callable with it too, returning a concrete `Caution` no `ensures` clause
+proved - a real scope leak the file's own datatype-declaration comment
+was written specifically to prevent, and the same failure mode the
+original Gate C6 review had predicted for a *different* function
+(`DoseReductionTargetMg`) if a third constructor were ever added.
+
+Fixed: all four match arms now branch on `treatmentIndication`
+explicitly, returning `NotCovered` for the orthopaedic indication -
+matching `(Apixaban, Dronedarone)`'s already-established silent-cell
+convention - with four new `ensures` clauses pinning it. Two new STP
+lemmas added (one ACCEPT proving `NotCovered` for the fixed case, one
+REJECT proving the old buggy `Caution` value is now genuinely excluded):
+`25 verified, 0 errors` (up from 23). `CheckInteraction` gained 4 weak
+postconditions (64 -> 68).
+
+**Real, substantial effect on Gate C5, beyond just fixing the bug**:
+making the match arm's actual computed value depend on
+`treatmentIndication` (not just the `ensures` clause's guard) converted
+24 of the 28 previously-"redundant guard" REQ-DDI-5 survivors into
+KILLS - mutating the indication comparison now genuinely changes
+behavior, which the new `NotCovered`-pinning clauses can catch. Only 4
+survive: LOR mutations (`||` -> `&&`) making the two-indication
+disjunct unsatisfiable for any single datatype value, hence vacuously
+true regardless of the match arm - a different, deeper structural blind
+spot than the ROR "redundant guard" pattern, not the same category
+surviving by coincidence. Final real run: **1342 mutants - 744 killed,
+522 filtered_static, 50 survived, 26 unclassifiable.**
+`DoseReductionTargetMg` entirely unaffected (untouched by this fix) -
+still 43 survivors, still 26 unclassifiable, confirmed unchanged below,
+not assumed.
 """
 
 import json
@@ -73,14 +113,14 @@ def _report():
 
 def test_report_total_and_outcome_counts():
     records = _report()
-    assert len(records) == 1250
+    assert len(records) == 1342
     counts = {}
     for r in records:
         counts[r["outcome"]] = counts.get(r["outcome"], 0) + 1
     assert counts == {
-        "killed": 668,
-        "filtered_static": 482,
-        "survived": 74,
+        "killed": 744,
+        "filtered_static": 522,
+        "survived": 50,
         "unclassifiable": 26,
     }
 
@@ -125,23 +165,24 @@ def test_dose_reduction_target_mg_unclassifiable_results_are_the_same_named_type
     assert check_interaction_unclassifiable == []
 
 
-def test_ddi5_indication_disjunction_survivors_are_a_redundant_guard_not_a_gap():
-    """Unchanged by this session's DoseReductionTargetMg extension (28 of
-    CheckInteraction's 31 survivors), one set of 7 per REQ-DDI-5 clause
-    (Rifampicin/Carbamazepine/Phenytoin/Phenobarbital + Apixaban): ROR (6
-    per clause: 2 equality operands x 3 variants) and LOR (1 per clause:
-    || -> &&) on `(treatmentIndication == AFStrokePrevention ||
-    treatmentIndication == RecurrentVTEPrevention)`. Both named
-    indications give the IDENTICAL outcome per the source, and the match
-    arm doesn't inspect treatmentIndication's value at all for these four
-    cells - so any mutation to this disjunction either narrows which
-    inputs the postcondition still claims something about (ROR) or makes
-    the antecedent unsatisfiable, hence vacuously true (LOR) - never
-    wrong. A structural blind spot against guard-style ==> clauses whose
-    consequent happens to be identical across every value the guard
-    could distinguish - the same shape as the pre-existing SSRIOrSNRI
-    category below, and now also DoseReductionTargetMg's own indication
-    guard (tested separately below)."""
+def test_ddi5_indication_disjunction_survivors_are_now_only_the_deeper_lor_vacuity_case():
+    """Shrunk sharply by Run 4's fix (28 -> 4 of CheckInteraction's
+    survivors): one LOR survivor per REQ-DDI-5 clause
+    (Rifampicin/Carbamazepine/Phenytoin/Phenobarbital + Apixaban), `||`
+    mutated to `&&` on `(treatmentIndication == AFStrokePrevention ||
+    treatmentIndication == RecurrentVTEPrevention)`. A single
+    TreatmentIndication value can never equal both AFStrokePrevention
+    AND RecurrentVTEPrevention simultaneously, so the mutated antecedent
+    is unsatisfiable for every constructible value - vacuously true
+    regardless of what the match arm actually computes. This is a
+    different, deeper structural blind spot than the ROR "redundant
+    guard" pattern the first three runs found here (mutating the
+    comparison to !=, <, > used to survive too, since the match arm
+    never inspected treatmentIndication at all) - Run 4 made the match
+    arm's own computed value depend on that comparison (branching to
+    NotCovered for the orthopaedic indication), so all 24 ROR variants
+    are now genuinely killed, confirmed directly below, not assumed from
+    the count alone."""
     records = _report()
     survivors = [r for r in records if r["outcome"] == "survived" and r["function"] == "CheckInteraction"]
 
@@ -149,7 +190,7 @@ def test_ddi5_indication_disjunction_survivors_are_a_redundant_guard_not_a_gap()
         r for r in survivors
         if "treatmentIndication == AFStrokePrevention" in r["original_clause"]
     ]
-    assert len(ddi5_survivors) == 28
+    assert len(ddi5_survivors) == 4
 
     by_agent = {}
     for r in ddi5_survivors:
@@ -157,14 +198,42 @@ def test_ddi5_indication_disjunction_survivors_are_a_redundant_guard_not_a_gap()
             if f"agent == {agent}" in r["original_clause"]:
                 by_agent.setdefault(agent, []).append(r)
     assert {agent: len(rs) for agent, rs in by_agent.items()} == {
-        "Rifampicin": 7,
-        "Carbamazepine": 7,
-        "Phenytoin": 7,
-        "Phenobarbital": 7,
+        "Rifampicin": 1,
+        "Carbamazepine": 1,
+        "Phenytoin": 1,
+        "Phenobarbital": 1,
     }
     for r in ddi5_survivors:
         assert "doac == Apixaban" in r["original_clause"]
         assert "InteractionResult(Caution, ThrombosisRisk)" in r["original_clause"]
+        assert r["operator"] == "LOR"
+
+    # Only the indication comparisons specifically (not doac/agent
+    # elsewhere in the same clause) - detected by the "treatmentIndication
+    # ==" occurrence count dropping from 2 to 1, the same technique used
+    # for DoseReductionTargetMg's requires clause below. ROR generates 5
+    # variants per comparison (!=, <, >, <=, >=); the <=/>= pair are
+    # filtered_static (not survivors, not sent to Dafny at all) while the
+    # !=/</> triple are genuinely killed - real Dafny compile errors on
+    # ordering two datatype values in an ensures clause (a different
+    # failure surface than DoseReductionTargetMg's requires-clause
+    # unclassifiable case: this goes through real verification, not the
+    # separate spec-lint precondition-satisfiability pre-check).
+    all_ddi5_ror = [
+        r for r in records
+        if r["function"] == "CheckInteraction"
+        and r["operator"] == "ROR"
+        and "treatmentIndication == AFStrokePrevention" in r["original_clause"]
+        and "doac == Apixaban" in r["original_clause"]
+        and r["original_clause"].count("treatmentIndication ==") == 2
+        and r["mutated_clause"].count("treatmentIndication ==") == 1
+    ]
+    assert len(all_ddi5_ror) == 40  # 4 clauses x 2 comparisons x 5 ROR variants
+    killed = [r for r in all_ddi5_ror if r["outcome"] == "killed"]
+    filtered = [r for r in all_ddi5_ror if r["outcome"] == "filtered_static"]
+    assert len(killed) == 24
+    assert len(filtered) == 16
+    assert len(killed) + len(filtered) == len(all_ddi5_ror)
 
 
 def test_ensures_survivors_are_a_broadly_true_consequent_not_load_bearing_antecedent():
@@ -196,15 +265,22 @@ def test_ensures_survivors_are_a_broadly_true_consequent_not_load_bearing_antece
         ) in spec
 
 
-def test_check_interaction_survivors_unchanged_by_dose_reduction_target_mg_extension():
-    """CheckInteraction wasn't touched while extending DoseReductionTargetMg
-    with a treatmentIndication parameter (Fix 2A) - its 31 survivors (28
-    REQ-DDI-5 + 3 pre-existing SSRIOrSNRI, both tested above) are the
-    exact same count as every prior run this session established, not a
-    coincidentally-equal but different set."""
+def test_check_interaction_survivors_dropped_sharply_after_the_scope_leak_fix():
+    """CheckInteraction WAS touched in Run 4 (unlike Runs 2-3, which only
+    touched DoseReductionTargetMg) - fixing the apixaban scope-leak bug
+    (branching the four inducer match arms on treatmentIndication instead
+    of ignoring it) had a real, measured proof-strengthening effect: 31
+    survivors (28 REQ-DDI-5 + 3 SSRIOrSNRI) dropped to 7 (4 REQ-DDI-5 + 3
+    SSRIOrSNRI unchanged). The SSRIOrSNRI count is confirmed unaffected
+    below, not assumed just because it wasn't the target of this fix."""
     records = _report()
     ci_survivors = [r for r in records if r["outcome"] == "survived" and r["function"] == "CheckInteraction"]
-    assert len(ci_survivors) == 31
+    assert len(ci_survivors) == 7
+    ssri_survivors = [
+        r for r in ci_survivors
+        if "doac == Dabigatran" in r["original_clause"] and "SSRIOrSNRI" in r["original_clause"]
+    ]
+    assert len(ssri_survivors) == 3
 
 
 def test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full_scale():
@@ -317,14 +393,14 @@ def test_dose_reduction_target_mg_lvr_mutants_all_killed():
 
 
 def test_all_survivors_are_accounted_for_by_the_three_named_categories():
-    """No fourth, unexplained survivor category exists - the 28 REQ-DDI-5
-    disjunction survivors, the 3 pre-existing SSRIOrSNRI survivors, and
+    """No fourth, unexplained survivor category exists - the 4 REQ-DDI-5
+    LOR-vacuity survivors, the 3 pre-existing SSRIOrSNRI survivors, and
     the 43 DoseReductionTargetMg guard-antecedent survivors (6 requires +
-    37 ensures) add up to the full 74, not just a subset each test
+    37 ensures) add up to the full 50, not just a subset each test
     happens to find."""
     records = _report()
     survivors = [r for r in records if r["outcome"] == "survived"]
-    assert len(survivors) == 74
+    assert len(survivors) == 50
 
     ddi5 = [r for r in survivors if "treatmentIndication == AFStrokePrevention" in r["original_clause"] and r["function"] == "CheckInteraction"]
     ssri = [r for r in survivors if "doac == Dabigatran" in r["original_clause"] and "SSRIOrSNRI" in r["original_clause"]]

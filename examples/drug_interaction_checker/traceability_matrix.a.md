@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant A: evidence array per requirement)
 
-Generated (UTC): 2026-07-13T04:43:39.699155+00:00
+Generated (UTC): 2026-07-13T12:12:13.504278+00:00
 Tool versions: {'dafny': '4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2'}
 Declared bounds (intended envelope): N/A (no crosshair evidence in this metadata)
 Effective bounds (demonstrated by capture): N/A (no crosshair evidence in this metadata)

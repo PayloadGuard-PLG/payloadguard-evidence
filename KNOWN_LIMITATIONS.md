@@ -4,7 +4,18 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-13 (all four Gate C6 review findings on the
+Last updated: 2026-07-13 (a second Qodo review, run against PR #40 after
+it merged, found a real scope-leak bug in `CheckInteraction`'s own
+apixaban rows — the four apixaban+inducer match arms computed `Caution`
+unconditionally, never inspecting `treatmentIndication`, silently
+fabricating an outcome once `OrthopaedicVTEProphylaxis` made a third
+indication value constructible. Fixed: each arm now returns `NotCovered`
+for the orthopaedic indication, matching this repo's own
+`(Apixaban, Dronedarone)` silent-cell convention. All six gates re-run
+for real; Phase 3 regenerated, still 6/6 PROVEN rows. See the "Gate C6
+review (second, post-merge), 2026-07-13" section near the end of this
+file for the full account. Prior entry, preserved: Last updated
+2026-07-13 (all four Gate C6 review findings on the
 REQ-DDI-5/REQ-DDI-6 sign-off document resolved — `TreatmentIndication`
 gained a third constructor, `DoseReductionTargetMg` gained an
 indication guard on its Dabigatran+Verapamil cell, per Steven's
@@ -2938,3 +2949,176 @@ check) and `tests/test_drug_interaction_checker_matrix.py` (6 tests —
 same CLI round-trip, the many-requirements-to-one-proof binding, the
 GAP rows, the bounds-block rendering, and the structural PROVEN check).
 205 tests pass (up from 190).
+
+## Phase E REQ-DDI-5/REQ-DDI-6 — `drug_interaction_checker.dfy` extended with the indication axis and numeric dose-reduction targets: BUILT, all six gates re-run (2026-07-12)
+
+Both requirements had been named-but-deferred since Gate 1c (2026-07-10):
+`REQ-DDI-5` because two apixaban+inducer cells (rifampicin;
+carbamazepine/phenytoin/phenobarbital) depend on a clinical-indication
+axis v1 didn't model, `REQ-DDI-6` because `DoseReductionAdvised`'s exact
+numeric mg figure was only v1 informational text. An externally-supplied
+research document's claim that both were buildable from public UK
+sources without non-public clinical knowledge was verified first,
+against five independent primary sources (`sources/README.md`'s
+2026-07-12 entries), before any build decision — see the prior
+`KNOWN_LIMITATIONS.md` entry above (2026-07-12, sourcing-only).
+
+**REQ-DDI-5 built**: `datatype TreatmentIndication = AFStrokePrevention
+| RecurrentVTEPrevention` (closed to exactly the two indications the
+interaction source names) added as `CheckInteraction`'s fourth
+parameter. Both named indications give apixaban the identical
+"use with caution" outcome, so every constructible
+`TreatmentIndication` value is provable — the function's previous
+`requires` clause (excluding all four apixaban+inducer cells outright)
+is removed entirely, not narrowed; `CheckInteraction` is now total.
+
+**REQ-DDI-6 built**: new companion function `DoseReductionTargetMg(doac,
+agent): int`, requires-gated bare-`int` (matching
+`renal_adjustment.dfy`'s `SelectFormula` precedent rather than
+introducing this repo's first `Option<int>` pattern), pinning the five
+real cells the source states a number for: Dabigatran+Verapamil
+(110mg), Edoxaban+{Dronedarone, ErythromycinSystemic, Ketoconazole,
+Ciclosporin} (30mg each, sourced individually). Apixaban never appears
+in this function's precondition — a direct, confirmed structural
+consequence of `CheckInteraction` never producing `DoseReductionAdvised`
+for apixaban anywhere in its match arms, not a hand-written exclusion.
+
+**All six gates re-run for real, both requirements**: C1 re-captured
+(`2 verified, 0 errors`, both functions); C6 — two new sign-off addenda
+written, explicitly marked "not yet confirmed — pending review," never
+self-signed-off (see the Gate C6 review sections below); C4 — 6 new STP
+lemmas, `20 verified, 0 errors` (up from 11 lemmas / 22 verified pre-
+extension, a different function count); C3 — `TreatmentIndication` got
+`EnumSort` treatment for free (no code change), weak-postcondition count
+60 → 64; C5 — mutation testing restructured to a multi-function loop:
+1178 mutants, first run 634 killed, 472 filtered_static, 68 survived (3
+named categories, none new), 4 unclassifiable (the datatype-ordering
+type-error category reappearing, since `DoseReductionTargetMg`'s own new
+`requires` clause reintroduces a datatype comparison REQ-DDI-5 alone had
+made disappear). A real engineering boundary named, not fixed: the
+mutation engine's body-scanning mode refuses on a `//` comment inside
+`DoseReductionTargetMg`'s body — worked around with clause-level-only
+LVR coverage (equivalent, no new shared-module engineering needed),
+documented in `run_mutation_suite_ddi.py`'s own docstring.
+
+**A Qodo code-review finding on the resulting PR (#39) then improved the
+proof itself**: the wildcard match arm's bare `0` fallback (a
+reliability risk if this spec were ever compiled and called from
+unverified code with the precondition violated) was replaced with
+`case _ => (assert false; 0)`, verified to still compile and verify
+cleanly — Dafny proves that branch genuinely unreachable given the
+`requires` clause. This also converted the 7 requires-clause mutation
+survivors from the first run into kills, since a mutated requires clause
+can now admit a pair that falls into the wildcard arm, defeating the
+`assert false`. Re-run: 1178 mutants, 641 killed, 472 filtered_static,
+61 survived, 4 unclassifiable — `DoseReductionTargetMg` now contributes
+exactly 30 survivors, ensures-only, no requires-clause survivors left.
+
+**Phase 3 regenerated via the real CLI, never hand-edited**:
+`metadata.a.yaml`/`traceability_matrix.a.json`/`.md` rebuilt — all 6
+requirement rows in this example now render real `PROVEN` evidence, no
+GAP rows remain. 214 tests pass (up from 205).
+
+## Gate C6 review, 2026-07-13 — pre-sign-off review of the REQ-DDI-5/REQ-DDI-6 addenda found four real defects, all resolved
+
+Before Steven's sign-off could happen, a review of the two 2026-07-12
+Gate C6 addenda (`nl_confirmation_drug_interaction_checker_dfy.md`)
+found three defects — each independently re-verified against the real
+committed artifacts before acting, not accepted on the review's word
+alone — plus a fourth found independently while fixing the third:
+
+1. **Stale NL summary — fixed.** The addenda's own "Summary presented"
+   block was still the pre-REQ-DDI-5/6, 2026-07-10 generation (3-arg
+   signature, 60 postconditions, no `DoseReductionTargetMg` at all).
+   Regenerated for real via `evidence.dafny_nl_summary.summarize_method`;
+   the stale block marked superseded and left as a frozen historical
+   record (matching `GATE_1C_AUDIT.md`'s convention), not rewritten.
+2. **Missing wildcard-arm review item — fixed.** Addendum 2 never
+   mentioned the Qodo-driven `assert false` fix to
+   `DoseReductionTargetMg`'s wildcard arm (PR #39) despite it being the
+   function's most recently changed line with the largest measured
+   effect on Gate C5. Added as a new review item.
+3. **A real spec-scope gap — fixed, on Steven's decision.**
+   `sources/sps-doac-interactions-2024.md` scopes the
+   dabigatran+verapamil 110mg figure to specific indications, but
+   `DoseReductionTargetMg` proved it unconditionally — a claim provably
+   wider than the source's own stated scope, though not a soundness bug
+   (both existing `TreatmentIndication` constructors fell within scope).
+   `sources/emc-smpc-dabigatran-indications-2025.md` (new primary source,
+   eMC SmPC, fetched and archived before any decision) confirmed
+   dabigatran genuinely has a third, current, UK-licensed indication
+   (orthopaedic VTE prophylaxis) the verapamil row is silent on. Steven
+   decided (via `AskUserQuestion`, not resolved by an assistant): add a
+   third `TreatmentIndication` constructor, `OrthopaedicVTEProphylaxis`,
+   now. Implemented: `DoseReductionTargetMg` gained a `treatmentIndication`
+   parameter and an indication guard on its Dabigatran+Verapamil cell; a
+   new STP lemma (`DoseTargetDomainAgreesWithCheckInteraction`) proves
+   this function's domain exactly equals "`CheckInteraction` says
+   `DoseReductionAdvised`" minus the SSRI and orthopaedic exclusions.
+4. **A multi-line-clause mutation-testing truncation bug — found and
+   fixed, not part of the original review.** Writing the new Fix-2A
+   clauses across multiple physical lines silently truncated
+   `evidence/dafny_mutate.py`'s clause-site locator at the first
+   physical line — a real coverage regression (1178 → 1171 mutants) not
+   caught by Dafny (still verified clean) or by pytest's pinned counts
+   alone. Fixed by reformatting both clauses to single lines, matching
+   `renal_adjustment.dfy`'s own established precedent for this exact
+   class of gap, rather than extending the tool.
+
+**All six gates re-run for real after the fix**: C1 `2 verified, 0
+errors`; C4/STP `23 verified, 0 errors` (up from 20); C3 unchanged
+(precondition still satisfiable); C5 1250 mutants — 668 killed, 482
+filtered_static, 74 survived, 26 unclassifiable (every count's jump
+reflects real, previously-missing coverage, not a new finding class).
+Phase 3 regenerated: still 6/6 `PROVEN`, no GAP rows. Full account:
+`nl_confirmation_drug_interaction_checker_dfy.md`'s "Addendum 3."
+
+## Gate C6 review (second, post-merge), 2026-07-13 — a Qodo review of merged PR #40 found a real scope-leak in `CheckInteraction`'s own apixaban rows: FIXED
+
+PR #40 (the fix above) merged externally. A second Qodo code review, run
+against the merged code, found a real, independently-verified bug in a
+sibling function to the one PR #40 was written for: `CheckInteraction`'s
+four apixaban+inducer match arms (Rifampicin, Carbamazepine, Phenytoin,
+Phenobarbital) computed `Caution` unconditionally — the match body never
+inspected `treatmentIndication` at all, even though the paired `ensures`
+clause explicitly guarded on `treatmentIndication == AFStrokePrevention
+|| treatmentIndication == RecurrentVTEPrevention`. Harmless while
+`TreatmentIndication` had only those two constructors (the guard was
+always true for every constructible value); adding
+`OrthopaedicVTEProphylaxis` (for `DoseReductionTargetMg`'s own guard,
+same PR) silently reopened the gap — calling `CheckInteraction` with the
+new indication returned a fabricated `Caution` rather than the honest
+`NotCovered` this repo's own `(Apixaban, Dronedarone)` silent-cell
+convention calls for. Exactly the general risk Finding 3/4 above already
+named (widening a match statement's input domain without re-checking
+every existing arm against it), caught here on a different function.
+
+Independently re-verified against the actual merged `.dfy` source
+directly (not the review's word) before fixing — an unambiguous bug, not
+a design fork, so fixed directly rather than raised as a question, per
+this repo's own "if you feel confident in how to resolve an event...
+push the fix" discipline for PR-activity events.
+
+**Fix**: each of the four match arms now branches on
+`treatmentIndication`, returning `NotCovered` for the orthopaedic
+indication (matching `(Apixaban, Dronedarone)`'s pattern exactly). Four
+new `ensures` clauses pin the `NotCovered` outcome per inducer.
+
+**All six gates re-run for real, on a branch restarted from
+`origin/main` post-merge** (new work on already-merged code, not a
+reopening of PR #40's own change): C1 `2 verified, 0 errors`; C4/STP two
+new lemmas, `25 verified, 0 errors` (up from 23); C3 weak-postcondition
+count for `CheckInteraction` now 68 (up from 64); C5 real re-run — 1342
+mutants: 744 killed, 522 filtered_static, 50 survived, 26 unclassifiable.
+`CheckInteraction`'s own survivors dropped sharply, 31 → 7 (the four
+REQ-DDI-5 indication-disjunction survivors collapsed from a broad
+"redundant guard" pattern to a narrower LOR-vacuity case now that the
+guard is load-bearing; the 3 pre-existing SSRIOrSNRI survivors are
+unchanged). `DoseReductionTargetMg`'s own 43 survivors are unaffected —
+this fix didn't touch that function. Phase 3 regenerated: still 6/6
+`PROVEN`, no GAP rows. Full account:
+`nl_confirmation_drug_interaction_checker_dfy.md`'s "Addendum 4." Gate
+C6 sign-off remains open — not because a finding is unresolved (every
+finding across Addenda 3 and 4 is resolved), but because Steven's
+actual review of the current spec shape, a recorded human decision,
+still hasn't happened.

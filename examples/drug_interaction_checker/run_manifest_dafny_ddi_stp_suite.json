@@ -7,6 +7,6 @@
     "/home/user/payloadguard-evidence/examples/drug_interaction_checker/drug_interaction_checker_stp_suite.dfy"
   ],
   "exit_code": 0,
-  "started_utc": "2026-07-13T03:59:52.336299+00:00",
+  "started_utc": "2026-07-13T11:32:25.774005+00:00",
   "target": "drug_interaction_checker_stp_suite.dfy"
 }

@@ -298,6 +298,111 @@ below is the one that matches the currently-committed spec.
 5. `(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30` — (doac equals Edoxaban and agent equals Ciclosporin) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 30 *(no requirement cited)*
 ```
 
+**Regenerated a third time, later still 2026-07-13** (a second Qodo
+code-review finding on PR #40, after it merged — see "Addendum 4"
+below): the four apixaban+inducer match arms above (postconditions
+27/48/52/56 in the "regenerated 2026-07-13 (current spec, both
+functions)" block, 176-252 above) computed `Caution` unconditionally,
+never actually inspecting `treatmentIndication` — silently wrong once
+`OrthopaedicVTEProphylaxis` (added later the same day, for
+`DoseReductionTargetMg`'s own Fix 2A) made a third indication value
+constructible. The `CheckInteraction` block immediately above (dated
+"regenerated 2026-07-13 (current spec, both functions)") is now itself
+superseded by the one below, the same way the two `DoseReductionTargetMg`
+blocks superseded each other earlier in this document — kept in place as
+a frozen historical record of what this document actually presented at
+that point, not rewritten. The block below is the one that matches the
+currently-committed spec (68 postconditions, up from 64 — four new
+`NotCovered` clauses, one per inducer, immediately after each original
+`Caution` clause). `DoseReductionTargetMg` itself is unaffected by this
+fix (its own indication guard, added in Fix 2A, already inspected
+`treatmentIndication` correctly) — the Fix-2A `DoseReductionTargetMg`
+block above (282-299) still matches the currently-committed spec exactly
+and is not superseded by this addendum.
+
+```
+# Plain-English summary: `CheckInteraction`
+
+## Parameters
+- `doac`: DOAC
+- `agent`: Agent
+- `hasOtherBleedingRiskFactors`: bool
+- `treatmentIndication`: TreatmentIndication
+
+## Preconditions (must hold before the method runs)
+- (none declared)
+
+## Postconditions (guaranteed to hold on return)
+1. `agent == Amiodarone ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — agent equals Amiodarone implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+2. `agent == Digoxin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NoInteractionExpected, NoRisk)` — agent equals Digoxin implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NoInteractionExpected, NoRisk) *(no requirement cited)*
+3. `agent == Diltiazem ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — agent equals Diltiazem implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+4. `agent == Clarithromycin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — agent equals Clarithromycin implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+5. `agent == OtherDOACOrHeparinOrWarfarin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — agent equals OtherDOACOrHeparinOrWarfarin implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+6. `agent == Aspirin ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — agent equals Aspirin implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+7. `agent == Clopidogrel ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — agent equals Clopidogrel implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+8. `agent == Ticagrelor ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — agent equals Ticagrelor implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+9. `agent == LevetiracetamOrValproateContaining ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — agent equals LevetiracetamOrValproateContaining implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+10. `agent == Ibuprofen ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — agent equals Ibuprofen implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+11. `agent == Naproxen ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — agent equals Naproxen implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+12. `(doac == Dabigatran && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Dabigatran and agent equals Dronedarone) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+13. `(doac == Rivaroxaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Dronedarone) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+14. `(doac == Edoxaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Edoxaban and agent equals Dronedarone) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+15. `(doac == Apixaban && agent == Dronedarone) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)` — (doac equals Apixaban and agent equals Dronedarone) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NotCovered, UnknownRisk) *(no requirement cited)*
+16. `(doac == Dabigatran && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Dabigatran and agent equals Verapamil) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+17. `(doac == Rivaroxaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(CautionLowRelevance, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Verapamil) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(CautionLowRelevance, BleedingRisk) *(no requirement cited)*
+18. `(doac == Apixaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(CautionLowRelevance, BleedingRisk)` — (doac equals Apixaban and agent equals Verapamil) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(CautionLowRelevance, BleedingRisk) *(no requirement cited)*
+19. `(doac == Edoxaban && agent == Verapamil) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Edoxaban and agent equals Verapamil) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+20. `(doac == Edoxaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Edoxaban and agent equals ErythromycinSystemic) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+21. `(doac == Dabigatran && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Dabigatran and agent equals ErythromycinSystemic) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+22. `(doac == Apixaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Apixaban and agent equals ErythromycinSystemic) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+23. `(doac == Rivaroxaban && agent == ErythromycinSystemic) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Rivaroxaban and agent equals ErythromycinSystemic) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+24. `(doac == Dabigatran && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)` — (doac equals Dabigatran and agent equals Rifampicin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, ThrombosisRisk) *(no requirement cited)*
+25. `(doac == Edoxaban && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Edoxaban and agent equals Rifampicin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+26. `(doac == Rivaroxaban && agent == Rifampicin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Rivaroxaban and agent equals Rifampicin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+27. `(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Apixaban and agent equals Rifampicin and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+28. `(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)` — (doac equals Apixaban and agent equals Rifampicin and treatmentIndication equals OrthopaedicVTEProphylaxis) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NotCovered, UnknownRisk) *(no requirement cited)*
+29. `(doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Dabigatran and agent equals SSRIOrSNRI and hasOtherBleedingRiskFactors) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+30. `(doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Dabigatran and agent equals SSRIOrSNRI and !hasOtherBleedingRiskFactors) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+31. `(doac == Apixaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Apixaban and agent equals SSRIOrSNRI) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+32. `(doac == Edoxaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Edoxaban and agent equals SSRIOrSNRI) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+33. `(doac == Rivaroxaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Rivaroxaban and agent equals SSRIOrSNRI) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+34. `(doac == Apixaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Apixaban and agent equals Fluconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+35. `(doac == Dabigatran && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Dabigatran and agent equals Fluconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+36. `(doac == Rivaroxaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(CautionLowRelevance, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Fluconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(CautionLowRelevance, BleedingRisk) *(no requirement cited)*
+37. `(doac == Edoxaban && agent == Fluconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NoInteractionExpected, NoRisk)` — (doac equals Edoxaban and agent equals Fluconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NoInteractionExpected, NoRisk) *(no requirement cited)*
+38. `(doac == Dabigatran && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Contraindicated, BleedingRisk)` — (doac equals Dabigatran and agent equals Itraconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Contraindicated, BleedingRisk) *(no requirement cited)*
+39. `(doac == Apixaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Apixaban and agent equals Itraconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+40. `(doac == Rivaroxaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Itraconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+41. `(doac == Edoxaban && agent == Itraconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Edoxaban and agent equals Itraconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+42. `(doac == Dabigatran && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Contraindicated, BleedingRisk)` — (doac equals Dabigatran and agent equals Ketoconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Contraindicated, BleedingRisk) *(no requirement cited)*
+43. `(doac == Apixaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Apixaban and agent equals Ketoconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+44. `(doac == Rivaroxaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Ketoconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+45. `(doac == Edoxaban && agent == Ketoconazole) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Edoxaban and agent equals Ketoconazole) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+46. `(doac == Dabigatran && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)` — (doac equals Dabigatran and agent equals Carbamazepine) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, ThrombosisRisk) *(no requirement cited)*
+47. `(doac == Edoxaban && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Edoxaban and agent equals Carbamazepine) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+48. `(doac == Rivaroxaban && agent == Carbamazepine) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Rivaroxaban and agent equals Carbamazepine) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+49. `(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Apixaban and agent equals Carbamazepine and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+50. `(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)` — (doac equals Apixaban and agent equals Carbamazepine and treatmentIndication equals OrthopaedicVTEProphylaxis) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NotCovered, UnknownRisk) *(no requirement cited)*
+51. `(doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)` — (doac equals Dabigatran and agent equals Phenytoin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, ThrombosisRisk) *(no requirement cited)*
+52. `(doac == Edoxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Edoxaban and agent equals Phenytoin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+53. `(doac == Rivaroxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Rivaroxaban and agent equals Phenytoin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+54. `(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Apixaban and agent equals Phenytoin and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+55. `(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)` — (doac equals Apixaban and agent equals Phenytoin and treatmentIndication equals OrthopaedicVTEProphylaxis) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NotCovered, UnknownRisk) *(no requirement cited)*
+56. `(doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)` — (doac equals Dabigatran and agent equals Phenobarbital) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, ThrombosisRisk) *(no requirement cited)*
+57. `(doac == Edoxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Edoxaban and agent equals Phenobarbital) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+58. `(doac == Rivaroxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Rivaroxaban and agent equals Phenobarbital) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+59. `(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)` — (doac equals Apixaban and agent equals Phenobarbital and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, ThrombosisRisk) *(no requirement cited)*
+60. `(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)` — (doac equals Apixaban and agent equals Phenobarbital and treatmentIndication equals OrthopaedicVTEProphylaxis) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(NotCovered, UnknownRisk) *(no requirement cited)*
+61. `(doac == Dabigatran && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Contraindicated, BleedingRisk)` — (doac equals Dabigatran and agent equals Ciclosporin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Contraindicated, BleedingRisk) *(no requirement cited)*
+62. `(doac == Edoxaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)` — (doac equals Edoxaban and agent equals Ciclosporin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(DoseReductionAdvised, BleedingRisk) *(no requirement cited)*
+63. `(doac == Apixaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Apixaban and agent equals Ciclosporin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+64. `(doac == Rivaroxaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Ciclosporin) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+65. `(doac == Dabigatran && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, BleedingRisk)` — (doac equals Dabigatran and agent equals Tacrolimus) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Avoid, BleedingRisk) *(no requirement cited)*
+66. `(doac == Apixaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Apixaban and agent equals Tacrolimus) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+67. `(doac == Edoxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Edoxaban and agent equals Tacrolimus) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+68. `(doac == Rivaroxaban && agent == Tacrolimus) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)` — (doac equals Rivaroxaban and agent equals Tacrolimus) implies CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) equals InteractionResult(Caution, BleedingRisk) *(no requirement cited)*
+```
+
 ## Things worth Steven's specific attention at sign-off
 
 Unlike `dosage.dfy` (3 postconditions) and `renal_adjustment.dfy` (up to
@@ -423,6 +528,14 @@ from the regenerated summary, not re-derived from memory):**
 2. **Postcondition 48** (new, Carbamazepine), **52** (Phenytoin), **56**
    (Phenobarbital): same shape, same two-indication citation, source
    lines 135-136 ("Same indication-dependent structure as rifampicin").
+   **Numbering correction, 2026-07-13 (Addendum 4):** these three
+   numbers were correct against the 64-postcondition block this addendum
+   originally cited; after Addendum 4's fix added four more clauses,
+   the same three claims now live at postconditions **49** (Carbamazepine),
+   **54** (Phenytoin), and **59** (Phenobarbital) in the current
+   68-postcondition "regenerated a third time" block — position 27
+   (Rifampicin) is unchanged. The clinical claim itself did not change,
+   only its position in the list.
 3. **The precondition's removal itself** — worth an explicit sign-off,
    not just the four new postconditions. Confirm the reasoning holds:
    removing the exclusion is correct *because* `TreatmentIndication` is
@@ -685,9 +798,106 @@ C4/STP suite: `23 verified, 0 errors`, up from 20; C3: precondition
 still satisfiable, weak-postcondition counts unchanged; C5: see Finding
 4 above for the real tooling gap this surfaced and its fix).
 
-**This document is now ready for Steven's sign-off** — all four
-findings are resolved (three fixed directly, one — Finding 3's design
-decision — made by Steven and implemented). Addenda 1 and 2 present the
-real, current spec; the second "Summary presented, regenerated
-2026-07-13" block above (the one following Fix 2A) is the one that
-matches the currently-committed spec exactly.
+**This was the state after PR #40 merged; superseded by Addendum 4
+below**, which found and fixed a second, real bug in the same block of
+match arms this addendum's Finding 3/Fix 2A also touched, before any
+sign-off happened.
+
+## Addendum 4, 2026-07-13 (after PR #40 merged): second Qodo review finding — apixaban's orthopaedic-indication cells leaked a fabricated `Caution` — FIXED
+
+PR #40 merged (external, user-initiated) with Addendum 3's four findings
+resolved. A second Qodo code review, running against the merged PR,
+found a real, independently-verified bug in the same four match arms
+Fix 2A's sibling change (adding `OrthopaedicVTEProphylaxis`) touched, but
+in `CheckInteraction`, not `DoseReductionTargetMg`:
+
+**The bug.** `CheckInteraction`'s four apixaban+inducer match arms
+(Rifampicin, Carbamazepine, Phenytoin, Phenobarbital) computed `Caution`
+unconditionally — they never inspected `treatmentIndication` at all,
+despite the corresponding `ensures` clause explicitly guarding on
+`treatmentIndication == AFStrokePrevention || treatmentIndication ==
+RecurrentVTEPrevention`. While `TreatmentIndication` had only those two
+constructors this was harmless (the guard was always true for every
+constructible value — a "redundant guard" mutation-testing had already
+flagged as a survivor category, see
+`tests/test_drug_interaction_checker_mutation_report.py`'s prior
+"redundant guard antecedent" analysis). Adding
+`OrthopaedicVTEProphylaxis` (for `DoseReductionTargetMg`'s own Fix 2A,
+committed in the same PR) silently reopened the gap: calling
+`CheckInteraction(Apixaban, Rifampicin, _, OrthopaedicVTEProphylaxis)`
+now returned `Caution` — an outcome the source was never proven to
+support for that indication — instead of the honest `NotCovered` this
+repo's own established silent-cell convention
+((`Apixaban`, `Dronedarone`)) calls for. Exactly the failure mode
+Addendum 3's Finding 3 (Fix 2A's own design note) had already named as
+the general risk of extending a match statement's input domain without
+re-checking every existing arm against it — caught here on the sibling
+function, not the one Fix 2A was written for.
+
+**Independently re-verified before acting**, per this document's own
+standing discipline of not trusting a review's word: read the actual
+merged `.dfy` source directly and confirmed all four arms computed a
+fixed value with no reference to `treatmentIndication` in the match
+body, while the paired `ensures` clause did guard on it — an
+unambiguous mismatch, not a stylistic judgment call, and not the kind of
+open design fork Finding 3 above was.
+
+**Fix.** Each of the four match arms now branches on
+`treatmentIndication`, matching `(Apixaban, Dronedarone)`'s pattern
+exactly:
+```dafny
+case (Apixaban, Rifampicin) =>
+  if treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention
+  then InteractionResult(Caution, ThrombosisRisk)
+  else InteractionResult(NotCovered, UnknownRisk)
+```
+(identically for Carbamazepine, Phenytoin, Phenobarbital). Four new
+`ensures` clauses added, one per inducer, pinning the `NotCovered`
+outcome for `OrthopaedicVTEProphylaxis` — see the freshly regenerated
+"Summary presented, regenerated a third time" block above (postconditions
+28/50/55/60) for the exact clause text.
+
+**All six gates re-run for real, on a branch restarted from
+`origin/main` post-merge (this is new work on already-merged code, not a
+reopening of PR #40's own change):**
+- **C1**: `2 verified, 0 errors` (both functions), real capture via
+  `run_verify_ddi.py`.
+- **C6**: this document — regenerated summary above, this addendum.
+- **C4**: two new STP lemmas added
+  (`STP_Accept_CheckInteraction_ApixabanRifampicin_OrthopaedicVTEProphylaxis_NotCovered`,
+  `STP_Reject_CheckInteraction_ApixabanRifampicin_OrthopaedicVTEProphylaxis_NotCaution`)
+  — `25 verified, 0 errors`, up from 23.
+- **C3**: `scan_weak_postconditions` count for `CheckInteraction` is now
+  68 (up from 64) — `tests/test_drug_interaction_checker_spec_lint.py`
+  updated and re-run.
+- **C5**: real re-run of `run_mutation_suite_ddi.py` — 1342 mutants (up
+  from 1250): 744 killed, 522 filtered_static, 50 survived, 26
+  unclassifiable. `CheckInteraction`'s own survivors dropped sharply,
+  31 → 7 (the four REQ-DDI-5 indication-disjunction survivors collapsed
+  from a "redundant guard" pattern to a narrower, genuine LOR-vacuity
+  case now that the guard is load-bearing; the pre-existing 3 SSRIOrSNRI
+  survivors are unchanged). `DoseReductionTargetMg`'s survivors are
+  unaffected (still 43) — this fix didn't touch that function.
+  `tests/test_drug_interaction_checker_mutation_report.py` rewritten
+  accordingly; full suite (214 tests) passing.
+
+Documentation ripple (`metadata.a.yaml`, `traceability_matrix.a.json/.md`,
+`DEVLOG.md`, `HANDOFF.md`, `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`,
+`PHASE1_PLAN.md`, `README.md`) updated alongside this addendum.
+
+**Not yet confirmed — pending Steven's sign-off, same discipline as
+every other addendum above.** Addendum 3's own findings (including
+Finding 3, the `RecurrentVTEPrevention` scope question) were already
+resolved by the time it closed — this addendum adds a new, independent
+finding on top of an otherwise-ready document, it does not reopen any of
+Addendum 3's own findings. Gate C6 has never actually been confirmed by
+Steven for the current (post-REQ-DDI-5/6) spec shape — that recorded
+human decision is the one remaining step, not a specific unresolved
+finding.
+
+**This document is ready for Steven's review of Addendum 4** — Addenda 1
+and 2 present the real, current spec except where Addendum 4 above
+supersedes the `CheckInteraction` block; the "Summary presented,
+regenerated a third time" block (following Addendum 2's own second
+`DoseReductionTargetMg` regeneration) is the one that matches the
+currently-committed spec exactly for both functions.

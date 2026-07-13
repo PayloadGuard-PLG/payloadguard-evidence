@@ -66,29 +66,37 @@ def test_check_interaction_datatype_comparisons_still_modeled_via_ensures():
 # --------------------------------------------- vector 2: weak postconditions
 
 def test_check_interaction_weak_postcondition_count_matches_the_real_spec():
-    """Every one of CheckInteraction's 64 pinning ensures clauses uses a
+    """Every one of CheckInteraction's 68 pinning ensures clauses uses a
     one-way ==> -- expected, not a regression, same pattern already
     established for renal_adjustment's GStage/SelectFormula/
     AssessRenalFunction: each clause dispatches on an exhaustive,
     mutually-exclusive antecedent (one Agent, or one (DOAC, Agent) pair,
     or -- new for REQ-DDI-5 -- one (DOAC, Agent, TreatmentIndication)
-    triple), and Gate C4's real STP suite (20 verified, 0 errors, after
-    REQ-DDI-6's own lemmas joined REQ-DDI-5's)
+    triple), and Gate C4's real STP suite (25 verified, 0 errors, after
+    the 2026-07-13 Qodo-review fix's own lemmas joined REQ-DDI-5/6's)
     independently proves a representative set of them pinning, not just
     satisfied -- a stronger, proof-based check than this heuristic lint
-    provides on its own. The function's clean Dafny verification (1
-    verified, 0 errors) is itself only possible because Dafny proved all
-    64 implications hold given the match body, which structurally
-    requires every antecedent to correctly correspond to a reachable
-    match arm -- a transcription mismatch between a match guard and its
-    ensures antecedent would have made that proof fail, not just
-    triggered this heuristic. Count went from 60 to 64 with REQ-DDI-5
-    (built 2026-07-12): 4 new ensures clauses for the previously-excluded
-    apixaban+{Rifampicin,Carbamazepine,Phenytoin,Phenobarbital} cells,
-    each now provable and reachable. Pinned exact count so a future
-    change to any ensures clause is caught, not silently absorbed."""
+    provides on its own. The function's clean Dafny verification (2
+    verified, 0 errors, both functions) is itself only possible because
+    Dafny proved all 68 implications hold given the match body, which
+    structurally requires every antecedent to correctly correspond to a
+    reachable match arm -- a transcription mismatch between a match
+    guard and its ensures antecedent would have made that proof fail,
+    not just triggered this heuristic. Count history: 60 (original) -> 64
+    with REQ-DDI-5 (built 2026-07-12, 4 new ensures clauses for the
+    previously-excluded apixaban+{Rifampicin,Carbamazepine,Phenytoin,
+    Phenobarbital} cells) -> 68 (2026-07-13, a Qodo code-review finding
+    on PR #40: adding OrthopaedicVTEProphylaxis for REQ-DDI-6's own
+    scoping had silently made those same four apixaban cells callable
+    with a third indication their match arms never inspected, returning
+    an unproven Caution instead of the honest NotCovered a source-silent
+    cell should get -- fixed with 4 new ensures clauses pinning
+    NotCovered for the orthopaedic indication, mirroring
+    (Apixaban, Dronedarone)'s established silent-cell convention).
+    Pinned exact count so a future change to any ensures clause is
+    caught, not silently absorbed."""
     warnings = scan_weak_postconditions(SPEC, "CheckInteraction")
-    assert len(warnings) == 64, len(warnings)
+    assert len(warnings) == 68, len(warnings)
 
 
 # --------------------------------------- DoseReductionTargetMg (REQ-DDI-6)
