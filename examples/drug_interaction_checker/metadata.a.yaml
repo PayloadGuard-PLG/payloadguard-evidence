@@ -79,15 +79,19 @@ requirements:
     text: >
       Rifampicin and carbamazepine/phenytoin/phenobarbital both make
       apixaban's outcome depend on a third axis, clinical indication -
-      TreatmentIndication (AFStrokePrevention | RecurrentVTEPrevention),
-      deliberately closed to exactly the two indications the source
-      names for these rows, not a third VTE-prophylaxis case (that
-      indication exists only in the posology sources, with no stated
-      interaction outcome for these agents). Both named indications give
-      apixaban the identical "use with caution" outcome, so once the
-      type is closed to exactly those two values, every constructible
-      input is provable - CheckInteraction's precondition (REQ-DDI-2) is
-      removed entirely as a result.
+      TreatmentIndication (AFStrokePrevention | RecurrentVTEPrevention |
+      OrthopaedicVTEProphylaxis, the third constructor added 2026-07-13
+      for REQ-DDI-6's own indication scoping, not apixaban's - see
+      REQ-DDI-6 below). Apixaban's own rows are unaffected by that
+      addition and still guard on exactly the two indications the
+      interaction source names for these rows, not the third
+      VTE-prophylaxis case (that indication exists only in the posology
+      sources, with no stated interaction outcome for these agents).
+      Both named indications give apixaban the identical "use with
+      caution" outcome, so once the type is closed to exactly those two
+      values (for apixaban's own cells), every constructible input is
+      provable - CheckInteraction's precondition (REQ-DDI-2) is removed
+      entirely as a result.
     implementation: drug_interaction_checker.dfy::CheckInteraction
     intended_method: PROVEN
     evidence:
@@ -108,7 +112,17 @@ requirements:
       stated on this page). Apixaban never appears in this function's
       precondition at all - a direct, confirmed consequence of
       CheckInteraction never producing DoseReductionAdvised for apixaban
-      anywhere in its match arms, not a hand-written exclusion.
+      anywhere in its match arms, not a hand-written exclusion. The
+      Dabigatran+Verapamil cell is indication-scoped (added 2026-07-13):
+      the source states the 110mg figure applies only for
+      AF-stroke-prevention and DVT/PE-prevention-and-treatment, not
+      dabigatran's third, real, UK-licensed indication (primary VTE
+      prevention after elective hip/knee replacement surgery, confirmed
+      via sources/emc-smpc-dabigatran-indications-2025.md) - a genuine
+      source-silent cell for that third indication, now provably
+      excluded rather than silently unaddressed. The four Edoxaban
+      cells stay deliberately indication-free - the source states no
+      indication scope for those rows.
     implementation: drug_interaction_checker.dfy::DoseReductionTargetMg
     intended_method: PROVEN
     evidence:

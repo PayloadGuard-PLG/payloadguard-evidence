@@ -269,6 +269,35 @@ said — no renumbering was needed, only presenting the block itself).
 5. `(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent) == 30` — (doac equals Edoxaban and agent equals Ciclosporin) implies DoseReductionTargetMg(doac, agent) equals 30 *(no requirement cited)*
 ```
 
+**Regenerated a second time, later 2026-07-13** (Gate C6 review Fix 2A —
+see "Addendum 3" below): `DoseReductionTargetMg` gained a
+`treatmentIndication` parameter and an indication guard on its
+Dabigatran+Verapamil cell. The block immediately above (dated
+"regenerated 2026-07-13") is now itself superseded by the one below,
+the same way the 2026-07-10 block was superseded earlier in this
+document — kept in place as a frozen historical record of what this
+document actually presented at that point, not rewritten. The block
+below is the one that matches the currently-committed spec.
+
+```
+# Plain-English summary: `DoseReductionTargetMg`
+
+## Parameters
+- `doac`: DOAC
+- `agent`: Agent
+- `treatmentIndication`: TreatmentIndication
+
+## Preconditions (must hold before the method runs)
+1. `(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)` — (doac equals Dabigatran and agent equals Verapamil and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) or (doac equals Edoxaban and agent equals Dronedarone) or (doac equals Edoxaban and agent equals ErythromycinSystemic) or (doac equals Edoxaban and agent equals Ketoconazole) or (doac equals Edoxaban and agent equals Ciclosporin)
+
+## Postconditions (guaranteed to hold on return)
+1. `(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 110` — (doac equals Dabigatran and agent equals Verapamil and (treatmentIndication equals AFStrokePrevention or treatmentIndication equals RecurrentVTEPrevention)) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 110 *(no requirement cited)*
+2. `(doac == Edoxaban && agent == Dronedarone) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30` — (doac equals Edoxaban and agent equals Dronedarone) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 30 *(no requirement cited)*
+3. `(doac == Edoxaban && agent == ErythromycinSystemic) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30` — (doac equals Edoxaban and agent equals ErythromycinSystemic) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 30 *(no requirement cited)*
+4. `(doac == Edoxaban && agent == Ketoconazole) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30` — (doac equals Edoxaban and agent equals Ketoconazole) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 30 *(no requirement cited)*
+5. `(doac == Edoxaban && agent == Ciclosporin) ==> DoseReductionTargetMg(doac, agent, treatmentIndication) == 30` — (doac equals Edoxaban and agent equals Ciclosporin) implies DoseReductionTargetMg(doac, agent, treatmentIndication) equals 30 *(no requirement cited)*
+```
+
 ## Things worth Steven's specific attention at sign-off
 
 Unlike `dosage.dfy` (3 postconditions) and `renal_adjustment.dfy` (up to
@@ -434,15 +463,16 @@ extension for a new function or a new closed-enum parameter shape.
 1. **The five pinned figures** — confirm each against the real source
    text directly, not against this document's own restatement:
    `sources/sps-doac-interactions-2024.md` lines 57-65 (Dabigatran +
-   Verapamil, "Reduce the dose of dabigatran to 110mg twice daily"),
-   lines 49-55 (Edoxaban + Dronedarone, "30mg once daily"), lines 67-75
-   (Edoxaban + ErythromycinSystemic, "30mg daily"), lines 113-121
-   (Edoxaban + Ketoconazole, "30mg daily"), lines 152-157 (Edoxaban +
-   Ciclosporin, "30mg daily with ciclosporin"). The four Edoxaban
-   figures are all "30mg" but sourced from four separate rows, not one
-   shared rule — worth confirming that's read as four independent facts
-   that happen to share a value, not a single citation duplicated four
-   times.
+   Verapamil, "Reduce the dose of dabigatran to 110mg twice daily," now
+   explicitly indication-scoped in the requires/ensures clauses — see
+   item 6 below), lines 49-55 (Edoxaban + Dronedarone, "30mg once
+   daily"), lines 67-75 (Edoxaban + ErythromycinSystemic, "30mg daily"),
+   lines 113-121 (Edoxaban + Ketoconazole, "30mg daily"), lines 152-157
+   (Edoxaban + Ciclosporin, "30mg daily with ciclosporin"). The four
+   Edoxaban figures are all "30mg" but sourced from four separate rows,
+   not one shared rule — worth confirming that's read as four
+   independent facts that happen to share a value, not a single
+   citation duplicated four times.
 2. **The one deliberate exclusion**: (Dabigatran, SSRIOrSNRI) also
    yields `DoseReductionAdvised` (when the caller-supplied
    `hasOtherBleedingRiskFactors` flag is true) but is NOT covered by
@@ -493,17 +523,46 @@ extension for a new function or a new closed-enum parameter shape.
    requires-clause mutation survivors into kills (1178 mutants: 634→641
    killed, 68→61 survived) — a mutated requires clause can now admit a
    pair that falls into the wildcard arm, defeating the `assert false`.
+6. **`treatmentIndication` parameter added (2026-07-13, Gate C6 review
+   Fix 2A — see Addendum 3 below).** `DoseReductionTargetMg`'s
+   Dabigatran+Verapamil cell now carries the same indication guard
+   `CheckInteraction`'s own apixaban rows already carry
+   (`treatmentIndication == AFStrokePrevention || treatmentIndication ==
+   RecurrentVTEPrevention`), because the source scopes the 110mg figure
+   to those same two indications (`sources/sps-doac-interactions-2024.md`
+   lines 57-65, "specifically") — a real, source-confirmed gap the
+   original 2-arg design missed (see Addendum 3, Finding 2, for the full
+   account and the primary-source verification that closed it).
+   `TreatmentIndication` also gained a third constructor,
+   `OrthopaedicVTEProphylaxis`, for dabigatran's real, current,
+   UK-licensed third indication that this cell is confirmed silent on.
+   The four Edoxaban clauses deliberately stay indication-free — the
+   source states no indication scope for those rows, confirmed
+   directly, not assumed uniform with the Dabigatran row — so item 4's
+   original asymmetry point (`CheckInteraction` total,
+   `DoseReductionTargetMg` genuinely partial) now has a second, nested
+   layer: even within `DoseReductionTargetMg`, only one of its five
+   cells is indication-scoped, matching the source's own uneven shape
+   rather than a uniform one imposed on it. A new STP lemma
+   (`DoseTargetDomainAgreesWithCheckInteraction`,
+   `drug_interaction_checker_stp_suite.dfy`) now proves
+   `DoseReductionTargetMg`'s domain exactly equals "CheckInteraction says
+   DoseReductionAdvised" minus the SSRI exclusion minus the new
+   orthopaedic-indication exclusion — apixaban's absence, and now the
+   orthopaedic exclusion too, are proven theorems, not grep-verified
+   observations (Fix 2B).
 
 **Not yet confirmed — pending review against the real source, same
 discipline as Addendum 1 above.**
 
-## Addendum 3, 2026-07-13: Gate C6 review findings — this document itself was reviewed before sign-off, three findings, two fixed here
+## Addendum 3, 2026-07-13: Gate C6 review findings — this document itself was reviewed before sign-off, four findings, all resolved
 
 A pre-sign-off review of Addenda 1 and 2 above (conducted deliberately
 *before* Steven's confirmation, catching this before it could be
 rubber-stamped) found three real defects, independently re-verified
 against the actual committed artifacts before acting on any of them —
-not accepted on the review's word alone:
+not accepted on the review's word alone. A fourth was found
+independently while fixing the third (below):
 
 1. **Stale NL summary (FIXED, this addendum).** The "Summary presented"
    block Addenda 1/2 both reference for their line-numbered claims was
@@ -564,14 +623,29 @@ not accepted on the review's word alone:
    reviewed would still describe a function whose scope is under active
    dispute.
 
-**This document is not yet ready for Steven's sign-off** — Addenda 1 and
-2 are now presenting the real, current spec (finding 1 fixed) and cover
-the wildcard-arm change (finding 2 fixed), but finding 3 is a real,
-open spec-scope question that must resolve before Gate C6 can close for
-REQ-DDI-6.
+4. **Multi-line clause silently truncated during mutation testing (FOUND
+   AND FIXED, this addendum, not part of the original review).** While
+   applying Fix 2A, `run_mutation_suite_ddi.py`'s real re-run reported
+   only 1171 mutants (down from 1178) with the new indication guard's
+   Edoxaban disjuncts and the ensures clause's own consequent entirely
+   absent from requires-clause coverage — a real, silent regression in
+   test coverage, not caught by Dafny (still verified clean) or by
+   pytest (only counts were pinned, not the exact mutant set). Diagnosed
+   directly: `evidence/dafny_mutate.py`'s clause-site locator truncated
+   both the new `requires` and `ensures` clauses at their first physical
+   line, since they were written across multiple lines for readability.
+   Fixed by reformatting both to single lines, matching this repo's own
+   established precedent (`renal_adjustment.dfy`'s equivalent Gate C6
+   gap) rather than extending the tool — no committed capture yet
+   depended on the multi-line formatting. Re-run clean: 1250 mutants,
+   668 killed, 482 filtered_static, 74 survived, 26 unclassifiable (the
+   jump in every count reflects real, previously-missing coverage, not a
+   new class of finding — see `tests/test_drug_interaction_checker_mutation_report.py`
+   for the full category-by-category account).
 
-**Update, 2026-07-13, later the same session — primary source fetched,
-one sub-question resolved, the design decision still open.**
+**Resolution, 2026-07-13, later the same session: Finding 3 is FIXED.**
+Primary source fetched and archived first, per this repo's own "verify
+first" discipline and the review's own suggested sequence:
 `sources/emc-smpc-dabigatran-indications-2025.md` (new, eMC SmPC for
 Pradaxa, both 110mg and 150mg products, revision date 16 January 2025)
 was fetched and archived. Two things confirmed directly against it,
@@ -598,11 +672,22 @@ independent of the review's own claims:
    representable by either `TreatmentIndication` or
    `DoseReductionTargetMg`'s design.
 
-**Still genuinely open, still not for an assistant to decide**: whether
-to add a third `TreatmentIndication` constructor now, what shape
-`DoseReductionTargetMg` should take if so (Fix 2A adds an indication
-parameter; a `NotCovered`-style total return isn't directly available
-for a bare `int`), and whether the currently-merged, currently-PROVEN
-REQ-DDI-6 matrix row should be flagged, amended, or left as-is while
-this is decided. Presented to Steven for a decision, not implemented
-here.
+**Decided by Steven, via `AskUserQuestion`, not resolved by an
+assistant**: add the third constructor now (Fix 2A), and leave the
+merged REQ-DDI-6 matrix row as its prior PROVEN state until the fix
+lands rather than caveat it in the interim — both explicit choices, not
+defaults. Implemented: `TreatmentIndication` gained
+`OrthopaedicVTEProphylaxis`; `DoseReductionTargetMg` gained the
+`treatmentIndication` parameter and indication guard (Fix 2A, Addendum
+2 item 6, above); the domain-coherence STP lemma (Fix 2B) was added and
+verified; all six gates re-run for real (C1: `2 verified, 0 errors`;
+C4/STP suite: `23 verified, 0 errors`, up from 20; C3: precondition
+still satisfiable, weak-postcondition counts unchanged; C5: see Finding
+4 above for the real tooling gap this surfaced and its fix).
+
+**This document is now ready for Steven's sign-off** — all four
+findings are resolved (three fixed directly, one — Finding 3's design
+decision — made by Steven and implemented). Addenda 1 and 2 present the
+real, current spec; the second "Summary presented, regenerated
+2026-07-13" block above (the one following Fix 2A) is the one that
+matches the currently-committed spec exactly.

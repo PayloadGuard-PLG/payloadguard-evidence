@@ -6,6 +6,129 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-13 — REQ-DDI-6's real spec-scope finding fixed: TreatmentIndication's third constructor, plus an independent mutation-testing tooling gap found and fixed
+
+Continuation of the same day's earlier Gate C6 review work (see the
+entry immediately below): its third finding — `DoseReductionTargetMg
+(Dabigatran, Verapamil) == 110` proven unconditionally despite the
+source scoping that figure to specific indications — was left
+deliberately open pending primary-source verification and a design
+decision only Steven could make.
+
+**Primary source fetched and archived first**, per this repo's own
+"verify first" discipline: `sources/emc-smpc-dabigatran-indications-2025.md`
+(eMC SmPC for Pradaxa, both 110mg and 150mg products, revision date 16
+January 2025). Confirmed two things directly against the real source
+text, independent of the earlier review's own claims — (1)
+`RecurrentVTEPrevention` correctly covers the verapamil row's
+"DVT/PE-prevention-and-treatment" phrase (both it and the rifampicin
+row's phrasing are partial descriptions of the *same* single
+eMC-licensed indication category, not two different ones — no new
+constructor needed for that specific naming worry); (2) dabigatran
+genuinely has a third, current, UK-licensed indication (primary VTE
+prevention after elective hip/knee replacement surgery, a structurally
+different once-daily regimen) that `TreatmentIndication` doesn't
+represent at all, and that the verapamil interaction row is
+confirmed silent on — the real SmPC's own §4.2 states the
+verapamil dose-reduction instruction only under the two twice-daily
+indications (NVAF, DVT/PE), never under the orthopaedic regimen.
+
+**Presented to Steven via `AskUserQuestion`, not resolved by an
+assistant**: add the third constructor now (recommended, since the
+finding was confirmed real), and leave the merged REQ-DDI-6 matrix row
+as its prior PROVEN state until the fix landed rather than caveat it in
+the interim. Both explicit choices, not defaults.
+
+**Implemented (Fix 2A + Fix 2B, per the earlier review's own proposed
+remediation, adjusted after hand-derivation and empirical verification
+— not applied blindly):**
+
+- `TreatmentIndication` gained a third constructor,
+  `OrthopaedicVTEProphylaxis`. Apixaban's own REQ-DDI-5 rows in
+  `CheckInteraction` are unaffected — they still guard on only the
+  first two constructors, correctly making no claim about the new
+  value, since apixaban's own orthopaedic-indication exclusion was
+  already a deliberate, different, unrevisited decision from an earlier
+  session.
+- `DoseReductionTargetMg` gained a `treatmentIndication` parameter; its
+  Dabigatran+Verapamil requires/ensures clauses gained the indication
+  guard `(treatmentIndication == AFStrokePrevention ||
+  treatmentIndication == RecurrentVTEPrevention)`, matching
+  `CheckInteraction`'s own apixaban-row pattern exactly. The four
+  Edoxaban clauses stay deliberately indication-free, matching the
+  source's own uneven shape.
+- **Fix 2B, adjusted after hand-derivation, not applied as originally
+  proposed**: a new STP lemma,
+  `DoseTargetDomainAgreesWithCheckInteraction`
+  (`drug_interaction_checker_stp_suite.dfy`), proves
+  `DoseReductionTargetMg`'s precondition domain exactly equals
+  "`CheckInteraction` says `DoseReductionAdvised`" minus the SSRI
+  exclusion minus a *new* orthopaedic-indication exclusion. The
+  original proposed lemma text (predating the third constructor) omitted
+  that third conjunct and would NOT have verified once the constructor
+  existed — `CheckInteraction`'s own (Dabigatran, Verapamil) ensures
+  clause claims `DoseReductionAdvised` unconditionally, for every
+  `TreatmentIndication` value including the new one (the outcome KIND
+  doesn't depend on indication; only the exact mg figure does) — caught
+  by hand-deriving the claim and independently verifying it in a
+  standalone probe before editing the real suite, not by trusting the
+  review's text to transfer unchanged. Real run: `23 verified, 0
+  errors` (up from 20).
+
+**A second, independent finding, not part of the original review,
+caught before trusting the first re-run of this fix**: writing the new
+requires/ensures clauses across multiple physical lines (for
+readability) silently truncated `evidence/dafny_mutate.py`'s
+clause-site locator at the first physical line. The first real mutation
+re-run reported only 1171 mutants (down from 1178) with the Edoxaban
+disjuncts and the ensures clause's own consequent entirely missing from
+requires-clause coverage — a real regression in test coverage, not
+caught by Dafny (both clauses still verified clean) or by pytest (only
+outcome *counts* were pinned, not the exact mutant set, and the count
+drop alone didn't obviously signal truncation). Diagnosed directly:
+every truncated mutant's `original_clause` read exactly `'(doac ==
+Dabigatran && agent == Verapamil'`, cut off before the indication guard
+and the `==> ... == 110` consequent. Fixed by reformatting both clauses
+to single lines, matching this repo's own established precedent
+(`renal_adjustment.dfy`'s equivalent Gate C6 gap, fixed the same way
+rather than extending the tool) — no committed capture yet depended on
+the multi-line formatting.
+
+**Final real re-run, all six gates**: C1 `2 verified, 0 errors`; C4/STP
+`23 verified, 0 errors`; C3 precondition still satisfiable, weak-
+postcondition counts unchanged; C5 **1250 mutants — 668 killed, 482
+filtered_static, 74 survived, 26 unclassifiable** — the jump in every
+count reflects real, previously-missing coverage of the full 5-disjunct
+requires clause and the full indication-guarded ensures clause, not a
+new class of finding. `CheckInteraction`'s own 31 survivors unchanged
+throughout. `DoseReductionTargetMg` contributes 43 survivors (6
+requires-clause indication-guard + 37 ensures-clause guard-antecedent,
+both the same already-established "never load-bearing" category) and
+all 26 unclassifiable results (24 ROR datatype-ordering type errors + 2
+LOR parser-ambiguity refusals, both the same already-established
+categories now correctly counted at full scale, not a new category).
+`tests/test_drug_interaction_checker_mutation_report.py` rewritten to
+match, with new tests distinguishing the indication-guard-specific
+requires survivors from the (all-killed) doac/agent requires
+comparisons via clause-text diffing, not substring presence (a naive
+substring check would have misclassified every requires-clause mutant,
+since the full multi-disjunct clause text contains both indication
+names regardless of which token was actually mutated).
+
+**Phase 3 regenerated via the real CLI, not hand-edited**:
+`metadata.a.yaml`'s REQ-DDI-5/REQ-DDI-6 text updated to describe the
+third constructor and the new indication guard;
+`traceability_matrix.a.json`/`.md` regenerated — still 6/6 `PROVEN`
+rows, no GAP rows. Documentation updated throughout:
+`nl_confirmation_drug_interaction_checker_dfy.md` (a second regenerated
+NL-summary block for `DoseReductionTargetMg`, Addendum 2's item 6, a
+fourth finding and closing resolution added to Addendum 3 — the
+document now states explicitly it's ready for Steven's actual sign-off,
+which still hasn't happened), `HANDOFF.md`, `KNOWN_LIMITATIONS.md`,
+`SYSTEM_BLUEPRINT.md`, `PHASE1_PLAN.md`. 214 tests pass.
+
+---
+
 ## 2026-07-13 — Gate C6 review of the REQ-DDI-5/REQ-DDI-6 sign-off document: two defects fixed, one real spec-scope finding left open
 
 An externally-supplied review of
