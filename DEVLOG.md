@@ -6,6 +6,112 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-13 — Gate C6 review of the REQ-DDI-5/REQ-DDI-6 sign-off document: two defects fixed, one real spec-scope finding left open
+
+An externally-supplied review of
+`nl_confirmation_drug_interaction_checker_dfy.md`'s two 2026-07-12
+addenda (written deliberately before Steven's sign-off, to catch this
+before it could be rubber-stamped) found three defects. Every finding
+was independently re-verified against the real committed artifacts
+before acting on it — not accepted on the review's word alone, matching
+this repo's standing discipline for external claims.
+
+**Finding 1 (stale NL summary), FIXED.** The addenda's own "Summary
+presented" block was still the pre-REQ-DDI-5/6, 2026-07-10 generation:
+`CheckInteraction`'s old 3-arg signature, its now-removed `requires`
+clause, 60 (not 64) postconditions, and no `DoseReductionTargetMg`
+summary at all — confirmed directly by reading the file. A reviewer
+following Addendum 1's own instruction to check "Postcondition
+27/48/52/56" against that block would land on four unrelated,
+pre-REQ-DDI-5 clauses. Fixed by regenerating both functions' summaries
+for real via `evidence.dafny_nl_summary.summarize_method` against the
+current committed spec and inserting them as a new, dated "Summary
+presented, regenerated 2026-07-13" block; the stale block was marked
+superseded and left in place as a frozen historical record, matching
+`GATE_1C_AUDIT.md`'s own convention of appending dated corrections
+rather than rewriting history. Confirmed the postcondition numbering
+Addendum 1 already cited (27/48/52/56) matches the real regenerated
+summary exactly — no renumbering was needed, only presenting the block
+that had been missing.
+
+**Finding 3 (missing wildcard-arm review item), FIXED.** Grep of the
+entire sign-off document for `assert false`/`wildcard`/`Qodo` returned
+zero matches — Addendum 2 never mentioned the `case _ => (assert false;
+0)` fix from the Qodo review on PR #39, despite it being
+`DoseReductionTargetMg`'s most recently changed line and the one with
+the largest measured effect on Gate C5's own results (7 survivors
+converted to kills, confirmed in the prior 2026-07-12 entry below).
+Fixed by adding it as Addendum 2's item 5.
+
+**Finding 2 (REQ-DDI-5/REQ-DDI-6 scope inconsistency), NOT fixed —
+open, deliberately not resolved by an assistant.** Verified directly
+against `sources/sps-doac-interactions-2024.md` lines 57-65: the
+dabigatran+verapamil 110mg dose-reduction figure is stated to apply
+"for AF-stroke-prevention and DVT/PE-prevention-and-treatment
+indications specifically" — the source treats this row as
+indication-scoped, structurally the same as the apixaban+rifampicin/
+carbamazepine/phenytoin/phenobarbital rows REQ-DDI-5 was built to
+handle. But the archived source file's own editorial layer dismisses
+that scoping in the same sentence ("this doesn't need an indication
+axis to model correctly... the dose reduction just applies whenever
+dabigatran is used for either") — a design judgment baked into
+`sources/`'s verbatim-extraction layer at archive time, not itself a
+further primary-source quote. `DoseReductionTargetMg` (REQ-DDI-6, built
+and merged 2026-07-12) faithfully inherited that dismissal: it takes no
+`treatmentIndication` parameter and proves the 110mg figure
+unconditionally, wider in scope than the sentence it cites.
+
+Not currently a soundness bug: `TreatmentIndication` has exactly two
+constructors and both are within the source's stated scope for this
+row, so the proof holds for every currently-representable input. The
+defect is that the claim's proven scope is wider than the source's
+stated scope, and nothing in `DoseReductionTargetMg`'s signature,
+clauses, or comments records that an indication axis was ever
+considered and dropped for this cell — a future third
+`TreatmentIndication` constructor would degrade `CheckInteraction`
+visibly (its guard clauses are explicit, catchable by Gate C4) but
+`DoseReductionTargetMg` silently (no clause references indications at
+all). Whether `RecurrentVTEPrevention` (named for the rifampicin row's
+"prevention of recurrent deep vein thrombosis (DVT) and pulmonary
+embolism (PE)") actually contains the verapamil row's differently
+worded "DVT/PE-prevention-and-treatment" scope is a real clinical-
+licensing question, not a documentation nicety — dabigatran is UK/EU-
+licensed for at least three distinct indications (NVAF stroke
+prevention; DVT/PE treatment-and-recurrence-prevention; primary VTE
+prophylaxis after elective hip/knee replacement, a once-daily regimen
+structurally different from the twice-daily rule the 110mg figure
+presupposes), and answering this requires a primary source (dabigatran's
+own SmPC/EMA product information), not secondary literature.
+
+Presented to Steven via `AskUserQuestion` before acting: chose to verify
+the primary source first (matching this repo's own "verify first, then
+we'll consider the solutions" discipline, established earlier this
+session for the original REQ-DDI-5/6 scoping question) rather than
+guess at a fix; also chose to fix Findings 1 and 3 immediately since
+they're mechanical, non-judgment-call defects independent of Finding
+2's outcome.
+
+Documentation updated to reflect Gate C6 is genuinely open, not
+closed, for REQ-DDI-5/REQ-DDI-6: `HANDOFF.md` (new top entry, corrected
+the prior "Gate C6 is closed" bullet), `KNOWN_LIMITATIONS.md` (new
+ledger row + detailed section), `PHASE1_PLAN.md` (a dated correction
+appended after the "Full Gate C1–C6 re-run" claim, not rewritten).
+`nl_confirmation_drug_interaction_checker_dfy.md` gained the regenerated
+summary block, Addendum 2's new item 5, and a new "Addendum 3"
+documenting this whole review pass. Branch restarted from `origin/main`
+(`14805d4`, the merged PR #39) before this work, per the established
+merged-PR-restart convention. 214 tests pass (no regression; sign-off
+document and doc-only changes this pass, no spec or code changes).
+
+Next concrete step: fetch and archive dabigatran's real SmPC/EMA
+licensing text under `sources/`, per the established convention, to
+determine whether `RecurrentVTEPrevention` covers the verapamil row's
+stated scope or whether `TreatmentIndication` needs a third constructor
+— then present the resulting decision to Steven (per the review's own
+explicit instruction: "do not let an assistant resolve these").
+
+---
+
 ## 2026-07-12 — REQ-DDI-5 and REQ-DDI-6 built for real: both v2 items closed, no GAP rows remain in drug_interaction_checker
 
 Follow-on from the same-day source-verification entry below: instruction

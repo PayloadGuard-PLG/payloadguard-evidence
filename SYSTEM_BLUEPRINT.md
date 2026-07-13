@@ -1,6 +1,20 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-12 (REQ-DDI-5 and REQ-DDI-6 built for real —
+Last updated: 2026-07-13 (a pre-sign-off review of REQ-DDI-5/REQ-DDI-6's
+Gate C6 addenda found two real doc defects — a stale NL summary, a
+missing review item — both fixed, plus one genuine spec-scope finding
+left open: `DoseReductionTargetMg(Dabigatran, Verapamil) == 110` is
+proven unconditionally, but the source scopes that figure to specific
+indications the same way REQ-DDI-5 modeled for the apixaban rows, and
+the archived source's own editorial layer dismissed that scoping rather
+than a further primary source doing so. Not a soundness bug, but Gate
+C6 is not closed for REQ-DDI-6 until a primary-source check
+(dabigatran's own SmPC/EMA licensing text) resolves whether
+`RecurrentVTEPrevention` covers the verapamil row's stated scope. See
+`KNOWN_LIMITATIONS.md`'s "Gate C6 review, 2026-07-13" section for the
+full account; no code or spec changed this pass, only the sign-off
+document. Prior header, preserved: Last updated 2026-07-12 (REQ-DDI-5
+and REQ-DDI-6 built for real —
 `TreatmentIndication` datatype and `DoseReductionTargetMg` companion
 function added to `drug_interaction_checker.dfy`, all six Gate C1–C6
 steps re-run for both requirements, Phase 3 regenerated: all 6

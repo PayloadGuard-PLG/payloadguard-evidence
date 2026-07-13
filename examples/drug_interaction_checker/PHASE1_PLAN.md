@@ -152,6 +152,21 @@ ensures-only. Phase 3 regenerated: all six requirements now render
 this example. See `KNOWN_LIMITATIONS.md`'s "Phase E REQ-DDI-5/6" section
 for the full account.
 
+**Correction, 2026-07-13**: "Full Gate C1–C6 re-run" above is accurate
+for the mechanical steps, but Gate C6's actual sign-off — the recorded
+human decision — was never completed for REQ-DDI-5/REQ-DDI-6. A
+pre-sign-off review of the two 2026-07-12 addenda found real defects
+(a stale NL summary, a missing review item) and one genuine open
+question: `DoseReductionTargetMg(Dabigatran, Verapamil) == 110` is
+proven unconditionally, but the source scopes that figure to specific
+indications the same way REQ-DDI-5 modeled for the apixaban rows, and
+`sources/sps-doac-interactions-2024.md`'s own editorial layer dismisses
+that scoping rather than a further primary source doing so. Not
+currently a soundness bug, but the claim's scope is wider than what's
+cited. See `nl_confirmation_drug_interaction_checker_dfy.md`'s
+"Addendum 3" for the full account — Gate C6 is not closed for
+REQ-DDI-6 until this resolves.
+
 ## Objective
 
 Third worked example, PayloadGuard-Evidence's third independent

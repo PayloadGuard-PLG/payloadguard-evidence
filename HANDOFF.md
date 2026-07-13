@@ -8,7 +8,48 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-12 — **REQ-DDI-5 and REQ-DDI-6 built for
+**Last updated:** 2026-07-13 — **Gate C6 review found real defects in
+the REQ-DDI-5/REQ-DDI-6 sign-off document; two fixed, one genuine
+spec-scope finding left open, in progress.** An externally-supplied
+review of `nl_confirmation_drug_interaction_checker_dfy.md`'s two
+2026-07-12 addenda (written before Steven's sign-off, catching this
+pre-rubber-stamp) found three defects, each independently re-verified
+against the real committed artifacts before acting — not accepted on
+the review's word alone. **Fixed**: (1) the addenda's own "Summary
+presented" block was the stale pre-REQ-DDI-5/6 generation (3-arg
+signature, 60 postconditions, no `DoseReductionTargetMg` at all) —
+regenerated for real via `evidence.dafny_nl_summary.summarize_method`
+and inserted as a new dated block, the old one marked superseded and
+left as a frozen historical record; (2) Addendum 2 never mentioned the
+Qodo-driven `assert false` fix to `DoseReductionTargetMg`'s wildcard arm
+(PR #39, merged) despite it being the function's most recently changed
+line with the largest measured effect on Gate C5 — added as a new
+review item. **Left open, deliberately not resolved by an assistant**:
+`sources/sps-doac-interactions-2024.md` lines 57-65 scope the
+dabigatran+verapamil 110mg figure to specific indications ("AF-stroke-
+prevention and DVT/PE-prevention-and-treatment... specifically"), the
+same shape REQ-DDI-5 built a whole new axis to model for the apixaban
+rows — but the archived source's own editorial layer dismisses that
+scoping in the same sentence ("this doesn't need an indication axis to
+model correctly"), and `DoseReductionTargetMg` (already merged, PROVEN
+in the traceability matrix) was built exactly per that dismissal: no
+indication parameter, proving the figure unconditionally. Confirmed
+directly against the source text, not just the review's summary — real
+finding, not a false alarm. Not currently a soundness bug (both
+existing `TreatmentIndication` constructors fall within the source's
+stated scope for this row), but the claim's scope is provably wider
+than the sentence it cites, and nothing in the function's signature or
+clauses records that an indication axis was ever considered for this
+cell. **Next concrete step**: verify dabigatran's real licensed
+indication set against a primary source (SmPC/EMA product information,
+not secondary literature) before deciding whether
+`RecurrentVTEPrevention` actually contains the verapamil row's stated
+scope or a new `TreatmentIndication` constructor is needed — per this
+repo's own "verify first" discipline. Full account:
+`examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`'s
+"Addendum 3." 214 tests pass (no regression; doc-only + one sign-off
+doc change this pass). **Prior update, preserved below** —
+2026-07-12 — **REQ-DDI-5 and REQ-DDI-6 built for
 real**, closing the two v2 items `drug_interaction_checker` had left
 explicitly staged. Added `datatype TreatmentIndication =
 AFStrokePrevention | RecurrentVTEPrevention` (closed to exactly the two
@@ -553,15 +594,40 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   mislabeled an indication-dependent precondition exclusion as apixaban's
   "source gap" — the precondition itself was always correct). See
   `KNOWN_LIMITATIONS.md`'s "Phase E Gate C6 sign-off" section.
-- **All six Gate C1–C6 pipeline steps built and confirmed for this
-  example — Gate C6 is closed.** Both previously out-of-scope v2 items
-  are now built (2026-07-12): `REQ-DDI-5` (the `TreatmentIndication` axis
-  for the two apixaban+inducer cells — `CheckInteraction`'s `requires`
-  clause removed entirely, the function is now total) and `REQ-DDI-6`
-  (the numeric dose-reduction targets, proven by the new
+- **All six Gate C1–C6 pipeline steps built for this example. Gate C6
+  is closed for the original 2026-07-10 spec, but NOT yet closed for
+  REQ-DDI-5/REQ-DDI-6** (corrected 2026-07-13 — see below). Both
+  previously out-of-scope v2 items are now built (2026-07-12):
+  `REQ-DDI-5` (the `TreatmentIndication` axis for the two
+  apixaban+inducer cells — `CheckInteraction`'s `requires` clause
+  removed entirely, the function is now total) and `REQ-DDI-6` (the
+  numeric dose-reduction targets, proven by the new
   `DoseReductionTargetMg` companion function). See the 2026-07-12
   "Last updated" entry at the top of this file for the full build
   account.
+- **Gate C6 review, 2026-07-13: sign-off blocked, one real spec-scope
+  finding still open.** A pre-sign-off review of the two 2026-07-12
+  addenda (`nl_confirmation_drug_interaction_checker_dfy.md`) found
+  three real defects, all independently re-verified against the actual
+  committed artifacts before acting: (1) the addenda's own "Summary
+  presented" block was stale (still the pre-REQ-DDI-5/6 generation) —
+  **fixed**, a real regenerated summary for both functions is now
+  presented; (2) Addendum 2 never mentioned the Qodo-driven `assert
+  false` fix to `DoseReductionTargetMg`'s wildcard arm (PR #39) — **fixed**,
+  added as a new review item; (3) **still open, deliberately not
+  resolved here** — `DoseReductionTargetMg(Dabigatran, Verapamil) ==
+  110` is proven unconditionally, but
+  `sources/sps-doac-interactions-2024.md` lines 57-65 scope that figure
+  to specific indications the same way REQ-DDI-5 modeled for the
+  apixaban rows; the archived source's own editorial layer dismisses
+  that scoping in the same sentence it states it. Not currently a
+  soundness bug (both current `TreatmentIndication` constructors are
+  within the source's stated scope), but the claim's scope is provably
+  wider than what's cited, and whether `RecurrentVTEPrevention` actually
+  contains the verapamil row's "DVT/PE-prevention-and-treatment" phrase
+  needs primary-source verification before Gate C6 can close for
+  REQ-DDI-6. Full account: `examples/drug_interaction_checker/
+  nl_confirmation_drug_interaction_checker_dfy.md`'s "Addendum 3."
 - **Phase 3 (evidence packaging) built, 2026-07-11; regenerated
   2026-07-12 after REQ-DDI-5/6.**
   `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`
