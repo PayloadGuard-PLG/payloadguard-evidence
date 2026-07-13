@@ -21,7 +21,7 @@ last of which "function transparency" actually names). **Decision —
 Confirmed, 2026-07-13, by Steven.** All six Gate C1–C6 pipeline steps
 are now built AND confirmed for this example. See the "Gate C6
 confirmed and closed" section near the end of this file for the full
-account. Prior entry, preserved: Last updated 2026-07-13 (Gate C5
+account.) Prior entry, preserved: Last updated 2026-07-13 (Gate C5
 extended for `drug_interaction_checker`
 to re-verify the committed STP suite against every mutation-testing
 survivor, not just the bare spec — a real, hand-verified engineering

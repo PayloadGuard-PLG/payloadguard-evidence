@@ -1017,9 +1017,10 @@ counterpart).
 cross-checked against the real artifacts, independently, not accepted
 on the report's word.** The first draft contained four real errors, all
 confirmed by direct inspection before being raised: (1) it stated "25
-lemmas" where the real STP suite has 21 unique lemmas (`grep -c "^lemma
-"` against the real file), conflating Dafny's verification-task count
-with a lemma count — the same category of mistake this document's own
+lemmas" where the real STP suite has 21 unique lemmas (confirmed via
+`grep -c "^lemma "` against the real file), conflating Dafny's
+verification-task count with a lemma count — the same category of
+mistake this document's own
 history already caught and corrected once, for the same file, on
 2026-07-10; (2) it stated the third `TreatmentIndication` constructor's
 addition "allowed for the removal of the requires clause," when the
