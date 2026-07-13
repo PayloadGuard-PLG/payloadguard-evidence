@@ -1,6 +1,23 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-13 (a second Qodo review, run against PR #40 after
+Last updated: 2026-07-13 (Gate C5 extended for `drug_interaction_checker`:
+`run_mutation_suite_ddi.py` now re-verifies the committed STP suite
+against every mutation-testing survivor, not just the bare spec.
+Hand-probed empirically before building: this catches the 6
+`DoseReductionTargetMg` requires-clause indication-guard survivors (the
+same class of scope-leak bug fixed on `CheckInteraction` below, caught
+here as a latent gap before it could ever become a real regression), but
+NOT the other 44 (both functions are plain, non-`{:opaque}` `function`s,
+so same-module STP lemmas verify by Dafny unfolding the body directly —
+a genuine semantics limit, confirmed by hand-probing, not a shortfall).
+Mutants the STP suite catches get a new, distinct `killed_via_stp_suite`
+outcome, kept separate from ordinary `killed`. Real run: 1342 mutants —
+744 killed, 522 filtered_static, 44 survived (down from 50), 26
+unclassifiable, 6 killed_via_stp_suite. See `KNOWN_LIMITATIONS.md`'s
+"Gate C5 extended: STP-suite escalation, 2026-07-13" section for the
+full account; the updated `drug_interaction_checker` component-map entry
+below reflects this. Prior header, preserved: Last updated 2026-07-13 (a
+second Qodo review, run against PR #40 after
 it merged, found a real scope-leak bug: `CheckInteraction`'s four
 apixaban+inducer match arms computed `Caution` unconditionally, never
 inspecting `treatmentIndication`, silently fabricating an outcome once
@@ -948,32 +965,47 @@ payloadguard-evidence/
 │   │                            clauses to single lines (matching
 │   │                            renal_adjustment.dfy's own established
 │   │                            precedent for this exact gap), not by
-│   │                            extending the tool.
+│   │                            extending the tool. A third, distinct
+│   │                            extension 2026-07-13 (later, unrelated
+│   │                            to the two above): a new _stp_verify
+│   │                            helper re-verifies the committed
+│   │                            drug_interaction_checker_stp_suite.dfy
+│   │                            (reused verbatim, no new lemma authored)
+│   │                            against every mutant that survives the
+│   │                            bare-spec check, by redirecting the
+│   │                            suite's own include at the mutant file.
+│   │                            Hand-probed empirically before building
+│   │                            (not assumed): catches the 6
+│   │                            DoseReductionTargetMg requires-clause
+│   │                            indication-guard survivors (same scope-
+│   │                            leak class as the CheckInteraction fix
+│   │                            above), does NOT catch the other 44 (both
+│   │                            functions are plain, non-{:opaque}
+│   │                            function - same-module STP lemmas verify
+│   │                            via direct body unfolding, making mutated
+│   │                            ensures-clause text provably irrelevant -
+│   │                            a genuine Dafny semantics limit, not a
+│   │                            shortfall). See KNOWN_LIMITATIONS.md's
+│   │                            "Gate C5 extended: STP-suite escalation,
+│   │                            2026-07-13" section for the full account.
 │   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
 │   │                            Gate C5: real captured outcome, latest
-│   │                            re-run 2026-07-13 (after CheckInteraction's
-│   │                            four apixaban+inducer match arms were
-│   │                            fixed to actually branch on
-│   │                            treatmentIndication - a second, post-merge
-│   │                            Qodo review finding, see
-│   │                            KNOWN_LIMITATIONS.md's "Gate C6 review
-│   │                            (second, post-merge), 2026-07-13") — 1342
-│   │                            mutants: 744 killed, 522 filtered_static,
-│   │                            50 survived, 26 unclassifiable.
-│   │                            CheckInteraction's own survivors dropped
-│   │                            sharply, 31 -> 7 (the 4 REQ-DDI-5
-│   │                            indication-disjunction survivors
-│   │                            collapsed from a broad "redundant guard"
-│   │                            pattern to a narrower LOR-vacuity case
-│   │                            now that the guard is genuinely
-│   │                            load-bearing; the 3 pre-existing
-│   │                            SSRIOrSNRI survivors are unchanged).
-│   │                            DoseReductionTargetMg is unaffected by
-│   │                            this fix, still contributing 43 survivors
-│   │                            (6 requires-clause indication-guard + 37
-│   │                            ensures-clause guard-antecedent, both
-│   │                            the same established "never load-
-│   │                            bearing" category) and all 26
+│   │                            re-run 2026-07-13 (STP-suite escalation
+│   │                            above) — 1342 mutants: 744 killed, 522
+│   │                            filtered_static, 44 survived, 26
+│   │                            unclassifiable, 6 killed_via_stp_suite (a
+│   │                            new, distinct outcome, kept separate from
+│   │                            ordinary killed so the report stays
+│   │                            honest about which check caught each
+│   │                            one). CheckInteraction's 7 survivors (4
+│   │                            REQ-DDI-5 LOR-vacuity + 3 pre-existing
+│   │                            SSRIOrSNRI) are unaffected by this latest
+│   │                            extension. DoseReductionTargetMg now
+│   │                            contributes 37 survivors (ensures-clause
+│   │                            guard-antecedent only - the 6
+│   │                            requires-clause indication-guard mutants
+│   │                            that used to survive are now
+│   │                            killed_via_stp_suite) and all 26
 │   │                            unclassifiable results (24 ROR
 │   │                            datatype-ordering type errors + 2 LOR
 │   │                            parser-ambiguity refusals). All 10 LVR

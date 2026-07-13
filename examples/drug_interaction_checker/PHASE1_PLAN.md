@@ -209,6 +209,28 @@ C6 sign-off is still open — every finding across Addenda 3 and 4 is
 resolved, but Steven's actual review of the current spec shape hasn't
 happened yet.
 
+**Gate C5 extended, 2026-07-13 (later, in response to a request during
+Gate C6 sign-off review to look into reducing survivors under current
+constraints)**: `run_mutation_suite_ddi.py` now re-verifies the
+committed STP suite (reused verbatim, no new lemma authored) against
+every mutant that survives the bare-spec check. Hand-probed empirically
+before building: catches the 6 `DoseReductionTargetMg` requires-clause
+indication-guard survivors (the same scope-leak class fixed on
+`CheckInteraction` above, here caught as a latent gap before it could
+ever become a real regression), but confirmed NOT to help the other 44
+— both functions are plain, non-`{:opaque}` Dafny `function`s, so a
+same-module STP lemma calling one with concrete literal arguments gets
+verified by Dafny unfolding the body directly, making mutated
+`ensures`-clause text provably irrelevant to that proof (a genuine
+Dafny semantics limit, not a shortfall of this escalation — closing it
+would need an invasive `{:opaque}`/`reveal` redesign, disproportionate
+here). Real run: 1342 mutants (unchanged) — 744 killed, 522
+filtered_static, **44 survived** (down from 50), 26 unclassifiable, **6
+killed_via_stp_suite** (a new, distinct outcome, kept separate from
+ordinary `killed`). Full account: `KNOWN_LIMITATIONS.md`'s "Gate C5
+extended: STP-suite escalation, 2026-07-13" section. 215 tests pass (up
+from 214).
+
 ## Objective
 
 Third worked example, PayloadGuard-Evidence's third independent
