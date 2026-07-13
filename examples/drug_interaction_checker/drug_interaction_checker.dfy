@@ -67,17 +67,29 @@ datatype InteractionResult = InteractionResult(outcome: Outcome, direction: Risk
 // OrthopaedicVTEProphylaxis makes that silence a provable exclusion at
 // every call site (matching how CheckInteraction already handles
 // apixaban+dronedarone's silence via NotCovered), rather than a value
-// this type simply cannot represent. Apixaban's own two-constructor
-// scoping (above) is unaffected -- apixaban's own orthopaedic-VTE-
-// prophylaxis indication was already known and deliberately excluded on
-// different grounds (a different source document's scope, not source
-// silence within this one) when REQ-DDI-5 was built; adding a third
-// constructor here does not reopen that decision, since CheckInteraction
-// never inspects TreatmentIndication for any cell but the four
-// apixaban+inducer ones, and none of those ensures clauses reference
-// the new constructor at all -- it is simply an additional value for
-// which those four clauses' antecedent is false, the same as any other
-// unlisted case.
+// this type simply cannot represent.
+//
+// CORRECTED 2026-07-13 (Qodo review, PR #40, caught before this branch's
+// first attempt at the above reasoning was ever merged): adding this
+// constructor DOES touch apixaban's four inducer cells too, in a way
+// the first draft of this comment missed. Their match arms compute
+// Caution unconditionally, without inspecting treatmentIndication at
+// all (correct while the type had only the two indications the source
+// actually names for apixaban -- every constructible value satisfied
+// the guard). Once OrthopaedicVTEProphylaxis existed, those same arms
+// became silently callable with it too, returning a concrete Caution
+// value no ensures clause proved -- a real scope leak, not just an
+// unprovable-but-harmless case: apixaban's own orthopaedic-indication
+// outcome is exactly as unaddressed by this source as
+// apixaban+dronedarone's silence, and deserves the identical NotCovered
+// treatment, not an accidental Caution inherited from a match arm that
+// was never taught the new value exists. Fixed: all four apixaban
+// inducer match arms now branch on treatmentIndication explicitly,
+// returning NotCovered for OrthopaedicVTEProphylaxis; four new ensures
+// clauses pin this. REQ-DDI-5's own two-indication scoping decision
+// (ratified via AskUserQuestion) is unchanged -- Caution for the two
+// named indications is still exactly what was decided -- this only
+// closes the gap the shared datatype's extension opened.
 datatype TreatmentIndication = AFStrokePrevention | RecurrentVTEPrevention | OrthopaedicVTEProphylaxis
 
 // Gate 1c Finding 2 / REQ-DDI-5 (built 2026-07-12): Rifampicin and
@@ -146,6 +158,11 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   // outcome either way; provable now that TreatmentIndication is closed
   // to exactly those two.
   ensures (doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
+  // Corrected 2026-07-13 (Qodo review, PR #40): the source never states
+  // an apixaban outcome for the orthopaedic-VTE-prophylaxis indication
+  // on this row, so this cell is NotCovered for it, matching (Apixaban,
+  // Dronedarone)'s established silent-cell convention.
+  ensures (doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)
   ensures (doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)
   ensures (doac == Dabigatran && agent == SSRIOrSNRI && !hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)
   ensures (doac == Apixaban && agent == SSRIOrSNRI) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)
@@ -169,14 +186,20 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   // REQ-DDI-5 (built): same source rows (135-136), same two-indication
   // shape and outcome as Rifampicin above.
   ensures (doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
+  // Corrected 2026-07-13: same rationale as (Apixaban, Rifampicin) above.
+  ensures (doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)
   ensures (doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)
   ensures (doac == Edoxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
   ensures (doac == Rivaroxaban && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
   ensures (doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
+  // Corrected 2026-07-13: same rationale as (Apixaban, Rifampicin) above.
+  ensures (doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)
   ensures (doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)
   ensures (doac == Edoxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
   ensures (doac == Rivaroxaban && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
   ensures (doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)
+  // Corrected 2026-07-13: same rationale as (Apixaban, Rifampicin) above.
+  ensures (doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)
   ensures (doac == Dabigatran && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Contraindicated, BleedingRisk)
   ensures (doac == Edoxaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)
   ensures (doac == Apixaban && agent == Ciclosporin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, BleedingRisk)
@@ -235,11 +258,25 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   case (Dabigatran, Rifampicin) => InteractionResult(Avoid, ThrombosisRisk)
   case (Edoxaban, Rifampicin) => InteractionResult(Caution, ThrombosisRisk)
   case (Rivaroxaban, Rifampicin) => InteractionResult(Caution, ThrombosisRisk)
-  // REQ-DDI-5 (built): both named treatment indications give the same
-  // outcome, so the match arm doesn't need to branch on
-  // treatmentIndication -- the closed TreatmentIndication type is what
-  // makes this cell provable at all, not a value it needs to inspect.
-  case (Apixaban, Rifampicin) => InteractionResult(Caution, ThrombosisRisk)
+  // REQ-DDI-5 (built 2026-07-12; corrected 2026-07-13 -- Qodo review on
+  // PR #40): both named treatment indications give the same outcome, so
+  // this arm originally didn't branch on treatmentIndication at all --
+  // correct while TreatmentIndication had exactly those two
+  // constructors, but REQ-DDI-6 (2026-07-13) added a third,
+  // OrthopaedicVTEProphylaxis, for a different cell entirely
+  // (DoseReductionTargetMg's own scoping). That silently made this cell
+  // callable with the new indication too, returning Caution without any
+  // ensures clause proving it -- a real scope leak the file's own
+  // comment above (TreatmentIndication's declaration) was written
+  // specifically to prevent: the interaction source never states an
+  // apixaban outcome for the orthopaedic indication, so the honest
+  // answer is NotCovered, matching (Apixaban, Dronedarone)'s already-
+  // established silent-cell convention, not a value this arm should
+  // fabricate.
+  case (Apixaban, Rifampicin) =>
+    if treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention
+    then InteractionResult(Caution, ThrombosisRisk)
+    else InteractionResult(NotCovered, UnknownRisk)
 
   // SSRIs/SNRIs (REQ-DDI-3): dabigatran's dose reduction is conditional
   // on the caller-supplied hasOtherBleedingRiskFactors flag -- same
@@ -280,20 +317,32 @@ function CheckInteraction(doac: DOAC, agent: Agent,
   case (Dabigatran, Carbamazepine) => InteractionResult(Avoid, ThrombosisRisk)
   case (Edoxaban, Carbamazepine) => InteractionResult(Caution, ThrombosisRisk)
   case (Rivaroxaban, Carbamazepine) => InteractionResult(Caution, ThrombosisRisk)
-  // REQ-DDI-5 (built): same rationale as (Apixaban, Rifampicin) above.
-  case (Apixaban, Carbamazepine) => InteractionResult(Caution, ThrombosisRisk)
+  // REQ-DDI-5 (built; corrected 2026-07-13): same rationale as
+  // (Apixaban, Rifampicin) above.
+  case (Apixaban, Carbamazepine) =>
+    if treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention
+    then InteractionResult(Caution, ThrombosisRisk)
+    else InteractionResult(NotCovered, UnknownRisk)
 
   case (Dabigatran, Phenytoin) => InteractionResult(Avoid, ThrombosisRisk)
   case (Edoxaban, Phenytoin) => InteractionResult(Caution, ThrombosisRisk)
   case (Rivaroxaban, Phenytoin) => InteractionResult(Caution, ThrombosisRisk)
-  // REQ-DDI-5 (built): same rationale as (Apixaban, Rifampicin) above.
-  case (Apixaban, Phenytoin) => InteractionResult(Caution, ThrombosisRisk)
+  // REQ-DDI-5 (built; corrected 2026-07-13): same rationale as
+  // (Apixaban, Rifampicin) above.
+  case (Apixaban, Phenytoin) =>
+    if treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention
+    then InteractionResult(Caution, ThrombosisRisk)
+    else InteractionResult(NotCovered, UnknownRisk)
 
   case (Dabigatran, Phenobarbital) => InteractionResult(Avoid, ThrombosisRisk)
   case (Edoxaban, Phenobarbital) => InteractionResult(Caution, ThrombosisRisk)
   case (Rivaroxaban, Phenobarbital) => InteractionResult(Caution, ThrombosisRisk)
-  // REQ-DDI-5 (built): same rationale as (Apixaban, Rifampicin) above.
-  case (Apixaban, Phenobarbital) => InteractionResult(Caution, ThrombosisRisk)
+  // REQ-DDI-5 (built; corrected 2026-07-13): same rationale as
+  // (Apixaban, Rifampicin) above.
+  case (Apixaban, Phenobarbital) =>
+    if treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention
+    then InteractionResult(Caution, ThrombosisRisk)
+    else InteractionResult(NotCovered, UnknownRisk)
 
   // Ciclosporin: contraindicated with dabigatran; edoxaban gets a dose
   // reduction; apixaban/rivaroxaban a plain caution.

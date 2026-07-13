@@ -3683,9 +3683,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication != AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3694,9 +3694,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication < AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3705,9 +3705,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication > AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3736,9 +3736,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication != RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3747,9 +3747,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication < RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3758,9 +3758,9 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication > RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -3811,6 +3811,218 @@
     "original_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac <= Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac >= Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac != Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac < Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac > Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent <= Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent >= Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent != Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent < Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent > Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication <= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication >= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication != OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication < OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication > OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) <= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) >= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) != InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) < InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
     "exit_code": 4
@@ -7128,9 +7340,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication != AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7139,9 +7351,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication < AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7150,9 +7362,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication > AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7181,9 +7393,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication != RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7192,9 +7404,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication < RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7203,9 +7415,9 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication > RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7256,6 +7468,218 @@
     "original_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac <= Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac >= Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac != Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac < Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac > Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent <= Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent >= Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent != Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent < Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent > Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication <= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication >= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication != OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication < OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication > OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) <= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) >= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) != InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) < InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
     "exit_code": 4
@@ -7870,9 +8294,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication != AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7881,9 +8305,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication < AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7892,9 +8316,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication > AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7923,9 +8347,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication != RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7934,9 +8358,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication < RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7945,9 +8369,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication > RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -7998,6 +8422,218 @@
     "original_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac <= Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac >= Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac != Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac < Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac > Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent <= Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent >= Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent != Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent < Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent > Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication <= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication >= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication != OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication < OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication > OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) <= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) >= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) != InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) < InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
     "exit_code": 4
@@ -8612,9 +9248,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication != AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8623,9 +9259,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication < AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8634,9 +9270,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication > AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8665,9 +9301,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication != RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> !=",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8676,9 +9312,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication < RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> <",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8687,9 +9323,9 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication > RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
-    "outcome": "survived",
-    "detail": "2 verified, 0 errors",
-    "exit_code": 0
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
   },
   {
     "function": "CheckInteraction",
@@ -8740,6 +9376,218 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(Caution, ThrombosisRisk)",
     "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac <= Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac >= Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac != Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac < Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac > Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent <= Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent >= Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent != Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent < Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent > Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication <= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication >= OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication != OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication < OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication > OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) <= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) >= InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >=",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) != InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> !=",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) < InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> <",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "ROR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) > InteractionResult(NotCovered, UnknownRisk)",
+    "description": "ROR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
     "exit_code": 4
@@ -10201,6 +11049,26 @@
     "function": "CheckInteraction",
     "operator": "LOR",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban || agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Rifampicin || treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)",
     "mutated_clause": "(doac == Dabigatran || agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)",
     "description": "LOR on ensures clause '(doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)': && -> ||",
@@ -10452,6 +11320,26 @@
     "function": "CheckInteraction",
     "operator": "LOR",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban || agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Carbamazepine || treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "mutated_clause": "(doac == Dabigatran || agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "description": "LOR on ensures clause '(doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)': && -> ||",
@@ -10513,6 +11401,26 @@
     "function": "CheckInteraction",
     "operator": "LOR",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban || agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenytoin || treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "mutated_clause": "(doac == Dabigatran || agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "description": "LOR on ensures clause '(doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)': && -> ||",
@@ -10569,6 +11477,26 @@
     "outcome": "survived",
     "detail": "2 verified, 0 errors",
     "exit_code": 0
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban || agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "LOR",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "(doac == Apixaban && agent == Phenobarbital || treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "description": "LOR on ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)': && -> ||",
+    "outcome": "filtered_static",
+    "detail": "statically weaker (ensures)"
   },
   {
     "function": "CheckInteraction",
@@ -10951,6 +11879,17 @@
     "function": "CheckInteraction",
     "operator": "COI",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "!((doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk))",
+    "description": "COI: negate ensures clause '(doac == Apixaban && agent == Rifampicin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)'",
+    "outcome": "killed",
+    "detail": "1 verified, 4 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "COI",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)",
     "mutated_clause": "!((doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk))",
     "description": "COI: negate ensures clause '(doac == Dabigatran && agent == SSRIOrSNRI && hasOtherBleedingRiskFactors) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(DoseReductionAdvised, BleedingRisk)'",
@@ -11182,6 +12121,17 @@
     "function": "CheckInteraction",
     "operator": "COI",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "!((doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk))",
+    "description": "COI: negate ensures clause '(doac == Apixaban && agent == Carbamazepine && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)'",
+    "outcome": "killed",
+    "detail": "1 verified, 4 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "COI",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "mutated_clause": "!((doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk))",
     "description": "COI: negate ensures clause '(doac == Dabigatran && agent == Phenytoin) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)'",
@@ -11226,6 +12176,17 @@
     "function": "CheckInteraction",
     "operator": "COI",
     "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "!((doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk))",
+    "description": "COI: negate ensures clause '(doac == Apixaban && agent == Phenytoin && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)'",
+    "outcome": "killed",
+    "detail": "1 verified, 4 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "COI",
+    "keyword": "ensures",
     "original_clause": "(doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)",
     "mutated_clause": "!((doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk))",
     "description": "COI: negate ensures clause '(doac == Dabigatran && agent == Phenobarbital) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Avoid, ThrombosisRisk)'",
@@ -11262,6 +12223,17 @@
     "original_clause": "(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)",
     "mutated_clause": "!((doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk))",
     "description": "COI: negate ensures clause '(doac == Apixaban && agent == Phenobarbital && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(Caution, ThrombosisRisk)'",
+    "outcome": "killed",
+    "detail": "1 verified, 4 errors",
+    "exit_code": 4
+  },
+  {
+    "function": "CheckInteraction",
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)",
+    "mutated_clause": "!((doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk))",
+    "description": "COI: negate ensures clause '(doac == Apixaban && agent == Phenobarbital && treatmentIndication == OrthopaedicVTEProphylaxis) ==> CheckInteraction(doac, agent, hasOtherBleedingRiskFactors, treatmentIndication) == InteractionResult(NotCovered, UnknownRisk)'",
     "outcome": "killed",
     "detail": "1 verified, 4 errors",
     "exit_code": 4
@@ -11364,7 +12336,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac <= Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,17): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,17): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11377,7 +12349,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac >= Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,17): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,17): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11427,7 +12399,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent <= Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,40): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,40): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11440,7 +12412,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent >= Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,40): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,40): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11490,7 +12462,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication <= AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,77): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
+    "detail": "<mutant>.dfy(404,77): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
     "exit_code": 2
   },
   {
@@ -11503,7 +12475,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication >= AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,77): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
+    "detail": "<mutant>.dfy(404,77): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
     "exit_code": 2
   },
   {
@@ -11553,7 +12525,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication <= RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,122): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
+    "detail": "<mutant>.dfy(404,122): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
     "exit_code": 2
   },
   {
@@ -11566,7 +12538,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication >= RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,122): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
+    "detail": "<mutant>.dfy(404,122): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got TreatmentIndication and TreatmentIndication)",
     "exit_code": 2
   },
   {
@@ -11616,7 +12588,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac <= Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,159): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,159): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11629,7 +12601,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac >= Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,159): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,159): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11679,7 +12651,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent <= Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,180): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,180): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11692,7 +12664,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent >= Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,180): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,180): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11742,7 +12714,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac <= Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,205): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,205): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11755,7 +12727,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac >= Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,205): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,205): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11805,7 +12777,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent <= ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,226): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,226): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11818,7 +12790,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent >= ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,226): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,226): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11868,7 +12840,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac <= Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,260): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,260): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11881,7 +12853,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac >= Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,260): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,260): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -11931,7 +12903,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent <= Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,281): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,281): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11944,7 +12916,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent >= Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,281): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,281): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -11994,7 +12966,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac <= Edoxaban && agent == Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,307): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,307): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -12007,7 +12979,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac >= Edoxaban && agent == Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,307): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
+    "detail": "<mutant>.dfy(404,307): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got DOAC and DOAC)",
     "exit_code": 2
   },
   {
@@ -12057,7 +13029,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent <= Ciclosporin)'): 'LE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,328): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,328): Error: arguments to <= must be of a numeric type, bitvector type, ORDINAL, char, a sequence type, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -12070,7 +13042,7 @@
     "precondition_check_outcome": "z3_translation_refused",
     "precondition_check_detail": "unsupported comparison in requires clause 1 of 'DoseReductionTargetMg' ('(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent >= Ciclosporin)'): 'GE' (</<=/>/>=) is only modeled for real/int/nat operands - refusing rather than crash or guess an ordering for a non-arithmetic (e.g. datatype) sort",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,328): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
+    "detail": "<mutant>.dfy(404,328): Error: arguments to >= must be of a numeric type, bitvector type, ORDINAL, char, or a set-like type (instead got Agent and Agent)",
     "exit_code": 2
   },
   {
@@ -13019,7 +13991,7 @@
     "mutated_clause": "(doac == Dabigatran || agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "description": "LOR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': && -> ||",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,53): Error: Ambiguous use of && and ||. Use parentheses to disambiguate.",
+    "detail": "<mutant>.dfy(404,53): Error: Ambiguous use of && and ||. Use parentheses to disambiguate.",
     "exit_code": 2
   },
   {
@@ -13030,7 +14002,7 @@
     "mutated_clause": "(doac == Dabigatran && agent == Verapamil || (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)",
     "description": "LOR on requires clause '(doac == Dabigatran && agent == Verapamil && (treatmentIndication == AFStrokePrevention || treatmentIndication == RecurrentVTEPrevention)) || (doac == Edoxaban && agent == Dronedarone) || (doac == Edoxaban && agent == ErythromycinSystemic) || (doac == Edoxaban && agent == Ketoconazole) || (doac == Edoxaban && agent == Ciclosporin)': && -> ||",
     "outcome": "unclassifiable",
-    "detail": "<mutant>.dfy(355,53): Error: Ambiguous use of && and ||. Use parentheses to disambiguate.",
+    "detail": "<mutant>.dfy(404,53): Error: Ambiguous use of && and ||. Use parentheses to disambiguate.",
     "exit_code": 2
   },
   {

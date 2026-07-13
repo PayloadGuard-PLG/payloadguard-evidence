@@ -8,7 +8,37 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **Gate C6 review's real spec-scope
+**Last updated:** 2026-07-13 — **A second Qodo review, run against PR
+#40 after it merged, found a real scope-leak bug in `CheckInteraction`'s
+own apixaban rows — fixed, all six gates re-run for real.** PR #40 (the
+entry immediately below) merged with `TreatmentIndication` gaining its
+third constructor, `OrthopaedicVTEProphylaxis`, for `DoseReductionTargetMg`'s
+own indication guard. That change had a silent side effect on a sibling
+function nobody had touched for this reason: `CheckInteraction`'s four
+apixaban+inducer match arms (Rifampicin, Carbamazepine, Phenytoin,
+Phenobarbital) computed `Caution` unconditionally, never actually
+inspecting `treatmentIndication`, so calling any of them with the new
+`OrthopaedicVTEProphylaxis` indication returned a fabricated `Caution`
+instead of the honest `NotCovered` this repo's `(Apixaban, Dronedarone)`
+silent-cell convention calls for. Independently re-verified directly
+against the merged `.dfy` source (not the review's word) before fixing —
+an unambiguous bug, not a design fork, so fixed directly rather than
+raised as a question. **Fixed**: each of the four match arms now
+branches on `treatmentIndication`, matching `(Apixaban, Dronedarone)`'s
+pattern; four new `ensures` clauses pin `NotCovered` for the orthopaedic
+indication. All six gates re-run for real: C1 `2 verified, 0 errors`;
+C4/STP `25 verified, 0 errors` (up from 23); C3 weak-postcondition count
+for `CheckInteraction` now 68 (up from 64); C5 **1342 mutants — 744
+killed, 522 filtered_static, 50 survived, 26 unclassifiable**
+(`CheckInteraction`'s own survivors dropped sharply, 31 → 7, once the
+guard became load-bearing; `DoseReductionTargetMg`'s 43 survivors
+unaffected). Phase 3 regenerated: still 6/6 `PROVEN`, no GAP rows. Full
+account: `examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`'s
+"Addendum 4." Gate C6 sign-off is still open — every finding across
+Addenda 3 and 4 is resolved, but Steven's actual review of the current
+spec shape (a recorded human decision) still hasn't happened. 214 tests
+pass. **Prior update, preserved
+below** — 2026-07-13 — **Gate C6 review's real spec-scope
 finding resolved: `TreatmentIndication` gained a third constructor,
 `DoseReductionTargetMg` is now indication-scoped where the source
 requires it.** Continuing the same day's earlier work (an externally-
@@ -675,6 +705,25 @@ NHS SPS's DOAC-interaction guidance, UK-jurisdiction like
   6/6 `PROVEN`, no GAP rows. Full account:
   `examples/drug_interaction_checker/
   nl_confirmation_drug_interaction_checker_dfy.md`'s "Addendum 3."
+- **Gate C6 review, 2026-07-13 (later, after PR #40 merged): a second
+  Qodo review found a real scope-leak bug — fixed.** `CheckInteraction`'s
+  four apixaban+inducer match arms computed `Caution` unconditionally,
+  never inspecting `treatmentIndication` — harmless while that type had
+  only two constructors, but silently wrong once
+  `OrthopaedicVTEProphylaxis` (added for `DoseReductionTargetMg`'s own
+  guard, same PR) made a third value constructible. Independently
+  re-verified against the merged source before fixing; each arm now
+  branches on `treatmentIndication`, returning `NotCovered` for the
+  orthopaedic indication (matching `(Apixaban, Dronedarone)`'s
+  convention). All six gates re-run: C4/STP `25 verified, 0 errors` (up
+  from 23); C3 weak-postcondition count 68 (up from 64); C5 1342
+  mutants — 744 killed, 522 filtered_static, 50 survived, 26
+  unclassifiable (`CheckInteraction`'s own survivors dropped 31 → 7).
+  Phase 3 regenerated: still 6/6 `PROVEN`. Full account:
+  `nl_confirmation_drug_interaction_checker_dfy.md`'s "Addendum 4." Gate
+  C6 sign-off still open — all findings across both Addenda 3 and 4 are
+  resolved, but Steven's actual review of the current spec shape (a
+  recorded human decision) still hasn't happened.
 - **Phase 3 (evidence packaging) built, 2026-07-11; regenerated
   2026-07-12 after REQ-DDI-5/6.**
   `metadata.a.yaml`/`dafny_captures_index.json`/`traceability_matrix.a.json`/`.md`

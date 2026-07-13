@@ -1,6 +1,24 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-13 (a Gate C6 review's real spec-scope finding
+Last updated: 2026-07-13 (a second Qodo review, run against PR #40 after
+it merged, found a real scope-leak bug: `CheckInteraction`'s four
+apixaban+inducer match arms computed `Caution` unconditionally, never
+inspecting `treatmentIndication`, silently fabricating an outcome once
+`OrthopaedicVTEProphylaxis` made a third indication value constructible.
+Independently re-verified against the merged source before fixing; each
+arm now branches on `treatmentIndication`, returning `NotCovered` for
+the orthopaedic indication (matching this repo's own
+`(Apixaban, Dronedarone)` silent-cell convention). All six gates re-run
+for real: STP suite `25 verified, 0 errors` (up from 23, two new
+lemmas); weak-postcondition count for `CheckInteraction` now 68 (up from
+64); mutation suite 1342 mutants — 744 killed, 522 filtered_static, 50
+survived, 26 unclassifiable (`CheckInteraction`'s own survivors dropped
+31 → 7). Phase 3 regenerated, still 6/6 PROVEN. See
+`KNOWN_LIMITATIONS.md`'s "Gate C6 review (second, post-merge),
+2026-07-13" section for the full account; the updated
+`drug_interaction_checker` component-map entries below reflect this.
+Prior header, preserved: Last updated 2026-07-13 (a Gate C6 review's
+real spec-scope finding
 resolved: `TreatmentIndication` gained a third constructor,
 `OrthopaedicVTEProphylaxis`, for dabigatran's real, current, UK-licensed
 third indication (confirmed via `sources/emc-smpc-dabigatran-indications
@@ -844,12 +862,18 @@ payloadguard-evidence/
 │   │                            own indication scoping - apixaban's own
 │   │                            rows are unaffected, still guard on only
 │   │                            the first two) datatypes, CheckInteraction
-│   │                            (63 match arms, 15 v1 agents, 64 pinning
+│   │                            (63 match arms, 15 v1 agents, 68 pinning
 │   │                            ensures clauses — 60 original + 4 added
 │   │                            2026-07-12 for the apixaban+inducer
-│   │                            indication-dependent cells; no requires
-│   │                            clause as of 2026-07-12 — REQ-DDI-5 made
-│   │                            it provably unnecessary and removed it) —
+│   │                            indication-dependent cells + 4 more added
+│   │                            2026-07-13 pinning NotCovered for the
+│   │                            orthopaedic indication on those same four
+│   │                            cells, a second Qodo review finding fixed
+│   │                            after PR #40 merged (see
+│   │                            KNOWN_LIMITATIONS.md's "Gate C6 review
+│   │                            (second, post-merge), 2026-07-13"); no
+│   │                            requires clause as of 2026-07-12 — REQ-DDI-5
+│   │                            made it provably unnecessary and removed it) —
 │   │                            plus DoseReductionTargetMg (added
 │   │                            2026-07-12, REQ-DDI-6: requires-gated
 │   │                            bare-int, 5 pinned mg figures, apixaban
@@ -880,7 +904,16 @@ payloadguard-evidence/
 │   │                            3 ACCEPT lemmas genuinely fail against
 │   │                            the preserved original (0 verified, 3
 │   │                            errors) — a real captured failure, not
-│   │                            smoothed over
+│   │                            smoothed over. Counts above are the
+│   │                            original 2026-07-10 build; the real suite
+│   │                            has grown since (6 new lemmas for
+│   │                            REQ-DDI-5/6, 2026-07-12, 20 verified; 2
+│   │                            more for the Dabigatran+Verapamil
+│   │                            indication guard, Fix 2A/2B, 2026-07-13,
+│   │                            23 verified; 2 more for CheckInteraction's
+│   │                            own orthopaedic-indication NotCovered fix,
+│   │                            2026-07-13, latest real count 25 verified,
+│   │                            0 errors)
 │   ├── run_verify_ddi.py, run_verify_dafny_stp_suite(_against_underconstrained)_ddi.py
 │   │                            Capture runners, mirroring
 │   │                            renal_adjustment's exact discipline
@@ -917,31 +950,39 @@ payloadguard-evidence/
 │   │                            precedent for this exact gap), not by
 │   │                            extending the tool.
 │   ├── mutation_report_ddi.json/.md, run_manifest_mutation_ddi.json
-│   │                            Gate C5: real captured outcome, final
-│   │                            re-run 2026-07-13 across both functions
-│   │                            (after DoseReductionTargetMg gained a
-│   │                            treatmentIndication parameter and both
-│   │                            new clauses were reformatted to single
-│   │                            lines - see run_mutation_suite_ddi.py's
-│   │                            entry below for why) — 1250 mutants: 668
-│   │                            killed, 482 filtered_static, 74
-│   │                            survived, 26 unclassifiable.
-│   │                            CheckInteraction's own 31 survivors
-│   │                            unchanged throughout (28 REQ-DDI-5
-│   │                            indication-disjunction + 3 pre-existing
-│   │                            SSRIOrSNRI). DoseReductionTargetMg
-│   │                            contributes 43 survivors (6
-│   │                            requires-clause indication-guard + 37
+│   │                            Gate C5: real captured outcome, latest
+│   │                            re-run 2026-07-13 (after CheckInteraction's
+│   │                            four apixaban+inducer match arms were
+│   │                            fixed to actually branch on
+│   │                            treatmentIndication - a second, post-merge
+│   │                            Qodo review finding, see
+│   │                            KNOWN_LIMITATIONS.md's "Gate C6 review
+│   │                            (second, post-merge), 2026-07-13") — 1342
+│   │                            mutants: 744 killed, 522 filtered_static,
+│   │                            50 survived, 26 unclassifiable.
+│   │                            CheckInteraction's own survivors dropped
+│   │                            sharply, 31 -> 7 (the 4 REQ-DDI-5
+│   │                            indication-disjunction survivors
+│   │                            collapsed from a broad "redundant guard"
+│   │                            pattern to a narrower LOR-vacuity case
+│   │                            now that the guard is genuinely
+│   │                            load-bearing; the 3 pre-existing
+│   │                            SSRIOrSNRI survivors are unchanged).
+│   │                            DoseReductionTargetMg is unaffected by
+│   │                            this fix, still contributing 43 survivors
+│   │                            (6 requires-clause indication-guard + 37
 │   │                            ensures-clause guard-antecedent, both
 │   │                            the same established "never load-
 │   │                            bearing" category) and all 26
 │   │                            unclassifiable results (24 ROR
 │   │                            datatype-ordering type errors + 2 LOR
-│   │                            parser-ambiguity refusals, both at full
-│   │                            scale now that every disjunct is
-│   │                            correctly scanned). All 10 LVR mutants
-│   │                            on the 5 pinned mg figures killed, none
-│   │                            survived throughout every rerun.
+│   │                            parser-ambiguity refusals). All 10 LVR
+│   │                            mutants on the 5 pinned mg figures
+│   │                            killed, none survived throughout every
+│   │                            rerun. Prior run (1250 mutants, before
+│   │                            this fix), preserved for context: 668
+│   │                            killed, 482 filtered_static, 74 survived,
+│   │                            26 unclassifiable.
 │   └── nl_confirmation_drug_interaction_checker_dfy.md  Gate C6: the
 │                                actual sign-off deliverable. Confirmed
 │                                by Steven 2026-07-10 - closed, not
