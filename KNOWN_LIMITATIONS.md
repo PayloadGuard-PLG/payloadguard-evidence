@@ -4,7 +4,25 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-13 (Gate C5 extended for `drug_interaction_checker`
+Last updated: 2026-07-13 (Gate C6 confirmed and closed for
+`drug_interaction_checker.dfy`, against the raw sources directly — a
+full, independent, line-by-line review of all 68 `CheckInteraction`
+postconditions and all 5 `DoseReductionTargetMg` postconditions against
+every one of `sources/sps-doac-interactions-2024.md`'s 17 sections,
+plus `sources/emc-smpc-dabigatran-indications-2025.md` for the
+indication-scoping cells, found no discrepancy. Two drafts of an
+externally-produced technical review report were independently
+cross-checked against the real artifacts — the first had four real
+errors, all confirmed by direct inspection; the corrected draft fixed
+all four, with one further precision point preserved (the established
+three-way distinction between vacuous-antecedent, redundant-consequent,
+and requires-domain-restriction mutation-survivor mechanisms, only the
+last of which "function transparency" actually names). **Decision —
+Confirmed, 2026-07-13, by Steven.** All six Gate C1–C6 pipeline steps
+are now built AND confirmed for this example. See the "Gate C6
+confirmed and closed" section near the end of this file for the full
+account. Prior entry, preserved: Last updated 2026-07-13 (Gate C5
+extended for `drug_interaction_checker`
 to re-verify the committed STP suite against every mutation-testing
 survivor, not just the bare spec — a real, hand-verified engineering
 change, not just a re-run. Hand-probed before building: the STP suite's
@@ -3208,3 +3226,87 @@ prediction. `tests/test_drug_interaction_checker_mutation_report.py`
 updated: a new test for the `killed_via_stp_suite` category, existing
 survivor-count assertions updated, a new "Run 5" section added to the
 module docstring. Full suite: 215 passed (up from 214).
+
+## Gate C6 confirmed and closed for `drug_interaction_checker.dfy`, against the raw sources directly (2026-07-13)
+
+A full, independent, line-by-line review was performed at Steven's
+request — not a re-read of prior summaries. Every one of
+`sources/sps-doac-interactions-2024.md`'s 17 sections (Amiodarone,
+Digoxin, Diltiazem, Dronedarone, Verapamil, Macrolides, Rifampicin,
+Other-DOACs/heparin/warfarin, SSRIs/SNRIs, Fluconazole,
+Itraconazole/Ketoconazole, Antiplatelets,
+Carbamazepine/Phenytoin/Phenobarbital, Levetiracetam/Valproate,
+Ciclosporin, Tacrolimus, NSAIDs) was cross-checked directly against its
+corresponding `ensures` clause(s) and match arm(s) in the current spec
+— all 68 `CheckInteraction` postconditions, all 5
+`DoseReductionTargetMg` postconditions. No discrepancy found. The two
+most recently changed cells (the four `OrthopaedicVTEProphylaxis` →
+`NotCovered` clauses; `DoseReductionTargetMg`'s indication guard on
+Dabigatran+Verapamil) were checked specifically against both
+`sources/sps-doac-interactions-2024.md` and
+`sources/emc-smpc-dabigatran-indications-2025.md` and confirmed
+correct.
+
+**Live re-verification, not from memory**: `dafny verify
+drug_interaction_checker.dfy` → `2 verified, 0 errors`; `dafny verify
+drug_interaction_checker_stp_suite.dfy` → `25 verified, 0 errors` (21
+real lemmas, confirmed via `grep -c "^lemma "`). All 21 lemmas
+spot-checked against their corresponding `ensures` clauses, including
+the two newest (`STP_Accept_..._OrthopaedicVTEProphylaxis_NotCovered`
+and its REJECT counterpart).
+
+**Two drafts of an externally-produced "Gate C Technical Review Report"
+were then independently cross-checked against the real artifacts before
+either was trusted, not accepted on the report's word.** The first
+draft had four real errors:
+
+1. **"25 lemmas"** — conflates Dafny's verification-task count with the
+   real lemma count (21, confirmed via direct `grep`). The same class
+   of mistake this document's own history already caught and corrected
+   once, for the same file, on 2026-07-10.
+2. **Reversed causality**: claimed the third `TreatmentIndication`
+   constructor's addition "allowed for the removal of the requires
+   clause." The real chronology (confirmed against `DEVLOG.md` and the
+   `.dfy`'s own comments) is the reverse — the requires clause was
+   removed 2026-07-12 with only two constructors; the third, added a
+   day later for `DoseReductionTargetMg`'s own scoping, *caused* the
+   scope-leak bug rather than enabling anything.
+3. **Wrong tooling attribution**: claimed `evidence/dafny_mutate.py` was
+   "updated to accumulate clauses across multiple physical lines" to
+   fix the truncation bug. Checked directly — no such logic exists in
+   that file (`grep` for multiline/accumulate returns nothing); the
+   real fix was reformatting the affected clauses to single physical
+   lines, the tool left untouched, matching this document's own
+   "not by extending the tool" account.
+4. **Conflated concepts**: attributed the 26 `unclassifiable` mutants to
+   "Dafny function transparency limits." The real report data shows all
+   26 are static type errors (`"arguments to <= must be of a numeric
+   type"`) and parser ambiguities — unrelated to function transparency,
+   a real but separate concept in this codebase.
+
+A second, corrected draft fixed all four precisely — each re-verified
+directly again, not assumed fixed because the report said so. **One
+further precision point was raised and preserved, not merged away**:
+the corrected draft's claim that the 44 `survived` mutants uniformly
+"represent a genuine limitation of Dafny function transparency" is
+accurate as an explanation of why the Gate C5 STP-suite escalation
+can't help any of them (confirmed by the real, exhaustive re-run, and
+consistent with hand-probing done before that escalation was built) —
+but it is not a complete account of why they survive the *bare-spec*
+check to begin with. This document's own established categorization
+keeps three distinct mechanisms deliberately separate:
+`CheckInteraction`'s 4 LOR survivors are a **vacuous-antecedent** case
+(the mutated `||`→`&&` makes the indication guard unsatisfiable for any
+single value, unrelated to function opacity); its 3 SSRIOrSNRI ROR
+survivors are a **redundant-consequent** case (the outcome is
+independently proven by sibling `ensures` clauses for the other DOACs);
+only `DoseReductionTargetMg`'s 37 are the **requires-domain-restriction
+plus body-obliviousness** pattern "function transparency" actually
+names. Recorded, kept explicit, in
+`nl_confirmation_drug_interaction_checker_dfy.md`'s final "Decision"
+section.
+
+**Decision — Confirmed, 2026-07-13, by Steven.** Every finding raised
+against this spec across Addenda 1–5 and this final review is resolved.
+**All six Gate C1–C6 pipeline steps are now built AND confirmed for
+`drug_interaction_checker` — Gate C6 is closed.** 216 tests pass.
