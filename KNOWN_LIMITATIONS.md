@@ -4,7 +4,26 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+Last updated: 2026-07-14 (Clinical SME assigned; draft severity/
+probability proposal built for `dosage_calculator` and applied to its
+hazard register. Direct instruction: "assign a clinical SME and start
+the severity/probability tables" — declined to fabricate a name or
+invent clinical data, used `AskUserQuestion` instead (same category as
+every Gate C6 sign-off). **Steven** is now the named Clinical/SME for
+`dosage_calculator`, by his own explicit choice; he asked for one
+device drafted first. Built real severity bands (S1-S4) tied to this
+kernel's actual proven/bounded-checked guarantees, a standard 5-level
+probability scale defaulting every hazard to P5 (worst-case, no field
+data exists) per this plan's own already-established policy, and a
+3-region acceptance matrix. Real finding: none of the 4 hazards
+reaches S3/S4 given what's proven; 3 of 4 evaluate provisionally
+`Unacceptable` under the mandated worst-case default, making this
+device's proposed overall residual risk `Unacceptable` today. Every
+value marked `DRAFT` throughout — a starting proposal for Steven's
+review, not a self-declared sign-off. No spec/test change; 216 tests
+pass. See DEVLOG.md's 2026-07-14 entry for the full account.) Prior
+entry, preserved: Last updated 2026-07-14
+(`HAZARD_REGISTER.md` landed for
 `drug_interaction_checker` too — third and final hazard-register
 artifact; all three worked examples now have both a risk-management
 plan and a hazard register. Like `renal_adjustment`, no published
