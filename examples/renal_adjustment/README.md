@@ -337,8 +337,9 @@ Direct instruction: "extend to renal adjustments," following the same
 different construction, not a copy-paste: `renal_adjustment` has no
 published, numbered hazard-analysis source like GIP v1.0 to transcribe
 from. Instead, hazard identification is built from two real sources
-already in this repo — `metadata.a.yaml`'s eight sourced `REQ-RENAL-*`
-requirements, and `GATE_1C_AUDIT.md`'s own hand-trace findings, which
+already in this repo — `metadata.a.yaml`'s nine sourced `REQ-RENAL-*`
+requirement IDs (REQ-RENAL-1 through 8, plus sub-requirement
+REQ-RENAL-1a), and `GATE_1C_AUDIT.md`'s own hand-trace findings, which
 already name concrete failure modes in substance even though they
 don't use ISO 14971 vocabulary.
 

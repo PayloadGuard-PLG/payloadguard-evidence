@@ -18,8 +18,9 @@ published, numbered hazard-analysis document (no GIP-v1.0 equivalent)
 to transcribe from — its sources (`sources/kdigo-2024-gfr-staging.md`,
 `sources/mhra-renal-formula-selection-2019.md`) are clinical guidelines
 naming individual facts, not a structured hazard table. Found two real
-sources to build from instead: `metadata.a.yaml`'s eight sourced
-`REQ-RENAL-*` requirements (each already names a specific clinical
+sources to build from instead: `metadata.a.yaml`'s nine sourced
+`REQ-RENAL-*` requirement IDs (REQ-RENAL-1 through 8, plus
+sub-requirement REQ-RENAL-1a — each already names a specific clinical
 failure mode in its own text), and `GATE_1C_AUDIT.md` — this repo's own
 2026-07-08 hand-trace audit, which found and named two concrete gaps
 in substance, even without ISO 14971 vocabulary: "New finding 1" (no

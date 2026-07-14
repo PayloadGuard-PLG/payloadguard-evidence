@@ -8,10 +8,12 @@ Second hazard register in this repo, and a genuinely different
 construction from the first (`dosage_calculator/HAZARD_REGISTER.md`):
 this device has no published, numbered hazard-analysis source to
 transcribe from. Instead, every hazard entry below is derived from two
-real, already-existing sources — the eight named `REQ-RENAL-*`
-requirements (KDIGO/MHRA-sourced, `metadata.a.yaml`) and `GATE_1C_AUDIT.md`'s
-own hand-trace findings, which already identify concrete failure modes
-(a hazard analysis in substance, if not in the GIP table's format).
+real, already-existing sources — the nine named `REQ-RENAL-*`
+requirement IDs (REQ-RENAL-1 through 8, plus sub-requirement
+REQ-RENAL-1a; KDIGO/MHRA-sourced, `metadata.a.yaml`) and
+`GATE_1C_AUDIT.md`'s own hand-trace findings, which already identify
+concrete failure modes (a hazard analysis in substance, if not in the
+GIP table's format).
 
 **Status:** DRAFT | Version: 0.1 | Last reviewed: 2026-07-14
 
@@ -28,9 +30,13 @@ still don't have.
 
 ## 1. Scope of this register
 
-One entry per `REQ-RENAL-*` requirement (nine total, including the 1a
-sub-requirement) — this device's own numbering already partitions its
-hazard-relevant surface, so this register follows it directly rather
+**8 hazard entries** (`HAZ-RENAL-1` through `HAZ-RENAL-8`) covering
+**9 `REQ-RENAL-*` requirement IDs** — `HAZ-RENAL-1` covers both
+REQ-RENAL-1 and its sub-requirement REQ-RENAL-1a together, since 1a is
+a refinement of 1's own rounding behavior, not an independent hazard;
+every other hazard entry maps 1:1 to its requirement number. This
+device's own numbering already partitions its hazard-relevant surface,
+so this register follows it directly rather
 than inventing a separate scheme. Each entry states whether the
 requirement is currently mitigated by a real Dafny proof or remains
 prose-only, per `traceability_matrix.a.md`'s own `PROVEN`/`GAP` split
@@ -48,7 +54,7 @@ built").
 |---|---|
 | Source | REQ-RENAL-1/1a, `metadata.a.yaml`. KDIGO boundaries (`sources/kdigo-2024-gfr-staging.md`, confirmed verbatim in Gate C6 sign-off: G1 ≥90, G2 60–89, G3a 45–59, G3b 30–44, G4 15–29, G5 <15 mL/min/1.73m²) plus `GATE_1C_AUDIT.md`'s "New finding 2" |
 | Hazardous situation | Two distinct failure modes, both real and named, not hypothetical: (a) an eGFR value rounds/stages to the wrong KDIGO category at or near a boundary; (b) — the more serious one, actually found by this repo's own Gate 1c audit — a Cockcroft-Gault CrCl value (not BSA-normalized, not KDIGO-staged in clinical practice) gets run through `GStage` as if it were an eGFR value, producing a category-error label. Audit's own concrete example: the NHS SPS patient's CrCl (37 mL/min) would misreport as "G3a" if miscategorized this way, versus the correct, clinically distinct eGFR value (53) which genuinely is G3a — a ~30% numeric divergence that the label alone wouldn't reveal |
-| Risk control measure | (a) `RoundHalfUp` composed with `GStage`, all ten boundary-tie/just-under cases plus the NHS SPS value verified as Dafny lemmas: **24 verified, 0 errors** (`GATE_1C_AUDIT.md`'s "Composed boundary check"). (b) `AssessRenalFunction`'s tagged-union return type (`EGFRAssessment(stage) \| CrClAssessment(roundedCrClMlPerMin)`) makes the miscategorization a **type-level impossibility**, not a convention a caller has to remember — two explicit lemmas (`EgfrPathNeverProducesCrClAssessment`, `CrClPathNeverProducesEGFRAssessment`) proving it directly, **11 verified, 0 errors** (Gate 1c "Finding 2," resolved by redesign, 2026-07-08) |
+| Risk control measure | (a) `RoundHalfUp` composed with `GStage`, all ten boundary-tie/just-under cases plus the NHS SPS value verified as Dafny lemmas: **24 verified, 0 errors** (`GATE_1C_AUDIT.md`'s "Composed boundary check"). (b) `AssessRenalFunction`'s tagged-union return type (`EGFRAssessment(stage) \| CrClAssessment(roundedCrClMlPerMin)`) makes the miscategorization a **type-level impossibility**, not a convention a caller has to remember — pinned by its own four `ensures` clauses (`renal_adjustment.dfy:172-175`, tagged `REQ-RENAL-1, REQ-RENAL-2`), verified as part of the committed spec's real capture: **`raw_dafny_output_renal.txt`, 7 verified, 0 errors**. Correction: an earlier draft of this entry cited two named lemmas (`EgfrPathNeverProducesCrClAssessment`, `CrClPathNeverProducesEGFRAssessment`) and "11 verified, 0 errors" — those exist only in `gate_c1_sketch.md`, the historical 2026-07-08 planning sketch, not in the final committed spec or its real capture. Caught in PR #47 review; fixed to cite what's actually committed and reproducible |
 | Known, named residual | REQ-RENAL-1a's round-half-up tie-break is itself an uncited design decision — KDIGO states no tie-break rule (confirmed directly, `sources/kdigo-2024-gfr-staging.md` line 137, per the Gate C6 sign-off). Not a defect, but worth a clinical SME's confirmation that half-up (vs. half-even) is the intended convention, not just an engineering default |
 | Potential harm (qualitative, not scored) | Per `metadata.a.yaml`'s own `classification_rationale`: "failure could contribute to a non-serious renal dose-adjustment error given clinician oversight" — reused verbatim rather than inventing new harm language |
 | Severity | `GAP` |

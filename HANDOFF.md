@@ -14,7 +14,8 @@ extending the approach from `dosage_calculator`.** Direct instruction:
 "extend to renal adjustments." Genuinely different construction, not a
 copy-paste: `renal_adjustment` has no published numbered hazard table
 like GIP v1.0 to transcribe from, so hazard identification is built
-from `metadata.a.yaml`'s eight sourced `REQ-RENAL-*` requirements and
+from `metadata.a.yaml`'s nine sourced `REQ-RENAL-*` requirement IDs
+(REQ-RENAL-1 through 8, plus sub-requirement REQ-RENAL-1a) and
 `GATE_1C_AUDIT.md`'s own hand-trace findings, which already name
 concrete failure modes in substance. 8 hazard entries landed at
 `examples/renal_adjustment/HAZARD_REGISTER.md`: `HAZ-RENAL-1`
