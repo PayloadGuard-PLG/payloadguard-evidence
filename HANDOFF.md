@@ -9,6 +9,35 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-14 — **`HAZARD_REGISTER.md` landed for
+`renal_adjustment` too — second real hazard-register artifact,
+extending the approach from `dosage_calculator`.** Direct instruction:
+"extend to renal adjustments." Genuinely different construction, not a
+copy-paste: `renal_adjustment` has no published numbered hazard table
+like GIP v1.0 to transcribe from, so hazard identification is built
+from `metadata.a.yaml`'s eight sourced `REQ-RENAL-*` requirements and
+`GATE_1C_AUDIT.md`'s own hand-trace findings, which already name
+concrete failure modes in substance. 8 hazard entries landed at
+`examples/renal_adjustment/HAZARD_REGISTER.md`: `HAZ-RENAL-1`
+incorporates Gate 1c Finding 2 (CrCl/eGFR type-confusion risk, closed
+by `AssessRenalFunction`'s type-safety redesign); `HAZ-RENAL-2`
+incorporates Finding 1's still-open half (CKD-EPI eGFR computation
+remains caller-supplied, backed by the two real `Pow` probes
+confirming a genuine Dafny/Z3 expressiveness limit, not a choice);
+`HAZ-RENAL-4` (fail-safe on missing data) flagged as the highest-
+priority candidate among the 4 prose-only requirements, since
+defaulting to an unadjusted full dose is fail-*open*, not just
+mis-computed; `HAZ-RENAL-5` documents a hazard Gate C4's own STP suite
+already caught and closed (an under-constrained `ComposedCeiling`
+spec, found and fixed 2026-07-09). A Section 3 "explicitly out of
+scope" distinguishes genuine exclusions (downstream per-drug dosing,
+input measurement quality, non-renal contraindications) from the 4
+`GAP` rows, which are in scope but unbuilt. Severity/probability/
+evaluation left explicit `GAP`s throughout, same discipline as before.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated. 216 tests pass, no spec/
+code change. No PR opened yet for this change — not requested. **Next
+step: awaiting instruction** — `drug_interaction_checker` is the one
+remaining example without a hazard register. **Prior update, preserved
+below** — 2026-07-14 — **`HAZARD_REGISTER.md` landed for
 `dosage_calculator` — first real hazard-register artifact in this
 repo.** Direct instruction after all three plans landed: "continue
 with the easiest first please so we can evaluate the output."

@@ -1,6 +1,19 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`renal_adjustment` too, at
+`examples/renal_adjustment/HAZARD_REGISTER.md` — second real
+hazard-register artifact, a genuinely different construction from
+`dosage_calculator`'s (no published hazard table exists; built from
+`metadata.a.yaml`'s sourced `REQ-RENAL-*` text and `GATE_1C_AUDIT.md`'s
+own hand-trace findings instead). 8 hazard entries, 2 incorporating
+real Gate 1c findings (one closed via type-safety redesign, one a
+confirmed Dafny/Z3 expressiveness limit), 1 documenting a hazard Gate
+C4 already caught and closed. Severity/probability/evaluation left
+explicit `GAP`s. No component, gate, or data-flow change. See
+`KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and `DEVLOG.md` for the full
+account.) Prior header, preserved: Last updated 2026-07-14
+(`HAZARD_REGISTER.md` landed for
 `dosage_calculator`, at `examples/dosage_calculator/HAZARD_REGISTER.md`
 — first real hazard-register artifact in this repo, chosen as easiest
 because its primary source (`sources/gip-v1.0-hazard-analysis.md`) is

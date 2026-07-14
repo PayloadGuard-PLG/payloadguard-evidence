@@ -329,6 +329,55 @@ written (2026-07-11). The 2026-07-11 documentation audit (see
 `README.md` but missed this per-example copy. Fixed below, in place,
 not deleted, per this repo's frozen-record discipline.
 
+## Amendment 2026-07-14 (later) — `HAZARD_REGISTER.md` landed: second real hazard-register artifact in this repo
+
+Direct instruction: "extend to renal adjustments," following the same
+"continue with the easiest first" instruction that produced
+`dosage_calculator`'s hazard register. This one is a genuinely
+different construction, not a copy-paste: `renal_adjustment` has no
+published, numbered hazard-analysis source like GIP v1.0 to transcribe
+from. Instead, hazard identification is built from two real sources
+already in this repo — `metadata.a.yaml`'s eight sourced `REQ-RENAL-*`
+requirements, and `GATE_1C_AUDIT.md`'s own hand-trace findings, which
+already name concrete failure modes in substance even though they
+don't use ISO 14971 vocabulary.
+
+Landed as `examples/renal_adjustment/HAZARD_REGISTER.md`: 8 hazard
+entries, one per `REQ-RENAL-*` (including 1a). Two entries draw
+directly on Gate 1c's own findings: `HAZ-RENAL-1` incorporates Finding
+2 (the real risk that a Cockcroft-Gault CrCl value could be
+miscategorized through `GStage` as if it were eGFR — closed by
+`AssessRenalFunction`'s type-safety redesign, a type-level
+impossibility, not a documented caller convention); `HAZ-RENAL-2`
+incorporates Finding 1's still-open half (CKD-EPI eGFR's value
+computation remains caller-supplied, backed by the two real `Pow`
+probes confirming this is a genuine Dafny/Z3 expressiveness limit, not
+a choice — Cockcroft-Gault's own computation is closed and proven).
+`HAZ-RENAL-4` (fail-safe on missing/invalid data) is flagged explicitly
+as the highest-priority candidate among the four prose-only
+requirements, since defaulting to an *unadjusted* full dose is a
+fail-open pattern, materially different from the numeric-accuracy
+concerns elsewhere in the register — a judgment call named, not
+resolved, since prioritization itself belongs to risk-acceptability
+policy this register doesn't set. `HAZ-RENAL-5` documents a hazard
+this pipeline already caught and closed itself: Gate C4's STP suite
+found the original `ComposedCeiling`/`AssessRenalFunction` spec
+under-constrained (bounded above by both inputs without being pinned
+to either), fixed and re-verified.
+
+An "explicitly out of scope" section (Section 3) distinguishes genuine
+exclusions (per-drug dosing tables downstream of the composed ceiling,
+input measurement quality, non-renal contraindications, pregnancy/
+paediatric formulas) from the four `GAP` rows above, which are in
+scope but not yet built — a distinction `dosage_calculator`'s register
+didn't need to draw as sharply, since most of GIP's hazard table is
+genuinely outside that kernel's job.
+
+Severity, probability, and risk-acceptability evaluation left as
+explicit `GAP`s throughout, same discipline as both prior artifacts.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated to reflect that the
+register now exists.
+
 ## Open questions
 
 Not resolved here — named, not guessed at, per this repo's discipline:

@@ -6,6 +6,95 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `HAZARD_REGISTER.md` landed for `renal_adjustment`, second real hazard-register artifact — a genuinely different construction
+
+Direct instruction: "extend to renal adjustments," following on from
+`dosage_calculator`'s hazard register and the "continue with the
+easiest first" instruction that produced it.
+
+Investigated this device's available source material before writing
+anything. Unlike `dosage_calculator`, `renal_adjustment` has no
+published, numbered hazard-analysis document (no GIP-v1.0 equivalent)
+to transcribe from — its sources (`sources/kdigo-2024-gfr-staging.md`,
+`sources/mhra-renal-formula-selection-2019.md`) are clinical guidelines
+naming individual facts, not a structured hazard table. Found two real
+sources to build from instead: `metadata.a.yaml`'s eight sourced
+`REQ-RENAL-*` requirements (each already names a specific clinical
+failure mode in its own text), and `GATE_1C_AUDIT.md` — this repo's own
+2026-07-08 hand-trace audit, which found and named two concrete gaps
+in substance, even without ISO 14971 vocabulary: "New finding 1" (no
+function computes the actual CrCl/eGFR numeric value — both formulas'
+outputs were being treated as already-computed caller-supplied inputs)
+and "New finding 2" (a Cockcroft-Gault CrCl value could be run through
+`GStage`, KDIGO's eGFR-specific staging function, producing a
+category-error label — concretely demonstrated on the NHS SPS patient,
+whose CrCl of 37 would misreport as "G3a" if miscategorized this way,
+versus the genuinely-G3a eGFR value of 53).
+
+**Landed** as `examples/renal_adjustment/HAZARD_REGISTER.md`. Eight
+hazard entries, one per `REQ-RENAL-*` (including 1a), each honestly
+split between real Dafny-proven risk control (REQ-RENAL-1/1a/2/5) and
+plainly-stated `GAP` (REQ-RENAL-3/4/6/7, prose-only; REQ-RENAL-8, a
+permanent trust boundary with an open operational question). Two
+entries incorporate Gate 1c's own findings directly: `HAZ-RENAL-1`
+folds in Finding 2, now resolved — `AssessRenalFunction`'s tagged-union
+return type makes the CrCl/eGFR type confusion a type-level
+impossibility, not a caller convention, proven by two explicit lemmas
+(`EgfrPathNeverProducesCrClAssessment`, `CrClPathNeverProducesEGFRAssessment`,
+11 verified, 0 errors). `HAZ-RENAL-2` folds in Finding 1's still-open
+half: CKD-EPI eGFR's value computation remains caller-supplied, backed
+by the two real `Pow` probes (`dafny_pow_expressiveness_probe.dfy`:
+`Error: unresolved identifier: Pow`; `dafny_pow_axiom_trap_probe.dfy`:
+an unproven `{:axiom}` verifies an absurd claim just as cleanly as a
+correct one) confirming this is a genuine Dafny/Z3 expressiveness
+limit, not a choice — Cockcroft-Gault's own value computation, by
+contrast, is closed and proven (`CockcroftGaultCrClMlPerMin`, 7
+verified, 0 errors). Along the way, corrected a real prior
+mis-attribution while citing REQ-RENAL-2's evidence: an earlier
+addendum had attributed the "1.23/1.04" Cockcroft-Gault constants to
+MHRA; MHRA only names Cockcroft-Gault as the required method — the
+constants are standard unit-conversion arithmetic (corrected
+2026-07-10, now cited correctly here rather than repeating the error).
+
+`HAZ-RENAL-4` (fail-safe on missing/invalid data) is flagged explicitly
+as the highest-priority candidate among the four prose-only
+requirements for eventual formalization — defaulting to an
+*unadjusted* full dose on bad data is a fail-open pattern, materially
+different in kind from the numeric-accuracy concerns in the other
+entries — named as a judgment call, not resolved, since prioritization
+itself is a risk-acceptability decision this register doesn't make.
+`HAZ-RENAL-5` documents a hazard this pipeline already caught and
+closed itself, not left open: Gate C4's STP suite (2026-07-09) found
+the original `ComposedCeiling`/`AssessRenalFunction` spec
+under-constrained — bounded above by both inputs without being pinned
+to either — a REJECT lemma against the underconstrained spec failed to
+verify (`raw_dafny_output_stp_suite_against_underconstrained_renal.txt`,
+`0 verified, 4 errors`), fixed by adding pinning clauses, re-verified
+clean.
+
+A "Section 3: explicitly out of scope" distinguishes genuine
+exclusions (per-drug dosing tables downstream of the composed ceiling,
+input measurement quality, non-renal contraindications, pregnancy/
+paediatric formulas) from the four `GAP` rows, which are in scope but
+not yet built — a sharper distinction than `dosage_calculator`'s
+register needed to draw, since that device's out-of-scope section was
+mostly "not this kernel's job at all" rather than "named but unbuilt."
+
+Severity, probability, and risk-acceptability evaluation left as
+explicit `GAP`s throughout, same discipline as both prior artifacts —
+hazard identification is real; estimation/evaluation still need a
+clinical SME that doesn't exist yet. `RISK_MANAGEMENT_PLAN.md` Section
+8 updated to point at the new register.
+
+Documentation ripple: `examples/renal_adjustment/README.md` (new
+"Amendment 2026-07-14 (later)" section), `HANDOFF.md`,
+`KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec, gate, or
+test-suite change; 216 tests pass. No PR opened yet — not requested for
+this change specifically. `drug_interaction_checker` is now the one
+remaining worked example without a hazard register.
+
+---
+
 ## 2026-07-14 — `HAZARD_REGISTER.md` landed for `dosage_calculator`, first real hazard-register artifact in this repo
 
 Direct instruction, after PR #45 (all three risk-management plans)

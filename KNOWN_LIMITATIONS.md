@@ -5,6 +5,24 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`renal_adjustment` too — second real hazard-register artifact,
+extending the approach from `dosage_calculator` with a genuinely
+different construction: no published hazard table exists for this
+device, so 8 hazard entries (one per `REQ-RENAL-*`) are built from
+`metadata.a.yaml`'s sourced requirement text and `GATE_1C_AUDIT.md`'s
+own hand-trace findings. `HAZ-RENAL-1` incorporates Gate 1c Finding 2
+(CrCl/eGFR type-confusion, closed by a type-safety redesign);
+`HAZ-RENAL-2` incorporates Finding 1's still-open half (CKD-EPI eGFR
+computation caller-supplied, a confirmed Dafny/Z3 expressiveness
+limit); `HAZ-RENAL-4` flagged as highest-priority among the 4
+prose-only requirements (fail-open on missing data); `HAZ-RENAL-5`
+documents a hazard Gate C4 already caught and closed itself. A
+"explicitly out of scope" section distinguishes genuine exclusions
+from in-scope-but-unbuilt GAP rows. Severity/probability/evaluation
+left explicit GAPs. `RISK_MANAGEMENT_PLAN.md` Section 8 updated. No
+spec/test change; 216 tests pass. No PR opened yet. See DEVLOG.md's
+2026-07-14 entry for the full account.) Prior entry, preserved: Last
+updated 2026-07-14 (`HAZARD_REGISTER.md` landed for
 `dosage_calculator` — first real hazard-register artifact in this
 repo. Chosen as easiest of the three examples because its primary
 source, `sources/gip-v1.0-hazard-analysis.md`, is itself a formal
