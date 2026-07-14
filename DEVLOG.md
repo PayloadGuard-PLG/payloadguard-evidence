@@ -6,6 +6,198 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `dosage_calculator`, third and final risk-management-plan artifact — all three worked examples now covered
+
+Direct instruction: "build the same plan for dosage_calculator."
+Mirrors both prior plans' structure and ISO 14971:2019 clause
+citations (already verified verbatim against the real standard when
+the first plan was built; not re-verified per device).
+
+Device-specific content read directly from this repo's own real,
+committed evidence: `metadata.a.yaml` (intended use; `B`/`DECLARED`
+safety classification, same rationale pattern as the other two
+devices), `traceability_matrix.a.md` and `dafny_captures_index.json`
+(3 requirement rows: REQ-GIP-1-4-12, REQ-GIP-1-8-1, REQ-DOSE-003),
+`mutation_report.md` and `README.md`'s Gate C5 amendments (56 mutants
+— 41 killed, 15 filtered across four filter categories, **0
+survivors, 0 unclassifiable** — the cleanest residual of the three
+worked examples, reached only after two later real engineering
+extensions closed 2 mid-run survivors), and
+`nl_confirmation_dosage_dfy.md`'s "Decision" section (Gate C6
+**Confirmed, 2026-07-07, by Steven** — "it's good for the spec as
+is" — confirmed to be the first Gate C6 sign-off recorded anywhere in
+this repository, predating both other examples' sign-offs).
+
+Two real, device-specific distinctions surfaced honestly rather than
+smoothed over to match the other two plans' shape:
+
+1. **Mixed evidence strength within one requirement set.**
+   `dosage_calculator` is the only example with three independent
+   evidence types (CrossHair bounded symbolic search, concrete example
+   tests, Dafny formal proof) rather than Dafny alone. REQ-DOSE-003
+   specifically has no Dafny proof at all — only CrossHair
+   `BOUNDED_CHECKED` and one concrete `EXAMPLE_CHECKED` test — and
+   Section 6's table states this plainly rather than implying the same
+   proof strength as the other two rows.
+2. **A real kernel/system scope split already exists in the
+   requirement text itself.** REQ-GIP-1-4-12 carries both a
+   `kernel_scope` (alarm *detection*, verified at this phase) and a
+   `system_scope` (alarm *signal generation*, explicitly deferred to
+   integration testing, IEC 60601-1-8/62366-1 territory) — from the
+   2026-07-05 Gate 1 review. This became Section 1's real
+   life-cycle-phase scoping, not an invented boundary. Also named: the
+   device's existing STRIDE threat model (`THR-GIP-1-2/1-3/1-14`) is a
+   related but distinct artifact from the clinical hazard register
+   this plan still doesn't contain — flagged so the two are never
+   conflated later.
+
+Sections requiring clinical judgment (roles; severity/probability
+bands; acceptance matrix; overall-residual-risk method) left as
+explicit `GAP`s, not fabricated — same discipline as the other two
+plans, same underlying reason: `metadata.a.yaml`'s
+`classification_rationale` already names the `B` classification as
+`DECLARED`, not sourced.
+
+Documentation ripple: `examples/dosage_calculator/README.md` (new
+"Amendment 2026-07-14" section), `HANDOFF.md`, `KNOWN_LIMITATIONS.md`,
+`SYSTEM_BLUEPRINT.md`. No spec, gate, or test-suite change; 216 tests
+pass throughout. **All three worked examples now have a real, landed
+risk-management-plan artifact** — the natural next piece, if wanted,
+is the actual hazard register all three plans point at and none yet
+contain.
+
+---
+
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `renal_adjustment`, second real ISO 14971 risk-management-plan artifact, same day as the first
+
+Direct instruction: "build the same plan for renal_adjustment." Mirrors
+`examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` (landed
+earlier the same day) structurally and in its ISO 14971:2019 clause
+citations — those describe the standard itself, already verified
+verbatim against the real text, so not re-verified per device.
+
+Device-specific content pulled from this repo's own real, committed
+evidence, read directly rather than assumed: `metadata.a.yaml` (intended
+use, `B`/`DECLARED` safety classification), `traceability_matrix.a.md`
+(5 `PROVEN` rows: REQ-RENAL-1/1a/2/5, plus the multi-function
+REQ-RENAL-1/2 bindings; 5 `GAP` rows: REQ-RENAL-3/4/6/7 named-but-
+unformalized, REQ-RENAL-8's permanent trust boundary with an open
+operational question), `dafny_captures_index.json` (all seven
+functions share one raw-output/manifest pair), `mutation_report_renal.md`
+and `KNOWN_LIMITATIONS.md` (450 mutants: 250 killed, 137 filtered
+pre-verification, 2 blocked, 10 unclassifiable, **51 survive** — all
+three survivor categories already explained: 33 vacuous-antecedent-
+style guard narrowing, 17 requires-weakenings the proven `ensures`
+clauses don't depend on, 1 coincidental numeric survivor independently
+resolved by Gate C4's STP suite), and
+`nl_confirmation_renal_adjustment_dfy.md`'s "Decision" section (Gate C6
+**Confirmed, 2026-07-11, by Steven**, against the raw KDIGO/MHRA
+sources directly — all six checkpoints verified, one external citation
+flagged as unverifiable and confirmed not load-bearing).
+
+Sections requiring clinical judgment (roles; severity/probability
+bands; acceptance matrix; the overall-residual-risk method) left as
+explicit `GAP`s, not fabricated — same discipline as the
+`drug_interaction_checker` plan, and for the same underlying reason:
+`metadata.a.yaml`'s `classification_rationale` already names the `B`
+classification as `DECLARED`, not sourced, pending exactly this kind
+of file.
+
+**A real, pre-existing staleness bug found and fixed along the way,
+unrelated to the new document.** While reading
+`examples/renal_adjustment/README.md` for Section 6's Gate C6
+reference, its own "Open questions" item 4 still read "Gate C6's
+sign-off is still pending" — but Gate C6 was confirmed and closed the
+same day that sentence was written (2026-07-11, same session per
+`nl_confirmation_renal_adjustment_dfy.md`'s Decision timestamp). The
+2026-07-11 documentation audit (this file, same date) had fixed the
+equivalent stale "nearly complete" claim in the top-level `README.md`
+but evidently never touched this per-example copy — five weeks stale
+by today's date, caught only because this session happened to read the
+file closely for an unrelated reason. Fixed in place, marked resolved,
+not deleted, per this repo's frozen-record discipline.
+
+Documentation ripple: `examples/renal_adjustment/README.md` (new
+"Amendment 2026-07-14" section, plus the Open-questions fix above),
+`HANDOFF.md`, `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec,
+gate, or test-suite change; 216 tests pass throughout.
+
+---
+
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `drug_interaction_checker`, first real ISO 14971 risk-management-plan artifact in this repo
+
+Two documents were supplied: the official ISO 14971:2019 standard PDF,
+and a provisional, not-yet-reviewed "Risk Management Plan" markdown
+template, explicitly flagged as provisional by the person who supplied
+it. Per this repo's own standing discipline (externally-supplied claims
+get verified against a primary source before being trusted — already
+applied twice this session to two drafts of an external "Gate C
+Technical Review Report"), the standard was read directly rather than
+taking the template's clause citations on faith.
+
+`pdftoppm` (poppler-utils) was not installed in this session's
+container; installed via `apt-get install -y poppler-utils` rather than
+falling back to a cruder, already-present "best-effort" zlib/regex PDF
+text extractor from earlier in the session. Clauses 1 through 7.1 of
+the real standard were then read verbatim (title/foreword/scope/
+definitions/clause 4 in full/clause 5 in full/clause 6/start of
+clause 7), including the exact wording of clause 4.4(a–g) and 4.5,
+which the template cites directly.
+
+**Cross-check result:** the template's clause citations for sections
+1 through 7 (4.4a scope, 4.4b roles, 4.4c review requirements, 4.4d
+risk acceptability — including the specific "criteria for accepting
+risk when probability cannot be estimated" sub-requirement, verified
+verbatim — 4.4e residual-risk method, 4.4f verification activities,
+4.4g production/post-production) all matched the standard's real
+wording exactly. Clause 1's stated exclusions (decisions in the
+context of a specific clinical procedure; business risk management)
+also verified verbatim. **One real, minor citation slip found:** the
+template's opening line attributed "this plan is part of the risk
+management file" to clause 4.5. That sentence is verbatim in clause
+4.4, immediately before the a–g list. Clause 4.5 is a separate
+requirement — what the risk management *file* itself must provide
+traceability for (risk analysis, risk evaluation, risk-control
+implementation/verification, residual-risk results) — which is what
+the template's own second sentence (what this document does NOT
+contain) actually reflects. Fixed by re-attributing the first sentence
+to 4.4 and the second explicitly to 4.5.
+
+**Landed** as `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`,
+with the citation fix applied and device-specific content filled in
+from this repo's own already-committed, real evidence — not invented.
+Section 1 (scope) uses `metadata.a.yaml`'s real `intended_use` text
+verbatim. Section 3 (review requirements) states, as real established
+practice rather than aspiration, the out-of-cycle review trigger this
+repo already runs in practice (every Gate C6 Addendum 1–5 was exactly
+this kind of trigger). Section 6 (verification activities) is
+populated with all six REQ-DDI-* rows, each citing its real Gate C1–C6
+evidence file (`raw_dafny_output_ddi.txt`, `run_manifest_dafny_ddi.json`,
+the STP suite, `mutation_report_ddi.md`) and the current Gate C5
+mutation-testing residual (44 survivors, already explained in
+`KNOWN_LIMITATIONS.md`, not silently carried forward as an unstated
+gap), plus Gate C6's closed status.
+
+**Sections 2 and 4 (roles; severity/probability bands; acceptance
+matrix) deliberately left as explicit `GAP`s, not fabricated.** No
+clinical SME is assigned to this device yet, and inventing severity or
+probability numbers for a decision-support classifier would be exactly
+the kind of unearned claim this repo's evidence pipeline exists to
+prevent. `metadata.a.yaml`'s own `classification_rationale` already
+names this precisely: safety classification `B` is `DECLARED`, not
+sourced, and explicitly "requires a manufacturer-specific ISO 14971
+risk file before this can be upgraded from DECLARED to sourced" — this
+document is the start of that file, not its completion. Section 5
+(method for evaluating overall residual risk) is also an explicit GAP:
+no hazard register exists yet to evaluate.
+
+Documentation ripple: `examples/drug_interaction_checker/README.md`
+(new "Amendment 2026-07-14" section), `HANDOFF.md` (new top entry).
+No spec, gate, or test-suite change — this is a new document type, not
+a code change; the existing 216-test baseline is unaffected.
+
+---
+
 ## 2026-07-13 — Gate C6 confirmed and closed for `drug_interaction_checker.dfy`, against the raw sources directly
 
 A full, independent, line-by-line review was performed at Steven's

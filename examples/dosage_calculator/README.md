@@ -444,3 +444,39 @@ granularity regardless), but the underlying judgment call remains open.
 filtered_ar_group_incompatible, 4 filtered_magnitude_implied, 0
 survived, 0 unclassifiable.** `mutation_report.json`/`.md` and
 `run_manifest_mutation.json` reflect this final state.
+
+## Amendment 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed: third and final ISO 14971 risk-management-plan artifact in this repo
+
+Mirrors `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`
+and `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md` (both landed
+earlier the same day) — same template, same ISO 14971:2019 clause
+citations, already cross-checked against the real standard's verbatim
+text when the first plan was built.
+
+Landed as `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`.
+Device-specific content is genuinely different from the other two
+plans in one real way: this is the only example with three independent
+evidence types per requirement (CrossHair `BOUNDED_CHECKED`, concrete
+`EXAMPLE_CHECKED`, Dafny `PROVEN`), stated with their real, differing
+strengths rather than flattened — REQ-DOSE-003 in particular has no
+Dafny proof at all, only CrossHair + one concrete test, and the plan
+says so plainly rather than implying parity with the other two rows.
+The plan also surfaces REQ-GIP-1-4-12's existing `kernel_scope`/
+`system_scope` split (Gate 1 review, 2026-07-05) as Section 1's
+life-cycle-phase scoping — a real precedent already in this device's
+own requirement text, not invented for the plan — and names the
+existing STRIDE threat model (`THR-GIP-1-2/1-3/1-14`) as a related but
+distinct artifact, not a substitute for the clinical hazard register
+this plan still doesn't contain. Gate C5's mutation-testing residual
+is genuinely cleaner here than the other two examples: 56 mutants, 0
+survivors, 0 unclassifiable (see the amendment immediately above).
+Gate C6 — `nl_confirmation_dosage_dfy.md`'s "Decision" section,
+**Confirmed, 2026-07-07, by Steven** — was in fact the very first Gate
+C6 sign-off recorded anywhere in this repository, preceding both other
+examples' own sign-offs by several days.
+
+Sections requiring clinical judgment (roles, severity/probability
+bands, acceptance matrix, overall-residual-risk method) left as
+explicit `GAP`s, not fabricated, matching `metadata.a.yaml`'s own
+`classification_rationale` (`B`, `DECLARED`, pending exactly this kind
+of file).

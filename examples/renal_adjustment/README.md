@@ -296,6 +296,39 @@ hand-typed.
   `raw_dafny_output_pow_expressiveness_probe.txt` /
   `raw_dafny_output_pow_axiom_trap_probe.txt`.
 
+## Amendment 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed: second real ISO 14971 risk-management-plan artifact in this repo
+
+Mirrors `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`
+(landed the same day, the first such artifact in this repo) — same
+template, same ISO 14971:2019 clause citations (already cross-checked
+against the real standard's verbatim text there; not re-verified per
+device, since the citations describe the standard, not this device).
+
+Landed as `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`.
+Sections 1, 3, and 6 (scope, review triggers, verification activities)
+filled with real, already-committed facts from this repo —
+`metadata.a.yaml`'s intended-use text, real Gate C1–C6 evidence
+references for the five `PROVEN` requirement rows, honest `GAP` rows
+for REQ-RENAL-3/4/6/7 (named, sourced, not yet formalized as Dafny
+signatures) and REQ-RENAL-8 (a deliberate, permanent trust boundary
+with an open operational question), the current Gate C5
+mutation-testing residual (51 survivors, all three explained in
+`KNOWN_LIMITATIONS.md`, not silently carried), and Gate C6's closed
+status (2026-07-11). Sections 2 and 4 (roles, severity/probability
+bands, acceptance matrix) left as explicit `GAP`s, not fabricated — no
+clinical SME is assigned yet, matching `metadata.a.yaml`'s own
+`classification_rationale` naming the `B` safety classification as
+`DECLARED`, not sourced.
+
+**A real, pre-existing staleness bug was found and fixed along the
+way**, unrelated to the new document: this file's own "Open questions"
+item 4 still said "Gate C6's sign-off is still pending," even though
+Gate C6 was confirmed and closed the same day that sentence was
+written (2026-07-11). The 2026-07-11 documentation audit (see
+`DEVLOG.md`) had fixed the equivalent stale claim in the top-level
+`README.md` but missed this per-example copy. Fixed below, in place,
+not deleted, per this repo's frozen-record discipline.
+
 ## Open questions
 
 Not resolved here — named, not guessed at, per this repo's discipline:
@@ -322,6 +355,20 @@ Not resolved here — named, not guessed at, per this repo's discipline:
    documented tooling limitations, not spec defects — see the Gate C5
    amendment above. Worth real engineering only if a future spec change
    makes them load-bearing in a way Gate C4's STPs don't already cover.
-4. **Gate C6's sign-off is still pending** — the accumulated NL-summary
-   document now covers seven amendments' worth of change under one
-   outstanding decision. The concrete next step for this example.
+4. **Gate C6's sign-off — RESOLVED, 2026-07-11.** Original claim,
+   preserved verbatim rather than deleted, per this repo's frozen-record
+   discipline: "Gate C6's sign-off is still pending — the accumulated
+   NL-summary document now covers seven amendments' worth of change
+   under one outstanding decision. The concrete next step for this
+   example." That claim went stale the same day it was written and was
+   only caught here during the 2026-07-14 `RISK_MANAGEMENT_PLAN.md`
+   documentation ripple — the 2026-07-11 documentation audit fixed the
+   equivalent stale claim in the top-level `README.md` but missed this
+   per-example copy. Gate C6 was in fact confirmed and closed the same
+   day this item was written —
+   `nl_confirmation_renal_adjustment_dfy.md`'s "Decision" section,
+   **Confirmed, 2026-07-11, by Steven**, against the raw KDIGO/MHRA
+   sources directly. All six checkpoints verified; one external
+   citation (a "Sheffield and BSW" clinical-calculator source) flagged
+   as unverifiable and not relied upon. Left in place above, not
+   deleted, per this repo's frozen-record discipline.

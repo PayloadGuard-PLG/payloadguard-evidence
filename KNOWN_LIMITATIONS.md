@@ -4,7 +4,66 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-13 (Gate C6 confirmed and closed for
+Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`dosage_calculator` — third and final risk-management-plan artifact;
+all three worked examples now have one. Mirrors the other two plans'
+structure and clause citations. Two real device-specific distinctions
+surfaced honestly: this is the only example with three evidence types
+per requirement (CrossHair `BOUNDED_CHECKED`, concrete
+`EXAMPLE_CHECKED`, Dafny `PROVEN`) — REQ-DOSE-003 has no Dafny proof at
+all, stated plainly; and REQ-GIP-1-4-12's existing `kernel_scope`/
+`system_scope` split (2026-07-05 Gate 1 review) became Section 1's real
+life-cycle scoping, with the existing STRIDE threat model named as a
+related-but-distinct artifact, not a substitute for the still-missing
+clinical hazard register. Gate C5 residual: 56 mutants, 0 survivors, 0
+unclassifiable — the cleanest of the three. Gate C6 confirmed
+2026-07-07 by Steven, the first Gate C6 sign-off recorded anywhere in
+this repo. Sections needing clinical judgment left as explicit `GAP`s.
+No spec/test change; 216 tests pass. See DEVLOG.md's 2026-07-14 entry
+for the full account.) Prior entry, preserved: Last updated 2026-07-14
+(`RISK_MANAGEMENT_PLAN.md` landed for
+`renal_adjustment` too — second real ISO 14971 risk-management-plan
+artifact, same day as the first. Mirrors the `drug_interaction_checker`
+plan's structure and already-verified clause citations. Filled with
+this repo's own real evidence: `metadata.a.yaml`'s intended-use text,
+Gate C1-C6 references for the 5 `PROVEN` rows, honest `GAP` rows for
+REQ-RENAL-3/4/6/7 (named, sourced, unformalized) and REQ-RENAL-8
+(permanent trust boundary), the Gate C5 residual (51 survivors, all
+three categories already explained, not silently carried), and Gate
+C6's closed status (2026-07-11). Sections needing clinical judgment
+left as explicit `GAP`s, matching `classification_rationale`'s
+`DECLARED` status. A real, pre-existing staleness bug found and fixed
+along the way: `examples/renal_adjustment/README.md`'s own "Open
+questions" item 4 still said Gate C6 sign-off was "still pending" —
+actually closed 2026-07-11, the same day that sentence was written;
+the 2026-07-11 documentation audit had fixed the equivalent claim in
+the top-level `README.md` but missed this per-example copy. Fixed in
+place, not deleted. No spec/test change; 216 tests pass. See DEVLOG.md's
+2026-07-14 entry for the full account.) Prior entry, preserved: Last
+updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`drug_interaction_checker` — first real ISO 14971 risk-management-plan
+artifact in this repo. Preceded by reading the real ISO 14971:2019
+standard directly, clauses 1-7.1 verbatim, and cross-checking a
+provisional, externally-supplied template against it before trusting
+its clause citations. Found one real, minor citation slip — the
+template attributed "this plan is part of the risk management file" to
+clause 4.5; that sentence is verbatim in clause 4.4, and 4.5 is the
+separate requirement for what the risk management *file* itself must
+trace. Every other citation (4.4a-g; clause 1's exclusions) verified
+accurate. Fixed and landed at
+`examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` with
+Sections 1/3/6 (scope, review triggers, verification activities)
+filled from this repo's own real, committed evidence — all six
+REQ-DDI-* rows, the Gate C5 mutation-testing residual (44 survivors,
+already explained, not silently carried), and Gate C6's closed status.
+Sections 2 and 4 (roles; severity/probability bands; acceptance
+matrix) deliberately left as explicit `GAP`s, not fabricated — no
+clinical SME assigned yet, matching `metadata.a.yaml`'s own
+`classification_rationale` naming the `B` safety classification as
+`DECLARED`, not sourced, pending exactly this kind of file. No spec or
+test-suite change; 216 tests still pass. See DEVLOG.md's 2026-07-14
+entry for the full account.) Prior entry, preserved: Last updated
+2026-07-13 (Gate C6 confirmed and closed for
 `drug_interaction_checker.dfy`, against the raw sources directly — a
 full, independent, line-by-line review of all 68 `CheckInteraction`
 postconditions and all 5 `DoseReductionTargetMg` postconditions against

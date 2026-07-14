@@ -8,8 +8,92 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **Gate C6 confirmed and closed for
-`drug_interaction_checker.dfy`, against the raw sources directly.** A
+**Last updated:** 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md` landed for
+`dosage_calculator` — third and final risk-management-plan artifact;
+all three worked examples now have one.** Mirrors the other two plans'
+structure and already-verified ISO 14971:2019 clause citations. Real
+differences surfaced honestly rather than glossed over: this device is
+the only one with three evidence types per requirement (CrossHair
+`BOUNDED_CHECKED`, concrete `EXAMPLE_CHECKED`, Dafny `PROVEN`) —
+REQ-DOSE-003 specifically has no Dafny proof, only the first two,
+stated plainly; REQ-GIP-1-4-12's existing `kernel_scope`/`system_scope`
+split (2026-07-05 Gate 1 review) became Section 1's real life-cycle
+scoping, not invented for this plan; the existing STRIDE threat model
+was named as a related-but-distinct artifact, not conflated with the
+still-missing clinical hazard register. Gate C5's residual is
+genuinely cleaner than the other two examples: 56 mutants, **0
+survivors, 0 unclassifiable**. Gate C6 — confirmed 2026-07-07 by
+Steven ("it's good for the spec as is") — was in fact the very first
+Gate C6 sign-off recorded anywhere in this repo, preceding the other
+two by several days. Sections requiring clinical judgment left as
+explicit GAPs, matching `classification_rationale`'s `DECLARED`
+status. 216 tests pass, no spec/code change. **Next step: not yet
+instructed.** All three plans point at the same missing artifact — an
+actual hazard register, risk evaluation results, and risk management
+report per ISO 14971:2019 clause 4.5 — that's the natural next piece
+if wanted, but await explicit instruction rather than assuming it.
+**Prior update, preserved below** — 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md`
+landed for `renal_adjustment` too — second real ISO 14971 risk-management-plan
+artifact, same day as the first.** Mirrors
+`drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`'s structure and
+already-verified ISO 14971:2019 clause citations (not re-verified per
+device — the citations describe the standard, not the device). Landed
+at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`. Sections
+1/3/6 filled with real, committed evidence: `metadata.a.yaml`'s
+intended-use text, real Gate C1–C6 references for the 5 `PROVEN`
+requirement rows, honest `GAP` rows for REQ-RENAL-3/4/6/7 (named,
+sourced, unformalized) and REQ-RENAL-8 (permanent trust boundary, open
+operational question), the Gate C5 residual (51 survivors, all three
+categories explained, not silently carried), Gate C6's closed status
+(2026-07-11). Sections 2/4 (roles, severity/probability, acceptance
+matrix) left as explicit GAPs, matching `classification_rationale`'s
+`DECLARED` status. **A real, pre-existing staleness bug found and
+fixed along the way**: `examples/renal_adjustment/README.md`'s own
+"Open questions" item 4 still said Gate C6's sign-off was "still
+pending" — it was actually confirmed and closed 2026-07-11, the same
+day that sentence was written; the 2026-07-11 documentation audit had
+fixed the equivalent claim in the top-level `README.md` but missed
+this per-example copy. Fixed in place, not deleted. 216 tests pass, no
+spec/code change. **Next step: not yet instructed** — likely candidates
+are the same plan for `dosage_calculator`, or starting the actual
+hazard register both plans point at; await explicit instruction.
+**Prior update, preserved below** — 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md`
+landed for `drug_interaction_checker` — first real ISO 14971 risk-management-plan
+artifact in this repo.** Preceded by reading the real ISO 14971:2019
+standard directly (clauses 1–7.1 verbatim, via `pdftoppm`/poppler-utils
+installed for this session — `apt-get install -y poppler-utils`, not
+present before) and cross-checking a provisional, externally-supplied
+template against it clause by clause. Found one real, minor citation
+slip: the template attributed "this plan is part of the risk
+management file" to clause 4.5; that sentence is verbatim in clause 4.4
+(immediately before the a–g list), and 4.5 is the separate requirement
+for what the risk management *file* itself must trace. Every other
+citation (4.4a–g; clause 1's exclusions for clinical-procedure
+decisions and business risk management) verified accurate. Fixed and
+landed at `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`.
+Sections 1/3/6 (scope, review triggers, verification activities) filled
+with real, already-committed facts — `metadata.a.yaml`'s intended-use
+text, real Gate C1–C6 evidence references for all six REQ-DDI-* rows,
+the current Gate C5 mutation-testing residual (44 survivors, explained
+not silently carried), Gate C6's closed status. Sections 2 and 4 (roles,
+severity/probability bands, acceptance matrix) left as explicit `GAP`s,
+not fabricated — no clinical SME assigned yet, matching
+`metadata.a.yaml`'s own `classification_rationale` (`B`, `DECLARED`,
+"requires a manufacturer-specific ISO 14971 risk file" — this is the
+start of that file, not its completion). Documentation ripple done in
+`examples/drug_interaction_checker/README.md` (new Amendment section).
+**Next step: not yet instructed.** This is a genuinely new document
+type for the repo (no prior precedent to extend) — likely next moves
+are either building out the same plan for `renal_adjustment`/
+`dosage_calculator`, or starting the actual hazard register Section 6
+points at, but neither is confirmed; await explicit instruction.
+**Prior update, preserved below** — 2026-07-14 — **ISO 14971:2019 read
+directly and cross-checked against the provisional
+`riskmanagementplantemplate.md` (uploaded, not yet committed to the
+repo)** — superseded by the entry above, which completed this work.
+**Prior update, preserved below** — 2026-07-13 — **Gate C6
+confirmed and closed for `drug_interaction_checker.dfy`, against the
+raw sources directly.** A
 full, independent, line-by-line review (all 68 `CheckInteraction`
 postconditions + all 5 `DoseReductionTargetMg` postconditions, cross-
 checked against every one of `sources/sps-doac-interactions-2024.md`'s

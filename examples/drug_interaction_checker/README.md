@@ -623,6 +623,41 @@ this example — Gate C6 is closed.** Full account:
 section; `KNOWN_LIMITATIONS.md`'s "Gate C6 confirmed and closed"
 section. 216 tests pass.
 
+## Amendment 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed: first real ISO 14971 risk-management-plan artifact in this repo
+
+A provisional, externally-supplied risk-management-plan template was
+cross-checked clause-by-clause against a direct reading of the real
+ISO 14971:2019 standard (Third edition, 2019-12) before being trusted.
+One real citation slip found: the template's opening line attributed
+"this plan is part of the risk management file" to clause 4.5 — that
+sentence is verbatim in clause 4.4, immediately before the a–g list;
+4.5 is the separate requirement for what the risk management *file*
+itself must trace. Every other clause citation (4.4a–g, and clause 1's
+stated exclusions for clinical-procedure decisions and business risk
+management) was verified accurate against the standard's own text.
+
+Landed as `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`
+with the citation corrected. Sections 1, 3, and 6 (scope, review
+triggers, verification activities) are filled with real, already-
+committed facts from this repo — `metadata.a.yaml`'s intended-use text,
+the actual Gate C1–C6 evidence file references for all six REQ-DDI-*
+rows, the current Gate C5 mutation-testing residual (44 survivors,
+explained in `KNOWN_LIMITATIONS.md`, not silently carried), and Gate
+C6's closed status. Sections 2 and 4 (roles, severity/probability
+bands, acceptance matrix) are left as explicit `GAP`s rather than
+fabricated — no clinical SME is assigned yet, and `metadata.a.yaml`'s
+own `classification_rationale` already flags the device's `B` safety
+classification as `DECLARED`, not sourced, pending exactly this kind
+of file. Section 5 (overall residual-risk method) is also an explicit
+GAP: no hazard register exists yet to evaluate.
+
+This is the first real risk-management-plan artifact for any worked
+example in this repo — not a template exercise, but not a completed
+ISO 14971 risk file either. What's real: the verification-activity
+traceability (Section 6), pulling directly from evidence this repo
+already produces. What's still open: everything requiring clinical
+judgment, named explicitly rather than glossed over.
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s and `renal_adjustment/`'s discipline:

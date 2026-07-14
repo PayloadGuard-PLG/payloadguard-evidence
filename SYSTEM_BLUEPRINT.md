@@ -1,6 +1,49 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-13 (Gate C5 extended for `drug_interaction_checker`:
+Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`dosage_calculator` too, at
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md` — third and final
+risk-management-plan artifact; all three worked examples now covered.
+Real device-specific content, not boilerplate: the only example with
+three evidence types per requirement (CrossHair/concrete/Dafny, mixed
+strength — REQ-DOSE-003 has no Dafny proof, stated plainly); the
+existing `kernel_scope`/`system_scope` split on REQ-GIP-1-4-12 became
+Section 1's real life-cycle scoping; the existing STRIDE threat model
+named as related-but-distinct from the still-missing clinical hazard
+register. Gate C5 residual: 0 survivors, 0 unclassifiable — cleanest of
+the three. Gate C6 (2026-07-07, Steven) was in fact the first Gate C6
+sign-off recorded anywhere in this repo. No component, gate, or
+data-flow change. See `KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and
+`DEVLOG.md` for the full account.) Prior header, preserved: Last
+updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`renal_adjustment` too, at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`
+— second real ISO 14971 risk-management-plan artifact, same day as the
+first, mirroring its structure and already-verified clause citations.
+Verification-activities section wires into the 5 real `PROVEN`
+REQ-RENAL-* rows plus honest `GAP` rows for REQ-RENAL-3/4/6/7/8;
+sections requiring clinical judgment left explicit `GAP`s, not
+fabricated. A real, pre-existing staleness bug in
+`examples/renal_adjustment/README.md` (a "Gate C6 still pending" claim,
+actually closed 2026-07-11) found and fixed along the way. No
+component, gate, or data-flow change. See `KNOWN_LIMITATIONS.md`'s
+2026-07-14 entry and `DEVLOG.md` for the full account.) Prior header,
+preserved: Last updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`drug_interaction_checker` at
+`examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` — the
+first real ISO 14971 risk-management-plan artifact in this repo, not
+just a template. Built by reading the real ISO 14971:2019 standard
+directly and cross-checking a provisional, externally-supplied
+template against it (one real citation slip found and fixed: the
+"part of the risk management file" claim belongs to clause 4.4, not
+4.5 as the template had it). Its verification-activities section wires
+directly into this repo's existing evidence — all six REQ-DDI-* rows
+cite real Gate C1-C6 capture files, not placeholders. Sections
+requiring clinical judgment (roles, severity/probability bands,
+acceptance matrix) are explicit `GAP`s, not fabricated. No component,
+gate, or data-flow change — a new documentation artifact only. See
+`KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and DEVLOG.md for the full
+account.) Prior header, preserved: Last updated 2026-07-13 (Gate C5
+extended for `drug_interaction_checker`:
 `run_mutation_suite_ddi.py` now re-verifies the committed STP suite
 against every mutation-testing survivor, not just the bare spec.
 Hand-probed empirically before building: this catches the 6
