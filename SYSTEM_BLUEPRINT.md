@@ -1,6 +1,23 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`drug_interaction_checker` too, at
+`examples/drug_interaction_checker/HAZARD_REGISTER.md` — third and
+final hazard-register artifact; all three worked examples now have
+both a risk-management plan and a hazard register. Like
+`renal_adjustment`, no published hazard table exists for this device;
+unlike either prior register, this spec's own Gate C6 addenda already
+contained a real, closed hazard incident to draw on directly. 6 hazard
+entries, one per `REQ-DDI-*`, all `PROVEN`. `HAZ-DDI-4` flagged as
+fully closed by proof already, not residual. `HAZ-DDI-5`/`HAZ-DDI-6`
+document two real, closed indication-scoping bugs in full. Gate C5
+residual and Gate C6's closed status cited directly.
+Severity/probability/evaluation left explicit `GAP`s. Two real bugs
+Qodo caught on the renal register (PR #47) fixed along the way (a
+non-reproducible lemma citation, a requirement-count inconsistency).
+No component, gate, or data-flow change. See `KNOWN_LIMITATIONS.md`'s
+2026-07-14 entry and `DEVLOG.md` for the full account.) Prior header,
+preserved: Last updated 2026-07-14 (`HAZARD_REGISTER.md` landed for
 `renal_adjustment` too, at
 `examples/renal_adjustment/HAZARD_REGISTER.md` — second real
 hazard-register artifact, a genuinely different construction from

@@ -226,13 +226,18 @@ Section 4's probability bands, and who reviews it.
 | Date | Change | Reason |
 |---|---|---|
 | 2026-07-14 | Initial draft landed for `drug_interaction_checker`, derived from a provisional template cross-checked against ISO 14971:2019 directly | First real risk-management-plan artifact for any worked example in this repo; the six PROVEN requirement rows and Gate C1–C6 status (Section 6) are real and committed, everything requiring clinical judgment (Sections 2, 4.1–4.3, 5) is left as an explicit GAP pending a named Risk Manager and clinical SME |
+| 2026-07-14 (later) | `HAZARD_REGISTER.md` landed alongside this plan | Third and last hazard-register artifact in this repo. Distinct construction: no published hazard table exists for this device either, so hazard identification is built from `metadata.a.yaml`'s sourced `REQ-DDI-*` text plus a real, closed hazard incident already documented in full in this spec's own Gate C6 addenda (a fabricated-outcome bug, found by external review and fixed 2026-07-13). Completes clause 5.4 hazard identification for all 6 `REQ-DDI-*` requirements; severity, probability, and risk-acceptability evaluation remain explicit `GAP`s within it |
 
-**What does not yet exist, stated explicitly:** the hazard register,
-risk evaluation results, and risk management report that ISO
-14971:2019 clause 4.5 requires the risk management file to trace to.
-This plan governs their eventual shape (Section 6's table is the model
-for how a hazard entry's risk control measure should cite evidence)
-but does not itself contain them.
+**What does not yet exist, stated explicitly:** as of the register
+above, hazard *identification* (clause 5.4) is real for this device.
+Risk *estimation* and *evaluation* (clauses 5.5, 6, 8 — severity,
+probability, acceptability) and the risk management report are still
+missing — both the register and this plan name them as explicit `GAP`s
+rather than fabricating them, pending the same named Risk Manager and
+clinical SME Section 2 above still lacks. Section 6's table remains the
+model for how a hazard entry's risk control measure should cite
+evidence; `HAZARD_REGISTER.md` now does exactly that, per hazard, not
+just per requirement.
 
 ---
 

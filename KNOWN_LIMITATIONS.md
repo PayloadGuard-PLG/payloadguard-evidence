@@ -5,6 +5,29 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`drug_interaction_checker` too — third and final hazard-register
+artifact; all three worked examples now have both a risk-management
+plan and a hazard register. Like `renal_adjustment`, no published
+hazard table exists for this device; unlike either prior register,
+this spec's own Gate C6 addenda already contained a real, closed
+hazard incident (Addendum 4, 2026-07-13) to draw on directly. 6 hazard
+entries, one per `REQ-DDI-*`, all currently `PROVEN`. `HAZ-DDI-4`
+(fail-safe on unknown pairings) flagged as the one hazard fully closed
+by proof already — contrast with `renal_adjustment`'s still-open
+equivalent. `HAZ-DDI-5`/`HAZ-DDI-6` document two real, closed
+indication-scoping bugs in full (apixaban+inducer's fabricated
+`Caution`; Dabigatran+Verapamil's unscoped 110mg figure). Gate C5
+residual (44 survivors, explained) and Gate C6's closed status cited
+directly. Severity/probability/evaluation left explicit `GAP`s.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated. Two real bugs Qodo caught
+on the renal register (PR #47) fixed along the way: `HAZ-RENAL-1`'s
+citation of two lemmas/"11 verified" existing only in a historical
+sketch, not the committed spec (fixed to cite the real 7-verified
+capture), and an "eight" vs "nine" `REQ-RENAL-*` count inconsistency
+(fixed: 8 hazard entries covering 9 requirement IDs). No spec/test
+change; 216 tests pass. See DEVLOG.md's 2026-07-14 entry for the full
+account.) Prior entry, preserved: Last updated 2026-07-14
+(`HAZARD_REGISTER.md` landed for
 `renal_adjustment` too — second real hazard-register artifact,
 extending the approach from `dosage_calculator` with a genuinely
 different construction: no published hazard table exists for this

@@ -658,6 +658,48 @@ traceability (Section 6), pulling directly from evidence this repo
 already produces. What's still open: everything requiring clinical
 judgment, named explicitly rather than glossed over.
 
+## Amendment 2026-07-14 (later) — `HAZARD_REGISTER.md` landed: third and final hazard-register artifact in this repo
+
+Extends the approach built for `dosage_calculator` and
+`renal_adjustment` to this device — the last of the three worked
+examples to get one. Like `renal_adjustment`, this device has no
+published, numbered hazard-analysis document to transcribe from; its
+source is an interactions table, not a hazard analysis. What makes
+this construction distinct from both prior registers: this spec's own
+Gate C6 addenda history already contains a real, closed hazard
+incident in full narrative detail, drawn on directly rather than
+reconstructed.
+
+Landed as `examples/drug_interaction_checker/HAZARD_REGISTER.md`: six
+hazard entries, one per `REQ-DDI-*`. `HAZ-DDI-4` (fail-safe: unknown
+pairings return `NotCovered`, never a fabricated "no interaction")
+is highlighted as the one hazard in this register that is fully
+closed by proof already, not left as residual — a genuine point of
+contrast with `renal_adjustment`'s still-open equivalent
+(`HAZ-RENAL-4`). `HAZ-DDI-5` documents Addendum 4's real incident in
+full: a second Qodo review, run against an already-merged PR, found
+that all four apixaban+inducer match arms computed `Caution`
+unconditionally, never inspecting `treatmentIndication` — harmless
+while that datatype had only two constructors, silently reopened when
+a third was added for an unrelated fix on a sibling function. Fixed to
+return the honest `NotCovered` for the indication the source never
+proves an outcome for. `HAZ-DDI-6` documents a second, related
+instance: the Dabigatran+Verapamil dose-reduction cell needed the same
+indication-scoping, since the source's 110mg figure doesn't apply to
+dabigatran's third UK-licensed indication. The Gate C5 mutation-testing
+residual (44 survivors, all three categories already explained in
+`KNOWN_LIMITATIONS.md`) and Gate C6's closed status (2026-07-13) are
+both cited directly rather than restated. An "explicitly out of scope"
+section names genuine exclusions (multi-drug interactions, non-DOAC
+anticoagulants, jurisdiction, quantitative risk scoring, renal
+function — cross-referencing `renal_adjustment` for that last one).
+
+Severity, probability, and risk-acceptability evaluation left as
+explicit `GAP`s throughout, same discipline as all three registers.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated to point at the new
+register. All three worked examples now have both a risk-management
+plan and a hazard register.
+
 ## Fixture and capture formats
 
 Mirrors `dosage_calculator/`'s and `renal_adjustment/`'s discipline:
