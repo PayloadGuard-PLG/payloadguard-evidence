@@ -9,6 +9,76 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-14 — **`HAZARD_REGISTER.md` landed for
+`drug_interaction_checker` too — third and final hazard-register
+artifact; all three worked examples now have both a risk-management
+plan and a hazard register.** Direct instruction ("open a pr plz when
+you create files, I can review them so no need to wait") signaled to
+stop pausing between builds — proceeded straight to this one after
+opening PR #47 for the renal register. Like `renal_adjustment`, this
+device has no published hazard table; unlike either prior register,
+its own Gate C6 addenda already contained a real, closed hazard
+incident in full narrative detail to draw on directly. 6 hazard entries
+landed at `examples/drug_interaction_checker/HAZARD_REGISTER.md`, one
+per `REQ-DDI-*`. `HAZ-DDI-4` (fail-safe: unknown pairings return
+`NotCovered`, never a fabricated "no interaction") is the one hazard
+in this register fully closed by proof, not residual — contrast with
+`renal_adjustment`'s still-open equivalent. `HAZ-DDI-5` documents
+Addendum 4's real incident: all four apixaban+inducer match arms
+computed `Caution` unconditionally, never checking `treatmentIndication`
+— harmless with 2 constructors, silently reopened when a third was
+added for an unrelated fix, caught by a second Qodo review, fixed
+2026-07-13. `HAZ-DDI-6` documents a second, related instance
+(Dabigatran+Verapamil needed the same indication-scoping). Gate C5
+residual (44 survivors, explained) and Gate C6's closed status
+(2026-07-13) cited directly. An "explicitly out of scope" section names
+genuine exclusions (multi-drug interactions, non-DOAC anticoagulants,
+jurisdiction, quantitative risk scoring, renal function — cross-
+referencing `renal_adjustment`). Severity/probability/evaluation left
+explicit `GAP`s throughout. `RISK_MANAGEMENT_PLAN.md` Section 8
+updated. Two real bugs Qodo caught on the renal register (PR #47) were
+fixed along the way: `HAZ-RENAL-1`'s citation of two lemmas and "11
+verified" that only exist in a historical sketch document, not the
+committed spec (real capture: 7 verified) — fixed to cite what's
+actually reproducible; and an "eight" vs "nine" `REQ-RENAL-*` count
+inconsistency across the register, `DEVLOG.md`, and this file — fixed
+to state 8 hazard entries covering 9 requirement IDs consistently.
+216 tests pass, no spec/code change. **Next step: not yet
+instructed** — all three plans/registers exist; the natural next piece
+is the actual hazard register *evaluation* (severity/probability/
+acceptability) all three still leave as `GAP`, but that requires a real
+clinical SME this repo doesn't have, not something to fabricate.
+**Prior update, preserved below** — 2026-07-14 — **`HAZARD_REGISTER.md`
+landed for
+`renal_adjustment` too — second real hazard-register artifact,
+extending the approach from `dosage_calculator`.** Direct instruction:
+"extend to renal adjustments." Genuinely different construction, not a
+copy-paste: `renal_adjustment` has no published numbered hazard table
+like GIP v1.0 to transcribe from, so hazard identification is built
+from `metadata.a.yaml`'s nine sourced `REQ-RENAL-*` requirement IDs
+(REQ-RENAL-1 through 8, plus sub-requirement REQ-RENAL-1a) and
+`GATE_1C_AUDIT.md`'s own hand-trace findings, which already name
+concrete failure modes in substance. 8 hazard entries landed at
+`examples/renal_adjustment/HAZARD_REGISTER.md`: `HAZ-RENAL-1`
+incorporates Gate 1c Finding 2 (CrCl/eGFR type-confusion risk, closed
+by `AssessRenalFunction`'s type-safety redesign); `HAZ-RENAL-2`
+incorporates Finding 1's still-open half (CKD-EPI eGFR computation
+remains caller-supplied, backed by the two real `Pow` probes
+confirming a genuine Dafny/Z3 expressiveness limit, not a choice);
+`HAZ-RENAL-4` (fail-safe on missing data) flagged as the highest-
+priority candidate among the 4 prose-only requirements, since
+defaulting to an unadjusted full dose is fail-*open*, not just
+mis-computed; `HAZ-RENAL-5` documents a hazard Gate C4's own STP suite
+already caught and closed (an under-constrained `ComposedCeiling`
+spec, found and fixed 2026-07-09). A Section 3 "explicitly out of
+scope" distinguishes genuine exclusions (downstream per-drug dosing,
+input measurement quality, non-renal contraindications) from the 4
+`GAP` rows, which are in scope but unbuilt. Severity/probability/
+evaluation left explicit `GAP`s throughout, same discipline as before.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated. 216 tests pass, no spec/
+code change. No PR opened yet for this change — not requested. **Next
+step: awaiting instruction** — `drug_interaction_checker` is the one
+remaining example without a hazard register. **Prior update, preserved
+below** — 2026-07-14 — **`HAZARD_REGISTER.md` landed for
 `dosage_calculator` — first real hazard-register artifact in this
 repo.** Direct instruction after all three plans landed: "continue
 with the easiest first please so we can evaluate the output."

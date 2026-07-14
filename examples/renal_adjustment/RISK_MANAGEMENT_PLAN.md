@@ -235,13 +235,18 @@ who reviews it.
 | Date | Change | Reason |
 |---|---|---|
 | 2026-07-14 | Initial draft landed for `renal_adjustment`, mirroring `drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`'s structure | Second real risk-management-plan artifact in this repo; the five PROVEN requirement rows and Gate C1–C6 status (Section 6) are real and committed, everything requiring clinical judgment (Sections 2, 4.1–4.3, 5) is left as an explicit GAP pending a named Risk Manager and clinical SME, and the four already-named-but-unformalized requirements (REQ-RENAL-3/4/6/7) plus REQ-RENAL-8's open operational question are carried forward honestly rather than glossed over |
+| 2026-07-14 (later) | `HAZARD_REGISTER.md` landed alongside this plan | Second real hazard-register artifact in this repo, extending the approach built for `dosage_calculator`. Genuinely different construction: no published hazard table exists for this device, so hazard identification is built from `metadata.a.yaml`'s sourced `REQ-RENAL-*` text and `GATE_1C_AUDIT.md`'s own hand-trace findings (which already name concrete failure modes, including one — the CrCl/eGFR type-confusion risk — closed by a real type-safety redesign, and one — CKD-EPI's caller-supplied value — confirmed as a genuine Dafny/Z3 expressiveness limit, not a choice). Completes clause 5.4 hazard identification for all 8 `REQ-RENAL-*` requirements; severity, probability, and risk-acceptability evaluation remain explicit `GAP`s within it |
 
-**What does not yet exist, stated explicitly:** the hazard register,
-risk evaluation results, and risk management report that ISO
-14971:2019 clause 4.5 requires the risk management file to trace to.
-This plan governs their eventual shape (Section 6's table is the model
-for how a hazard entry's risk control measure should cite evidence)
-but does not itself contain them.
+**What does not yet exist, stated explicitly:** as of the register
+above, hazard *identification* (clause 5.4) is real for this device.
+Risk *estimation* and *evaluation* (clauses 5.5, 6, 8 — severity,
+probability, acceptability) and the risk management report are still
+missing — both the register and this plan name them as explicit `GAP`s
+rather than fabricating them, pending the same named Risk Manager and
+clinical SME Section 2 above still lacks. Section 6's table remains the
+model for how a hazard entry's risk control measure should cite
+evidence; `HAZARD_REGISTER.md` now does exactly that, per hazard, not
+just per requirement.
 
 ---
 
