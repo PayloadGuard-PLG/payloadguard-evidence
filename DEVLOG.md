@@ -6,6 +6,80 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `drug_interaction_checker`, first real ISO 14971 risk-management-plan artifact in this repo
+
+Two documents were supplied: the official ISO 14971:2019 standard PDF,
+and a provisional, not-yet-reviewed "Risk Management Plan" markdown
+template, explicitly flagged as provisional by the person who supplied
+it. Per this repo's own standing discipline (externally-supplied claims
+get verified against a primary source before being trusted — already
+applied twice this session to two drafts of an external "Gate C
+Technical Review Report"), the standard was read directly rather than
+taking the template's clause citations on faith.
+
+`pdftoppm` (poppler-utils) was not installed in this session's
+container; installed via `apt-get install -y poppler-utils` rather than
+falling back to a cruder, already-present "best-effort" zlib/regex PDF
+text extractor from earlier in the session. Clauses 1 through 7.1 of
+the real standard were then read verbatim (title/foreword/scope/
+definitions/clause 4 in full/clause 5 in full/clause 6/start of
+clause 7), including the exact wording of clause 4.4(a–g) and 4.5,
+which the template cites directly.
+
+**Cross-check result:** the template's clause citations for sections
+1 through 7 (4.4a scope, 4.4b roles, 4.4c review requirements, 4.4d
+risk acceptability — including the specific "criteria for accepting
+risk when probability cannot be estimated" sub-requirement, verified
+verbatim — 4.4e residual-risk method, 4.4f verification activities,
+4.4g production/post-production) all matched the standard's real
+wording exactly. Clause 1's stated exclusions (decisions in the
+context of a specific clinical procedure; business risk management)
+also verified verbatim. **One real, minor citation slip found:** the
+template's opening line attributed "this plan is part of the risk
+management file" to clause 4.5. That sentence is verbatim in clause
+4.4, immediately before the a–g list. Clause 4.5 is a separate
+requirement — what the risk management *file* itself must provide
+traceability for (risk analysis, risk evaluation, risk-control
+implementation/verification, residual-risk results) — which is what
+the template's own second sentence (what this document does NOT
+contain) actually reflects. Fixed by re-attributing the first sentence
+to 4.4 and the second explicitly to 4.5.
+
+**Landed** as `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`,
+with the citation fix applied and device-specific content filled in
+from this repo's own already-committed, real evidence — not invented.
+Section 1 (scope) uses `metadata.a.yaml`'s real `intended_use` text
+verbatim. Section 3 (review requirements) states, as real established
+practice rather than aspiration, the out-of-cycle review trigger this
+repo already runs in practice (every Gate C6 Addendum 1–5 was exactly
+this kind of trigger). Section 6 (verification activities) is
+populated with all six REQ-DDI-* rows, each citing its real Gate C1–C6
+evidence file (`raw_dafny_output_ddi.txt`, `run_manifest_dafny_ddi.json`,
+the STP suite, `mutation_report_ddi.md`) and the current Gate C5
+mutation-testing residual (44 survivors, already explained in
+`KNOWN_LIMITATIONS.md`, not silently carried forward as an unstated
+gap), plus Gate C6's closed status.
+
+**Sections 2 and 4 (roles; severity/probability bands; acceptance
+matrix) deliberately left as explicit `GAP`s, not fabricated.** No
+clinical SME is assigned to this device yet, and inventing severity or
+probability numbers for a decision-support classifier would be exactly
+the kind of unearned claim this repo's evidence pipeline exists to
+prevent. `metadata.a.yaml`'s own `classification_rationale` already
+names this precisely: safety classification `B` is `DECLARED`, not
+sourced, and explicitly "requires a manufacturer-specific ISO 14971
+risk file before this can be upgraded from DECLARED to sourced" — this
+document is the start of that file, not its completion. Section 5
+(method for evaluating overall residual risk) is also an explicit GAP:
+no hazard register exists yet to evaluate.
+
+Documentation ripple: `examples/drug_interaction_checker/README.md`
+(new "Amendment 2026-07-14" section), `HANDOFF.md` (new top entry).
+No spec, gate, or test-suite change — this is a new document type, not
+a code change; the existing 216-test baseline is unaffected.
+
+---
+
 ## 2026-07-13 — Gate C6 confirmed and closed for `drug_interaction_checker.dfy`, against the raw sources directly
 
 A full, independent, line-by-line review was performed at Steven's

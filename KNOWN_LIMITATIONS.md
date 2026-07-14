@@ -4,7 +4,30 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-13 (Gate C6 confirmed and closed for
+Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`drug_interaction_checker` — first real ISO 14971 risk-management-plan
+artifact in this repo. Preceded by reading the real ISO 14971:2019
+standard directly, clauses 1-7.1 verbatim, and cross-checking a
+provisional, externally-supplied template against it before trusting
+its clause citations. Found one real, minor citation slip — the
+template attributed "this plan is part of the risk management file" to
+clause 4.5; that sentence is verbatim in clause 4.4, and 4.5 is the
+separate requirement for what the risk management *file* itself must
+trace. Every other citation (4.4a-g; clause 1's exclusions) verified
+accurate. Fixed and landed at
+`examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` with
+Sections 1/3/6 (scope, review triggers, verification activities)
+filled from this repo's own real, committed evidence — all six
+REQ-DDI-* rows, the Gate C5 mutation-testing residual (44 survivors,
+already explained, not silently carried), and Gate C6's closed status.
+Sections 2 and 4 (roles; severity/probability bands; acceptance
+matrix) deliberately left as explicit `GAP`s, not fabricated — no
+clinical SME assigned yet, matching `metadata.a.yaml`'s own
+`classification_rationale` naming the `B` safety classification as
+`DECLARED`, not sourced, pending exactly this kind of file. No spec or
+test-suite change; 216 tests still pass. See DEVLOG.md's 2026-07-14
+entry for the full account.) Prior entry, preserved: Last updated
+2026-07-13 (Gate C6 confirmed and closed for
 `drug_interaction_checker.dfy`, against the raw sources directly — a
 full, independent, line-by-line review of all 68 `CheckInteraction`
 postconditions and all 5 `DoseReductionTargetMg` postconditions against
