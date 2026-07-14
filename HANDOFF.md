@@ -8,7 +8,31 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-14 — **Clinical SME assigned; draft severity/
+**Last updated:** 2026-07-14 — **"Path to sign-off" section added to
+`dosage_calculator/RISK_MANAGEMENT_PLAN.md`.** Direct instruction:
+"let's look at the evidence required in order to ensure a safe sign
+off," then "yes, write it up as a new section." Real finding, now
+stated explicitly rather than left implicit: **two of the three
+`Unacceptable` hazards have no more buildable evidence at all** —
+`HAZ-DOSE-003`'s finiteness postcondition can never be strengthened to
+`PROVEN` (`dosage.dfy`'s own comment already documents Dafny's `real`
+type has no IEEE-754 overflow/NaN semantics, so a "proof" would be
+true of a model that can't represent the phenomenon — same class of
+limit as `renal_adjustment`'s CKD-EPI `Pow` gap), and the
+`system_scope` alarm-signal gap behind `HAZ-GIP-1.2`/`1.3` requires an
+integrated pump system explicitly outside this POC's scope. The only
+two real remaining paths off `Unacceptable`: real field/usage
+probability data (doesn't exist for a pre-market POC), or a genuine
+ALARP determination from Steven as the named Clinical SME — a policy
+judgment, not more spec work. The new section deliberately doesn't
+pick between these or pre-write a justification; `Unacceptable` stands
+until one actually happens. New unnumbered section added between
+Sections 5 and 6 of the RMP (doesn't map to a single ISO 14971 clause).
+216 tests pass, no spec/code change. **Next step: awaiting Steven's
+actual decision on the fork above**, or instruction to extend this
+same evidence-gap analysis to `renal_adjustment`/`drug_interaction_checker`.
+**Prior update, preserved below** — 2026-07-14 — **Clinical SME
+assigned; draft severity/
 probability proposal built for `dosage_calculator` and applied to its
 hazard register.** Direct instruction: "assign a clinical SME and
 start the severity/probability tables." **Declined to fabricate** —

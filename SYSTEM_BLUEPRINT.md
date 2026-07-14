@@ -1,6 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-14 (Clinical SME assigned; draft severity/
+Last updated: 2026-07-14 ("Path to sign-off" section added to
+`dosage_calculator/RISK_MANAGEMENT_PLAN.md`. Real finding: 2 of 3
+`Unacceptable` hazards have no more buildable evidence at all —
+`HAZ-DOSE-003`'s finiteness postcondition is a permanent Dafny
+expressiveness limit (no IEEE-754 semantics in `real`), and
+`system_scope`'s alarm-signal gap requires an integrated pump system
+outside this POC's scope. Only real field data or a genuine Steven
+ALARP determination remain as paths forward — neither pre-drafted
+here. No component, gate, or data-flow change. See
+`KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and `DEVLOG.md` for the full
+account.) Prior header, preserved: Last updated 2026-07-14
+(Clinical SME assigned; draft severity/
 probability proposal built for `dosage_calculator`. Steven is now the
 named Clinical/SME (`RISK_MANAGEMENT_PLAN.md` Section 2). Real
 severity bands (S1-S4), a standard 5-level probability scale

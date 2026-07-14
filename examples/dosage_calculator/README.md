@@ -559,3 +559,35 @@ evidenced.
 This work is a substantive starting proposal for Steven's review, not
 a completed SME sign-off — the same distinction this repo has held to
 since its very first Gate C6 confirmation.
+
+## Amendment 2026-07-14 (yet later) — "Path to sign-off" section added: two of three Unacceptable hazards have no more buildable evidence at all
+
+Direct instruction: "let's look at the evidence required in order to
+ensure a safe sign off," followed by "yes, write it up as a new
+section." Added a new, deliberately unnumbered section to
+`RISK_MANAGEMENT_PLAN.md` (between Sections 5 and 6, since it doesn't
+map to any single ISO 14971:2019 clause) answering one question
+directly: what would actually resolve the three `Unacceptable` hazards
+Section 5 already found.
+
+**A real, previously-implicit finding, now stated plainly:** for two of
+the three (`HAZ-DOSE-003`'s finiteness postcondition; the
+`system_scope` alarm-signal gap behind `HAZ-GIP-1.2`/`1.3`), there is
+no further evidence this repo can build at all — not a queue item, a
+permanent boundary. `dosage.dfy`'s own header comment already
+documents that Dafny's `real` type has no IEEE-754 overflow/NaN
+semantics, so a "proof" of REQ-DOSE-003's finiteness would be true of
+a model that can't represent the phenomenon in question — the same
+class of limit as `renal_adjustment`'s CKD-EPI `Pow` gap.
+`system_scope` requires an actual integrated pump system (hardware,
+firmware, UI), explicitly outside a kernel-verification POC's scope
+per this plan's own Section 1.
+
+**The two real remaining paths, neither of them more spec work:** real
+field/usage probability data (doesn't exist for a pre-market POC), or
+a genuine ALARP determination from Steven as the named Clinical SME —
+a policy judgment about accepting residual risk given exhausted
+in-scope controls, not a technical question this repo's assistant can
+answer or draft on his behalf. The new section is explicit that it
+does not pick between these paths or pre-write a justification —
+`Unacceptable` stands until one of them actually happens.
