@@ -6,6 +6,68 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `dosage_calculator`, third and final risk-management-plan artifact — all three worked examples now covered
+
+Direct instruction: "build the same plan for dosage_calculator."
+Mirrors both prior plans' structure and ISO 14971:2019 clause
+citations (already verified verbatim against the real standard when
+the first plan was built; not re-verified per device).
+
+Device-specific content read directly from this repo's own real,
+committed evidence: `metadata.a.yaml` (intended use; `B`/`DECLARED`
+safety classification, same rationale pattern as the other two
+devices), `traceability_matrix.a.md` and `dafny_captures_index.json`
+(3 requirement rows: REQ-GIP-1-4-12, REQ-GIP-1-8-1, REQ-DOSE-003),
+`mutation_report.md` and `README.md`'s Gate C5 amendments (56 mutants
+— 41 killed, 15 filtered across four filter categories, **0
+survivors, 0 unclassifiable** — the cleanest residual of the three
+worked examples, reached only after two later real engineering
+extensions closed 2 mid-run survivors), and
+`nl_confirmation_dosage_dfy.md`'s "Decision" section (Gate C6
+**Confirmed, 2026-07-07, by Steven** — "it's good for the spec as
+is" — confirmed to be the first Gate C6 sign-off recorded anywhere in
+this repository, predating both other examples' sign-offs).
+
+Two real, device-specific distinctions surfaced honestly rather than
+smoothed over to match the other two plans' shape:
+
+1. **Mixed evidence strength within one requirement set.**
+   `dosage_calculator` is the only example with three independent
+   evidence types (CrossHair bounded symbolic search, concrete example
+   tests, Dafny formal proof) rather than Dafny alone. REQ-DOSE-003
+   specifically has no Dafny proof at all — only CrossHair
+   `BOUNDED_CHECKED` and one concrete `EXAMPLE_CHECKED` test — and
+   Section 6's table states this plainly rather than implying the same
+   proof strength as the other two rows.
+2. **A real kernel/system scope split already exists in the
+   requirement text itself.** REQ-GIP-1-4-12 carries both a
+   `kernel_scope` (alarm *detection*, verified at this phase) and a
+   `system_scope` (alarm *signal generation*, explicitly deferred to
+   integration testing, IEC 60601-1-8/62366-1 territory) — from the
+   2026-07-05 Gate 1 review. This became Section 1's real
+   life-cycle-phase scoping, not an invented boundary. Also named: the
+   device's existing STRIDE threat model (`THR-GIP-1-2/1-3/1-14`) is a
+   related but distinct artifact from the clinical hazard register
+   this plan still doesn't contain — flagged so the two are never
+   conflated later.
+
+Sections requiring clinical judgment (roles; severity/probability
+bands; acceptance matrix; overall-residual-risk method) left as
+explicit `GAP`s, not fabricated — same discipline as the other two
+plans, same underlying reason: `metadata.a.yaml`'s
+`classification_rationale` already names the `B` classification as
+`DECLARED`, not sourced.
+
+Documentation ripple: `examples/dosage_calculator/README.md` (new
+"Amendment 2026-07-14" section), `HANDOFF.md`, `KNOWN_LIMITATIONS.md`,
+`SYSTEM_BLUEPRINT.md`. No spec, gate, or test-suite change; 216 tests
+pass throughout. **All three worked examples now have a real, landed
+risk-management-plan artifact** — the natural next piece, if wanted,
+is the actual hazard register all three plans point at and none yet
+contain.
+
+---
+
 ## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `renal_adjustment`, second real ISO 14971 risk-management-plan artifact, same day as the first
 
 Direct instruction: "build the same plan for renal_adjustment." Mirrors

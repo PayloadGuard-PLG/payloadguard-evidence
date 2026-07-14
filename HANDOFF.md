@@ -9,7 +9,31 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md` landed for
-`renal_adjustment` too — second real ISO 14971 risk-management-plan
+`dosage_calculator` — third and final risk-management-plan artifact;
+all three worked examples now have one.** Mirrors the other two plans'
+structure and already-verified ISO 14971:2019 clause citations. Real
+differences surfaced honestly rather than glossed over: this device is
+the only one with three evidence types per requirement (CrossHair
+`BOUNDED_CHECKED`, concrete `EXAMPLE_CHECKED`, Dafny `PROVEN`) —
+REQ-DOSE-003 specifically has no Dafny proof, only the first two,
+stated plainly; REQ-GIP-1-4-12's existing `kernel_scope`/`system_scope`
+split (2026-07-05 Gate 1 review) became Section 1's real life-cycle
+scoping, not invented for this plan; the existing STRIDE threat model
+was named as a related-but-distinct artifact, not conflated with the
+still-missing clinical hazard register. Gate C5's residual is
+genuinely cleaner than the other two examples: 56 mutants, **0
+survivors, 0 unclassifiable**. Gate C6 — confirmed 2026-07-07 by
+Steven ("it's good for the spec as is") — was in fact the very first
+Gate C6 sign-off recorded anywhere in this repo, preceding the other
+two by several days. Sections requiring clinical judgment left as
+explicit GAPs, matching `classification_rationale`'s `DECLARED`
+status. 216 tests pass, no spec/code change. **Next step: not yet
+instructed.** All three plans point at the same missing artifact — an
+actual hazard register, risk evaluation results, and risk management
+report per ISO 14971:2019 clause 4.5 — that's the natural next piece
+if wanted, but await explicit instruction rather than assuming it.
+**Prior update, preserved below** — 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md`
+landed for `renal_adjustment` too — second real ISO 14971 risk-management-plan
 artifact, same day as the first.** Mirrors
 `drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`'s structure and
 already-verified ISO 14971:2019 clause citations (not re-verified per

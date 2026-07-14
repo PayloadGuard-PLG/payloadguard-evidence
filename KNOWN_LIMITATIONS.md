@@ -5,6 +5,23 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`dosage_calculator` — third and final risk-management-plan artifact;
+all three worked examples now have one. Mirrors the other two plans'
+structure and clause citations. Two real device-specific distinctions
+surfaced honestly: this is the only example with three evidence types
+per requirement (CrossHair `BOUNDED_CHECKED`, concrete
+`EXAMPLE_CHECKED`, Dafny `PROVEN`) — REQ-DOSE-003 has no Dafny proof at
+all, stated plainly; and REQ-GIP-1-4-12's existing `kernel_scope`/
+`system_scope` split (2026-07-05 Gate 1 review) became Section 1's real
+life-cycle scoping, with the existing STRIDE threat model named as a
+related-but-distinct artifact, not a substitute for the still-missing
+clinical hazard register. Gate C5 residual: 56 mutants, 0 survivors, 0
+unclassifiable — the cleanest of the three. Gate C6 confirmed
+2026-07-07 by Steven, the first Gate C6 sign-off recorded anywhere in
+this repo. Sections needing clinical judgment left as explicit `GAP`s.
+No spec/test change; 216 tests pass. See DEVLOG.md's 2026-07-14 entry
+for the full account.) Prior entry, preserved: Last updated 2026-07-14
+(`RISK_MANAGEMENT_PLAN.md` landed for
 `renal_adjustment` too — second real ISO 14971 risk-management-plan
 artifact, same day as the first. Mirrors the `drug_interaction_checker`
 plan's structure and already-verified clause citations. Filled with

@@ -1,6 +1,21 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`dosage_calculator` too, at
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md` — third and final
+risk-management-plan artifact; all three worked examples now covered.
+Real device-specific content, not boilerplate: the only example with
+three evidence types per requirement (CrossHair/concrete/Dafny, mixed
+strength — REQ-DOSE-003 has no Dafny proof, stated plainly); the
+existing `kernel_scope`/`system_scope` split on REQ-GIP-1-4-12 became
+Section 1's real life-cycle scoping; the existing STRIDE threat model
+named as related-but-distinct from the still-missing clinical hazard
+register. Gate C5 residual: 0 survivors, 0 unclassifiable — cleanest of
+the three. Gate C6 (2026-07-07, Steven) was in fact the first Gate C6
+sign-off recorded anywhere in this repo. No component, gate, or
+data-flow change. See `KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and
+`DEVLOG.md` for the full account.) Prior header, preserved: Last
+updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
 `renal_adjustment` too, at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`
 — second real ISO 14971 risk-management-plan artifact, same day as the
 first, mirroring its structure and already-verified clause citations.
