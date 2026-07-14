@@ -1,7 +1,7 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-14 ("Path to sign-off" section added to
-`dosage_calculator/RISK_MANAGEMENT_PLAN.md`. Real finding: 2 of 3
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`. Real finding: 2 of 3
 `Unacceptable` hazards have no more buildable evidence at all —
 `HAZ-DOSE-003`'s finiteness postcondition is a permanent Dafny
 expressiveness limit (no IEEE-754 semantics in `real`), and

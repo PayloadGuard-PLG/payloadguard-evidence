@@ -9,7 +9,7 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-14 — **"Path to sign-off" section added to
-`dosage_calculator/RISK_MANAGEMENT_PLAN.md`.** Direct instruction:
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`.** Direct instruction:
 "let's look at the evidence required in order to ensure a safe sign
 off," then "yes, write it up as a new section." Real finding, now
 stated explicitly rather than left implicit: **two of the three

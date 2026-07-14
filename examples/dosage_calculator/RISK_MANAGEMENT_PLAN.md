@@ -276,11 +276,13 @@ question, not resolved here.
 required in order to ensure a safe sign off") — not part of ISO
 14971:2019's own clause-by-clause structure, so deliberately left
 unnumbered rather than forced into the 4.4(a–g) sequence above. This
-section exists to answer one question directly: for the three hazards
-Section 5 found `Unacceptable`, what would actually change that —
-distinguishing evidence this repo could still build from evidence it
-fundamentally cannot, so nobody mistakes "no more Dafny work available"
-for "nothing more to do."
+section walks all four hazards in `HAZARD_REGISTER.md`, stating
+plainly which need no further action and which do — its real focus is
+the three Section 5 found `Unacceptable` (`HAZ-GIP-1.2`, `HAZ-GIP-1.3`,
+`HAZ-DOSE-003`), for which it answers one question directly: what
+would actually change that finding, distinguishing evidence this repo
+could still build from evidence it fundamentally cannot, so nobody
+mistakes "no more Dafny work available" for "nothing more to do."
 
 ### `HAZ-GIP-1.14` — no action needed
 

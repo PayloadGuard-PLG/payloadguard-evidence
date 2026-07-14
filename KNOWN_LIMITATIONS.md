@@ -5,7 +5,7 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-14 ("Path to sign-off" section added to
-`dosage_calculator/RISK_MANAGEMENT_PLAN.md`, between Sections 5 and 6.
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`, between Sections 5 and 6.
 Real finding: 2 of the 3 `Unacceptable` hazards have no more buildable
 evidence at all, not merely unbuilt — `HAZ-DOSE-003`'s finiteness
 postcondition can never reach `PROVEN` (Dafny's `real` type has no

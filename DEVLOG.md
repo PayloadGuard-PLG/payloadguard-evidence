@@ -6,7 +6,7 @@ and run manifests, not reconstructed from memory.
 
 ---
 
-## 2026-07-14 — "Path to sign-off" section added to `dosage_calculator/RISK_MANAGEMENT_PLAN.md`: two of three `Unacceptable` hazards have no more buildable evidence at all
+## 2026-07-14 — "Path to sign-off" section added to `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`: two of three `Unacceptable` hazards have no more buildable evidence at all
 
 Direct instruction: "let's look at the evidence required in order to
 ensure a safe sign off." Answered analytically first, in chat, before
