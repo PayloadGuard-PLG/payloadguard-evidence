@@ -110,9 +110,15 @@ review before the associated finding is closed —
 - any change to the `kernel_scope`/`system_scope` split, since it is
   the one place this device's own requirement text already draws the
   exact boundary a hazard register needs;
-- resolution of the STRIDE threat model's `THR-GIP-1-14` open question
-  (the `FRN` pump-type tag's scope — see `README.md`'s "Open
-  questions").
+- independent re-verification of the STRIDE threat model's
+  `THR-GIP-1-14` `FRN` pump-type tag resolution against the raw GIP
+  v1.0 §2.4.1 text — resolved 2026-07-05 (`README.md`'s "`FRN`
+  pump-type tag: RESOLVED" section, `sources/README.md`), but that
+  resolution's own stated caveat ("well-supported, but not yet
+  independently re-verified against the raw source text") is still
+  open. Correcting a stale claim here that mischaracterized this as an
+  unresolved "open question" — caught during PR #46 review, fixed
+  2026-07-14.
 
 ---
 
@@ -252,15 +258,21 @@ it feeds back into Section 4's probability bands, and who reviews it.
 | Date | Change | Reason |
 |---|---|---|
 | 2026-07-14 | Initial draft landed for `dosage_calculator`, mirroring the other two examples' plans | Third and final risk-management-plan artifact across this repo's three worked examples; the three requirement rows and their real, mixed-strength evidence (Section 6) are real and committed, everything requiring clinical judgment (Sections 2, 4.1–4.3, 5) is left as an explicit GAP pending a named Risk Manager and clinical SME |
+| 2026-07-14 (later) | `HAZARD_REGISTER.md` landed alongside this plan | First real hazard-register artifact in this repo — chosen as the easiest starting point of the three examples because this device's primary source (`sources/gip-v1.0-hazard-analysis.md`) is itself a formal hazard analysis, already partially cited in this device's own STRIDE threat model. Completes clause 5.4 hazard identification for the 4 hazards this kernel actually addresses; severity, probability, and risk-acceptability evaluation remain explicit `GAP`s within it, same discipline as this plan |
 
-**What does not yet exist, stated explicitly:** the hazard register,
-risk evaluation results, and risk management report that ISO
-14971:2019 clause 4.5 requires the risk management file to trace to.
-This plan governs their eventual shape (Section 6's table is the model
-for how a hazard entry's risk control measure should cite evidence)
-but does not itself contain them. The existing STRIDE threat model
-(Section 1) is a related but distinct artifact and does not substitute
-for a clinical hazard register either.
+**What does not yet exist, stated explicitly:** as of the register
+above, hazard *identification* (clause 5.4) is real for this device.
+Risk *estimation* and *evaluation* (clauses 5.5, 6, 8 — severity,
+probability, acceptability) and the risk management report are still
+missing — both the register and this plan name them as explicit `GAP`s
+rather than fabricating them, pending the same named Risk Manager and
+clinical SME Section 2 above still lacks. Section 6's table remains the
+model for how a hazard entry's risk control measure should cite
+evidence; `HAZARD_REGISTER.md` now does exactly that, per hazard, not
+just per requirement. The existing STRIDE threat model (Section 1) is
+a related but distinct artifact and does not substitute for the
+clinical hazard register either — `HAZARD_REGISTER.md` cross-references
+it explicitly rather than duplicating or conflating it.
 
 ---
 

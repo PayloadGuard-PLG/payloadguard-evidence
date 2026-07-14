@@ -475,6 +475,41 @@ Gate C6 — `nl_confirmation_dosage_dfy.md`'s "Decision" section,
 C6 sign-off recorded anywhere in this repository, preceding both other
 examples' own sign-offs by several days.
 
+## Amendment 2026-07-14 (later) — `HAZARD_REGISTER.md` landed: first real hazard-register artifact in this repo
+
+Direct instruction, after all three examples' risk-management plans
+landed: "continue with the easiest first please so we can evaluate the
+output." `dosage_calculator` was chosen as the easiest of the three
+because its primary source, `sources/gip-v1.0-hazard-analysis.md`, is
+itself a formal, published hazard analysis (the GIP v1.0 project,
+2009) — unlike `renal_adjustment`'s and `drug_interaction_checker`'s
+clinical-guideline sources, which name clinical facts but not a
+structured hazard table. This device's own `metadata.a.yaml` STRIDE
+threat model already cited three GIP hazard IDs directly
+(`THR-GIP-1-2`, `THR-GIP-1-3`, `THR-GIP-1-14`), so hazard
+*identification* (ISO 14971:2019 clause 5.4) could be built from real,
+already-cited source data rather than fresh judgment calls.
+
+Landed as `examples/dosage_calculator/HAZARD_REGISTER.md`: four hazard
+entries — `HAZ-GIP-1.2`, `HAZ-GIP-1.3`, `HAZ-GIP-1.14` (each with the
+verbatim GIP `HID` row, cause, and GIP's own stated mitigation, cross-
+referenced against this kernel's actual risk control measure and real
+evidence), plus `HAZ-DOSE-003` (the one row with no GIP source at all
+— `metadata.a.yaml`'s own text already says so — stated plainly, not
+presented at the same evidentiary strength as the other three). A
+"explicitly out of scope" section names representative hazards from
+GIP's ~85-row table this kernel does *not* address (physical sensing,
+hardware, environmental, biological/chemical, most of Operational) so
+the register can't be misread as covering the full pump. Severity,
+probability, and risk-acceptability evaluation are left as explicit
+`GAP`s throughout, same discipline as `RISK_MANAGEMENT_PLAN.md` —
+hazard identification is real here; risk *estimation* and
+*evaluation* (clauses 5.5, 6, 8) still require a clinical SME that
+doesn't exist yet.
+
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated to reflect that the
+register now exists and what it does and doesn't complete.
+
 Sections requiring clinical judgment (roles, severity/probability
 bands, acceptance matrix, overall-residual-risk method) left as
 explicit `GAP`s, not fabricated, matching `metadata.a.yaml`'s own
