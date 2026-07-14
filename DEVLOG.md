@@ -6,6 +6,63 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — "Path to sign-off" section added to `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`: two of three `Unacceptable` hazards have no more buildable evidence at all
+
+Direct instruction: "let's look at the evidence required in order to
+ensure a safe sign off." Answered analytically first, in chat, before
+writing anything — checked `dosage.dfy`'s actual committed source
+directly rather than assuming an answer, since this repo's whole
+session has held to verifying claims against real artifacts before
+trusting them.
+
+**What `dosage.dfy`'s own header comment already says, confirmed by
+reading it directly:** REQ-DOSE-003 (finiteness under floating-point
+overflow) is explicitly, permanently out of Dafny's reach — "Dafny's
+`real` type is exact, arbitrary-precision mathematical real arithmetic
+with no overflow, no infinity, no NaN... A Dafny 'proof' of finiteness
+would therefore be true of a model that cannot even represent the
+phenomenon REQ-DOSE-003 is about." Confirmed empirically in this repo
+(2026-07-06, cited in the same comment): `y := x / 0.0` on Dafny `real`
+is a verification *error*, not IEEE `inf` — there's no way to even pose
+the question a Dafny proof would need to answer. `CrossHair`'s
+`BOUNDED_CHECKED` result isn't a weaker stand-in for a Dafny proof
+here; it's the strongest evidence this postcondition can structurally
+ever have in this toolchain, the same class of permanent boundary as
+`renal_adjustment`'s CKD-EPI `Pow` gap.
+
+**Separately:** `HAZ-GIP-1.2`/`HAZ-GIP-1.3`'s residual is the
+`system_scope` alarm-*signal* gap, which `RISK_MANAGEMENT_PLAN.md`
+Section 1 already scopes as belonging to "integration testing against
+a real device/UI layer" — outside a kernel-unit-verification POC by
+design, not by oversight. No amount of further Dafny/CrossHair/
+concrete-test work inside `examples/dosage_calculator/` closes this;
+it requires an actual integrated pump system this POC was never scoped
+to build.
+
+Direct follow-up: "yes, write it up as a new section." **Landed** as a
+new, deliberately unnumbered section in
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`, between Sections
+5 and 6 (it doesn't map to any single ISO 14971:2019 clause, so wasn't
+forced into the 4.4(a–g) numbering). States, per hazard, exactly what's
+buildable versus permanently out of reach, then names the two real
+paths that remain: real field/usage probability data (doesn't exist
+for a pre-market POC and can't be honestly simulated), or a genuine
+ALARP determination from Steven as the named Clinical SME — an ISO
+14971 Annex D move (risk control exhausted within stated scope,
+residual accepted as tolerable with recorded reasoning), explicitly a
+policy judgment only he can make, not a technical question this repo's
+assistant can answer or pre-draft on his behalf. The section is
+explicit that it does not pick a path or write a justification in his
+voice — the `Unacceptable` finding from the prior session's work
+stands until one of the two paths actually happens.
+
+Documentation ripple: `examples/dosage_calculator/README.md` (new
+"Amendment 2026-07-14 (yet later)" section), `HANDOFF.md`,
+`KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec, gate, or
+test-suite change; 216 tests pass.
+
+---
+
 ## 2026-07-14 — Clinical SME assigned; draft severity/probability proposal built for `dosage_calculator`, first application of Section 4's risk-evaluation content
 
 Direct instruction: "assign a clinical SME and start the

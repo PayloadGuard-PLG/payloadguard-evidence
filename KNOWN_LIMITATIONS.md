@@ -4,7 +4,22 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-14 (Clinical SME assigned; draft severity/
+Last updated: 2026-07-14 ("Path to sign-off" section added to
+`examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`, between Sections 5 and 6.
+Real finding: 2 of the 3 `Unacceptable` hazards have no more buildable
+evidence at all, not merely unbuilt — `HAZ-DOSE-003`'s finiteness
+postcondition can never reach `PROVEN` (Dafny's `real` type has no
+IEEE-754 overflow/NaN semantics, confirmed empirically and already
+documented in `dosage.dfy`'s own comment; same class of permanent
+limit as `renal_adjustment`'s CKD-EPI `Pow` gap), and the
+`system_scope` alarm-signal gap requires an integrated pump system
+outside this POC's scope by design. Only two real paths remain: real
+field/usage probability data (doesn't exist pre-market), or a genuine
+ALARP determination from Steven as named Clinical SME — a policy
+judgment, not more spec work, not pre-drafted here. No spec/test
+change; 216 tests pass. See DEVLOG.md's 2026-07-14 entry for the full
+account.) Prior entry, preserved: Last updated 2026-07-14
+(Clinical SME assigned; draft severity/
 probability proposal built for `dosage_calculator` and applied to its
 hazard register. Direct instruction: "assign a clinical SME and start
 the severity/probability tables" — declined to fabricate a name or

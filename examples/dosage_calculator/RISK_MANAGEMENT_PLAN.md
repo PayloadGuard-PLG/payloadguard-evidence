@@ -270,6 +270,92 @@ question, not resolved here.
 
 ---
 
+## Path to sign-off: what evidence would actually resolve the current `Unacceptable` finding
+
+**Added 2026-07-14, at Steven's request** ("let's look at the evidence
+required in order to ensure a safe sign off") — not part of ISO
+14971:2019's own clause-by-clause structure, so deliberately left
+unnumbered rather than forced into the 4.4(a–g) sequence above. This
+section walks all four hazards in `HAZARD_REGISTER.md`, stating
+plainly which need no further action and which do — its real focus is
+the three Section 5 found `Unacceptable` (`HAZ-GIP-1.2`, `HAZ-GIP-1.3`,
+`HAZ-DOSE-003`), for which it answers one question directly: what
+would actually change that finding, distinguishing evidence this repo
+could still build from evidence it fundamentally cannot, so nobody
+mistakes "no more Dafny work available" for "nothing more to do."
+
+### `HAZ-GIP-1.14` — no action needed
+
+Already `Acceptable` (S1) under the draft matrix. Fully Dafny-proven;
+nothing in this analysis changes that.
+
+### `HAZ-DOSE-003` — cannot be strengthened to `PROVEN`, ever, in this model
+
+`dosage.dfy`'s own header comment already states this precisely, not
+something newly discovered here: *"Dafny's `real` type is exact,
+arbitrary-precision mathematical real arithmetic with no overflow, no
+infinity, no NaN... A Dafny 'proof' of finiteness would therefore be
+true of a model that cannot even represent the phenomenon REQ-DOSE-003
+is about."* Confirmed empirically in this repo (`y := x / 0.0` on
+Dafny `real` is a verification *error*, not IEEE `inf` — there is no
+way to even pose the question Dafny's type system would need to answer
+to prove this). This is a **permanent structural limit of the
+toolchain as applied to this postcondition**, the same class of
+boundary as `renal_adjustment`'s CKD-EPI `Pow` gap (`RISK_MANAGEMENT_PLAN.md`
+of that example, `HAZ-RENAL-2`) — not a task waiting to be picked up.
+`CrossHair`'s `BOUNDED_CHECKED` result is not a weaker version of the
+same evidence a Dafny proof would give; it is a structurally different
+kind of evidence, and it is the strongest kind this postcondition can
+ever have in this repo's toolchain.
+
+### `HAZ-GIP-1.2` / `HAZ-GIP-1.3` — the missing evidence lives outside this kernel's scope by design
+
+The residual is the `system_scope` alarm-*signal* gap — Section 1
+already scopes that as belonging to "integration testing against a
+real device/UI layer, per IEC 60601-1-8's alarm-system requirements,"
+explicitly out of scope for a kernel-unit-verification POC. There is
+no more Dafny, CrossHair, or concrete-test work *inside*
+`examples/dosage_calculator/` that closes this — it requires an actual
+integrated pump system (hardware, firmware, alarm hardware, UI layer)
+this POC was never scoped to build. Building it would not be "more
+evidence for this hazard," it would be building a different, larger
+product.
+
+### The honest conclusion: two real paths remain, neither of them more spec work
+
+1. **Real field/usage probability data.** Section 4.4's worst-case
+   default (P5 for every hazard) exists specifically because none
+   exists yet — this is a pre-market POC with no deployment. Real data
+   would let Section 4.2 assign a genuinely lower probability band
+   instead of the conservative default, which could move `HAZ-GIP-1.2`/
+   `1.3`/`HAZ-DOSE-003` (all S2) out of `Unacceptable` under the current
+   matrix without anyone's severity judgment changing at all. This
+   path requires an actual deployment or a real, structured field
+   study — neither exists, and neither can be simulated honestly.
+
+2. **A real ALARP determination from Steven, as the named Clinical
+   SME — a policy judgment, not more evidence.** ISO 14971's own Annex
+   D allows exactly this move: risk control has been exhausted within
+   the stated scope (detection is proven, clamping is proven or
+   bounded-checked, clinician oversight is a real compensating control
+   already named in `metadata.a.yaml`'s `classification_rationale`),
+   and the residual risk is accepted as tolerable *given that scope*,
+   with the reasoning recorded explicitly — not asserted by omission.
+   This is not something this repo's assistant can decide or draft on
+   Steven's behalf, for the same reason no Gate C6 sign-off in this
+   repo's history has ever been self-recorded: it is a real judgment
+   call about what's an acceptable residual risk for a named person to
+   stand behind, not a technical question with a checkable answer.
+
+**What this section does not do:** it does not pick between these two
+paths, does not draft an ALARP justification pretending to be Steven's
+words, and does not treat "no more Dafny work is possible" as license
+to quietly relabel these hazards `Acceptable`. The `Unacceptable`
+finding in Section 5 stands until one of the two paths above actually
+happens.
+
+---
+
 ## 6. Verification activities (ISO 14971:2019 clause 4.4f)
 
 This is where PayloadGuard-Evidence's existing engine plugs in
@@ -332,6 +418,7 @@ it feeds back into Section 4's probability bands, and who reviews it.
 | 2026-07-14 | Initial draft landed for `dosage_calculator`, mirroring the other two examples' plans | Third and final risk-management-plan artifact across this repo's three worked examples; the three requirement rows and their real, mixed-strength evidence (Section 6) are real and committed, everything requiring clinical judgment (Sections 2, 4.1–4.3, 5) is left as an explicit GAP pending a named Risk Manager and clinical SME |
 | 2026-07-14 (later) | `HAZARD_REGISTER.md` landed alongside this plan | First real hazard-register artifact in this repo — chosen as the easiest starting point of the three examples because this device's primary source (`sources/gip-v1.0-hazard-analysis.md`) is itself a formal hazard analysis, already partially cited in this device's own STRIDE threat model. Completes clause 5.4 hazard identification for the 4 hazards this kernel actually addresses; severity, probability, and risk-acceptability evaluation remain explicit `GAP`s within it, same discipline as this plan |
 | 2026-07-14 (later still) | Steven assigned as Clinical/SME (Section 2); draft severity/probability proposal built (Sections 4, 5) and applied to `HAZARD_REGISTER.md`'s 4 hazards | Direct instruction: "assign a clinical SME and start the severity/probability tables." A real, named person now fills the Clinical/SME role — a fictitious name or invented clinical data was explicitly declined, matching this repo's Gate C6 discipline. The severity/probability/acceptance-matrix content is a substantive, evidence-grounded **draft proposal**, not a completed SME sign-off — every section says so explicitly. Real finding from applying it: none of the 4 hazards currently reaches S3/S4 given what's actually proven, but 3 of 4 evaluate provisionally Unacceptable under the mandated worst-case probability default, making this device's current overall residual risk `Unacceptable` pending further evidence or Steven's confirmation/revision |
+| 2026-07-14 (yet later) | New unnumbered "Path to sign-off" section added between Sections 5 and 6 | Direct instruction: "let's look at the evidence required in order to ensure a safe sign off." Real finding, not previously stated this plainly: two of the three `Unacceptable` hazards (`HAZ-DOSE-003`'s finiteness postcondition, and the `system_scope` alarm-signal gap behind `HAZ-GIP-1.2`/`1.3`) have **no further evidence buildable inside this repo at all** — `dosage.dfy`'s own comment already documents that Dafny's `real` type cannot even represent the IEEE-754 overflow phenomenon REQ-DOSE-003 is about, and `system_scope` requires an integrated pump system outside this POC's stated scope. The only two real paths off `Unacceptable` are real field/usage data (which doesn't exist for a pre-market POC) or a genuine ALARP determination that only Steven, as the named SME, can make — not more spec work this repo's assistant can produce |
 
 **What does not yet exist, stated explicitly:** hazard *identification*
 (clause 5.4) is real and complete for this device. A **draft**
