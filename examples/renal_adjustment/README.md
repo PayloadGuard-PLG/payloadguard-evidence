@@ -355,15 +355,17 @@ Not resolved here — named, not guessed at, per this repo's discipline:
    documented tooling limitations, not spec defects — see the Gate C5
    amendment above. Worth real engineering only if a future spec change
    makes them load-bearing in a way Gate C4's STPs don't already cover.
-4. **Gate C6's sign-off is still pending** — the accumulated NL-summary
-   document now covers seven amendments' worth of change under one
-   outstanding decision. The concrete next step for this example.
-   **RESOLVED, 2026-07-11** (found stale here during the 2026-07-14
-   `RISK_MANAGEMENT_PLAN.md` documentation ripple — this specific
-   `README.md` item had been missed by the 2026-07-11 documentation
-   audit, which fixed the equivalent stale claim in the top-level
-   `README.md` but not this per-example copy). Gate C6 was confirmed
-   and closed the same day this item was written —
+4. **Gate C6's sign-off — RESOLVED, 2026-07-11.** Original claim,
+   preserved verbatim rather than deleted, per this repo's frozen-record
+   discipline: "Gate C6's sign-off is still pending — the accumulated
+   NL-summary document now covers seven amendments' worth of change
+   under one outstanding decision. The concrete next step for this
+   example." That claim went stale the same day it was written and was
+   only caught here during the 2026-07-14 `RISK_MANAGEMENT_PLAN.md`
+   documentation ripple — the 2026-07-11 documentation audit fixed the
+   equivalent stale claim in the top-level `README.md` but missed this
+   per-example copy. Gate C6 was in fact confirmed and closed the same
+   day this item was written —
    `nl_confirmation_renal_adjustment_dfy.md`'s "Decision" section,
    **Confirmed, 2026-07-11, by Steven**, against the raw KDIGO/MHRA
    sources directly. All six checkpoints verified; one external
