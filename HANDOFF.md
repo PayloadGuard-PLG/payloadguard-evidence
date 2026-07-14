@@ -8,7 +8,38 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md` landed for
+**Last updated:** 2026-07-14 — **`HAZARD_REGISTER.md` landed for
+`dosage_calculator` — first real hazard-register artifact in this
+repo.** Direct instruction after all three plans landed: "continue
+with the easiest first please so we can evaluate the output."
+`dosage_calculator` chosen as easiest because its primary source
+(`sources/gip-v1.0-hazard-analysis.md`) is itself a formal, published
+hazard analysis (GIP v1.0, 2009), already partially cited in this
+device's own STRIDE threat model (`THR-GIP-1-2/1-3/1-14`) — unlike the
+other two examples, whose sources are clinical guidelines, not
+structured hazard tables. Four hazard entries landed at
+`examples/dosage_calculator/HAZARD_REGISTER.md`: three GIP-sourced
+(`HAZ-GIP-1.2`, `1.3`, `1.14`, each with the verbatim GIP hazard row,
+cause, and this kernel's real risk control measure/evidence), one with
+no GIP source (`HAZ-DOSE-003`, stated plainly, not implied at the same
+strength). An "explicitly out of scope" section names representative
+hazards from GIP's ~85-row table this narrow kernel doesn't address,
+so the register can't be misread as covering the full pump. Severity,
+probability, and risk-acceptability evaluation left as explicit `GAP`s
+throughout — hazard *identification* (clause 5.4) is real; risk
+*estimation*/*evaluation* (clauses 5.5/6/8) still need a clinical SME
+that doesn't exist yet. `RISK_MANAGEMENT_PLAN.md` Section 8 updated to
+point at the new register. **Branch note:** PR #45 (the three risk-
+management plans) merged; this session's branch was restarted from the
+latest `main` before this work, per this repo's merged-branch protocol.
+216 tests pass, no spec/code change. **Next step: awaiting the user's
+evaluation of this first hazard register** before extending the same
+approach to `renal_adjustment`/`drug_interaction_checker` (both lack an
+equivalent formal hazard-analysis source, so their registers would need
+a different, more judgment-heavy construction — worth the user seeing
+this one first, per their own framing). No PR opened yet for this
+change — not requested. **Prior update, preserved below** — 2026-07-14
+— **`RISK_MANAGEMENT_PLAN.md` landed for
 `dosage_calculator` — third and final risk-management-plan artifact;
 all three worked examples now have one.** Mirrors the other two plans'
 structure and already-verified ISO 14971:2019 clause citations. Real

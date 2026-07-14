@@ -6,6 +6,82 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `HAZARD_REGISTER.md` landed for `dosage_calculator`, first real hazard-register artifact in this repo
+
+Direct instruction, after PR #45 (all three risk-management plans)
+merged: "continue with the easiest first please so we can evaluate the
+output." Interpreted as: of the three worked examples, build the next
+missing piece (a real hazard register, which every plan's Section 8
+named as not yet existing) for whichever example makes that most
+tractable without fabricating clinical judgment, so the result can be
+reviewed before deciding whether/how to extend it to the other two.
+
+Investigated all three examples' primary sources before picking one.
+Found `sources/gip-v1.0-hazard-analysis.md` — a real, published formal
+hazard analysis (Arney/Jetley/Jones/Lee/Ray/Sokolsky/Zhang, FDA Office
+of Science and Engineering Laboratories + UPenn, February 2009),
+containing a structured, numbered hazard table (~85 rows across eight
+categories: Operational, Environmental, Electrical, Hardware, Software,
+Mechanical, Biological/Chemical, Use). `dosage_calculator`'s own
+`metadata.a.yaml` already cites three of these hazard IDs directly in
+its STRIDE threat model (`THR-GIP-1-2`: GIP Hazard 1.2; `THR-GIP-1-3`:
+GIP Hazard 1.3; `THR-GIP-1-14`: GIP Hazard 1.14, mapped to REQ-GIP-1-4-12
+and REQ-GIP-1-8-1 respectively). Neither `renal_adjustment` nor
+`drug_interaction_checker` has an equivalent formal hazard-analysis
+source — their sources (KDIGO, MHRA, NHS SPS, eMC SmPCs) are clinical
+guidelines and interaction tables, not structured hazard identification.
+This made `dosage_calculator` the clear easiest choice: hazard
+identification (ISO 14971:2019 clause 5.4) could be built almost
+entirely from real, already-cited source data, not fresh judgment
+calls.
+
+**Landed** as `examples/dosage_calculator/HAZARD_REGISTER.md`. Four
+hazard entries: `HAZ-GIP-1.2` and `HAZ-GIP-1.3` (both real GIP hazards
+mitigated at this kernel's scope by REQ-GIP-1-4-12 — stated explicitly
+that the kernel doesn't distinguish their two different causes, since
+both collapse to the same detected over-limit condition, rather than
+implying two independently-covered hazards); `HAZ-GIP-1.14` (mitigated
+by REQ-GIP-1-8-1's reverse-delivery fault handling, cross-referencing
+`dosage.py`'s own docstring, which already names "GIP v1.0 Safety
+Requirement 1.8.1 / Hazard 1.14" and explains why the negative-rate
+check deliberately runs before the finiteness check); `HAZ-DOSE-003`
+(the one row with **no** GIP source — `metadata.a.yaml`'s own
+`REQ-DOSE-003` text already says so directly — included for real
+risk-control completeness but flagged plainly as weaker evidence,
+`BOUNDED_CHECKED` not `PROVEN`, not presented at parity with the other
+three). A "Section 3: explicitly out of scope" names representative
+hazards from GIP's full table this kernel does not address (programmed-
+flow-rate validation, physical sensing, hardware/electrical/
+environmental/biological categories) so the register cannot be misread
+as exhaustive over the whole pump — only over what this narrow
+dose-calculation kernel actually touches.
+
+Severity, probability, and risk-acceptability evaluation (ISO
+14971:2019 clauses 5.5's quantitative half, 6, and 8) are left as
+explicit `GAP`s throughout, same discipline as `RISK_MANAGEMENT_PLAN.md`
+— this register completes hazard *identification*, not risk
+*estimation* or *evaluation*, both of which require a named clinical
+SME and manufacturer acceptability policy that still don't exist.
+`RISK_MANAGEMENT_PLAN.md` Section 8 updated to point at the new
+register and be precise about what it does and doesn't complete.
+
+**Branch note:** PR #45 (the three risk-management plans) had already
+merged before this work started. Per this repo's merged-branch
+protocol, the session branch was restarted from the latest `main`
+(`git fetch origin main && git checkout -B claude/repo-docs-review-9l23t8
+origin/main`) before building this, with the in-progress hazard-register
+work stashed and popped across the reset to avoid losing it.
+
+Documentation ripple: `examples/dosage_calculator/README.md` (new
+"Amendment 2026-07-14 (later)" section), `HANDOFF.md`,
+`KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec, gate, or
+test-suite change; 216 tests pass. No PR opened yet for this change —
+the user asked to evaluate this first result before deciding how to
+extend the approach to the other two examples, whose sources don't
+offer an equivalent formal hazard analysis to build from.
+
+---
+
 ## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `dosage_calculator`, third and final risk-management-plan artifact — all three worked examples now covered
 
 Direct instruction: "build the same plan for dosage_calculator."

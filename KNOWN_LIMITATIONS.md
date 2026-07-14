@@ -4,7 +4,28 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`dosage_calculator` — first real hazard-register artifact in this
+repo. Chosen as easiest of the three examples because its primary
+source, `sources/gip-v1.0-hazard-analysis.md`, is itself a formal
+published hazard analysis (GIP v1.0, 2009) already partially cited in
+this device's own STRIDE threat model — unlike the other two examples'
+clinical-guideline sources. Four hazard entries: `HAZ-GIP-1.2/1.3/1.14`
+(GIP-sourced, cross-referenced against this kernel's real risk control
+measures and evidence) plus `HAZ-DOSE-003` (no GIP source, stated
+plainly, weaker `BOUNDED_CHECKED` evidence). An explicit "out of scope"
+section names representative hazards from GIP's ~85-row table this
+narrow kernel doesn't address, so the register isn't misread as
+covering the full pump. Severity, probability, and risk-acceptability
+evaluation left as explicit `GAP`s — hazard identification (clause 5.4)
+is real; estimation/evaluation (clauses 5.5/6/8) still need a clinical
+SME. `RISK_MANAGEMENT_PLAN.md` Section 8 updated accordingly. Branch
+restarted from latest `main` first, since PR #45 had already merged.
+No spec/test change; 216 tests pass. No PR opened yet — awaiting the
+user's evaluation of this first result before extending to the other
+two examples. See DEVLOG.md's 2026-07-14 entry for the full account.)
+Prior entry, preserved: Last updated 2026-07-14
+(`RISK_MANAGEMENT_PLAN.md` landed for
 `dosage_calculator` — third and final risk-management-plan artifact;
 all three worked examples now have one. Mirrors the other two plans'
 structure and clause citations. Two real device-specific distinctions

@@ -1,6 +1,18 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+`dosage_calculator`, at `examples/dosage_calculator/HAZARD_REGISTER.md`
+— first real hazard-register artifact in this repo, chosen as easiest
+because its primary source (`sources/gip-v1.0-hazard-analysis.md`) is
+itself a formal published hazard analysis, already partially cited in
+this device's STRIDE threat model. Four hazard entries — 3 GIP-sourced,
+1 not, stated plainly — plus an explicit out-of-scope section so the
+register isn't misread as covering the full pump. Severity/probability/
+evaluation left explicit `GAP`s; hazard identification only. No
+component, gate, or data-flow change. Branch restarted from latest
+`main` first (PR #45 merged). See `KNOWN_LIMITATIONS.md`'s 2026-07-14
+entry and `DEVLOG.md` for the full account.) Prior header, preserved:
+Last updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
 `dosage_calculator` too, at
 `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md` — third and final
 risk-management-plan artifact; all three worked examples now covered.
