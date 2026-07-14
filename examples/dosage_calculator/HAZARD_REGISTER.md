@@ -56,7 +56,7 @@ covering the full pump.
 | Known, named residual | REQ-GIP-1-4-12's `system_scope` (the full pump generating an audible/visual alarm *signal* once the kernel reports the condition) is explicitly deferred to integration testing — this kernel's detection is proven, but nothing yet proves a clinician would actually be alerted. Carried forward from `RISK_MANAGEMENT_PLAN.md` Section 1, not new information. |
 | Potential harm (qualitative, not scored) | Per `metadata.a.yaml`'s own `classification_rationale`: "failure could contribute to a non-serious over- or under-dose given clinician oversight" — reused verbatim rather than inventing new harm language |
 | Severity | **DRAFT: S2 — Minor.** The delivered dose itself stays within its proven-safe bound (`raw_dose` is clamped, Dafny-proven); the residual is that a clinician isn't proven to be informed of the anomalous request, per `RISK_MANAGEMENT_PLAN.md` §4.1. Proposed, not confirmed |
-| Probability | **DRAFT: P5 — Frequent** (mandated worst-case default, §4.2/§4.4 — no field data exists to justify a lower band) |
+| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)** — mandated per §4.2/§4.4, no field data exists to justify a lower band |
 | Risk evaluation (acceptable?) | **DRAFT: Unacceptable** under §4.3's proposed matrix (S2×P5) — pending the `system_scope` alarm-signal proof, real field data, or Steven's revision |
 
 ### HAZ-GIP-1.3 — Overinfusion (bolus volume/concentration too high)
@@ -70,7 +70,7 @@ covering the full pump.
 | Known, named residual | Same `system_scope` gap as HAZ-GIP-1.2 |
 | Potential harm (qualitative, not scored) | Same as HAZ-GIP-1.2 |
 | Severity | **DRAFT: S2 — Minor**, same reasoning as HAZ-GIP-1.2 (proposed, not confirmed) |
-| Probability | **DRAFT: P5 — Frequent** (same worst-case default) |
+| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)**, same reasoning |
 | Risk evaluation (acceptable?) | **DRAFT: Unacceptable**, same as HAZ-GIP-1.2 |
 
 ### HAZ-GIP-1.14 — Improper flow (bleed back / reflux within device)
@@ -84,7 +84,7 @@ covering the full pump.
 | Known, named residual | None currently identified beyond the general `system_scope` alarm-signal gap — REQ-GIP-1-8-1 has no separate system-scope split in `metadata.a.yaml`, unlike REQ-GIP-1-4-12; worth confirming, not assuming, if this register is extended |
 | Potential harm (qualitative, not scored) | Reverse delivery of drug is a materially different failure mode from over/under-dose — GIP's own Type tag ("FRN," resolved to general-purpose volumetric pumps, see above) suggests it may not apply to every pump subtype this kernel could underlie; harm severity is left to clinical judgment, same as the others, not assumed comparable to HAZ-GIP-1.2/1.3 |
 | Severity | **DRAFT: S1 — Negligible.** The only hazard in this register whose mitigation is complete and Dafny-**proven**, not bounded-checked: exactly zero delivered dose on any negative-rate fault, both ordinary and overflow-magnitude. Proposed, not confirmed |
-| Probability | **DRAFT: P5 — Frequent** (same worst-case default, applied for consistency even though S1's evaluation doesn't depend on it) |
+| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)**, applied for consistency even though S1's evaluation doesn't depend on it |
 | Risk evaluation (acceptable?) | **DRAFT: Acceptable** at any probability, per §4.3's matrix — the one hazard in this register that clears the draft bar today |
 
 ### HAZ-DOSE-003 — Non-finite or out-of-range calculation result
@@ -97,7 +97,7 @@ covering the full pump.
 | Known, named residual | Weaker evidence strength than the GIP-sourced hazards above — a bounded symbolic search is not a proof that the finiteness clamp holds for every input, only that no counterexample was found within the recorded bounds. Separately: this kernel gives no distinguishing signal between an overflow-driven clamp and an ordinary at-ceiling dose (see above) — whether that conflation itself needs a distinct alarm/log path is a real open design question, not resolved here |
 | Potential harm (qualitative, not scored) | Not a runaway/unbounded dose reaching delivery (the clamp prevents that) — the residual concern is a *masking* one: an erroneous or extreme input is silently treated as an ordinary maximum-dose request, with no error signal distinguishing the two, which could obscure a real upstream data problem rather than surface it |
 | Severity | **DRAFT: S2 — Minor**, same class as HAZ-GIP-1.2/1.3 (a masked anomaly, not an unsafe dose) — with the weaker `BOUNDED_CHECKED`, not `PROVEN`, evidence strength noted as a reason this proposal should get extra scrutiny, not less. Proposed, not confirmed |
-| Probability | **DRAFT: P5 — Frequent** (worst-case default — especially warranted here given the weaker evidence strength) |
+| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)** — especially warranted here given the weaker evidence strength |
 | Risk evaluation (acceptable?) | **DRAFT: Unacceptable**, same reasoning as HAZ-GIP-1.2/1.3 |
 
 ---

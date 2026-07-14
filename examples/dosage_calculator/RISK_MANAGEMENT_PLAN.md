@@ -154,7 +154,7 @@ double-checking, while still respecting that alarm *signalling*
 
 | Severity | Definition | Example specific to this device |
 |---|---|---|
-| S1 — Negligible | The kernel's proven or bounded-checked contract holds; no harm pathway is open | HAZ-GIP-1.14 (reverse delivery): Dafny-**proven** to yield exactly zero delivered dose on any negative-rate fault — the mitigation is complete, not partial |
+| S1 — Negligible | The kernel's contract is Dafny-**proven** (not merely `BOUNDED_CHECKED`); no harm pathway is open. `BOUNDED_CHECKED` evidence alone — a bounded symbolic search, not a proof per `traceability_matrix.a.md`'s own caveats — does not by itself justify S1; a hazard with only bounded-checked evidence caps out at S2 unless a real proof exists | HAZ-GIP-1.14 (reverse delivery): Dafny-**proven** to yield exactly zero delivered dose on any negative-rate fault — the mitigation is complete, not partial |
 | S2 — Minor | The delivered dose itself stays within its proven-safe bound, but a real residual gap means a clinician isn't proven to be informed of an anomalous request, or an erroneous input is masked as an ordinary one | HAZ-GIP-1.2/1.3 (over-limit bolus requests: dose is always clamped safe, but the `system_scope` alarm *signal* proving a clinician is told is still an open `GAP`); HAZ-DOSE-003 (an overflow input is silently indistinguishable from a legitimate at-ceiling request — the dose stays bounded, but the underlying data anomaly could go unnoticed) |
 | S3 — Serious, requiring intervention | A dose outside the proven-safe bound reaches a point where clinical intervention is needed to catch or correct it, consistent with this device's own IEC 62304 Class B classification ("non-life-threatening injury is possible") | Not currently applicable to any of the four real hazards in `HAZARD_REGISTER.md` as their mitigations stand today — this band exists to classify a *proof-validity failure* (the Dafny/CrossHair guarantees turning out not to hold in practice) or a future hazard this register doesn't yet cover, not a claim that one exists now |
 | S4 — Critical | An unbounded or unproven failure mode allows a dose (or reverse delivery) outside any recorded control to reach delivery, contributing to a serious or life-threatening outcome | Not currently applicable — REQ-GIP-1-8-1 is specifically proven to prevent the reverse-delivery instance of this outcome. Retained as the scale's outer bound for hazards this register doesn't yet name, not to imply any known hazard reaches it |
@@ -182,7 +182,7 @@ only valid choice.
 | P2 — Remote | Unlikely, but plausible over the device's field life | Same — not assigned without evidence |
 | P3 — Occasional | Expected to occur sometimes over the device's field life | Same — not assigned without evidence |
 | P4 — Probable | Expected to occur several times over the device's field life | Same — not assigned without evidence |
-| P5 — Frequent | Expected to occur regularly, likely within normal use | **This is this device's current default for every hazard**, per Section 4.4's already-established policy: no field usage data exists yet (pre-market POC), so every hazard is conservatively treated as worst-case-probability until real data justifies a lower band — not a claim that P5 is each hazard's true rate |
+| P5 — Frequent | Expected to occur regularly, likely within normal use, **when assigned on the strength of real usage data** | **P5 is this device's current default for every hazard below, but not as an occurrence-rate estimate** — it is a conservative *proxy* applied per Section 4.4's policy because no field usage data exists yet (pre-market POC), not a claim that any hazard actually occurs frequently. Every hazard entry marks this explicitly ("worst-case default," not "measured Frequent") to avoid the two meanings being conflated |
 
 ### 4.3 Acceptance matrix
 
@@ -244,9 +244,14 @@ individual hazard in Section 4.3's evaluation is Acceptable; if any
 hazard evaluates ALARP, overall residual risk is Tolerable only with
 an explicit justification recorded per hazard; if any hazard evaluates
 Unacceptable, overall residual risk is Unacceptable until that hazard
-is resolved.** This is distinct from per-hazard acceptability (Section
-4.3) — clause 8 requires it as a genuinely separate step, not a
-restatement.
+is resolved.** Explicit mapping, since the label changes at the
+device level: `Tolerable` (Section 5, overall) is the device-level
+consequence of one or more individual hazards evaluating `ALARP`
+(Section 4.3, per-hazard) with their justification recorded — the two
+terms are not synonyms used loosely, `ALARP` is the per-hazard
+finding, `Tolerable` is what that finding means for the device as a
+whole. This is distinct from per-hazard acceptability (Section 4.3) —
+clause 8 requires it as a genuinely separate step, not a restatement.
 
 **Applied for real:** three of `dosage_calculator`'s four hazards
 (`HAZ-GIP-1.2`, `HAZ-GIP-1.3`, `HAZ-DOSE-003`) currently evaluate
