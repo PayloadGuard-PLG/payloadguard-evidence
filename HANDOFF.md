@@ -32,13 +32,23 @@ that doesn't exist yet. `RISK_MANAGEMENT_PLAN.md` Section 8 updated to
 point at the new register. **Branch note:** PR #45 (the three risk-
 management plans) merged; this session's branch was restarted from the
 latest `main` before this work, per this repo's merged-branch protocol.
-216 tests pass, no spec/code change. **Next step: awaiting the user's
+216 tests pass, no spec/code change. Opened as **PR #46**; two real
+bugs Qodo's review caught in this same PR were fixed before merge —
+`HAZARD_REGISTER.md`'s `HAZ-DOSE-003` row wrongly claimed a non-finite
+overflow "could silently propagate" out of `calculate_hourly_dose`,
+when the function actually detects and clamps it (`dosage.py:37`); the
+real residual is narrower — an overflow is silently indistinguishable
+from a legitimate at-ceiling dose, not an unbounded value reaching
+output. Also: the register (and a pre-existing line in this same plan
+from PR #45) claimed the GIP `FRN` pump-type tag was still an
+"undecoded"/"open question," when `README.md` had already resolved it
+2026-07-05 — both fixed to cite the real resolution and its own
+still-open re-verification caveat. **Next step: awaiting the user's
 evaluation of this first hazard register** before extending the same
 approach to `renal_adjustment`/`drug_interaction_checker` (both lack an
 equivalent formal hazard-analysis source, so their registers would need
 a different, more judgment-heavy construction — worth the user seeing
-this one first, per their own framing). No PR opened yet for this
-change — not requested. **Prior update, preserved below** — 2026-07-14
+this one first, per their own framing). **Prior update, preserved below** — 2026-07-14
 — **`RISK_MANAGEMENT_PLAN.md` landed for
 `dosage_calculator` — third and final risk-management-plan artifact;
 all three worked examples now have one.** Mirrors the other two plans'

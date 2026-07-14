@@ -21,9 +21,14 @@ evaluation left as explicit `GAP`s — hazard identification (clause 5.4)
 is real; estimation/evaluation (clauses 5.5/6/8) still need a clinical
 SME. `RISK_MANAGEMENT_PLAN.md` Section 8 updated accordingly. Branch
 restarted from latest `main` first, since PR #45 had already merged.
-No spec/test change; 216 tests pass. No PR opened yet — awaiting the
-user's evaluation of this first result before extending to the other
-two examples. See DEVLOG.md's 2026-07-14 entry for the full account.)
+No spec/test change; 216 tests pass. Opened as PR #46; two real bugs
+Qodo caught in review were fixed before merge — a mischaracterized
+non-finite-overflow hazard (the value is clamped, not propagated) and
+a stale "FRN tag undecoded" claim (resolved 2026-07-05, both the
+register and a pre-existing `RISK_MANAGEMENT_PLAN.md` line from PR #45
+now cite the real resolution). Awaiting the user's evaluation of this
+first result before extending to the other two examples. See
+DEVLOG.md's 2026-07-14 entry for the full account.)
 Prior entry, preserved: Last updated 2026-07-14
 (`RISK_MANAGEMENT_PLAN.md` landed for
 `dosage_calculator` — third and final risk-management-plan artifact;

@@ -110,9 +110,15 @@ review before the associated finding is closed —
 - any change to the `kernel_scope`/`system_scope` split, since it is
   the one place this device's own requirement text already draws the
   exact boundary a hazard register needs;
-- resolution of the STRIDE threat model's `THR-GIP-1-14` open question
-  (the `FRN` pump-type tag's scope — see `README.md`'s "Open
-  questions").
+- independent re-verification of the STRIDE threat model's
+  `THR-GIP-1-14` `FRN` pump-type tag resolution against the raw GIP
+  v1.0 §2.4.1 text — resolved 2026-07-05 (`README.md`'s "`FRN`
+  pump-type tag: RESOLVED" section, `sources/README.md`), but that
+  resolution's own stated caveat ("well-supported, but not yet
+  independently re-verified against the raw source text") is still
+  open. Correcting a stale claim here that mischaracterized this as an
+  unresolved "open question" — caught during PR #46 review, fixed
+  2026-07-14.
 
 ---
 
