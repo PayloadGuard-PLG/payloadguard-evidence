@@ -8,8 +8,38 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-13 — **Gate C6 confirmed and closed for
-`drug_interaction_checker.dfy`, against the raw sources directly.** A
+**Last updated:** 2026-07-14 — **ISO 14971:2019 read directly and
+cross-checked against the provisional `riskmanagementplantemplate.md`
+(uploaded, not yet committed to the repo).** Read the real standard
+(clauses 1–7.1 verbatim, via `pdftoppm`/poppler-utils installed for
+this session — `apt-get install -y poppler-utils`, not present before).
+Cross-check result: the template's citations are accurate — 4.4a
+(scope), 4.4b (roles), 4.4c (review requirements), 4.4d (risk
+acceptability, including the specific "criteria for accepting risk when
+probability cannot be estimated" sub-requirement — verified verbatim),
+4.4e (residual-risk method), 4.4f (verification activities), 4.4g
+(production/post-production) all match the standard's real wording.
+Clause 1's stated exclusions (clinical-procedure decisions; business
+risk management) also verified verbatim. **One real, minor citation
+slip found**: the template's opening line attributes "this plan is
+part of the risk management file" to clause 4.5 — that sentence is
+actually in 4.4 (immediately before the a–g list); 4.5 is the separate
+requirement about what the risk management *file* must trace (which is
+what the template's next sentence, about what this doc does NOT
+contain, actually reflects). Not yet fixed in the uploaded file — it's
+an external upload, not a repo artifact yet. **Next step, not yet
+started**: no build instruction received yet — the user's framing so
+far ("have these documents") is presentational, not a specific ask.
+Likely next: either (a) fix the 4.5→4.4 citation and land the template
+as a real repo file (e.g. `examples/<device>/RISK_MANAGEMENT_PLAN.md`),
+or (b) use it as the basis for a real, filled-in Risk Management Plan
+for one of the three worked examples, wired to `metadata.a.yaml` per
+the template's own §6 "Verification activities" table (which already
+names the right shape: cite a Gate C1–C6 closure instead of a fresh
+verification description). Await explicit instruction before building
+either. **Prior update, preserved below** — 2026-07-13 — **Gate C6
+confirmed and closed for `drug_interaction_checker.dfy`, against the
+raw sources directly.** A
 full, independent, line-by-line review (all 68 `CheckInteraction`
 postconditions + all 5 `DoseReductionTargetMg` postconditions, cross-
 checked against every one of `sources/sps-doac-interactions-2024.md`'s
