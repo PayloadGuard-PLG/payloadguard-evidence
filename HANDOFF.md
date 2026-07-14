@@ -9,7 +9,32 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md` landed for
-`drug_interaction_checker` — first real ISO 14971 risk-management-plan
+`renal_adjustment` too — second real ISO 14971 risk-management-plan
+artifact, same day as the first.** Mirrors
+`drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`'s structure and
+already-verified ISO 14971:2019 clause citations (not re-verified per
+device — the citations describe the standard, not the device). Landed
+at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`. Sections
+1/3/6 filled with real, committed evidence: `metadata.a.yaml`'s
+intended-use text, real Gate C1–C6 references for the 5 `PROVEN`
+requirement rows, honest `GAP` rows for REQ-RENAL-3/4/6/7 (named,
+sourced, unformalized) and REQ-RENAL-8 (permanent trust boundary, open
+operational question), the Gate C5 residual (51 survivors, all three
+categories explained, not silently carried), Gate C6's closed status
+(2026-07-11). Sections 2/4 (roles, severity/probability, acceptance
+matrix) left as explicit GAPs, matching `classification_rationale`'s
+`DECLARED` status. **A real, pre-existing staleness bug found and
+fixed along the way**: `examples/renal_adjustment/README.md`'s own
+"Open questions" item 4 still said Gate C6's sign-off was "still
+pending" — it was actually confirmed and closed 2026-07-11, the same
+day that sentence was written; the 2026-07-11 documentation audit had
+fixed the equivalent claim in the top-level `README.md` but missed
+this per-example copy. Fixed in place, not deleted. 216 tests pass, no
+spec/code change. **Next step: not yet instructed** — likely candidates
+are the same plan for `dosage_calculator`, or starting the actual
+hazard register both plans point at; await explicit instruction.
+**Prior update, preserved below** — 2026-07-14 — **`RISK_MANAGEMENT_PLAN.md`
+landed for `drug_interaction_checker` — first real ISO 14971 risk-management-plan
 artifact in this repo.** Preceded by reading the real ISO 14971:2019
 standard directly (clauses 1–7.1 verbatim, via `pdftoppm`/poppler-utils
 installed for this session — `apt-get install -y poppler-utils`, not

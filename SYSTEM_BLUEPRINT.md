@@ -1,6 +1,18 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`renal_adjustment` too, at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`
+— second real ISO 14971 risk-management-plan artifact, same day as the
+first, mirroring its structure and already-verified clause citations.
+Verification-activities section wires into the 5 real `PROVEN`
+REQ-RENAL-* rows plus honest `GAP` rows for REQ-RENAL-3/4/6/7/8;
+sections requiring clinical judgment left explicit `GAP`s, not
+fabricated. A real, pre-existing staleness bug in
+`examples/renal_adjustment/README.md` (a "Gate C6 still pending" claim,
+actually closed 2026-07-11) found and fixed along the way. No
+component, gate, or data-flow change. See `KNOWN_LIMITATIONS.md`'s
+2026-07-14 entry and `DEVLOG.md` for the full account.) Prior header,
+preserved: Last updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
 `drug_interaction_checker` at
 `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` — the
 first real ISO 14971 risk-management-plan artifact in this repo, not

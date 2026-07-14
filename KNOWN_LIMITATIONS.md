@@ -5,6 +5,25 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 Last updated: 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
+`renal_adjustment` too — second real ISO 14971 risk-management-plan
+artifact, same day as the first. Mirrors the `drug_interaction_checker`
+plan's structure and already-verified clause citations. Filled with
+this repo's own real evidence: `metadata.a.yaml`'s intended-use text,
+Gate C1-C6 references for the 5 `PROVEN` rows, honest `GAP` rows for
+REQ-RENAL-3/4/6/7 (named, sourced, unformalized) and REQ-RENAL-8
+(permanent trust boundary), the Gate C5 residual (51 survivors, all
+three categories already explained, not silently carried), and Gate
+C6's closed status (2026-07-11). Sections needing clinical judgment
+left as explicit `GAP`s, matching `classification_rationale`'s
+`DECLARED` status. A real, pre-existing staleness bug found and fixed
+along the way: `examples/renal_adjustment/README.md`'s own "Open
+questions" item 4 still said Gate C6 sign-off was "still pending" —
+actually closed 2026-07-11, the same day that sentence was written;
+the 2026-07-11 documentation audit had fixed the equivalent claim in
+the top-level `README.md` but missed this per-example copy. Fixed in
+place, not deleted. No spec/test change; 216 tests pass. See DEVLOG.md's
+2026-07-14 entry for the full account.) Prior entry, preserved: Last
+updated 2026-07-14 (`RISK_MANAGEMENT_PLAN.md` landed for
 `drug_interaction_checker` — first real ISO 14971 risk-management-plan
 artifact in this repo. Preceded by reading the real ISO 14971:2019
 standard directly, clauses 1-7.1 verbatim, and cross-checking a

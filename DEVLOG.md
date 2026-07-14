@@ -6,6 +6,62 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `renal_adjustment`, second real ISO 14971 risk-management-plan artifact, same day as the first
+
+Direct instruction: "build the same plan for renal_adjustment." Mirrors
+`examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md` (landed
+earlier the same day) structurally and in its ISO 14971:2019 clause
+citations — those describe the standard itself, already verified
+verbatim against the real text, so not re-verified per device.
+
+Device-specific content pulled from this repo's own real, committed
+evidence, read directly rather than assumed: `metadata.a.yaml` (intended
+use, `B`/`DECLARED` safety classification), `traceability_matrix.a.md`
+(5 `PROVEN` rows: REQ-RENAL-1/1a/2/5, plus the multi-function
+REQ-RENAL-1/2 bindings; 5 `GAP` rows: REQ-RENAL-3/4/6/7 named-but-
+unformalized, REQ-RENAL-8's permanent trust boundary with an open
+operational question), `dafny_captures_index.json` (all seven
+functions share one raw-output/manifest pair), `mutation_report_renal.md`
+and `KNOWN_LIMITATIONS.md` (450 mutants: 250 killed, 137 filtered
+pre-verification, 2 blocked, 10 unclassifiable, **51 survive** — all
+three survivor categories already explained: 33 vacuous-antecedent-
+style guard narrowing, 17 requires-weakenings the proven `ensures`
+clauses don't depend on, 1 coincidental numeric survivor independently
+resolved by Gate C4's STP suite), and
+`nl_confirmation_renal_adjustment_dfy.md`'s "Decision" section (Gate C6
+**Confirmed, 2026-07-11, by Steven**, against the raw KDIGO/MHRA
+sources directly — all six checkpoints verified, one external citation
+flagged as unverifiable and confirmed not load-bearing).
+
+Sections requiring clinical judgment (roles; severity/probability
+bands; acceptance matrix; the overall-residual-risk method) left as
+explicit `GAP`s, not fabricated — same discipline as the
+`drug_interaction_checker` plan, and for the same underlying reason:
+`metadata.a.yaml`'s `classification_rationale` already names the `B`
+classification as `DECLARED`, not sourced, pending exactly this kind
+of file.
+
+**A real, pre-existing staleness bug found and fixed along the way,
+unrelated to the new document.** While reading
+`examples/renal_adjustment/README.md` for Section 6's Gate C6
+reference, its own "Open questions" item 4 still read "Gate C6's
+sign-off is still pending" — but Gate C6 was confirmed and closed the
+same day that sentence was written (2026-07-11, same session per
+`nl_confirmation_renal_adjustment_dfy.md`'s Decision timestamp). The
+2026-07-11 documentation audit (this file, same date) had fixed the
+equivalent stale "nearly complete" claim in the top-level `README.md`
+but evidently never touched this per-example copy — five weeks stale
+by today's date, caught only because this session happened to read the
+file closely for an unrelated reason. Fixed in place, marked resolved,
+not deleted, per this repo's frozen-record discipline.
+
+Documentation ripple: `examples/renal_adjustment/README.md` (new
+"Amendment 2026-07-14" section, plus the Open-questions fix above),
+`HANDOFF.md`, `KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec,
+gate, or test-suite change; 216 tests pass throughout.
+
+---
+
 ## 2026-07-14 — `RISK_MANAGEMENT_PLAN.md` landed for `drug_interaction_checker`, first real ISO 14971 risk-management-plan artifact in this repo
 
 Two documents were supplied: the official ISO 14971:2019 standard PDF,
