@@ -6,6 +6,96 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-14 — Clinical SME assigned; draft severity/probability proposal built for `dosage_calculator`, first application of Section 4's risk-evaluation content
+
+Direct instruction: "assign a clinical SME and start the
+severity/probability tables." This landed squarely on the one boundary
+this entire session's risk-management work has been built around never
+crossing: a clinical SME must be a real, qualified person, and
+severity/probability bands require real clinical judgment, not
+plausible-sounding invention. Assigning a fictitious name or inventing
+harm/probability data would have quietly undermined every `GAP` label
+already committed across three `RISK_MANAGEMENT_PLAN.md` files and
+three `HAZARD_REGISTER.md` files this session built.
+
+**Declined to fabricate, asked instead.** Used `AskUserQuestion` —
+the same category of moment as every Gate C6 sign-off this session has
+handled: genuinely the user's decision, not something an assistant can
+make on his behalf. Two questions: who fills the Clinical/SME role
+(assign yourself, name someone else, or leave it open), and should
+draft severity/probability content be built now (all three devices,
+one device first, or wait). Answers: **Steven fills the role himself**;
+draft **one device first** — `dosage_calculator`, matching this
+session's established "easiest first, evaluate the output" pattern
+from the hazard-register work.
+
+**Steven recorded as the named Clinical/Subject Matter Expert**
+for `dosage_calculator` (`RISK_MANAGEMENT_PLAN.md` Section 2, "assigned
+2026-07-14") — a real, explicit assignment, not inferred. Risk Manager
+and Technical/Verification Lead remain unassigned, narrower than
+before, not glossed over.
+
+**Built a draft severity/probability/acceptance-matrix proposal**,
+reasoned entirely from `HAZARD_REGISTER.md`'s own already-committed
+evidence, not invented:
+- **Severity bands (S1–S4)**, redefined from illustrative placeholder
+  examples to real definitions tied to this kernel's actual proven vs.
+  bounded-checked guarantees — S1 Negligible (fully Dafny-proven, no
+  harm pathway), S2 Minor (delivered dose stays proven-safe, but a
+  real residual awareness/masking gap exists), S3 Serious (not
+  currently applicable to any of the 4 hazards as mitigated today —
+  retained to classify a hypothetical proof-validity failure), S4
+  Critical (also not currently applicable — REQ-GIP-1-8-1 specifically
+  proves the reverse-delivery instance of this outcome doesn't occur).
+- **Probability bands (P1–P5)**, a standard 5-level qualitative scale
+  (Improbable through Frequent) common to ISO 14971 implementations,
+  with every hazard defaulting to P5 (Frequent) per this plan's own
+  already-established §4.4 policy — no field data exists to justify
+  anything lower, and none was invented to pretend otherwise.
+- **Acceptance matrix**, extended from the template's original binary
+  framing to a 3-region convention (Acceptable / ALARP / Unacceptable)
+  per ISO 14971's own Annex D discussion — itself flagged as a
+  proposed extension for Steven to confirm or simplify back.
+- **Overall residual-risk method** (clause 4.4e, Section 5): a simple,
+  conservative combination rule (all hazards must individually
+  evaluate Acceptable for the device overall to; any Unacceptable
+  hazard makes the whole device Unacceptable) — applied for real, not
+  left abstract.
+
+**Applied to all 4 hazards in `HAZARD_REGISTER.md`.** A real, honest
+finding, not a formality: given what this kernel's evidence actually
+proves today, **none of the 4 hazards reaches S3 or S4** —
+`HAZ-GIP-1.14` (reverse delivery) lands at S1, since REQ-GIP-1-8-1 is
+fully Dafny-proven to yield exactly zero dose on any negative-rate
+fault; the other three (`HAZ-GIP-1.2`, `HAZ-GIP-1.3`, `HAZ-DOSE-003`)
+land at S2, since their delivered dose is always proven or bounded-
+checked safe — the residual is a missing alarm-signal/masking gap, not
+an unsafe dose. But under the mandated worst-case probability default
+(P5 for all, per existing policy), **3 of 4 hazards currently evaluate
+`Unacceptable`** under the draft matrix, making this device's proposed
+**overall residual risk `Unacceptable` today** — not a comfortable
+conclusion to default to, but an honest one: it correctly surfaces
+that either the `system_scope` alarm-signal proof needs building, real
+field probability data needs gathering, or Steven's own review needs
+to revise the draft bands, before this device's risk profile could be
+considered acceptable as currently evidenced.
+
+**Every value added — severity, probability, matrix cell, and overall
+evaluation — is marked `DRAFT` throughout both `RISK_MANAGEMENT_PLAN.md`
+and `HAZARD_REGISTER.md`.** This is a substantive starting proposal for
+Steven's review, explicitly not a self-declared SME determination —
+matching this repo's Gate C6 discipline exactly: prepare the real work,
+never record the confirmation on the human's behalf.
+
+Documentation ripple: `examples/dosage_calculator/README.md` (new
+"Amendment 2026-07-14 (later still)" section), `HANDOFF.md`,
+`KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No spec, gate, or
+test-suite change; 216 tests pass. Next step: awaiting Steven's actual
+review/confirmation of this draft before extending the same approach
+to `renal_adjustment` and `drug_interaction_checker`.
+
+---
+
 ## 2026-07-14 — `HAZARD_REGISTER.md` landed for `drug_interaction_checker`, third and final hazard-register artifact — all three worked examples now covered
 
 Direct instruction: "open a pr plz when you create files, I can review

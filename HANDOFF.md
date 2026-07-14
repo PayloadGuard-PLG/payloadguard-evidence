@@ -8,7 +8,43 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-14 — **`HAZARD_REGISTER.md` landed for
+**Last updated:** 2026-07-14 — **Clinical SME assigned; draft severity/
+probability proposal built for `dosage_calculator` and applied to its
+hazard register.** Direct instruction: "assign a clinical SME and
+start the severity/probability tables." **Declined to fabricate** —
+assigning a fictitious name or inventing clinical severity/probability
+data would have directly contradicted every `GAP` this repo's three
+risk-management plans and hazard registers deliberately left unfilled.
+Instead, used `AskUserQuestion` (the same class of moment as every
+Gate C6 sign-off — genuinely the user's decision, not mine to make):
+**Steven is now the named Clinical/SME** for `dosage_calculator`
+(`RISK_MANAGEMENT_PLAN.md` Section 2), by his own explicit choice; he
+asked for one device drafted first, matching the session's established
+"easiest first, evaluate" pattern.
+
+Built a **draft severity/probability/acceptance-matrix proposal**,
+reasoned entirely from `HAZARD_REGISTER.md`'s own real evidence — real
+severity bands (S1 Negligible–S4 Critical) tied to this kernel's actual
+proven/bounded-checked guarantees, a standard 5-level qualitative
+probability scale (P1–P5) defaulting every hazard to P5 per this
+plan's own already-established worst-case policy (no field data
+exists), and a 3-region (Acceptable/ALARP/Unacceptable) matrix per
+ISO 14971 Annex D. Applied to all 4 hazards in
+`examples/dosage_calculator/HAZARD_REGISTER.md`. **Real finding:** none
+of the 4 hazards reaches S3/S4 given what's actually proven (`HAZ-GIP-1.14`,
+fully-proven reverse-delivery mitigation, lands at S1; the other 3 at
+S2, a residual awareness/masking gap, not an unsafe dose) — but 3 of 4
+evaluate provisionally `Unacceptable` under the mandated worst-case
+probability default, making this device's proposed overall residual
+risk `Unacceptable` today, pending the `system_scope` alarm-signal
+proof, real field data, or Steven's own revision. **Every value is
+marked `DRAFT` throughout** — this is a substantive starting proposal
+for Steven's review, not a self-declared SME sign-off, matching this
+repo's Gate C6 discipline exactly. 216 tests pass, no spec/code change.
+**Next step: awaiting Steven's actual review/confirmation of this
+draft** before extending the same approach to `renal_adjustment` and
+`drug_interaction_checker`. **Prior update, preserved below** —
+2026-07-14 — **`HAZARD_REGISTER.md` landed for
 `drug_interaction_checker` too — third and final hazard-register
 artifact; all three worked examples now have both a risk-management
 plan and a hazard register.** Direct instruction ("open a pr plz when

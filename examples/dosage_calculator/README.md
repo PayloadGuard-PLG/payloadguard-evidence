@@ -515,3 +515,47 @@ bands, acceptance matrix, overall-residual-risk method) left as
 explicit `GAP`s, not fabricated, matching `metadata.a.yaml`'s own
 `classification_rationale` (`B`, `DECLARED`, pending exactly this kind
 of file).
+
+## Amendment 2026-07-14 (later still) — clinical SME assigned; draft severity/probability proposal built and applied
+
+Direct instruction: "assign a clinical SME and start the
+severity/probability tables." This was **not** treated as an
+instruction to fabricate a name or invent clinical data — both would
+have directly contradicted every `GAP` this repo's risk-management
+plans and hazard registers had deliberately left unfilled. Instead:
+Steven is now recorded, by his own explicit choice, as this device's
+named Clinical/Subject Matter Expert (`RISK_MANAGEMENT_PLAN.md`
+Section 2) — the same class of boundary this repo has held to for
+every Gate C6 sign-off (a recorded human decision, never self-declared
+on the human's behalf).
+
+With that role filled, a **draft severity/probability/acceptance-
+matrix proposal** was built, reasoned entirely from evidence already
+committed in `HAZARD_REGISTER.md` and `metadata.a.yaml` — not invented
+clinical judgment. Real severity bands (S1 Negligible through S4
+Critical) were defined against this kernel's actual proven/bounded-
+checked guarantees rather than generic examples; a standard five-level
+qualitative probability scale (P1 Improbable through P5 Frequent) was
+adopted, with every hazard defaulting to P5 per this plan's own
+already-established worst-case policy, since no field data exists to
+justify anything lower. A three-region acceptance matrix (Acceptable /
+ALARP / Unacceptable, per ISO 14971's own Annex D discussion) was
+proposed and applied.
+
+**A real, honest finding, not a formality:** given what this kernel's
+evidence actually proves today, none of the four hazards reaches S3 or
+S4 — `HAZ-GIP-1.14` (reverse delivery) lands at S1, fully proven zero-
+harm; the other three land at S2, a residual awareness/masking gap,
+not an unsafe delivered dose. But under the mandated conservative
+probability default, three of four currently evaluate `Unacceptable`,
+making this device's proposed overall residual risk `Unacceptable`
+today — correctly surfacing that either the `system_scope` alarm-
+signal proof needs building, real field data needs gathering, or
+Steven's own review needs to revise the draft bands themselves, before
+this device's risk profile could be considered acceptable as currently
+evidenced.
+
+**Every value added is marked `DRAFT`, throughout both documents.**
+This work is a substantive starting proposal for Steven's review, not
+a completed SME sign-off — the same distinction this repo has held to
+since its very first Gate C6 confirmation.

@@ -1,6 +1,18 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-14 (`HAZARD_REGISTER.md` landed for
+Last updated: 2026-07-14 (Clinical SME assigned; draft severity/
+probability proposal built for `dosage_calculator`. Steven is now the
+named Clinical/SME (`RISK_MANAGEMENT_PLAN.md` Section 2). Real
+severity bands (S1-S4), a standard 5-level probability scale
+(defaulting to P5 worst-case, no field data exists), and a 3-region
+acceptance matrix applied to all 4 `HAZARD_REGISTER.md` hazards — none
+reaches S3/S4 given what's proven, but 3 of 4 evaluate provisionally
+`Unacceptable` under the worst-case default, making proposed overall
+residual risk `Unacceptable` today. Every value marked `DRAFT`,
+pending Steven's actual confirmation. No component, gate, or data-flow
+change. See `KNOWN_LIMITATIONS.md`'s 2026-07-14 entry and `DEVLOG.md`
+for the full account.) Prior header, preserved: Last updated
+2026-07-14 (`HAZARD_REGISTER.md` landed for
 `drug_interaction_checker` too, at
 `examples/drug_interaction_checker/HAZARD_REGISTER.md` — third and
 final hazard-register artifact; all three worked examples now have
