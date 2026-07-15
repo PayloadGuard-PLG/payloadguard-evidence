@@ -34,7 +34,9 @@ payloadguard-evidence/
 │   ├── citation_gate.py       Mechanical citation verification (§4.7)
 │   ├── citation_registry.py   Self-consistency lint: banned-citation detection
 │   ├── hazard_id_lint.py      Self-consistency lint: hazard-ID resolution
-│   ├── test_catalog.py        Generates TEST_CATALOG.md from tests/*.py
+│   ├── test_catalog.py        Generates TEST_CATALOG.md from git-tracked
+│   │                            tests/**/test_*.py files (nested paths
+│   │                            included)
 │   └── tracked_files.py       Git-tracked-file discovery shared by the lints
 ├── examples/
 │   ├── dosage_calculator/          Worked example 1 (complete)

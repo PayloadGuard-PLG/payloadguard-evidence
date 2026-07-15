@@ -147,10 +147,13 @@ part of the regular test suite.
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (253 tests; see
-  [`TEST_CATALOG.md`](TEST_CATALOG.md) for the current, generated count
-  and a categorized per-test index — not restated here to avoid the
-  same staleness this file has already needed fixing for once).
+- **`tests/`** — regression suite. Run `python -m pytest tests/ -q` for
+  the current collected-case count, or see
+  [`TEST_CATALOG.md`](TEST_CATALOG.md) for a categorized per-test index
+  (counts test *functions*, a different and smaller number than
+  pytest's case count wherever `@pytest.mark.parametrize` is used —
+  neither number is restated here, to avoid the same staleness this
+  file has already needed fixing for twice).
 
 ## Quick start
 
