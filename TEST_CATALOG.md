@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 234 test functions across 29 categories.**
+**Total: 235 test functions across 29 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -384,13 +384,14 @@ for the actual collected-case count.
 | Test | Description | Code |
 |---|---|---|
 | `test_committed_catalog_matches_the_generator` | Committed catalog matches the generator. | `tests/test_test_catalog.py:24` |
-| `test_every_real_test_file_produces_a_nonempty_category` | Sanity check that the parser actually finds tests, not an accidentally-empty result that would make the regression test above vacuously pass. | `tests/test_test_catalog.py:34` |
-| `test_category_heading_title_cases_and_expands_acronyms` | Category heading title cases and expands acronyms. | `tests/test_test_catalog.py:43` |
-| `test_parses_a_docstring_first_sentence_as_the_description` | Parses a docstring first sentence as the description. | `tests/test_test_catalog.py:51` |
-| `test_derives_a_description_from_the_name_when_no_docstring` | Derives a description from the name when no docstring. | `tests/test_test_catalog.py:74` |
-| `test_non_test_functions_are_excluded` | Non test functions are excluded. | `tests/test_test_catalog.py:86` |
-| `test_a_file_with_no_test_functions_produces_no_category` | A file with no test functions produces no category. | `tests/test_test_catalog.py:106` |
-| `test_rendered_markdown_escapes_pipe_characters_in_descriptions` | Rendered markdown escapes pipe characters in descriptions. | `tests/test_test_catalog.py:112` |
+| `test_nested_test_files_are_included` | Real bug, found by an external review (Qodo) on PR #54: a literal "tests/" prefix in the tracked_files() pathspec ("tests/test_*.py") only matches tests/'s direct children in real `git ls-files` semantics, confirmed emp… | `tests/test_test_catalog.py:34` |
+| `test_every_real_test_file_produces_a_nonempty_category` | Sanity check that the parser actually finds tests, not an accidentally-empty result that would make the regression test above vacuously pass. | `tests/test_test_catalog.py:58` |
+| `test_category_heading_title_cases_and_expands_acronyms` | Category heading title cases and expands acronyms. | `tests/test_test_catalog.py:67` |
+| `test_parses_a_docstring_first_sentence_as_the_description` | Parses a docstring first sentence as the description. | `tests/test_test_catalog.py:75` |
+| `test_derives_a_description_from_the_name_when_no_docstring` | Derives a description from the name when no docstring. | `tests/test_test_catalog.py:98` |
+| `test_non_test_functions_are_excluded` | Non test functions are excluded. | `tests/test_test_catalog.py:110` |
+| `test_a_file_with_no_test_functions_produces_no_category` | A file with no test functions produces no category. | `tests/test_test_catalog.py:130` |
+| `test_rendered_markdown_escapes_pipe_characters_in_descriptions` | Rendered markdown escapes pipe characters in descriptions. | `tests/test_test_catalog.py:136` |
 
 ## Tracked Files (`tests/test_tracked_files.py`)
 

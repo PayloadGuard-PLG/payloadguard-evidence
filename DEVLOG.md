@@ -13,30 +13,41 @@ completed and updated as more are added. ensure that are categorized
 correctly and a brief description and code." Deliberately generated,
 not hand-authored, matching this session's own standing discipline
 (`evidence/hazard_id_lint.py`, `evidence/citation_registry.py`): a
-236-entry catalog restated by hand would drift the same way a
-duplicated citation or hazard ID already has, twice, this session.
+large catalog restated by hand would drift the same way a duplicated
+citation or hazard ID already has, twice, this session — this entry
+originally hard-coded a row count itself and had already gone stale by
+the time of the second review round below, real proof of the point.
 
-- `evidence/test_catalog.py`: parses every git-tracked
-  `tests/test_*.py` file via Python's `ast` module (no import, no test
-  execution), extracts each `test_*` function's name, first-sentence
-  description (from its docstring, or derived from its name if none),
-  and file:line location. Categorizes by source file — matches how
-  this repo already organizes its suite, no new taxonomy invented.
-- `TEST_CATALOG.md`: the generated output, committed. 233 test
-  functions across 29 categories (pytest's own collected-case count,
-  244 after this session's additions, differs because
-  `@pytest.mark.parametrize`-decorated functions collect as multiple
-  cases from one function definition — the catalog rows the function
-  once, correctly, not once per parametrized case).
+- `evidence/test_catalog.py`: parses every git-tracked `test_*.py`
+  file under `tests/` (including any nested layout, not just direct
+  children — see the PR #54 review fix below) via Python's `ast`
+  module (no import, no test execution), extracts each `test_*`
+  function's name, first-sentence description (from its docstring, or
+  derived from its name if none), and file:line location. Categorizes
+  by source file — matches how this repo already organizes its suite,
+  no new taxonomy invented.
+- `TEST_CATALOG.md`: the generated output, committed — its own header
+  is the authoritative current count, not restated here.
 - `tests/test_test_catalog.py`: regenerates the catalog in memory and
   diffs it against the committed file — CI fails if `TEST_CATALOG.md`
   drifts from the real suite, the same "generated artifact must match
   its generator" discipline `evidence/cli.py`'s own tests already
   apply to the traceability matrices. "Updated as more are added"
   means re-running the generator, not transcribing a new row by hand.
+- **Two real findings from an external review (Qodo) on PR #54, both
+  confirmed and fixed, not self-caught:** (1) `build_catalog()`'s git
+  pathspec (`"tests/test_*.py"`) only matches `tests/`'s direct
+  children in real `git ls-files` semantics, confirmed empirically —
+  a nested test file would have been silently omitted with no error;
+  fixed to a leading-wildcard pattern filtered to `tests/`, matching
+  `hazard_id_lint.py`'s own `"*.md"` precedent. (2) this DEVLOG entry
+  and `HANDOFF.md` hard-coded a row count that had already drifted by
+  the time of the fix — removed the hard-coded number from
+  `evidence/test_catalog.py`'s own docstring for the same reason, and
+  stopped restating the count here at all; `TEST_CATALOG.md`'s
+  generated header is the one place this number should live.
 
-244 tests pass (8 new). `README.md`'s "Further reading" table updated
-to link the new file.
+`README.md`'s "Further reading" table updated to link the new file.
 
 ---
 

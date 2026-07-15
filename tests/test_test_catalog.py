@@ -31,6 +31,30 @@ def test_committed_catalog_matches_the_generator():
     )
 
 
+def test_nested_test_files_are_included(tmp_path):
+    """Real bug, found by an external review (Qodo) on PR #54: a literal
+    "tests/" prefix in the tracked_files() pathspec ("tests/test_*.py")
+    only matches tests/'s direct children in real `git ls-files`
+    semantics, confirmed empirically - a nested file like
+    tests/unit/test_nested.py would have been silently omitted, with no
+    error, despite this repo's own README/TEST_CATALOG language implying
+    full coverage. This repo has no nested test files today, so the bug
+    caused no real damage, but the omission was silent - this test would
+    have caught it."""
+    make_git_repo(
+        tmp_path,
+        {
+            "tests/test_top.py": "def test_a():\n    assert True\n",
+            "tests/unit/test_nested.py": "def test_b():\n    assert True\n",
+        },
+    )
+
+    categories = build_catalog(tmp_path)
+
+    all_names = {e.name for c in categories for e in c.entries}
+    assert all_names == {"test_a", "test_b"}
+
+
 def test_every_real_test_file_produces_a_nonempty_category():
     """Sanity check that the parser actually finds tests, not an
     accidentally-empty result that would make the regression test above

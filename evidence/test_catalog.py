@@ -7,8 +7,12 @@ each test completed and updated as more are added... categorized
 correctly and a brief description and code." Deliberately generated,
 not hand-authored: this repo's own standing discipline this session
 (evidence/hazard_id_lint.py, evidence/citation_registry.py) is that a
-fact restated by hand in more than one place drifts. A 236-row,
-by-hand test catalog is exactly that fact, restated - this module
+fact restated by hand in more than one place drifts. A large, by-hand
+test catalog is exactly that fact, restated - deliberately not naming
+a specific row count here, since it would need updating every time a
+test is added and this docstring is not what's actually enforced (see
+tests/test_test_catalog.py; TEST_CATALOG.md's own generated header is
+the real count) - this module
 reads the real test suite via Python's own `ast` module and renders
 the catalog from it, so "updated as more are added" means re-running
 this script, not manually transcribing a new row. `code` means a
@@ -117,10 +121,24 @@ def parse_test_file(path: pathlib.Path, repo_root: pathlib.Path) -> TestCategory
 
 
 def build_catalog(repo_root: pathlib.Path) -> list:
-    """One TestCategory per git-tracked tests/test_*.py file, sorted by
-    filename for stable, diffable output."""
+    """One TestCategory per git-tracked test_*.py file under tests/,
+    sorted by filename for stable, diffable output.
+
+    Uses the pattern "*test_*.py" (not "tests/test_*.py") and filters
+    to paths under tests/ afterward - confirmed empirically that a
+    literal directory prefix in a git pathspec ("tests/test_*.py")
+    matches only tests/'s direct children, not a nested layout like
+    tests/unit/test_nested.py, unlike a bare leading wildcard
+    ("*test_*.py" or hazard_id_lint.py's "*.md"), which matches at any
+    depth. This repo has no nested test files today, so the bug found
+    no real damage, but it was a silent incompleteness hazard - a
+    future nested test file would have been omitted with no error.
+    Found by an external review (Qodo) on PR #54, not self-caught."""
     categories = []
-    for path in tracked_files(repo_root, "tests/test_*.py"):
+    for path in tracked_files(repo_root, "*test_*.py"):
+        rel_path = path.relative_to(repo_root)
+        if rel_path.parts[0] != "tests" or not path.name.startswith("test_"):
+            continue
         category = parse_test_file(path, repo_root)
         if category.entries:
             categories.append(category)
