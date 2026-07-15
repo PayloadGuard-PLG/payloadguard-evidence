@@ -26,7 +26,9 @@ not merely superseded, since they measured proof strength rather than
 real-world consequence. Every hazard's `Severity` is now an explicit
 `GAP` pending Steven's clinical scoring; `Probability` reverts to
 `RISK_MANAGEMENT_PLAN.md` §4.2's standing worst-case default policy
-(unaffected by R3); `Risk evaluation` is `GAP` for every hazard,
+for every hazard **except `HAZ-GIP-1.2b`**, whose probability stays
+`GAP` by deliberate design (Finding 5, unaffected by R3 either way —
+see that row below); `Risk evaluation` is `GAP` for every hazard,
 cascading from `Severity`. `RISK_MANAGEMENT_PLAN.md` §4.1 now also
 carries an explicit "evidence artifact" citation per hazard — the real
 proof/bound/test that grounds each hazard's probability side, kept
@@ -149,7 +151,10 @@ told it happened.
 The GIP v1.0 hazard table (§2.4, all eight categories: Operational,
 Environmental, Electrical, Hardware, Software, Mechanical, Biological/
 Chemical, Use) enumerates roughly 85 hazards. This kernel addresses
-exactly the four rows above. Representative examples of what is **not**
+exactly the five rows above (**corrected 2026-07-15**: said "four" until
+this fix — stale since `HAZ-GIP-1.2b` split out, Finding 4; caught
+while resolving Finding 3/R3, not separately reported). Representative
+examples of what is **not**
 addressed here, and why — not an exhaustive list, but enough to show
 the exclusion is a real scope boundary, not a gap in this register's
 diligence:
@@ -180,7 +185,8 @@ diligence:
 | 2026-07-14 (later) | Draft severity/probability/evaluation proposal added to all 4 hazards; Steven assigned as Clinical SME | Direct instruction: "assign a clinical SME and start the severity/probability tables." Real finding: none of the 4 hazards reaches S3/S4 given what's actually proven (3 land at S2, 1 — the fully-proven reverse-delivery mitigation — lands at S1); 3 of 4 evaluate provisionally `Unacceptable` under the mandated worst-case probability default. All values marked DRAFT, pending Steven's confirmation, not self-declared as final |
 | 2026-07-15 | `HAZ-GIP-1.2`/`HAZ-GIP-1.3` narrowed to the kernel-proven-closed delivery pathway; new `HAZ-GIP-1.2b` row split out for the real, still-open clinician-notification residual | Audit finding (`RISK_MANAGEMENT_FINDINGS.md` Finding 4, verified against `dosage.py`/`dosage.dfy` directly): the original rows named "Overinfusion" — a pathway this kernel proves closed — while their own residual/severity fields already described a different, open situation. Split, not renamed. `HAZ-GIP-1.2`/`1.3`'s Severity/Probability/Risk-evaluation values are marked stale, pending re-derivation, rather than silently carried over or newly re-scored — that re-scoring is Finding 3/R3's open question. `HAZ-GIP-1.2b`'s Probability is deliberately left `GAP`, not defaulted to P5, per Finding 5's newly-surfaced open question of whether TR 24971 §5.5.3 (severity-alone evaluation) applies to this specific inestimable-probability hazard. Both are register restructuring, not new judgment calls — the severity model, evaluation procedure, and actual scored values remain Steven's decisions |
 | 2026-07-15 (later) | **Correction**: restored a standalone, narrowed `HAZ-GIP-1.3` entry | The first pass of the above restructuring collapsed `HAZ-GIP-1.2` and `HAZ-GIP-1.3` into a single narrowed `HAZ-GIP-1.2` row, silently dropping `HAZ-GIP-1.3`'s own GIP `HID 1.3` traceability anchor while `HAZ-GIP-1.2b` and several other documents still referenced it — a real correctness bug, caught by an automated PR review (Qodo) on PR #50, not self-caught. Fixed by restoring `HAZ-GIP-1.3` as its own narrowed row, parallel in structure to `HAZ-GIP-1.2`, per the review's own suggested Option 1 |
-| 2026-07-15 (yet later) | Finding 3/R3 resolved: every hazard's `Severity` and `Risk evaluation` updated to explicit `GAP`; `Probability` reverted to the §4.2 default policy | Direct instruction: "work through R3's severity model." Steven chose Option 3 (hybrid, `AskUserQuestion`) after Option 2 was eliminated on textual grounds (TR 24971 §5.5.4). The prior `DRAFT: S1`/`S2` values (including `HAZ-GIP-1.14`'s `Acceptable` evaluation) were withdrawn, not revised — they measured evidence strength, not real-world consequence, so no valid severity value existed for any hazard before this fix either. `RISK_MANAGEMENT_PLAN.md` §4.1 now carries the consequence-only band definitions and an explicit evidence-artifact citation per hazard |
+| 2026-07-15 (yet later) | Finding 3/R3 resolved: every hazard's `Severity` and `Risk evaluation` updated to explicit `GAP`; `Probability` reverted to the §4.2 default policy for every hazard except `HAZ-GIP-1.2b` (Finding 5, unaffected either way) | Direct instruction: "work through R3's severity model." Steven chose Option 3 (hybrid, `AskUserQuestion`) after Option 2 was eliminated on textual grounds (TR 24971 §5.5.4). The prior `DRAFT: S1`/`S2` values (including `HAZ-GIP-1.14`'s `Acceptable` evaluation) were withdrawn, not revised — they measured evidence strength, not real-world consequence, so no valid severity value existed for any hazard before this fix either. `RISK_MANAGEMENT_PLAN.md` §4.1 now carries the consequence-only band definitions and an explicit evidence-artifact citation per hazard |
+| 2026-07-15 (later still) | **Correction**: fixed an overgeneralized "every hazard reverts to P5" claim (this file's intro, this change log's row above, `DEVLOG.md`) that didn't carve out `HAZ-GIP-1.2b`'s deliberate exception; split the §4.1 evidence-artifact table's merged `HAZ-GIP-1.2`/`HAZ-GIP-1.3` row into two; fixed a second, separate "four hazards"/"four rows" staleness instance in this file's own Section 3 (missed by the same-day R3 fix, which only caught the two instances in `RISK_MANAGEMENT_PLAN.md`) | Three real findings from an automated PR review (Qodo) on PR #53, not self-caught — confirmed directly against the files before fixing, same discipline as every other review response this session |
 
 ---
 

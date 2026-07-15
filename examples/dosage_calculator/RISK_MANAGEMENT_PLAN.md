@@ -176,7 +176,8 @@ probability claim:
 | Hazard | Severity | Evidence artifact (drives Probability) |
 |---|---|---|
 | `HAZ-GIP-1.14` (reverse delivery, kernel-proven-closed pathway) | `GAP` — **pending Steven's consequence determination**: what harm would reverse drug delivery actually cause if it reached a patient, independent of how strongly this kernel proves it doesn't. Not S1 by default just because the pathway is proven closed — that reasoning is exactly what Finding 3 found invalid | `raw_dafny_output.txt` / `run_manifest_dafny.json` — Dafny-**proven** `CalculateHourlyDose` yields exactly zero delivered dose on any negative-rate fault, both ordinary and overflow-magnitude (`ordinary_negative_rate_clamps_to_zero`, `overflow_negative_rate_clamps_to_zero`). The strongest evidence artifact in this register — now correctly read as a probability claim, not a severity one |
-| `HAZ-GIP-1.2` / `HAZ-GIP-1.3` (over-limit bolus request, kernel-proven-closed delivery pathway) | `GAP` — pending Steven's consequence determination for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound |
+| `HAZ-GIP-1.2` (over-limit bolus request, kernel-proven-closed delivery pathway) | `GAP` — pending Steven's consequence determination for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound |
+| `HAZ-GIP-1.3` (over-limit bolus request, kernel-proven-closed delivery pathway — same evidence as `HAZ-GIP-1.2`, distinct GIP `HID 1.3` traceability anchor per `HAZARD_REGISTER.md`) | `GAP` — pending Steven's consequence determination for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.2` and `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound |
 | `HAZ-GIP-1.2b` (clamp fires, clinician notification unproven) | `GAP` — pending Steven's consequence determination. Blocked on the same open question as everywhere else in this table, plus this row's own residual: even once severity is scored, whether a *probability* can be estimated for this specific hazard is Finding 5's separate open question, not resolved by Finding 3 | **None.** No Dafny, CrossHair, or concrete-test artifact addresses alarm signaling — a complete evidence gap, not a weak one (see `HAZARD_REGISTER.md`) |
 | `HAZ-DOSE-003` (non-finite/out-of-range result) | `GAP` — pending Steven's consequence determination | `raw_crosshair_output.txt` + concrete test `normal_in_range_exact_value` — `BOUNDED_CHECKED`, not `PROVEN`; **structurally, permanently capped at this strength** in this toolchain (Dafny's `real` type has no IEEE-754 overflow/NaN semantics to prove against — see the "Path to sign-off" section below) |
 
@@ -211,7 +212,7 @@ only valid choice.
 | P2 — Remote | Unlikely, but plausible over the device's field life | Same — not assigned without evidence |
 | P3 — Occasional | Expected to occur sometimes over the device's field life | Same — not assigned without evidence |
 | P4 — Probable | Expected to occur several times over the device's field life | Same — not assigned without evidence |
-| P5 — Frequent | Expected to occur regularly, likely within normal use, **when assigned on the strength of real usage data** | **P5 is this device's current default for every hazard below, but not as an occurrence-rate estimate** — it is a conservative *proxy* applied per Section 4.4's policy because no field usage data exists yet (pre-market POC), not a claim that any hazard actually occurs frequently. Every hazard entry marks this explicitly ("worst-case default," not "measured Frequent") to avoid the two meanings being conflated |
+| P5 — Frequent | Expected to occur regularly, likely within normal use, **when assigned on the strength of real usage data** | **P5 is this device's default for every hazard below except `HAZ-GIP-1.2b`** (corrected 2026-07-15 — previously said "every hazard" without exception, stale since `HAZ-GIP-1.2b`'s probability was deliberately left `GAP`, not defaulted, per Finding 5), not as an occurrence-rate estimate — it is a conservative *proxy* applied per Section 4.4's policy because no field usage data exists yet (pre-market POC), not a claim that any hazard actually occurs frequently. Every P5-defaulted hazard entry marks this explicitly ("worst-case default," not "measured Frequent") to avoid the two meanings being conflated; `HAZ-GIP-1.2b`'s row states why it's excepted |
 
 **Connection to §4.1's R3 rebuild, 2026-07-15:** each hazard's real
 evidence artifact (a Dafny proof, a `BOUNDED_CHECKED` bound, or an
@@ -374,7 +375,7 @@ model now comes first.
 
 ### Step 0 (new under R3): severity scoring blocks everything below it
 
-Before any of the four hazards' *probability* questions matter, all
+Before any of the five hazards' *probability* questions matter, all
 five need a real, consequence-based severity value from Steven (§4.1)
 — without it, Section 4.3's matrix and Section 5's combination method
 both stay `GAP` regardless of how strong or weak the probability-side
@@ -446,7 +447,8 @@ results — R3 changed what feeds the matrix, not what the matrix's
 outputs mean once it has real inputs:
 
 1. **Real field/usage probability data.** Section 4.4's worst-case
-   default (P5 for every hazard) exists specifically because none
+   default (P5 for every hazard except `HAZ-GIP-1.2b`, whose probability
+   is left `GAP` per Finding 5 — §4.2) exists specifically because none
    exists yet — this is a pre-market POC with no deployment. Real data
    would let Section 4.2 assign a genuinely lower probability band
    instead of the conservative default. This path requires an actual

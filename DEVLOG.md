@@ -41,7 +41,9 @@ Built across both artifacts:
   actually computed from what ISO 14971 means by severity.
 - `HAZARD_REGISTER.md`: all 5 hazards' `Severity`/`Risk evaluation`
   fields updated to `GAP`; `Probability` reverted to §4.2's standing
-  worst-case-default policy (unaffected by R3).
+  worst-case-default policy for every hazard except `HAZ-GIP-1.2b`,
+  whose probability stays `GAP` by deliberate design per Finding 5,
+  unaffected by R3 either way.
 - `RISK_MANAGEMENT_FINDINGS.md`: Finding 3 marked resolved (model), with
   the concrete next item now named explicitly — real severity values
   for all 5 hazards, Steven's clinical call, not an abstract model
