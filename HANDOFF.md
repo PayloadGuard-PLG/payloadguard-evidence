@@ -52,8 +52,13 @@ severity bands (S1 Negligible–S4 Critical) tied to this kernel's actual
 proven/bounded-checked guarantees, a standard 5-level qualitative
 probability scale (P1–P5) defaulting every hazard to P5 per this
 plan's own already-established worst-case policy (no field data
-exists), and a 3-region (Acceptable/ALARP/Unacceptable) matrix per
-ISO 14971 Annex D. Applied to all 4 hazards in
+exists), and a 3-region (Acceptable/ALARP/Unacceptable) matrix.
+**Citation correction, 2026-07-15**: this matrix was originally
+attributed to "ISO 14971 Annex D," which doesn't exist in the 2019
+edition — the real basis is clause 4.2 NOTE 1 and ISO/TR 24971 Annex
+C.4/Figure C.1; see `RISK_MANAGEMENT_FINDINGS.md` for the full
+correction, including the open question of whether the region names
+should track TR 24971's own wording. Applied to all 4 hazards in
 `examples/dosage_calculator/HAZARD_REGISTER.md`. **Real finding:** none
 of the 4 hazards reaches S3/S4 given what's actually proven (`HAZ-GIP-1.14`,
 fully-proven reverse-delivery mitigation, lands at S1; the other 3 at

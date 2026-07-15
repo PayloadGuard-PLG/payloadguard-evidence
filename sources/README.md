@@ -146,6 +146,24 @@ requirements documents, standards excerpts) that ground the claims in
   third constructor — see
   `examples/drug_interaction_checker/nl_confirmation_drug_interaction_checker_dfy.md`'s
   "Addendum 3" for the open design decision this leaves for Steven.
+- `ISO-24971-2020.pdf` — added 2026-07-15, obtained and committed
+  directly by Steven, not via this repo's assistant. ISO/TR 24971:2020(E),
+  second edition, "Medical devices — Guidance on the application of ISO
+  14971" — marked "PROOF/ÉPREUVE" (pre-publication proof copy) on its
+  own title page; noted, not treated as invalidating its content. Per
+  rule 2 above: **corrects** the risk-management plan's prior "ISO
+  14971's own Annex D" citation (the 2019 edition's own Table B.1
+  records the 2007 edition's Annex D as moved to this document, not
+  retained as an annex — see `RISK_MANAGEMENT_FINDINGS.md` Finding 2
+  and `RISK_MANAGEMENT_PLAN.md` §4.3's citation correction); **extends**
+  the severity/probability discussion via §5.5.3 (risks with inestimable
+  probability evaluated on severity alone, not the full matrix) and
+  §5.5.4 (severity levels must exclude any element of probability — see
+  `RISK_MANAGEMENT_FINDINGS.md` Finding 3), and supplies the actual
+  three-region acceptance-matrix source (Annex C.4, Figure C.1) the
+  plan's matrix structure is modelled on, though the plan's own region
+  *labels* have not yet been reconciled to this source's wording — open
+  item, `RISK_MANAGEMENT_FINDINGS.md`'s "matrix region naming" entry.
 
 ## Resolved questions
 

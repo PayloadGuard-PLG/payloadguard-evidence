@@ -48,7 +48,11 @@ buildable versus permanently out of reach, then names the two real
 paths that remain: real field/usage probability data (doesn't exist
 for a pre-market POC and can't be honestly simulated), or a genuine
 ALARP determination from Steven as the named Clinical SME — an ISO
-14971 Annex D move (risk control exhausted within stated scope,
+14971 Annex D move [**correction, 2026-07-15**: the 2019 edition has
+no Annex D; the real basis is clause 4.2 NOTE 1 and ISO/TR 24971
+Annex C.4/Figure C.1 — see `RISK_MANAGEMENT_FINDINGS.md`, entry left
+as originally written per this log's append-only discipline] (risk
+control exhausted within stated scope,
 residual accepted as tolerable with recorded reasoning), explicitly a
 policy judgment only he can make, not a technical question this repo's
 assistant can answer or pre-draft on his behalf. The section is
@@ -111,7 +115,11 @@ evidence, not invented:
   anything lower, and none was invented to pretend otherwise.
 - **Acceptance matrix**, extended from the template's original binary
   framing to a 3-region convention (Acceptable / ALARP / Unacceptable)
-  per ISO 14971's own Annex D discussion — itself flagged as a
+  per ISO 14971's own Annex D discussion [**correction, 2026-07-15**:
+  the 2019 edition has no Annex D; real basis is clause 4.2 NOTE 1 and
+  ISO/TR 24971 Annex C.4/Figure C.1 — see `RISK_MANAGEMENT_FINDINGS.md`,
+  entry left as originally written per this log's append-only
+  discipline] — itself flagged as a
   proposed extension for Steven to confirm or simplify back.
 - **Overall residual-risk method** (clause 4.4e, Section 5): a simple,
   conservative combination rule (all hazards must individually
