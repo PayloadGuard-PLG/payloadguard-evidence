@@ -6,6 +6,68 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 (later) — Real severity scoring recorded for all 5 `dosage_calculator` hazards; device overall residual risk now `Unacceptable`
+
+Direct instruction: "start on the severity values for the 5 hazards."
+Finding 3/R3 (earlier the same day) had rebuilt the severity **model**
+consequence-only but left every hazard's severity **value** an explicit
+`GAP` pending Steven's clinical scoring — this session did that
+scoring, not the model work again.
+
+As the named Clinical SME (`RISK_MANAGEMENT_PLAN.md` Section 2), Steven
+scored all five hazards in `HAZARD_REGISTER.md` via `AskUserQuestion`,
+one at a time (four in a first batch, the fifth — `HAZ-DOSE-003`,
+non-GIP-sourced — separately), against §4.1's real consequence-only
+bands (S1–S4) and each hazard's own documented `Potential harm` text.
+This repo's assistant did not propose, default, or infer any of the
+five values — each was a real clinical determination, recorded with
+attribution, matching the discipline every Gate C6 sign-off in this
+repo has held to (substantive work prepared, but the actual
+confirmation a recorded human decision).
+
+**Result: `S3 — Serious`, all five** (`HAZ-GIP-1.14`, `HAZ-GIP-1.2`,
+`HAZ-GIP-1.3`, `HAZ-GIP-1.2b`, `HAZ-DOSE-003`). Notable: `HAZ-GIP-1.14`
+scored `S3` despite carrying this register's strongest probability-side
+evidence (Dafny-**proven** zero delivered dose on any negative-rate
+fault) — a concrete demonstration, not just an abstract claim, that
+severity and proof strength are genuinely independent axes, exactly
+the conflation Finding 3 found and fixed in the model itself.
+
+Mechanically applying `RISK_MANAGEMENT_PLAN.md` §4.3's
+already-specified acceptance matrix to these real values (a lookup, not
+a new judgment call) — `HAZ-GIP-1.14`/`HAZ-GIP-1.2`/`HAZ-GIP-1.3`/
+`HAZ-DOSE-003` combine `S3` with §4.2's standing `P5` worst-case default
+to **`Unacceptable`**; `HAZ-GIP-1.2b` stays an evaluation `GAP`, since
+its `Probability` — not its now-known `Severity` — is blocked by
+`RISK_MANAGEMENT_FINDINGS.md` Finding 5's separate, still-open question
+(whether TR 24971 §5.5.3's severity-alone evaluation applies to a
+hazard with zero probability-side evidence of any kind). Per Section
+5's already-specified combination method (unchanged since 2026-07-14):
+if any hazard evaluates `Unacceptable`, overall residual risk is
+`Unacceptable` until resolved. **This device's overall residual risk is
+now `Unacceptable`** — a real, computed result, not the `GAP`
+placeholder Finding 3's model-only fix left standing hours earlier.
+
+This is not a claim the device got less safe — it is the honest output
+of a real severity input meeting this plan's already-specified,
+conservative worst-case-probability policy for a pre-market POC with no
+field data. `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section's
+two remaining paths (real field/usage probability data, which doesn't
+exist yet; or a recorded ALARP determination from Steven as the named
+Clinical SME) are now the live next decision, not a hypothetical one.
+
+Updated: `HAZARD_REGISTER.md` (all 5 hazard rows' Severity/Risk
+evaluation fields, top status block, change log), `RISK_MANAGEMENT_PLAN.md`
+(§4.1's severity table, §4.3's applied matrix, Section 5's applied
+method, "Path to sign-off" section throughout, Section 8 change log),
+`RISK_MANAGEMENT_FINDINGS.md` (status ledger, Finding 3's full record
+and "what's still open" note, the "what actually needs Steven" summary),
+`README.md`'s Risk management section, `KNOWN_LIMITATIONS.md`,
+`SYSTEM_BLUEPRINT.md`, `HANDOFF.md`. No code, spec, or test change —
+253 tests pass, unchanged.
+
+---
+
 ## 2026-07-15 — Three real Qodo findings on PR #55 (the R5 harness) fixed: unvalidated Dafny capture, a latent float-serialization bug, a docstring self-contradiction
 
 An externally-supplied Qodo review of PR #55 flagged three issues. Each

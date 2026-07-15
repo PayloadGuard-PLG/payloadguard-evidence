@@ -1,6 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (Three real Qodo findings on PR #55's
+Last updated: 2026-07-15 (later — real severity scoring recorded for
+`dosage_calculator`'s 5-hazard register (`RISK_MANAGEMENT_PLAN.md`,
+`HAZARD_REGISTER.md`): Steven scored every hazard `S3 — Serious`,
+mechanically producing this device's overall residual risk of
+`Unacceptable` (4 of 5 hazards; `HAZ-GIP-1.2b` stays an evaluation
+`GAP`, blocked by a separate open probability-side question). No
+architecture, gate, evidence-engine, or data-flow change — this is
+content within an already-existing document type (risk-management
+artifacts, Section 5's inventory), not a new component. Full record:
+`KNOWN_LIMITATIONS.md`, `RISK_MANAGEMENT_FINDINGS.md` Finding 3. 253
+tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (Three real Qodo findings on PR #55's
 differential-testing harness fixed, each independently re-verified
 against the real committed code first: the capture script
 (`run_verify_dosage_differential.py`) now actually applies the Gate C1/

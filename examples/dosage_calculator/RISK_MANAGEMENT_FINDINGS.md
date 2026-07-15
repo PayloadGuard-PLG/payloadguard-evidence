@@ -7,7 +7,8 @@ example only.
 these two artifacts to date, whether resolved or open, so a reader
 doesn't need the original chat session or the standalone audit report
 to know current state.
-**Last updated:** 2026-07-15.
+**Last updated:** 2026-07-15 (later — real severity scoring recorded,
+Finding 3 fully closed, device overall residual risk now `Unacceptable`).
 
 ---
 
@@ -17,7 +18,7 @@ to know current state.
 |---|---|---|---|---|
 | 1 | Clause 4.4 header citation stale | Refuted on audit | Closed, no action | — |
 | 2 | "ISO 14971's own Annex D" cited — doesn't exist in 2019 edition | Confirmed | **Remediated, 2026-07-15 (verified applied, not just claimed)** | `RISK_MANAGEMENT_PLAN.md` §4.3, Path-to-sign-off; `HANDOFF.md`; `DEVLOG.md` (×2, corrected in place with a bracketed note per this log's append-only discipline); `README.md`. **Correction to this row's own location list:** `KNOWN_LIMITATIONS.md` was checked directly and does not contain the "Annex D" citation error — its one "ALARP" mention is a correct use of the policy concept (clause 4.2 NOTE 1), not a false citation. This ledger's earlier claim that it needed the fix was itself inaccurate. |
-| 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Resolved (model), 2026-07-15 — Option 3 (hybrid) chosen; severity values now `GAP`, pending Steven's clinical scoring (not resolved yet)** | `RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, Path-to-sign-off; `HAZARD_REGISTER.md` (all 5 hazards) |
+| 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Fully resolved, 2026-07-15 — model rebuilt (Option 3), then real severity values recorded from Steven the same day: `S3 — Serious`, all 5 hazards. Device overall residual risk now `Unacceptable`, computed, not `GAP`** | `RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, Path-to-sign-off; `HAZARD_REGISTER.md` (all 5 hazards) |
 | 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally), 2026-07-15 (verified applied, not just claimed)** — `HAZ-GIP-1.2b` split out; `HAZ-GIP-1.2`/`1.3`'s own Severity/Probability marked stale/pending re-derivation rather than silently carried over; `HAZ-GIP-1.2b`'s Probability left `GAP`, not defaulted to P5, per Finding 5 below | `HAZARD_REGISTER.md` |
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Confirmed, then resolved | **Resolved, 2026-07-15 — Option 2 (differential-testing harness) built; 9/9 vectors matched; postcondition drift found and fixed in the same pass** | `dosage_differential_vectors.py`, `dosage_differential_driver.dfy`, `differential_test_results.json` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
@@ -73,12 +74,15 @@ updated to report `GAP` instead of the old, invalidated
 hazards' `Severity`/`Risk evaluation` set to `GAP`, `Probability`
 reverted to the standing §4.2 default policy). Full record below.
 
-**What's still open here:** the severity **model** is resolved; the
-per-hazard severity **values** are not — every hazard needs a real,
-consequence-based score from Steven before any evaluation can be
-computed. This is now the concrete blocking item, not an abstract
-"which model" question. See the full write-up below for detail this
-brief record doesn't repeat.
+**Update, 2026-07-15 (later): fully closed.** The per-hazard severity
+**values** are no longer open — Steven scored all five hazards `S3 —
+Serious` via `AskUserQuestion` the same day. `RISK_MANAGEMENT_PLAN.md`
+§4.3's matrix and Section 5's combination method both now produce real
+evaluations: four hazards `Unacceptable`, `HAZ-GIP-1.2b` still `GAP`
+(blocked by Finding 5's separate, still-open Probability-side
+question, not by Severity). This device's overall residual risk is now
+`Unacceptable`, a computed result, not `GAP`. See the full write-up
+below for detail this brief record doesn't repeat.
 
 ### R5 — equivalence gap (`dosage.py` / `dosage.dfy`)
 
@@ -180,12 +184,34 @@ cell to a `raw_dafny_output.txt`) without asking severity to silently
 encode it. Built into `RISK_MANAGEMENT_PLAN.md` §4.1 and
 `HAZARD_REGISTER.md` 2026-07-15.
 
-**Still not decided — the actual scoring.** TR 24971's Table 4 (five
-consequence-only severity descriptors: Catastrophic/Fatal, Critical,
-Serious/Major, Minor, Negligible) is a real, source-backed calibration
-reference `RISK_MANAGEMENT_PLAN.md` §4.1 already cites for the clinical
-work this now requires — assigning a real S1–S4 value to each of the 5
-hazards in `HAZARD_REGISTER.md`, which only Steven can do.
+**Then decided — the actual scoring, 2026-07-15 (later).** TR 24971's
+Table 4 (five consequence-only severity descriptors: Catastrophic/
+Fatal, Critical, Serious/Major, Minor, Negligible) was the real,
+source-backed calibration reference `RISK_MANAGEMENT_PLAN.md` §4.1
+already cited for the clinical work this required. Direct instruction:
+"start on the severity values for the 5 hazards." Recorded via
+`AskUserQuestion`, one hazard at a time, against §4.1's real
+consequence-only bands and each hazard's own documented `Potential
+harm` text (not against evidence strength — the exact conflation this
+finding exists to prevent). **Result: `S3 — Serious`, all five
+hazards** (`HAZ-GIP-1.14`, `HAZ-GIP-1.2`, `HAZ-GIP-1.3`,
+`HAZ-GIP-1.2b`, `HAZ-DOSE-003`) — notably including `HAZ-GIP-1.14`
+despite it carrying this register's strongest probability-side
+evidence (a full Dafny proof), confirming in practice the point this
+finding's own illustration above predicted: severity and proof strength
+are genuinely independent axes, not correlated ones.
+
+Applying `RISK_MANAGEMENT_PLAN.md` §4.3's already-specified matrix to
+these real values (a mechanical lookup, not a new judgment call) gives
+`HAZ-GIP-1.14`/`HAZ-GIP-1.2`/`HAZ-GIP-1.3`/`HAZ-DOSE-003` →
+`Unacceptable` (P5 × S3); `HAZ-GIP-1.2b` stays `GAP` at the evaluation
+step, since its Probability, not its now-known Severity, is what
+Finding 5 below leaves open. Per Section 5's already-specified
+combination method, this device's **overall residual risk is now
+`Unacceptable`** — a real, computed result, replacing the `GAP` status
+this finding's model-only resolution left standing. Full detail:
+`RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, and its "Path to
+sign-off" section, all updated 2026-07-15 (later) alongside this entry.
 
 ---
 
@@ -331,22 +357,28 @@ capture's new content.
 
 ## Summary — what actually needs Steven, listed once
 
-- **Real severity value (S1–S4) for each of the 5 hazards in
-  `HAZARD_REGISTER.md`** — Finding 3/R3 is resolved (Option 3, model
-  built 2026-07-15); this is the concrete item it left behind, not an
-  abstract model choice anymore. Blocks §4.3's matrix, Section 5's
-  overall-residual-risk method, and every hazard's `Risk evaluation`
-  field until done.
+- **A real decision on this device's `Unacceptable` overall residual
+  risk** (computed 2026-07-15, from Steven's own real severity scoring
+  — see Finding 3 above): either real field/usage probability data
+  (doesn't exist for a pre-market POC), or a genuine ALARP
+  determination from Steven as the named Clinical SME, per
+  `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section. This is now
+  the concrete blocking item, replacing the severity-scoring item this
+  list previously led with.
 - Finding 5: which evaluation procedure for inestimable-probability
   hazards (Options A/B/C), and the interpretive call underneath it
-  (inestimable vs. unmeasured) — genuinely separate from severity
-  scoring above, live specifically for `HAZ-GIP-1.2b`
+  (inestimable vs. unmeasured) — live specifically for `HAZ-GIP-1.2b`,
+  whose `Severity` is now known (`S3`) but whose `Probability`, and
+  therefore `Risk evaluation`, still is not
 - Matrix region naming: reconcile to TR's wording or keep ALARP as a
   stated departure
 - `HAZ-DOSE-003`: fold into `HAZ-GIP-1.2b` or keep separate
 
 R5 (equivalence gap) is resolved as of 2026-07-15 — removed from this
-list, kept in the ledger above for the record.
+list, kept in the ledger above for the record. Real severity scoring
+(the item this list used to lead with) is likewise resolved as of
+2026-07-15 (later) — see Finding 3 above; the `Unacceptable` result it
+produced is what the new first bullet above is actually about.
 
 None of these are resolved by this document. It exists so they're
 findable in one place, not scattered across a chat session and an

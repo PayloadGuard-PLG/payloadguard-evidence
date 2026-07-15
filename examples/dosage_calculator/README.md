@@ -722,3 +722,54 @@ dedicated test asserts the vector's own documentation says so.
 
 251 tests pass (5 new). Full record:
 `RISK_MANAGEMENT_FINDINGS.md`.
+
+## Amendment 2026-07-15 (yet later) — Real severity scoring recorded for all 5 hazards; overall residual risk now `Unacceptable`, superseding the `GAP` conclusion above
+
+**Superseded, not merely extended:** the "Amendment 2026-07-15" entry
+above (Finding 3/R3, model-only) concluded "this device's overall
+residual risk is now `GAP`, not `Unacceptable`." That was accurate at
+the time — the severity **model** had been fixed, but every hazard's
+severity **value** was still an explicit `GAP` pending Steven's
+clinical scoring. This amendment is that scoring. Preserved above per
+this file's own audit-trail discipline; a reader relying on this file
+for current status should treat the `GAP` conclusion above as
+historical record of an intermediate state, not present fact.
+
+Direct instruction: "start on the severity values for the 5 hazards."
+As the named Clinical SME (`RISK_MANAGEMENT_PLAN.md` Section 2), Steven
+scored each of the five hazards in `HAZARD_REGISTER.md` via
+`AskUserQuestion`, one at a time, against §4.1's real consequence-only
+bands and each hazard's own documented `Potential harm` text — never
+proposed, defaulted, or inferred by this repo's assistant.
+
+**Result: `S3 — Serious`, all five** (`HAZ-GIP-1.14`, `HAZ-GIP-1.2`,
+`HAZ-GIP-1.3`, `HAZ-GIP-1.2b`, `HAZ-DOSE-003`). Worth noting explicitly:
+`HAZ-GIP-1.14` scored `S3` despite carrying this register's strongest
+probability-side evidence — a full Dafny proof of exactly zero
+delivered dose on any negative-rate fault. That's a concrete
+demonstration, not just an abstract claim, that severity and proof
+strength are genuinely independent axes — exactly the conflation
+Finding 3 found and fixed in the model itself.
+
+Mechanically applying `RISK_MANAGEMENT_PLAN.md` §4.3's
+already-specified acceptance matrix to these real values (a lookup, not
+a new judgment call): `HAZ-GIP-1.14`/`HAZ-GIP-1.2`/`HAZ-GIP-1.3`/
+`HAZ-DOSE-003` combine `S3` with §4.2's standing `P5` worst-case default
+to **`Unacceptable`**; `HAZ-GIP-1.2b` stays an evaluation `GAP`, since
+its `Probability` — not its now-known `Severity` — is separately
+blocked by `RISK_MANAGEMENT_FINDINGS.md` Finding 5's still-open
+question. Per Section 5's combination method: **this device's overall
+residual risk is now `Unacceptable`** — a real, computed result, not
+the `GAP` placeholder the entry above left standing.
+
+This is not a claim the device got less safe — it is the honest output
+of a real severity input meeting this plan's already-specified,
+conservative worst-case-probability policy for a pre-market POC with no
+field data. The concrete next step: `RISK_MANAGEMENT_PLAN.md`'s "Path
+to sign-off" section names two remaining live paths — real field/usage
+probability data (doesn't exist yet), or a recorded ALARP determination
+from Steven as the named Clinical SME — neither chosen yet.
+
+253 tests pass, unchanged (no code, spec, or test change — this
+amendment is documentation content only). Full record:
+`RISK_MANAGEMENT_FINDINGS.md` Finding 3.
