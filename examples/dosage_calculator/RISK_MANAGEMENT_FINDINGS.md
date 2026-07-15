@@ -19,7 +19,7 @@ to know current state.
 | 2 | "ISO 14971's own Annex D" cited — doesn't exist in 2019 edition | Confirmed | **Remediated, 2026-07-15 (verified applied, not just claimed)** | `RISK_MANAGEMENT_PLAN.md` §4.3, Path-to-sign-off; `HANDOFF.md`; `DEVLOG.md` (×2, corrected in place with a bracketed note per this log's append-only discipline); `README.md`. **Correction to this row's own location list:** `KNOWN_LIMITATIONS.md` was checked directly and does not contain the "Annex D" citation error — its one "ALARP" mention is a correct use of the policy concept (clause 4.2 NOTE 1), not a false citation. This ledger's earlier claim that it needed the fix was itself inaccurate. |
 | 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Resolved (model), 2026-07-15 — Option 3 (hybrid) chosen; severity values now `GAP`, pending Steven's clinical scoring (not resolved yet)** | `RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, Path-to-sign-off; `HAZARD_REGISTER.md` (all 5 hazards) |
 | 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally), 2026-07-15 (verified applied, not just claimed)** — `HAZ-GIP-1.2b` split out; `HAZ-GIP-1.2`/`1.3`'s own Severity/Probability marked stale/pending re-derivation rather than silently carried over; `HAZ-GIP-1.2b`'s Probability left `GAP`, not defaulted to P5, per Finding 5 below | `HAZARD_REGISTER.md` |
-| — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Partially confirmed | **Open — R5 options below** | `dosage.dfy` header comment (unverified), `traceability_matrix.a.md` |
+| — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Confirmed, then resolved | **Resolved, 2026-07-15 — Option 2 (differential-testing harness) built; 9/9 vectors matched; postcondition drift found and fixed in the same pass** | `dosage_differential_vectors.py`, `dosage_differential_driver.dfy`, `differential_test_results.json` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
 | — | TR 24971's real three-region matrix uses different region names than "ALARP" | New, from direct TR 24971 read | **Open — naming reconciliation, Steven's call** | `RISK_MANAGEMENT_PLAN.md` §4.3 |
 
@@ -79,6 +79,52 @@ consequence-based score from Steven before any evaluation can be
 computed. This is now the concrete blocking item, not an abstract
 "which model" question. See the full write-up below for detail this
 brief record doesn't repeat.
+
+### R5 — equivalence gap (`dosage.py` / `dosage.dfy`)
+
+Direct instruction, 2026-07-15: "let's look into R5 directly." Verified
+the equivalence claim by direct comparison before proposing options: for
+every input where `raw_dose` is finite, both implementations' branch
+logic matches exactly (`raw_dose < 0` → 0; `raw_dose > max` → max; else
+→ `raw_dose`) — confirmed, not assumed. Found one new, previously
+unflagged issue during that verification: the two files' *documented*
+postconditions had already drifted — Dafny's `ensures` was tightened to
+strict `infusionRateMlPerHr > 0.0` on 2026-07-07 (Gate C5 mutation
+finding), never back-ported to `dosage.py`'s docstring `post:` line,
+still `>=`. Confirmed `dafny run` executes concrete inputs in this
+environment before proposing Option 2, changing its cost/risk profile
+from "moderate effort, not attempted" to "concretely buildable now."
+
+Steven chose **Option 2 (differential-testing harness)**, plus fixing
+the postcondition drift (`AskUserQuestion`). Both built:
+
+- `dosage.py`'s postcondition tightened to `> 0`, matching `dosage.dfy`;
+  CrossHair re-run and re-verified clean (`raw_crosshair_output.txt`,
+  `run_manifest.json`); `traceability_matrix.a.*` and siblings
+  regenerated via `generate_artifacts.py`.
+- `dosage_differential_vectors.py` — 9 shared test vectors (single
+  source of truth for both sides), `generate_dosage_differential_driver.py`
+  → `dosage_differential_driver.dfy` (generated, committed, calls the
+  real `CalculateHourlyDose` via Dafny's own `include`, not a
+  reimplementation), `run_verify_dosage_differential.py` → real `dafny
+  run` capture (`raw_dafny_differential_output.txt`,
+  `run_manifest_dafny_differential.json`) compared against `dosage.py`'s
+  live output → `differential_test_results.json`. **All 9 vectors
+  matched.** `tests/test_dosage_differential.py` checks the generated
+  driver matches its generator, the capture shows full agreement, and
+  Python's live behavior still reproduces the captured values — no live
+  Dafny invocation in CI, same discipline as every other Dafny capture
+  here.
+
+**Scope, stated explicitly, not implied:** this validates equivalence
+only within the domain Dafny can represent — `raw_dose` finite. One
+vector deliberately mirrors `tests/test_dosage_concrete.py`'s own
+overflow case; both implementations agree there too, but via genuinely
+different reasoning (Python: float overflow to `-inf`, still `< 0`;
+Dafny: the exact large value, also `< 0`) — coincidental to this
+vector's chosen magnitudes, not a general REQ-DOSE-003 equivalence
+claim, which is structurally impossible in Dafny's `real` type and
+remains permanently out of reach (`dosage.dfy`'s own header comment).
 
 ---
 
@@ -210,38 +256,76 @@ defensible is the current unstated conflation.
 
 ---
 
-## Open — equivalence gap (`dosage.py` / `dosage.dfy`)
+## Resolved — R5: equivalence gap (`dosage.py` / `dosage.dfy`) (full record)
+
+**Resolved 2026-07-15 — Option 2 (differential-testing harness)
+chosen and built.** Kept below for full context; see the brief record
+above for a one-paragraph summary.
 
 `dosage.dfy`'s header comment asserts it is a "Dafny translation of
-dosage.py's clamping kernel," but no test or harness checks the two
-implementations agree on any input — the claim is stated, not
-evidenced. This is structurally unique to `dosage_calculator`; the
-other two worked examples are Dafny-only.
+dosage.py's clamping kernel." Before proposing options, verified this
+directly rather than trusting it: for every input where `raw_dose` is
+finite, both implementations' branch logic is identical
+(`raw_dose < 0` → 0; `raw_dose > max` → max; else → `raw_dose`). This
+was structurally unique to `dosage_calculator`; the other two worked
+examples are Dafny-only.
+
+**Real finding surfaced during that verification, not previously
+flagged:** the two files' *documented* postconditions had already
+drifted. `dosage.dfy`'s `ensures` clause was tightened to strict
+`infusionRateMlPerHr > 0.0` on 2026-07-07 (Gate C5 mutation-testing
+finding: `>=` wasn't independently load-bearing at `rate == 0.0`
+exactly). That fix was never back-ported to `dosage.py`'s docstring
+`post:` line, which still said `>= 0`. Behavior was unaffected (dose is
+0.0 at rate 0.0 either way), but the two contracts' stated strength had
+silently diverged — a live instance of exactly what R5 warns about, in
+this repo's own committed artifacts, found by direct comparison.
 
 **Matters for:** any probability credit a Dafny proof would extend to
-the Python artifact — now concretely live, not conditional, since
-Finding 3/R3 resolved to Option 3 (2026-07-15): probability-from-proof
-is load-bearing in `RISK_MANAGEMENT_PLAN.md` §4.1's evidence-artifact
+the Python artifact — concretely live, not conditional, since Finding
+3/R3 resolved to Option 3 (2026-07-15): probability-from-proof is
+load-bearing in `RISK_MANAGEMENT_PLAN.md` §4.1's evidence-artifact
 column, no longer hidden inside a severity label.
 
-### R5 options
+### R5 options — Steven chose Option 2, 2026-07-15 (`AskUserQuestion`)
 
 1. **Dafny-to-Python extraction/codegen.** Highest assurance, highest
    cost — not supported by the current toolchain without new tooling.
-   Disproportionate for a POC.
-2. **Differential-testing harness** — generate shared test vectors, run
-   both implementations, compare. Moderate effort; both branch
-   structures already read and match (negative → zero, non-finite-or-
-   over-limit → clamp, else → raw), so this would formalize an already
-   plausible equivalence rather than discover a surprise.
-3. **Explicit scoping statement** — record that the Dafny spec is the
-   artifact of record for the `PROVEN` claims, the Python is
-   illustrative/independently `BOUNDED_CHECKED`, and no behavioral
-   identity is claimed beyond a manual read-through. Lowest cost,
-   buildable today, and arguably the minimum bar regardless of whether
-   1 or 2 is ever pursued.
+   Disproportionate for a POC. Not chosen.
+2. **Differential-testing harness. Chosen.** Confirmed feasible before
+   asking Steven to choose, not just assumed: `dafny run` actually
+   executes concrete inputs in this environment (Dafny 4.11.0
+   installed), and its `real`-typed output prints as clean decimals
+   matching Python's float format — de-risking this option from
+   "moderate effort, not attempted" to "concretely buildable now." 9
+   shared vectors (`dosage_differential_vectors.py`) run through both
+   `dosage.dfy::CalculateHourlyDose` (via a generated driver,
+   `dosage_differential_driver.dfy`, calling the real function through
+   Dafny's own `include`, not reimplementing it) and `dosage.py`'s real
+   `calculate_hourly_dose`. **All 9 vectors matched**
+   (`differential_test_results.json`). One vector deliberately mirrors
+   `tests/test_dosage_concrete.py`'s own overflow case — agrees, but
+   via genuinely different reasoning (documented explicitly in the
+   vector's own `note` field and checked by a dedicated test), not a
+   REQ-DOSE-003 equivalence claim, which stays structurally impossible
+   in Dafny's `real` type.
+3. **Explicit scoping statement.** Not needed as a standalone step —
+   Option 2's harness and its documented scope caveats serve the same
+   purpose with mechanical backing instead of prose alone. The caveat
+   Option 3 would have stated (no REQ-DOSE-003 equivalence claimed) is
+   the same caveat Option 2's own vector documentation states, checked
+   by `tests/test_dosage_differential.py::test_overflow_vector_is_explicitly_documented_as_coincidental`.
 
-**Not decided.**
+**Postcondition drift, fixed in the same pass (Steven confirmed via
+`AskUserQuestion`):** `dosage.py`'s `post:` line tightened to `> 0`,
+matching `dosage.dfy`. Re-verified — `post:`/`pre:` are CrossHair-
+enforced contracts, not comments, so this needed a real CrossHair
+re-run (`raw_crosshair_output.txt`, `run_manifest.json`), not a silent
+edit — clean, no new violations. `traceability_matrix.a.*` and
+siblings regenerated via `generate_artifacts.py` to propagate the
+capture's new content.
+
+251 tests pass (5 new — `tests/test_dosage_differential.py`).
 
 ---
 
@@ -259,8 +343,10 @@ column, no longer hidden inside a severity label.
   scoring above, live specifically for `HAZ-GIP-1.2b`
 - Matrix region naming: reconcile to TR's wording or keep ALARP as a
   stated departure
-- R5: which equivalence-gap option, if any, for `dosage.py`/`dosage.dfy`
 - `HAZ-DOSE-003`: fold into `HAZ-GIP-1.2b` or keep separate
+
+R5 (equivalence gap) is resolved as of 2026-07-15 — removed from this
+list, kept in the ledger above for the record.
 
 None of these are resolved by this document. It exists so they're
 findable in one place, not scattered across a chat session and an

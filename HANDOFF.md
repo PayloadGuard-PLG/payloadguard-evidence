@@ -8,7 +8,54 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **`TEST_CATALOG.md` built: generated,
+**Last updated:** 2026-07-15 — **Three real Qodo findings on PR #55 (the
+R5 harness) fixed, all independently re-verified before acting, not
+accepted on the review's word alone.** (1) `run_verify_dosage_differential.py`
+claimed "Gate C1 discipline" but only checked `proc.returncode`, never
+the verifier summary line — the one Dafny capture in this repo with no
+false-zero-guard path at all, since it sits outside the
+`dafny_captures_index.json`/matrix pipeline where `parse_dafny_capture`
+normally gets applied (Gate C2). Fixed by calling
+`evidence.dafny_adapter.parse_dafny_capture` directly; re-ran against
+the real Dafny 4.11.0 toolchain, still 9/9 matched. (2)
+`_dafny_real_literal()` converted scientific-notation floats through
+bare `int(value)` — lossless today only because the two real vectors
+that hit it (`1e10`, `1e308`) are already integer-valued; confirmed
+`int(1e-5) == 0`, a latent silent-corruption bug for any future
+fractional vector. Hardened to raise instead of guessing; 2 new
+regression tests. (3) `dosage_differential_vectors.py`'s own module
+docstring contradicted itself — claimed "every vector" keeps `raw_dose`
+finite, then two sentences later described one that overflows Python's
+`float`. Reworded to scope the finiteness claim to the Dafny side and
+name the Python-side exception explicitly. No evidence content changed
+(re-capture confirmed identical except timestamp); `TEST_CATALOG.md`
+regenerated. 253 tests pass (up from 251). **Next step: same open items
+as before** — real S1–S4 severity values for the 5 `dosage_calculator`
+hazards, Finding 5's evaluation procedure, matrix region naming — or a
+new instruction.
+**Prior update, preserved below** — 2026-07-15 — **R5 resolved:
+differential-testing harness built between `dosage.py`/`dosage.dfy`;
+postcondition drift found and fixed.** Direct instruction: "let's look
+into R5 directly."
+Verified the equivalence claim by direct comparison first (branch
+logic matches for every finite-`raw_dose` input) and found a real,
+previously-unflagged issue: `dosage.py`'s docstring postcondition
+still said `>= 0`, three months stale against `dosage.dfy`'s own
+strict-`>` tightening (2026-07-07, Gate C5). Confirmed `dafny run`
+executes here before recommending Option 2; Steven chose it
+(`AskUserQuestion`), plus fixing the postcondition drift. Built:
+`dosage_differential_vectors.py`/`dosage_differential_driver.dfy`/
+`run_verify_dosage_differential.py` → `differential_test_results.json`
+(9/9 vectors matched), `dosage.py` tightened to `> 0` and CrossHair
+re-verified clean, full artifact pipeline regenerated. Also fixed a
+stale claim found in root `README.md`'s "Risk management" section
+(said `dosage_calculator`'s severity values were "drafted," stale
+since R3 replaced them with `GAP`). 251 tests pass (5 new). **Next
+step: awaiting Steven's decision on the remaining open items — real
+severity values for the 5 hazards (R3's concrete follow-on), Finding
+5's evaluation procedure, matrix region naming — or a new
+instruction.**
+**Prior update, preserved below** — 2026-07-15 — **`TEST_CATALOG.md` built: generated,
 categorized index of every test.** Direct instruction: "I need a
 document that outlines each test... categorized correctly and a brief
 description and code." `evidence/test_catalog.py` parses every

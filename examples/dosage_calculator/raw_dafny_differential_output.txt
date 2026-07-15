@@ -1,0 +1,11 @@
+
+Dafny program verifier finished with 1 verified, 0 errors
+ordinary_in_range|6.0
+ordinary_negative_rate|0.0
+boundary_rate_zero|0.0
+boundary_raw_equals_max|10.0
+clamp_above_max|10.0
+fractional_exact_below|6.0
+fractional_exact_at_boundary|10.0
+large_but_finite|10.0
+overflow_negative_mirrors_test_dosage_concrete|0.0

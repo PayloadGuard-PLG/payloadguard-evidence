@@ -24,12 +24,23 @@ def calculate_hourly_dose(
     weight_kg is a validated clinical input reserved for future weight-based
     ceilings; it is bounded here as a precondition guard.
 
+    Second postcondition tightened to strict `>` (2026-07-15, R5
+    differential-testing investigation): dosage.dfy's mirrored `ensures`
+    clause was already tightened to `infusionRateMlPerHr > 0.0` on
+    2026-07-07 (Gate C5 mutation testing found `>=` not independently
+    load-bearing at rate == 0.0 exactly - real multiplication by exactly
+    0.0 already forces dose == 0.0 there via the first postcondition).
+    That fix was never back-ported to this docstring - found as a live
+    example of exactly the cross-file drift R5 warns about. Behavior is
+    unchanged (dose is 0.0 at rate == 0.0 either way); only the stated
+    contract strength changes, re-verified against CrossHair below.
+
     pre: math.isfinite(weight_kg) and 0 < weight_kg <= 200
     pre: math.isfinite(concentration_mg_per_ml) and concentration_mg_per_ml > 0
     pre: math.isfinite(infusion_rate_ml_per_hr)
     pre: math.isfinite(max_safe_dose_mg_per_hr) and max_safe_dose_mg_per_hr > 0
     post: 0.0 <= __return__ <= max_safe_dose_mg_per_hr
-    post: infusion_rate_ml_per_hr >= 0 or __return__ == 0.0
+    post: infusion_rate_ml_per_hr > 0 or __return__ == 0.0
     """
     raw_dose = infusion_rate_ml_per_hr * concentration_mg_per_ml
     if raw_dose < 0.0:

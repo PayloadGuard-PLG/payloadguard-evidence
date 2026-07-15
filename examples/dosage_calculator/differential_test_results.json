@@ -1,0 +1,123 @@
+{
+  "all_matched": true,
+  "vector_count": 9,
+  "results": [
+    {
+      "id": "ordinary_in_range",
+      "inputs": {
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 3.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "Plain in-range case: raw_dose (6.0) stays below the ceiling, else branch",
+      "python_dose": 6.0,
+      "dafny_dose_raw_text": "6.0",
+      "dafny_dose": 6.0,
+      "matched": true
+    },
+    {
+      "id": "ordinary_negative_rate",
+      "inputs": {
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": -5.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "Reverse-delivery fault (REQ-GIP-1-8-1): negative raw_dose clamps to zero",
+      "python_dose": 0.0,
+      "dafny_dose_raw_text": "0.0",
+      "dafny_dose": 0.0,
+      "matched": true
+    },
+    {
+      "id": "boundary_rate_zero",
+      "inputs": {
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 0.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "The exact postcondition boundary tightened 2026-07-15 (Dafny side, 2026-07-07): raw_dose == 0.0 is not negative, so this exercises the else branch, not the reverse-delivery clamp - both postconditions' strict-> vs >= distinction is moot here since dose == 0.0 either way, confirmed by this vector directly",
+      "python_dose": 0.0,
+      "dafny_dose_raw_text": "0.0",
+      "dafny_dose": 0.0,
+      "matched": true
+    },
+    {
+      "id": "boundary_raw_equals_max",
+      "inputs": {
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 5.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "raw_dose (10.0) exactly equals the ceiling: > is false, else branch returns it unclamped",
+      "python_dose": 10.0,
+      "dafny_dose_raw_text": "10.0",
+      "dafny_dose": 10.0,
+      "matched": true
+    },
+    {
+      "id": "clamp_above_max",
+      "inputs": {
+        "concentration_mg_per_ml": 2.0,
+        "infusion_rate_ml_per_hr": 6.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "raw_dose (12.0) exceeds the ceiling (REQ-GIP-1-4-12): clamps to max_safe_dose_mg_per_hr",
+      "python_dose": 10.0,
+      "dafny_dose_raw_text": "10.0",
+      "dafny_dose": 10.0,
+      "matched": true
+    },
+    {
+      "id": "fractional_exact_below",
+      "inputs": {
+        "concentration_mg_per_ml": 4.0,
+        "infusion_rate_ml_per_hr": 1.5,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "Non-integer but exactly binary-representable inputs (1.5 = 3/2): raw_dose 6.0, else branch",
+      "python_dose": 6.0,
+      "dafny_dose_raw_text": "6.0",
+      "dafny_dose": 6.0,
+      "matched": true
+    },
+    {
+      "id": "fractional_exact_at_boundary",
+      "inputs": {
+        "concentration_mg_per_ml": 4.0,
+        "infusion_rate_ml_per_hr": 2.5,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "Fractional inputs (2.5 = 5/2) landing exactly on the ceiling: raw_dose 10.0, else branch",
+      "python_dose": 10.0,
+      "dafny_dose_raw_text": "10.0",
+      "dafny_dose": 10.0,
+      "matched": true
+    },
+    {
+      "id": "large_but_finite",
+      "inputs": {
+        "concentration_mg_per_ml": 10000000000.0,
+        "infusion_rate_ml_per_hr": 10000000000.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "raw_dose = 1e20 - large, but well within IEEE double range (no overflow in Python either), so this is a genuine finite-domain clamp-above-max case, not an overflow one, confirming the two implementations agree at magnitude, not just near zero",
+      "python_dose": 10.0,
+      "dafny_dose_raw_text": "10.0",
+      "dafny_dose": 10.0,
+      "matched": true
+    },
+    {
+      "id": "overflow_negative_mirrors_test_dosage_concrete",
+      "inputs": {
+        "concentration_mg_per_ml": 1e+308,
+        "infusion_rate_ml_per_hr": -2.0,
+        "max_safe_dose_mg_per_hr": 10.0
+      },
+      "note": "Reuses tests/test_dosage_concrete.py's own overflow_negative_rate_clamps_to_zero case. In Python, raw_dose overflows to -inf (still < 0.0, so it clamps to zero via the SAME branch as an ordinary negative rate). In Dafny, raw_dose is the exact value -2e308 (no overflow concept exists), also < 0.0. Both reach dose == 0.0, but via genuinely different reasoning - see this file's own module docstring for why this is not a REQ-DOSE-003 equivalence claim",
+      "python_dose": 0.0,
+      "dafny_dose_raw_text": "0.0",
+      "dafny_dose": 0.0,
+      "matched": true
+    }
+  ]
+}

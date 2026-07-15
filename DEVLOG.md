@@ -6,6 +6,107 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — Three real Qodo findings on PR #55 (the R5 harness) fixed: unvalidated Dafny capture, a latent float-serialization bug, a docstring self-contradiction
+
+An externally-supplied Qodo review of PR #55 flagged three issues. Each
+independently re-verified against the real committed code before acting,
+not accepted on the review's word alone — all three held up.
+
+1. **`run_verify_dosage_differential.py` didn't actually apply "Gate C1
+   discipline" despite claiming to.** It only checked `proc.returncode
+   != 0`, never the verifier summary line — exactly the false-zero-guard
+   gap `evidence/dafny_adapter.py::parse_dafny_capture` exists to close
+   for every other Dafny capture in this repo (reused at Gate C2,
+   `matrix_variants.py::dafny_record`). This differential capture sits
+   outside that matrix pipeline entirely, so it was the one Dafny
+   capture in the repo with no validation path at all. Fixed by calling
+   `parse_dafny_capture(raw_output, manifest)` directly rather than
+   re-deriving a weaker check — re-ran against the real installed Dafny
+   4.11.0 toolchain, confirmed it accepts the genuine clean capture
+   (`1 verified, 0 errors`) and still produces all-9-matched.
+2. **`_dafny_real_literal()` converted any scientific-notation float
+   through bare `int(value)`.** Lossless today only because the two
+   real vectors that hit this path (`1e10`, `1e308`) are both already
+   integer-valued; confirmed empirically that `int(1e-5) == 0` — a
+   hypothetical fractional-scientific-notation vector would have
+   silently corrupted to `0.0` with no error. Hardened to raise
+   `ValueError` when `not value.is_integer()` instead of guessing;
+   two new regression tests in `tests/test_dosage_differential.py`
+   (the rejection case, and that the two real committed values still
+   serialize losslessly).
+3. **`dosage_differential_vectors.py`'s own module docstring
+   contradicted itself** — opened by claiming "every vector here stays
+   within the domain... `raw_dose` finite," then two sentences later
+   described a vector "genuinely designed to overflow Python's
+   `float`." Reworded to scope the finiteness claim to the Dafny side
+   (trivially true — Dafny `real` has no overflow concept) and name the
+   one Python-side exception explicitly, rather than asserting a
+   blanket claim the file's own next sentence broke.
+
+Regenerated the driver (no diff — no vector currently exercises the
+hardened path) and re-ran the real capture; only the manifest's
+timestamp changed, confirming the fix is behavior-preserving for
+already-committed evidence. `TEST_CATALOG.md` regenerated for the 2 new
+tests. 253 tests pass (up from 251).
+
+---
+
+## 2026-07-15 — R5 resolved: differential-testing harness built between `dosage.py`/`dosage.dfy`; postcondition drift found and fixed
+
+Direct instruction: "let's look into R5 directly." Verified the
+equivalence claim by direct comparison first, not assumed — for every
+input where `raw_dose` is finite (Dafny's `real` has no other kind),
+both implementations' branch logic is identical.
+
+**Real finding surfaced during that verification, not previously
+flagged:** the two files' *documented* postconditions had already
+drifted. `dosage.dfy`'s `ensures` was tightened to strict
+`infusionRateMlPerHr > 0.0` on 2026-07-07 (Gate C5 mutation-testing
+finding); never back-ported to `dosage.py`'s docstring, still `>= 0`.
+Behavior unaffected either way, but the stated contract strength had
+silently diverged in this repo's own committed artifacts — three
+months, found only by direct comparison.
+
+Confirmed `dafny run` executes concrete inputs in this environment
+before recommending a path (Dafny 4.11.0; output prints as clean
+decimals matching Python's float format), changing Option 2's cost
+assessment from "moderate effort, not attempted" to "concretely
+buildable now." Steven chose **Option 2 (differential-testing
+harness)** over Options 1/3, and confirmed fixing the postcondition
+drift in the same pass (`AskUserQuestion` for both).
+
+- `dosage_differential_vectors.py` (9 shared vectors, single source of
+  truth) → `generate_dosage_differential_driver.py` →
+  `dosage_differential_driver.dfy` (generated, calls the real
+  `CalculateHourlyDose` via Dafny's own `include`) →
+  `run_verify_dosage_differential.py` (real `dafny run` capture,
+  Gate C1 discipline) → `differential_test_results.json`. **All 9
+  vectors matched.** `tests/test_dosage_differential.py`: 5 new tests,
+  no live Dafny invocation in CI (this repo's CI has none installed,
+  by design).
+- `dosage.py`'s postcondition tightened to `> 0`, matching
+  `dosage.dfy`. Re-verified for real — `post:`/`pre:` are CrossHair-
+  enforced contracts, not comments — clean, no new violations.
+  `generate_artifacts.py`'s full pipeline re-run to propagate the new
+  capture through every traceability matrix.
+- **Scope, stated explicitly:** one vector deliberately mirrors
+  `tests/test_dosage_concrete.py`'s own overflow case; both
+  implementations agree, but via genuinely different reasoning
+  (documented in the vector's own data, checked by a dedicated test) —
+  not a REQ-DOSE-003 equivalence claim, which stays structurally
+  impossible in Dafny's `real` type.
+- `RISK_MANAGEMENT_PLAN.md` §4.1's `HAZ-GIP-1.14`/`1.2`/`1.3`
+  evidence-artifact cells updated to cite the new confirmation.
+  `RISK_MANAGEMENT_FINDINGS.md` marks R5 resolved. Root `README.md`'s
+  "Risk management" section also corrected in the same pass — found
+  it still described `dosage_calculator`'s severity values as
+  "drafted," stale since Finding 3/R3 replaced them with `GAP` in an
+  earlier PR and this paragraph was never updated.
+
+251 tests pass (5 new).
+
+---
+
 ## 2026-07-15 — `TEST_CATALOG.md` built: generated, categorized index of every test
 
 Direct instruction: "I need a document that outlines each test

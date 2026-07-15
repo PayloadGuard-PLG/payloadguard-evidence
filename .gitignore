@@ -1,2 +1,16 @@
 __pycache__/
 *.pyc
+
+# `dafny run`/`dafny build` compiler byproducts (C# target, the default
+# here) - not source, not captured evidence. Added 2026-07-15 building
+# the R5 differential-testing harness, whose driver .dfy is run
+# directly rather than just verified, unlike every other .dfy in this
+# repo (see run_verify_dafny.py's own `dafny verify`-only convention).
+obj/
+*.dll
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+examples/*/dosage_differential_driver
+examples/*/dosage_differential_driver.cs
+examples/*/dosage_differential_driver.csproj
