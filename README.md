@@ -77,15 +77,63 @@ the verbatim captured output at each step, is committed under
 `examples/drug_interaction_checker/`; the gates are described in full in
 [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) §4.
 
+## Risk management (ISO 14971)
+
+Each of the three examples also carries a **risk management plan** and
+**hazard register**, built against ISO 14971:2019, that consume this
+system's own evidence as risk-control input — a `PROVEN` Dafny result,
+a `BOUNDED_CHECKED` CrossHair result, or an explicit `GAP` each feeds
+directly into a hazard's evidence citations, so the risk analysis can't
+silently claim stronger grounding than the traceability matrix itself
+supports.
+
+- `examples/<name>/RISK_MANAGEMENT_PLAN.md` — scope, risk-acceptance
+  criteria, and a severity/probability/acceptance matrix, per clause
+  4.4.
+- `examples/<name>/HAZARD_REGISTER.md` — per-hazard entries citing the
+  device's primary hazard-analysis or clinical source, this repo's own
+  proof/test evidence as the risk-control measure, and an explicit
+  `Known, named residual`.
+
+**All three are `DRAFT`, not signed off, and at meaningfully different
+stages — stated plainly rather than implied uniform.**
+`dosage_calculator`'s is by far the most developed: hazard
+identification is complete, severity/probability values are drafted
+(reasoned from committed evidence, explicitly marked pending a named
+Clinical SME's review), its citations were extended to ISO/TR
+24971:2020 during a recent audit, and a findings ledger
+(`RISK_MANAGEMENT_FINDINGS.md`) tracks corrections already applied and
+several evaluation-model questions still open. `renal_adjustment`'s and
+`drug_interaction_checker`'s hazard registers complete identification
+only — every severity/probability/evaluation field is an explicit
+`GAP`, not yet drafted — and their plans cite ISO 14971:2019 alone;
+extending them to `dosage_calculator`'s TR-24971-informed model is
+future work, not started. Assigning a severity score, accepting a
+residual risk, or closing a hazard as `Acceptable` is, for all three, a
+human decision this repo's assistant has declined to make on a
+reviewer's behalf, even where no further evidence is buildable.
+
+Two repo-wide self-consistency lints (`evidence/hazard_id_lint.py`,
+`evidence/citation_registry.py`) guard against exactly the kind of
+cross-file drift this discipline is exposed to: a hazard ID referenced
+in one document but renamed or dropped in the register it comes from,
+or a standards citation re-typed incorrectly in one file without the
+others being checked. Both scan the real, git-tracked repository as
+part of the regular test suite.
+
 ## Repository layout
 
 - **`evidence/`** — the domain-agnostic engine: schema validation,
   evidence binding, traceability-matrix generation, Dafny toolchain
   integration (capture, spec lint, mutation testing, NL confirmation),
-  and mechanical citation verification.
+  mechanical citation verification against a primary source
+  (`citation_gate.py`), and repo self-consistency lints against this
+  repo's own committed content (`hazard_id_lint.py`,
+  `citation_registry.py`).
 - **`examples/dosage_calculator/`** — IV infusion-pump dose-clamping
   logic; requirements from a published infusion-pump hazard analysis.
-  Carried through proof and mutation testing.
+  Carried through proof and mutation testing; the most developed risk
+  management plan and hazard register of the three examples.
 - **`examples/renal_adjustment/`** — renal-function dose adjustment;
   requirements from UK clinical guidelines (MHRA, KDIGO, NICE).
   Exercises lookup-table and conditional-branching logic.
@@ -94,7 +142,7 @@ the verbatim captured output at each step, is committed under
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (214 tests).
+- **`tests/`** — regression suite (236 tests).
 
 ## Quick start
 
@@ -129,6 +177,15 @@ extending the system to a new example, see
   (`REQ-RENAL-3/4/6/7`, and `REQ-RENAL-8`'s classification-flag
   provenance) are deliberately unbuilt and tracked as open items; none
   blocks the pipeline.
+- **Risk management artifacts (all three examples)** — `DRAFT`, not
+  signed off. `dosage_calculator`'s is the most developed: hazard
+  identification and evidence citation are real and complete, but the
+  device's provisional overall residual risk currently evaluates
+  `Unacceptable` pending a named Clinical SME's severity/probability
+  determination — an explicit, honestly-rendered open finding, not a
+  gap in the pipeline. See
+  [`RISK_MANAGEMENT_FINDINGS.md`](examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md)
+  for the live list of what's still undecided.
 
 Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).

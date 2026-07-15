@@ -8,7 +8,21 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **Two repo self-consistency lints built:
+**Last updated:** 2026-07-15 — **Root `README.md` brought current with
+the system's actual state.** Direct instruction: "update the main
+readme to reflect the current system." Fixed a stale test count (214 →
+236) and, more substantively, added a "Risk management (ISO 14971)"
+section — the README previously said nothing at all about the
+`RISK_MANAGEMENT_PLAN.md`/`HAZARD_REGISTER.md` artifacts now built for
+all three examples, including that all three are `DRAFT` and
+`dosage_calculator`'s device-level residual risk currently evaluates
+`Unacceptable` pending a named Clinical SME's determination. Also
+listed the two new self-consistency lints in the `evidence/` bullet.
+Documentation-only; 236 tests pass, unchanged. **Next step: same as
+before — awaiting Steven's decision on the open risk-management items
+(R3's severity model, Finding 5's evaluation procedure, matrix-naming,
+R5's equivalence-gap option), or a new instruction.**
+**Prior update, preserved below** — 2026-07-15 — **Two repo self-consistency lints built:
 `evidence/hazard_id_lint.py` and `evidence/citation_registry.py`.**
 Direct follow-up to PR #50 (merged this session), which needed two
 rounds of fixes because the same failure mode hit twice: the "ISO
