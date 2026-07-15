@@ -147,7 +147,7 @@ part of the regular test suite.
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (251 tests; see
+- **`tests/`** — regression suite (253 tests; see
   [`TEST_CATALOG.md`](TEST_CATALOG.md) for the current, generated count
   and a categorized per-test index — not restated here to avoid the
   same staleness this file has already needed fixing for once).

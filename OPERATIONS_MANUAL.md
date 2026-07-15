@@ -31,13 +31,17 @@ payloadguard-evidence/
 │   ├── dafny_spec_lint.py     Checks a Dafny spec's TEXT for weaknesses
 │   ├── dafny_nl_summary.py    Plain-English summary of a Dafny contract
 │   ├── dafny_mutate.py        Mutation-testing engine for Dafny specs
-│   └── citation_gate.py       Mechanical citation verification (§4.7)
+│   ├── citation_gate.py       Mechanical citation verification (§4.7)
+│   ├── citation_registry.py   Self-consistency lint: banned-citation detection
+│   ├── hazard_id_lint.py      Self-consistency lint: hazard-ID resolution
+│   ├── test_catalog.py        Generates TEST_CATALOG.md from tests/*.py
+│   └── tracked_files.py       Git-tracked-file discovery shared by the lints
 ├── examples/
 │   ├── dosage_calculator/          Worked example 1 (complete)
 │   ├── renal_adjustment/           Worked example 2 (complete)
 │   └── drug_interaction_checker/   Worked example 3 (complete)
 ├── sources/                   Primary source documents, archived verbatim
-└── tests/                     Regression suite (214 tests)
+└── tests/                     Regression suite (253 tests)
 ```
 
 `evidence/` is deliberately vocabulary-agnostic: nothing in it knows
