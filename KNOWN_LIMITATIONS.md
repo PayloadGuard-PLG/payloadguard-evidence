@@ -4,7 +4,28 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (R5 resolved: differential-testing harness
+Last updated: 2026-07-15 (Three real Qodo findings on PR #55 fixed, each
+independently re-verified against the real committed code before
+acting: (1) `run_verify_dosage_differential.py` claimed "Gate C1
+discipline" but only checked `proc.returncode`, never the verifier
+summary line - the one Dafny capture in this repo with no false-zero-
+guard path at all, since it sits outside the `dafny_captures_index.json`
+matrix pipeline where `evidence.dafny_adapter.parse_dafny_capture`
+normally gets applied (Gate C2). Fixed by calling it directly; re-ran
+against the real Dafny 4.11.0 toolchain, still 9/9 matched. (2)
+`_dafny_real_literal()` converted scientific-notation floats through
+bare `int(value)` - lossless today only because the two real vectors
+that hit it (`1e10`, `1e308`) are already integer-valued; confirmed
+`int(1e-5) == 0`, a latent silent-corruption bug for any future
+fractional vector. Hardened to raise instead of guessing, 2 new
+regression tests. (3) `dosage_differential_vectors.py`'s own docstring
+contradicted itself, claiming "every vector" keeps `raw_dose` finite
+two sentences before describing the one that overflows Python's
+`float` - reworded to scope the claim correctly. No evidence content
+changed (re-capture identical except timestamp). 253 tests pass (up
+from 251). See DEVLOG.md's 2026-07-15 entry for the full account.)
+Prior entry, preserved: Last updated 2026-07-15 (R5 resolved:
+differential-testing harness
 built between `dosage.py`/`dosage.dfy` (9 shared vectors, all matched)
 after direct verification confirmed the equivalence claim within
 Dafny's representable (finite-`raw_dose`) domain. Real finding

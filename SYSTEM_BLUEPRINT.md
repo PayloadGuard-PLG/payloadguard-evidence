@@ -1,6 +1,21 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (R5 resolved: a differential-testing harness
+Last updated: 2026-07-15 (Three real Qodo findings on PR #55's
+differential-testing harness fixed, each independently re-verified
+against the real committed code first: the capture script
+(`run_verify_dosage_differential.py`) now actually applies the Gate C1/
+C2 false-zero guard it claimed to (`evidence.dafny_adapter.parse_dafny_capture`,
+not a bare exit-code check) - re-ran against the real Dafny toolchain,
+still 9/9 matched; `_dafny_real_literal()`'s scientific-notation
+branch now refuses a fractional value instead of silently truncating it
+via `int()` (confirmed `int(1e-5) == 0` - no committed vector triggers
+it, but the path was live); `dosage_differential_vectors.py`'s module
+docstring no longer contradicts itself about which vectors keep
+`raw_dose` finite. No architecture, gate, or data-flow change - fixes
+inside the same new artifact type. 253 tests pass (up from 251). See
+DEVLOG.md's 2026-07-15 entry.)
+Prior header, preserved: Last updated 2026-07-15 (R5 resolved: a
+differential-testing harness
 now exists between `dosage.py` and `dosage.dfy`
 (`dosage_differential_vectors.py`, generated
 `dosage_differential_driver.dfy`, `run_verify_dosage_differential.py`)
