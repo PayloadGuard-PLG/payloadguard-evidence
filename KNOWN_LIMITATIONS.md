@@ -4,7 +4,22 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-14 ("Path to sign-off" section added to
+Last updated: 2026-07-15 (Two repo self-consistency lints built,
+`evidence/hazard_id_lint.py` and `evidence/citation_registry.py`,
+direct follow-up to PR #50: that PR needed a second fix round because
+a hand-edit collapsed `HAZ-GIP-1.2`/`1.3` into one row, silently
+dropping `HAZ-GIP-1.3`'s identity, caught only by an external reviewer
+— the same root cause (a fact restated across many files with no
+mechanical cross-check) as the original Annex D citation error these
+docs already record. Not itself a new limitation to track here — it's
+a preventive mechanism against the *class* of error this ledger's own
+2026-07-15 DEVLOG entry describes, confirmed via a regression test
+that runs against the real repo (`tests/test_hazard_id_lint.py`,
+`tests/test_citation_registry.py`), currently zero findings. Every
+open item below is untouched: nothing in this entry resolves R3, Finding
+5, or the matrix-naming question. No spec/example content changed;
+229 tests pass. See DEVLOG.md's 2026-07-15 entry for the full account.)
+Prior entry, preserved: Last updated 2026-07-14 ("Path to sign-off" section added to
 `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`, between Sections 5 and 6.
 Real finding: 2 of the 3 `Unacceptable` hazards have no more buildable
 evidence at all, not merely unbuilt — `HAZ-DOSE-003`'s finiteness

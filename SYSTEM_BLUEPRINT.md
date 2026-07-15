@@ -1,6 +1,22 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-14 ("Path to sign-off" section added to
+Last updated: 2026-07-15 (Two new modules added to the `evidence/`
+package: `hazard_id_lint.py` (scans all markdown for hazard-ID-shaped
+tokens and flags any not backed by a real `### HAZ-...` heading in some
+`HAZARD_REGISTER.md`) and `citation_registry.py` (a small registry of
+citations this repo has already disproven, plus a scan flagging any
+unmarked re-assertion of one). Direct follow-up to PR #50, which needed
+two fix rounds for the same root cause: a fact restated across many
+files with nothing mechanical cross-checking they still agree — once
+for the original Annex D citation error, once for a hand-edit that
+silently dropped `HAZ-GIP-1.3` while splitting the hazard register.
+Both new modules are repo self-consistency lints, not part of the
+Gate C1–C6 verification pipeline this document otherwise maps — they
+run as ordinary pytest tests (`tests/test_hazard_id_lint.py`,
+`tests/test_citation_registry.py`), already covered by the existing
+`tests.yml` CI workflow with no new wiring needed. No component, gate,
+or data-flow change; 229 tests pass. See DEVLOG.md's 2026-07-15 entry.)
+Prior header, preserved: Last updated 2026-07-14 ("Path to sign-off" section added to
 `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`. Real finding: 2 of 3
 `Unacceptable` hazards have no more buildable evidence at all —
 `HAZ-DOSE-003`'s finiteness postcondition is a permanent Dafny
