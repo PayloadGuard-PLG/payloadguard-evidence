@@ -6,8 +6,13 @@ management file per ISO 14971:2019 clause 4.4. It does not itself
 contain the hazard register, evaluation results, or risk management
 report — those are separate documents this plan governs and
 references, per clause 4.5's own traceability requirements for the
-risk management file as a whole (neither of those documents exists yet
-for this device — see Section 8).
+risk management file as a whole. **Correction, 2026-07-15**: this
+sentence originally said none of those documents existed yet — stale
+the same day it was written, since `HAZARD_REGISTER.md` landed
+alongside this plan (see Section 8). Corrected: the hazard register
+exists and completes clause 5.4 identification; evaluation results
+(severity/probability/acceptability, clauses 5.5/6/8) and the risk
+management report itself do not yet exist — see Section 8.
 
 **Status:** DRAFT | Version: 0.1 | Last reviewed: 2026-07-14
 
@@ -87,9 +92,11 @@ review before the associated Gate C6 finding is closed —
 - formalization of any of REQ-RENAL-3/4/6/7 as a real Dafny signature
   (all four are currently prose-only, sourced, but unbuilt).
 
-Cadence for review of the hazard register itself, once it exists: not
-yet defined — no hazard register exists yet for this device (see
-Section 8).
+Cadence for review of the hazard register itself: not yet defined.
+**Correction, 2026-07-15**: this originally said no hazard register
+existed yet, which was already stale when written (`HAZARD_REGISTER.md`
+landed the same day, see Section 8) — the register exists, only its
+review cadence remains undefined.
 
 ---
 
@@ -236,6 +243,7 @@ who reviews it.
 |---|---|---|
 | 2026-07-14 | Initial draft landed for `renal_adjustment`, mirroring `drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`'s structure | Second real risk-management-plan artifact in this repo; the five PROVEN requirement rows and Gate C1–C6 status (Section 6) are real and committed, everything requiring clinical judgment (Sections 2, 4.1–4.3, 5) is left as an explicit GAP pending a named Risk Manager and clinical SME, and the four already-named-but-unformalized requirements (REQ-RENAL-3/4/6/7) plus REQ-RENAL-8's open operational question are carried forward honestly rather than glossed over |
 | 2026-07-14 (later) | `HAZARD_REGISTER.md` landed alongside this plan | Second real hazard-register artifact in this repo, extending the approach built for `dosage_calculator`. Genuinely different construction: no published hazard table exists for this device, so hazard identification is built from `metadata.a.yaml`'s sourced `REQ-RENAL-*` text and `GATE_1C_AUDIT.md`'s own hand-trace findings (which already name concrete failure modes, including one — the CrCl/eGFR type-confusion risk — closed by a real type-safety redesign, and one — CKD-EPI's caller-supplied value — confirmed as a genuine Dafny/Z3 expressiveness limit, not a choice). Completes clause 5.4 hazard identification for all 8 `REQ-RENAL-*` requirements; severity, probability, and risk-acceptability evaluation remain explicit `GAP`s within it |
+| 2026-07-15 | Correction: two sentences in Sections 1 and 3 saying "no hazard register exists yet" were stale the same day they were written | Caught by an external reviewer (Qodo) auditing an unrelated root-README PR (#52) that described this repo's risk-management artifacts as a set — found the plan's own header still denied `HAZARD_REGISTER.md`'s existence despite the very next change-log row above recording its landing. Both sentences corrected in place; no evidence, severity, or probability content changed |
 
 **What does not yet exist, stated explicitly:** as of the register
 above, hazard *identification* (clause 5.4) is real for this device.
