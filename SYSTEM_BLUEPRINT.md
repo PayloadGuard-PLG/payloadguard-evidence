@@ -1,6 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (Two new modules added to the `evidence/`
+Last updated: 2026-07-15 (Finding 3/R3 resolved:
+`dosage_calculator`'s severity model rebuilt consequence-only, Option
+3 (hybrid) chosen by Steven. `RISK_MANAGEMENT_PLAN.md` §4.1's bands
+are now pure consequence definitions with a per-hazard
+evidence-artifact column; every hazard's severity is `GAP`, cascading
+to `GAP` for §4.3's matrix and Section 5's overall-residual-risk
+method — replacing the old, invalid evidence-strength values and their
+`Unacceptable` output, not a regression. No component, gate, or
+data-flow change (this is risk-management content, not the Gate
+C1-C6 pipeline this document otherwise maps). See DEVLOG.md's
+2026-07-15 entry.)
+Prior header, preserved: Last updated 2026-07-15 (Two new modules added to the `evidence/`
 package: `hazard_id_lint.py` (scans all markdown for hazard-ID-shaped
 tokens and flags any not backed by a real `### HAZ-...` heading in some
 `HAZARD_REGISTER.md`) and `citation_registry.py` (a small registry of

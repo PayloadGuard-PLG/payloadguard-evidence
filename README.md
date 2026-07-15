@@ -179,11 +179,14 @@ extending the system to a new example, see
   blocks the pipeline.
 - **Risk management artifacts (all three examples)** — `DRAFT`, not
   signed off. `dosage_calculator`'s is the most developed: hazard
-  identification and evidence citation are real and complete, but the
-  device's provisional overall residual risk currently evaluates
-  `Unacceptable` pending a named Clinical SME's severity/probability
-  determination — an explicit, honestly-rendered open finding, not a
-  gap in the pipeline. See
+  identification is real and complete, and its severity model was
+  rebuilt 2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR
+  24971 §5.5.4), replacing an earlier model that measured evidence
+  strength instead. The device's overall residual risk currently
+  evaluates `GAP` — not `Acceptable`, not `Unacceptable` — pending a
+  named Clinical SME's real, consequence-based severity score for each
+  hazard, an explicit, honestly-rendered open finding, not a gap in the
+  pipeline. See
   [`RISK_MANAGEMENT_FINDINGS.md`](examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md)
   for the live list of what's still undecided.
 

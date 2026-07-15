@@ -17,7 +17,7 @@ to know current state.
 |---|---|---|---|---|
 | 1 | Clause 4.4 header citation stale | Refuted on audit | Closed, no action | — |
 | 2 | "ISO 14971's own Annex D" cited — doesn't exist in 2019 edition | Confirmed | **Remediated, 2026-07-15 (verified applied, not just claimed)** | `RISK_MANAGEMENT_PLAN.md` §4.3, Path-to-sign-off; `HANDOFF.md`; `DEVLOG.md` (×2, corrected in place with a bracketed note per this log's append-only discipline); `README.md`. **Correction to this row's own location list:** `KNOWN_LIMITATIONS.md` was checked directly and does not contain the "Annex D" citation error — its one "ALARP" mention is a correct use of the policy concept (clause 4.2 NOTE 1), not a false citation. This ledger's earlier claim that it needed the fix was itself inaccurate. |
-| 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Open — R3 options below, Steven's decision** | `RISK_MANAGEMENT_PLAN.md` §4.1 |
+| 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Resolved (model), 2026-07-15 — Option 3 (hybrid) chosen; severity values now `GAP`, pending Steven's clinical scoring (not resolved yet)** | `RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, Path-to-sign-off; `HAZARD_REGISTER.md` (all 5 hazards) |
 | 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally), 2026-07-15 (verified applied, not just claimed)** — `HAZ-GIP-1.2b` split out; `HAZ-GIP-1.2`/`1.3`'s own Severity/Probability marked stale/pending re-derivation rather than silently carried over; `HAZ-GIP-1.2b`'s Probability left `GAP`, not defaulted to P5, per Finding 5 below | `HAZARD_REGISTER.md` |
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Partially confirmed | **Open — R5 options below** | `dosage.dfy` header comment (unverified), `traceability_matrix.a.md` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
@@ -58,9 +58,36 @@ just restructured the register. `HAZ-GIP-1.2`/`1.3`'s own prior
 rows — marked stale/pending re-derivation instead, since that DRAFT
 reasoning was based on the residual that moved to `HAZ-GIP-1.2b`.
 
+### Finding 3 — severity model
+
+Direct instruction, 2026-07-15: "work through R3's severity model."
+Option 2 was eliminated on textual grounds before asking Steven to
+choose (TR 24971 §5.5.4 states severity must exclude probability,
+directly contradicting the old evidence-strength bands). Steven chose
+**Option 3 (hybrid)** over Option 1 (`AskUserQuestion`). Applied across
+`RISK_MANAGEMENT_PLAN.md` (§4.1's bands rebuilt consequence-only, plus
+a new per-hazard evidence-artifact column; §4.3's matrix, Section 5's
+overall-residual-risk method, and the "Path to sign-off" section all
+updated to report `GAP` instead of the old, invalidated
+`Acceptable`/`Unacceptable` outputs) and `HAZARD_REGISTER.md` (all 5
+hazards' `Severity`/`Risk evaluation` set to `GAP`, `Probability`
+reverted to the standing §4.2 default policy). Full record below.
+
+**What's still open here:** the severity **model** is resolved; the
+per-hazard severity **values** are not — every hazard needs a real,
+consequence-based score from Steven before any evaluation can be
+computed. This is now the concrete blocking item, not an abstract
+"which model" question. See the full write-up below for detail this
+brief record doesn't repeat.
+
 ---
 
-## Open — Finding 3: severity/control conflation
+## Resolved — Finding 3: severity/control conflation (full record)
+
+**Resolved 2026-07-15 — Option 3 (hybrid) chosen.** Kept below for full
+context (the option comparison and the TR Table 4 calibration
+reference remain relevant to the next step, scoring each hazard); see
+the brief record above for a one-paragraph summary.
 
 **The plan's §4.1 defines severity by evidence strength** (S1: "Dafny-
 proven... no harm pathway is open"; S4: "unproven failure mode") rather
@@ -72,14 +99,19 @@ element of probability. That's textual confirmation from the
 referenced guidance document itself, not just an inference from the
 standard.
 
-**Consequence:** a Dafny proof of unreachability is a probability
-claim wearing a severity label. Re-scoring `HAZ-GIP-1.14` (reverse
-delivery) by consequence alone plausibly lands S3–S4 (IEC 601-2-24's
-"shall not be possible" mandate, GIP's own physical-sensor mitigation);
-paired with the proof-driven P1 this yields, the plan's own matrix
-would call that ALARP, not the Acceptable it currently shows.
+**Consequence, as originally illustrated (pre-resolution context, not a
+scored value — that illustration held even before R3 was resolved):**
+a Dafny proof of unreachability is a probability claim wearing a
+severity label. Re-scoring `HAZ-GIP-1.14` (reverse delivery) by
+consequence alone *might plausibly* land S3–S4 (IEC 601-2-24's "shall
+not be possible" mandate, GIP's own physical-sensor mitigation) — this
+was, and remains, an illustration of why the old model mattered, not a
+prediction of what Steven's actual scoring will produce. §4.1 now
+carries `GAP` for this hazard's severity, not a number; this paragraph
+is preserved as the reasoning that motivated fixing the model, not as
+a stand-in for the still-outstanding clinical determination.
 
-### R3 options (unchanged from the original audit, still undecided)
+### R3 options — Steven chose Option 3, 2026-07-15 (`AskUserQuestion`)
 
 **Option 1 — Adopt the standard's model.** Severity by consequence
 alone; proofs/bounds move probability, not severity. Buildable
@@ -90,20 +122,24 @@ correct rather than a regression.
 **Option 2 — Keep the current model, justify per hazard under §7.1
 NOTE 2.** That clause permits a control to reduce severity, but only
 when it shrinks the harm's *magnitude if it occurs* — not when it
-eliminates whether it occurs. A proof does the latter. Assessed as not
-defensible for the proof-reliant hazards (`HAZ-GIP-1.14` especially);
-weaker still now that TR §5.5.4 states the exclusion directly.
+eliminates whether it occurs. A proof does the latter. **Eliminated
+before Steven was asked to choose** — not defensible for the
+proof-reliant hazards (`HAZ-GIP-1.14` especially), and TR §5.5.4
+states the exclusion directly, leaving no textual room for this option.
 
-**Option 3 — Hybrid.** Consequence-only severity, plus an explicit
-"which evidence artifact drives this probability" column. Preserves
-the current model's real strength (traceability from a risk cell to a
-`raw_dafny_output.txt`) without asking severity to silently encode it.
-Assessed as the strongest fit for what this repo actually produces.
+**Option 3 — Hybrid. Chosen.** Consequence-only severity, plus an
+explicit "which evidence artifact drives this probability" column.
+Preserves the current model's real strength (traceability from a risk
+cell to a `raw_dafny_output.txt`) without asking severity to silently
+encode it. Built into `RISK_MANAGEMENT_PLAN.md` §4.1 and
+`HAZARD_REGISTER.md` 2026-07-15.
 
-**Not decided.** Whichever option is chosen, TR 24971's Table 4 (five
+**Still not decided — the actual scoring.** TR 24971's Table 4 (five
 consequence-only severity descriptors: Catastrophic/Fatal, Critical,
-Serious/Major, Minor, Negligible) is now a real, source-backed
-calibration reference for the clinical work this requires.
+Serious/Major, Minor, Negligible) is a real, source-backed calibration
+reference `RISK_MANAGEMENT_PLAN.md` §4.1 already cites for the clinical
+work this now requires — assigning a real S1–S4 value to each of the 5
+hazards in `HAZARD_REGISTER.md`, which only Steven can do.
 
 ---
 
@@ -150,9 +186,10 @@ is arguably a stronger probability basis than most of TR's own
 "estimable" examples. Closest fit to the source; costs a second
 acceptability procedure to maintain and document.
 
-**Not decided.** Interacts directly with Finding 3/R3: whichever
-severity model is chosen there, this procedural question (matrix
-lookup vs. severity-alone) still needs its own answer.
+**Not decided.** Finding 3/R3 is now resolved (Option 3, 2026-07-15) —
+this procedural question (matrix lookup vs. severity-alone) is
+unaffected by that and still needs its own answer, genuinely separate
+from the severity-model question.
 
 ---
 
@@ -182,9 +219,10 @@ evidenced. This is structurally unique to `dosage_calculator`; the
 other two worked examples are Dafny-only.
 
 **Matters for:** any probability credit a Dafny proof would extend to
-the Python artifact, if the severity model moves toward Option 1/3
-above (where probability-from-proof becomes load-bearing rather than
-hidden inside a severity label).
+the Python artifact — now concretely live, not conditional, since
+Finding 3/R3 resolved to Option 3 (2026-07-15): probability-from-proof
+is load-bearing in `RISK_MANAGEMENT_PLAN.md` §4.1's evidence-artifact
+column, no longer hidden inside a severity label.
 
 ### R5 options
 
@@ -209,16 +247,18 @@ hidden inside a severity label).
 
 ## Summary — what actually needs Steven, listed once
 
-- Finding 3 / R3: which severity model (Options 1/2/3)
+- **Real severity value (S1–S4) for each of the 5 hazards in
+  `HAZARD_REGISTER.md`** — Finding 3/R3 is resolved (Option 3, model
+  built 2026-07-15); this is the concrete item it left behind, not an
+  abstract model choice anymore. Blocks §4.3's matrix, Section 5's
+  overall-residual-risk method, and every hazard's `Risk evaluation`
+  field until done.
 - Finding 5: which evaluation procedure for inestimable-probability
   hazards (Options A/B/C), and the interpretive call underneath it
-  (inestimable vs. unmeasured)
+  (inestimable vs. unmeasured) — genuinely separate from severity
+  scoring above, live specifically for `HAZ-GIP-1.2b`
 - Matrix region naming: reconcile to TR's wording or keep ALARP as a
   stated departure
-- `HAZ-GIP-1.2b`'s actual severity value (blocks all of the above from
-  producing a real evaluation)
-- `HAZ-GIP-1.14`'s actual severity value, if Option 1/3 is chosen for
-  Finding 3
 - R5: which equivalence-gap option, if any, for `dosage.py`/`dosage.dfy`
 - `HAZ-DOSE-003`: fold into `HAZ-GIP-1.2b` or keep separate
 
