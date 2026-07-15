@@ -67,6 +67,27 @@ actually proves closed; the real open residual moved to
 | Probability | **STALE, pending re-derivation** — same reason as Severity above |
 | Risk evaluation (acceptable?) | **STALE, pending re-derivation** — cannot be evaluated honestly until Severity/Probability are re-derived under whichever model Finding 3/R3 settles on |
 
+### HAZ-GIP-1.3 — Overinfusion (bolus volume/concentration too high) — kernel-scope delivery pathway
+
+**Narrowed 2026-07-15**, same restructuring and same reason as
+`HAZ-GIP-1.2` above: this row previously named "Overinfusion" while its
+own residual/severity fields already described the split-out
+clinician-awareness situation now covered by `HAZ-GIP-1.2b`. This is a
+narrowing, not a retirement — the row, its GIP `HID 1.3` traceability
+anchor, and its distinct cause text all remain.
+
+| Field | Value |
+|---|---|
+| GIP v1.0 source | HID 1.3, same table. Verbatim: Hazard "Overinfusion", Type "All", Cause "(Programmed) Bolus volume/concentration too high", mitigation "Drug library", Safety Req "1.4, 3.4.6" |
+| Cross-reference | `THR-GIP-1-3` (`metadata.a.yaml`). See also `HAZ-GIP-1.2b` for the split-out residual |
+| Hazardous situation at this kernel's scope (narrowed) | A high `concentration_mg_per_ml` or `infusion_rate_ml_per_hr` input drives the raw computed hourly dose above `max_safe_dose_mg_per_hr` **before clamping** — **the kernel does not distinguish this cause from HAZ-GIP-1.2's** (both collapse to the same detected over-limit condition; `calculate_hourly_dose` has no notion of "too many bolus requests" vs. "one bolus too large," only the resulting dose value). Stated explicitly rather than silently implying two independently-covered pathways |
+| Risk control measure | Same as HAZ-GIP-1.2 — REQ-GIP-1-4-12, same evidence: the kernel detects the over-limit condition and clamps, so the *delivered* dose never exceeds `max_safe_dose_mg_per_hr` |
+| Known, named residual (narrowed) | None at kernel scope for the delivered-dose question itself, same as HAZ-GIP-1.2. The `system_scope` clinician-awareness question moved to `HAZ-GIP-1.2b` |
+| Potential harm (qualitative, not scored) | Same as HAZ-GIP-1.2 |
+| Severity | **STALE, pending re-derivation — not re-scored here.** Same reasoning as HAZ-GIP-1.2: the prior `DRAFT: S2` value was justified by the residual now split to `HAZ-GIP-1.2b`; re-scoring this narrowed pathway is a Finding 3/R3 question, not resolved by this restructuring |
+| Probability | **STALE, pending re-derivation** — same reason as Severity above |
+| Risk evaluation (acceptable?) | **STALE, pending re-derivation** — same reason as HAZ-GIP-1.2 |
+
 ### HAZ-GIP-1.2b — Overinfusion clamp fires with no proven clinician notification
 
 **New 2026-07-15** (`RISK_MANAGEMENT_FINDINGS.md` Finding 4): the real,
@@ -150,6 +171,7 @@ diligence:
 | 2026-07-14 | Initial draft: 4 hazard entries (3 GIP-sourced, 1 DECLARED), scope section, out-of-scope section | First real hazard-register artifact in this repo, chosen as the easiest starting point because this device's primary source is itself a formal hazard analysis already partially cited in `metadata.a.yaml`'s STRIDE threat model — unlike the other two worked examples, which have no equivalent source |
 | 2026-07-14 (later) | Draft severity/probability/evaluation proposal added to all 4 hazards; Steven assigned as Clinical SME | Direct instruction: "assign a clinical SME and start the severity/probability tables." Real finding: none of the 4 hazards reaches S3/S4 given what's actually proven (3 land at S2, 1 — the fully-proven reverse-delivery mitigation — lands at S1); 3 of 4 evaluate provisionally `Unacceptable` under the mandated worst-case probability default. All values marked DRAFT, pending Steven's confirmation, not self-declared as final |
 | 2026-07-15 | `HAZ-GIP-1.2`/`HAZ-GIP-1.3` narrowed to the kernel-proven-closed delivery pathway; new `HAZ-GIP-1.2b` row split out for the real, still-open clinician-notification residual | Audit finding (`RISK_MANAGEMENT_FINDINGS.md` Finding 4, verified against `dosage.py`/`dosage.dfy` directly): the original rows named "Overinfusion" — a pathway this kernel proves closed — while their own residual/severity fields already described a different, open situation. Split, not renamed. `HAZ-GIP-1.2`/`1.3`'s Severity/Probability/Risk-evaluation values are marked stale, pending re-derivation, rather than silently carried over or newly re-scored — that re-scoring is Finding 3/R3's open question. `HAZ-GIP-1.2b`'s Probability is deliberately left `GAP`, not defaulted to P5, per Finding 5's newly-surfaced open question of whether TR 24971 §5.5.3 (severity-alone evaluation) applies to this specific inestimable-probability hazard. Both are register restructuring, not new judgment calls — the severity model, evaluation procedure, and actual scored values remain Steven's decisions |
+| 2026-07-15 (later) | **Correction**: restored a standalone, narrowed `HAZ-GIP-1.3` entry | The first pass of the above restructuring collapsed `HAZ-GIP-1.2` and `HAZ-GIP-1.3` into a single narrowed `HAZ-GIP-1.2` row, silently dropping `HAZ-GIP-1.3`'s own GIP `HID 1.3` traceability anchor while `HAZ-GIP-1.2b` and several other documents still referenced it — a real correctness bug, caught by an automated PR review (Qodo) on PR #50, not self-caught. Fixed by restoring `HAZ-GIP-1.3` as its own narrowed row, parallel in structure to `HAZ-GIP-1.2`, per the review's own suggested Option 1 |
 
 ---
 
