@@ -137,3 +137,23 @@ def test_untracked_markdown_is_not_scanned(tmp_path):
     (tmp_path / "UNTRACKED_SCRATCH.md").write_text("References HAZ-X-999, which is fake.\n")
 
     assert find_undefined_references(tmp_path) == []
+
+
+def test_test_catalog_md_is_excluded_even_when_tracked(tmp_path):
+    """Real false positive, found 2026-07-15 the first time
+    TEST_CATALOG.md was generated: it quotes test docstrings verbatim,
+    including tests/test_hazard_id_lint.py's own fixture examples
+    ("HAZ-X-2", etc.) - fictional IDs used to test this exact module,
+    not claims about a real hazard. TEST_CATALOG.md must be excluded
+    even though it's git-tracked (unlike the untracked-scratch case
+    above, which is excluded because tracked_files() never returns it
+    at all)."""
+    make_git_repo(
+        tmp_path,
+        {
+            "HAZARD_REGISTER.md": "### HAZ-X-1 — the only real hazard\n",
+            "TEST_CATALOG.md": "| `test_x` | Mentions HAZ-X-999 as fixture data. | `t.py:1` |\n",
+        },
+    )
+
+    assert find_undefined_references(tmp_path) == []

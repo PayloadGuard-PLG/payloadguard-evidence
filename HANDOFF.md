@@ -8,7 +8,22 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **Finding 3/R3 resolved: severity model
+**Last updated:** 2026-07-15 — **`TEST_CATALOG.md` built: generated,
+categorized index of every test.** Direct instruction: "I need a
+document that outlines each test... categorized correctly and a brief
+description and code." `evidence/test_catalog.py` parses every
+git-tracked `tests/test_*.py` file via `ast` and renders a per-file
+category with a description (from each test's docstring, or its name)
+and a file:line pointer per test — deliberately generated, not
+hand-authored, so "updated as more are added" means re-running the
+generator. `tests/test_test_catalog.py` fails CI if the committed
+`TEST_CATALOG.md` ever drifts from what the generator produces. 233
+test functions across 29 categories; 244 tests pass (8 new). **Next
+step: awaiting Steven's review of the catalog's format/categorization,
+or a new instruction — the risk-management open items (R3's per-hazard
+severity scoring, Finding 5, matrix naming, R5) are all still
+outstanding, untouched by this change.**
+**Prior update, preserved below** — 2026-07-15 — **Finding 3/R3 resolved: severity model
 rebuilt consequence-only, Option 3 (hybrid).** Direct instruction:
 "work through R3's severity model." Option 2 eliminated on textual
 grounds (TR 24971 §5.5.4); Steven chose Option 3 over Option 1

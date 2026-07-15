@@ -6,6 +6,40 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — `TEST_CATALOG.md` built: generated, categorized index of every test
+
+Direct instruction: "I need a document that outlines each test
+completed and updated as more are added. ensure that are categorized
+correctly and a brief description and code." Deliberately generated,
+not hand-authored, matching this session's own standing discipline
+(`evidence/hazard_id_lint.py`, `evidence/citation_registry.py`): a
+236-entry catalog restated by hand would drift the same way a
+duplicated citation or hazard ID already has, twice, this session.
+
+- `evidence/test_catalog.py`: parses every git-tracked
+  `tests/test_*.py` file via Python's `ast` module (no import, no test
+  execution), extracts each `test_*` function's name, first-sentence
+  description (from its docstring, or derived from its name if none),
+  and file:line location. Categorizes by source file — matches how
+  this repo already organizes its suite, no new taxonomy invented.
+- `TEST_CATALOG.md`: the generated output, committed. 233 test
+  functions across 29 categories (pytest's own collected-case count,
+  244 after this session's additions, differs because
+  `@pytest.mark.parametrize`-decorated functions collect as multiple
+  cases from one function definition — the catalog rows the function
+  once, correctly, not once per parametrized case).
+- `tests/test_test_catalog.py`: regenerates the catalog in memory and
+  diffs it against the committed file — CI fails if `TEST_CATALOG.md`
+  drifts from the real suite, the same "generated artifact must match
+  its generator" discipline `evidence/cli.py`'s own tests already
+  apply to the traceability matrices. "Updated as more are added"
+  means re-running the generator, not transcribing a new row by hand.
+
+244 tests pass (8 new). `README.md`'s "Further reading" table updated
+to link the new file.
+
+---
+
 ## 2026-07-15 — Finding 3/R3 resolved: severity model rebuilt consequence-only, Option 3 (hybrid)
 
 Direct instruction: "work through R3's severity model." R3
