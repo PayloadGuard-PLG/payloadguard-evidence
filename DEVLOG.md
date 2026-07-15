@@ -6,6 +6,62 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — R5 resolved: differential-testing harness built between `dosage.py`/`dosage.dfy`; postcondition drift found and fixed
+
+Direct instruction: "let's look into R5 directly." Verified the
+equivalence claim by direct comparison first, not assumed — for every
+input where `raw_dose` is finite (Dafny's `real` has no other kind),
+both implementations' branch logic is identical.
+
+**Real finding surfaced during that verification, not previously
+flagged:** the two files' *documented* postconditions had already
+drifted. `dosage.dfy`'s `ensures` was tightened to strict
+`infusionRateMlPerHr > 0.0` on 2026-07-07 (Gate C5 mutation-testing
+finding); never back-ported to `dosage.py`'s docstring, still `>= 0`.
+Behavior unaffected either way, but the stated contract strength had
+silently diverged in this repo's own committed artifacts — three
+months, found only by direct comparison.
+
+Confirmed `dafny run` executes concrete inputs in this environment
+before recommending a path (Dafny 4.11.0; output prints as clean
+decimals matching Python's float format), changing Option 2's cost
+assessment from "moderate effort, not attempted" to "concretely
+buildable now." Steven chose **Option 2 (differential-testing
+harness)** over Options 1/3, and confirmed fixing the postcondition
+drift in the same pass (`AskUserQuestion` for both).
+
+- `dosage_differential_vectors.py` (9 shared vectors, single source of
+  truth) → `generate_dosage_differential_driver.py` →
+  `dosage_differential_driver.dfy` (generated, calls the real
+  `CalculateHourlyDose` via Dafny's own `include`) →
+  `run_verify_dosage_differential.py` (real `dafny run` capture,
+  Gate C1 discipline) → `differential_test_results.json`. **All 9
+  vectors matched.** `tests/test_dosage_differential.py`: 5 new tests,
+  no live Dafny invocation in CI (this repo's CI has none installed,
+  by design).
+- `dosage.py`'s postcondition tightened to `> 0`, matching
+  `dosage.dfy`. Re-verified for real — `post:`/`pre:` are CrossHair-
+  enforced contracts, not comments — clean, no new violations.
+  `generate_artifacts.py`'s full pipeline re-run to propagate the new
+  capture through every traceability matrix.
+- **Scope, stated explicitly:** one vector deliberately mirrors
+  `tests/test_dosage_concrete.py`'s own overflow case; both
+  implementations agree, but via genuinely different reasoning
+  (documented in the vector's own data, checked by a dedicated test) —
+  not a REQ-DOSE-003 equivalence claim, which stays structurally
+  impossible in Dafny's `real` type.
+- `RISK_MANAGEMENT_PLAN.md` §4.1's `HAZ-GIP-1.14`/`1.2`/`1.3`
+  evidence-artifact cells updated to cite the new confirmation.
+  `RISK_MANAGEMENT_FINDINGS.md` marks R5 resolved. Root `README.md`'s
+  "Risk management" section also corrected in the same pass — found
+  it still described `dosage_calculator`'s severity values as
+  "drafted," stale since Finding 3/R3 replaced them with `GAP` in an
+  earlier PR and this paragraph was never updated.
+
+251 tests pass (5 new).
+
+---
+
 ## 2026-07-15 — `TEST_CATALOG.md` built: generated, categorized index of every test
 
 Direct instruction: "I need a document that outlines each test

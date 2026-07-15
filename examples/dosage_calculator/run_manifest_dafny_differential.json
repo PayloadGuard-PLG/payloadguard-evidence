@@ -1,0 +1,12 @@
+{
+  "tool": "dafny",
+  "tool_version": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2",
+  "command": [
+    "dafny",
+    "run",
+    "/home/user/payloadguard-evidence/examples/dosage_calculator/dosage_differential_driver.dfy"
+  ],
+  "exit_code": 0,
+  "started_utc": "2026-07-15T14:52:43.243416+00:00",
+  "target": "dosage_differential_driver.dfy"
+}

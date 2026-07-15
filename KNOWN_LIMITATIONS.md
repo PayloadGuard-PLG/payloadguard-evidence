@@ -4,7 +4,25 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (Finding 3/R3 resolved: `dosage_calculator`'s
+Last updated: 2026-07-15 (R5 resolved: differential-testing harness
+built between `dosage.py`/`dosage.dfy` (9 shared vectors, all matched)
+after direct verification confirmed the equivalence claim within
+Dafny's representable (finite-`raw_dose`) domain. Real finding
+surfaced by that verification, not previously flagged: `dosage.py`'s
+docstring postcondition (`>= 0`) had silently drifted from
+`dosage.dfy`'s own strict-`>` tightening, three months stale — fixed,
+CrossHair re-verified clean, full artifact pipeline regenerated.
+Confirmed `dafny run` executes concretely in this environment before
+recommending the differential-testing option, not assumed. Scope
+caveat, checked mechanically: one vector mirrors an existing overflow
+test case and agrees, but via different reasoning, not a REQ-DOSE-003
+equivalence claim (structurally impossible in Dafny's `real` type).
+Also fixed a stale claim in root `README.md`'s "Risk management"
+section, found while cross-checking this device's status. No
+open-item changes to Finding 5, matrix naming, or R3's per-hazard
+severity-scoring blocker. 251 tests pass. See DEVLOG.md's 2026-07-15
+entry for the full account.) Prior entry, preserved: Last updated
+2026-07-15 (Finding 3/R3 resolved: `dosage_calculator`'s
 severity model rebuilt consequence-only, Option 3 (hybrid) chosen by
 Steven over Option 1 (`AskUserQuestion`); Option 2 eliminated on
 textual grounds (TR 24971 §5.5.4) before he was asked. Real, cascading

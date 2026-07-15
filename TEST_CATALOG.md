@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 235 test functions across 29 categories.**
+**Total: 240 test functions across 30 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -221,6 +221,16 @@ for the actual collected-case count.
 | Test | Description | Code |
 |---|---|---|
 | `test_dosage_concrete` | Requirement: see case['requirement_id'] (mapping per metadata.yaml). | `tests/test_dosage_concrete.py:78` |
+
+## Dosage Differential (`tests/test_dosage_differential.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_committed_driver_matches_the_generator` | The generated-artifact-matches-its-generator check, same discipline as evidence/cli.py's and evidence/test_catalog.py's own tests. | `tests/test_dosage_differential.py:36` |
+| `test_captured_results_show_every_vector_matched` | The regression test proper: the last real `dafny run` capture agreed with dosage.py on every vector. | `tests/test_dosage_differential.py:49` |
+| `test_captured_results_cover_every_current_vector` | Sanity check that the capture wasn't taken against a stale vector list - every vector in dosage_differential_vectors.py right now has a corresponding captured result, and vice versa. | `tests/test_dosage_differential.py:61` |
+| `test_python_side_reproduces_the_captured_values_live` | Re-runs dosage.py's real calculate_hourly_dose (no Dafny needed) against every vector and confirms it still produces the dose the last capture recorded - catches a Python-side regression between captures without requiri… | `tests/test_dosage_differential.py:75` |
+| `test_overflow_vector_is_explicitly_documented_as_coincidental` | This harness's one real scoping caveat, checked mechanically so it can't silently disappear on a future edit: the overflow-domain vector's own note must state plainly that its agreement is coincidental to the chosen mag… | `tests/test_dosage_differential.py:96` |
 
 ## Drug Interaction Checker Dafny Wiring (`tests/test_drug_interaction_checker_dafny_wiring.py`)
 

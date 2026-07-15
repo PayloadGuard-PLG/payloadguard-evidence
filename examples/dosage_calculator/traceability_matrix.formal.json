@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: formally proven evidence)",
-  "generated_utc": "2026-07-11T18:39:46.902160+00:00",
+  "generated_utc": "2026-07-15T14:50:15.195955+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107",
     "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"

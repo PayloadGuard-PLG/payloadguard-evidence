@@ -8,7 +8,28 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **`TEST_CATALOG.md` built: generated,
+**Last updated:** 2026-07-15 — **R5 resolved: differential-testing
+harness built between `dosage.py`/`dosage.dfy`; postcondition drift
+found and fixed.** Direct instruction: "let's look into R5 directly."
+Verified the equivalence claim by direct comparison first (branch
+logic matches for every finite-`raw_dose` input) and found a real,
+previously-unflagged issue: `dosage.py`'s docstring postcondition
+still said `>= 0`, three months stale against `dosage.dfy`'s own
+strict-`>` tightening (2026-07-07, Gate C5). Confirmed `dafny run`
+executes here before recommending Option 2; Steven chose it
+(`AskUserQuestion`), plus fixing the postcondition drift. Built:
+`dosage_differential_vectors.py`/`dosage_differential_driver.dfy`/
+`run_verify_dosage_differential.py` → `differential_test_results.json`
+(9/9 vectors matched), `dosage.py` tightened to `> 0` and CrossHair
+re-verified clean, full artifact pipeline regenerated. Also fixed a
+stale claim found in root `README.md`'s "Risk management" section
+(said `dosage_calculator`'s severity values were "drafted," stale
+since R3 replaced them with `GAP`). 251 tests pass (5 new). **Next
+step: awaiting Steven's decision on the remaining open items — real
+severity values for the 5 hazards (R3's concrete follow-on), Finding
+5's evaluation procedure, matrix region naming — or a new
+instruction.**
+**Prior update, preserved below** — 2026-07-15 — **`TEST_CATALOG.md` built: generated,
 categorized index of every test.** Direct instruction: "I need a
 document that outlines each test... categorized correctly and a brief
 description and code." `evidence/test_catalog.py` parses every

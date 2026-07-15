@@ -98,17 +98,22 @@ supports.
 **All three are `DRAFT`, not signed off, and at meaningfully different
 stages — stated plainly rather than implied uniform.**
 `dosage_calculator`'s is by far the most developed: hazard
-identification is complete, severity/probability values are drafted
-(reasoned from committed evidence, explicitly marked pending a named
-Clinical SME's review), its citations were extended to ISO/TR
-24971:2020 during a recent audit, and a findings ledger
-(`RISK_MANAGEMENT_FINDINGS.md`) tracks corrections already applied and
-several evaluation-model questions still open. `renal_adjustment`'s and
-`drug_interaction_checker`'s hazard registers complete identification
-only — every severity/probability/evaluation field is an explicit
-`GAP`, not yet drafted — and their plans cite ISO 14971:2019 alone;
-extending them to `dosage_calculator`'s TR-24971-informed model is
-future work, not started. Assigning a severity score, accepting a
+identification is complete, its severity **model** was rebuilt
+consequence-only (2026-07-15, replacing an earlier model that measured
+evidence strength instead of real-world consequence — see
+`RISK_MANAGEMENT_FINDINGS.md` Finding 3), its equivalence with the
+Python implementation is now differentially tested rather than merely
+asserted (Finding 5/R5, also resolved 2026-07-15), its citations were
+extended to ISO/TR 24971:2020 during an earlier audit, and a findings
+ledger (`RISK_MANAGEMENT_FINDINGS.md`) tracks corrections already
+applied and what's still open. **Every hazard's severity value is an
+explicit `GAP` across all three examples** — `dosage_calculator`'s
+model and evidence citations are more developed, not its scored values,
+which remain Steven's clinical call same as the other two.
+`renal_adjustment`'s and `drug_interaction_checker`'s hazard registers
+complete identification only, and their plans cite ISO 14971:2019
+alone; extending them to `dosage_calculator`'s TR-24971-informed model
+is future work, not started. Assigning a severity score, accepting a
 residual risk, or closing a hazard as `Acceptable` is, for all three, a
 human decision this repo's assistant has declined to make on a
 reviewer's behalf, even where no further evidence is buildable.
@@ -142,7 +147,7 @@ part of the regular test suite.
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (246 tests; see
+- **`tests/`** — regression suite (251 tests; see
   [`TEST_CATALOG.md`](TEST_CATALOG.md) for the current, generated count
   and a categorized per-test index — not restated here to avoid the
   same staleness this file has already needed fixing for once).

@@ -1,6 +1,19 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (Finding 3/R3 resolved:
+Last updated: 2026-07-15 (R5 resolved: a differential-testing harness
+now exists between `dosage.py` and `dosage.dfy`
+(`dosage_differential_vectors.py`, generated
+`dosage_differential_driver.dfy`, `run_verify_dosage_differential.py`)
+- 9 shared vectors, all matched, capturing real `dafny run` output
+under this repo's own Gate C1 capture discipline. Not a new gate or
+pipeline stage; a new evidence artifact type specific to this device
+(structurally unique - it's the only example with both a Python and a
+Dafny implementation). Real finding en route: `dosage.py`'s docstring
+postcondition had drifted from `dosage.dfy`'s own already-tightened
+`ensures` clause; fixed, CrossHair re-run, full traceability-matrix
+pipeline regenerated. No component, gate, or data-flow change beyond
+this new artifact type. See DEVLOG.md's 2026-07-15 entry.)
+Prior header, preserved: Last updated 2026-07-15 (Finding 3/R3 resolved:
 `dosage_calculator`'s severity model rebuilt consequence-only, Option
 3 (hybrid) chosen by Steven. `RISK_MANAGEMENT_PLAN.md` §4.1's bands
 are now pure consequence definitions with a per-hazard
