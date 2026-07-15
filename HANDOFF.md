@@ -8,7 +8,27 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **Root `README.md` brought current with
+**Last updated:** 2026-07-15 — **Finding 3/R3 resolved: severity model
+rebuilt consequence-only, Option 3 (hybrid).** Direct instruction:
+"work through R3's severity model." Option 2 eliminated on textual
+grounds (TR 24971 §5.5.4); Steven chose Option 3 over Option 1
+(`AskUserQuestion`). `dosage_calculator`'s severity bands (§4.1) are
+now pure consequence definitions with a per-hazard evidence-artifact
+column; every hazard's severity is an explicit `GAP` (not a
+regression — the old evidence-strength values were never valid). This
+cascaded: §4.3's matrix, Section 5's overall-residual-risk method, and
+the "Path to sign-off" section all now report `GAP` instead of the old
+`Unacceptable`/`Acceptable` outputs — the device's overall residual
+risk is `GAP`, not `Unacceptable`, because the prior evaluation was
+never actually computed from consequence. `HAZARD_REGISTER.md` and
+`RISK_MANAGEMENT_FINDINGS.md` updated to match; two pre-existing
+staleness bugs ("four hazards," stale since the `HAZ-GIP-1.2b` split)
+fixed in the same pass. 236 tests pass, unchanged. **Next step: real
+severity values (S1–S4) for each of the 5 hazards — Steven's clinical
+call, the concrete blocking item now, not an abstract model question.
+Other open items unchanged: Finding 5's evaluation procedure, matrix
+region naming, R5's equivalence-gap option.**
+**Prior update, preserved below** — 2026-07-15 — **Root `README.md` brought current with
 the system's actual state.** Direct instruction: "update the main
 readme to reflect the current system." Fixed a stale test count (214 →
 236) and, more substantively, added a "Risk management (ISO 14971)"

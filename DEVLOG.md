@@ -6,6 +6,61 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — Finding 3/R3 resolved: severity model rebuilt consequence-only, Option 3 (hybrid)
+
+Direct instruction: "work through R3's severity model." R3
+(`RISK_MANAGEMENT_FINDINGS.md`) had been open since the risk-management
+audit earlier this session: `dosage_calculator`'s severity bands
+defined severity by *evidence strength* ("S1: Dafny-proven, no harm
+pathway is open") rather than by consequence magnitude, contradicting
+ISO 14971:2019 §3.27 and stated directly by ISO/TR 24971 §5.5.4
+("severity levels... should not include any element of probability").
+
+Option 2 (keep the current model, justify under §7.1 NOTE 2) was
+eliminated on textual grounds before asking Steven to choose — TR
+§5.5.4 leaves no room for it. Presented Option 1 (pure consequence-only)
+versus Option 3 (hybrid: consequence-only severity plus an explicit
+per-hazard "which evidence artifact drives probability" column) via
+`AskUserQuestion`. **Steven chose Option 3.**
+
+Built across both artifacts:
+
+- `RISK_MANAGEMENT_PLAN.md` §4.1: severity bands rebuilt as pure
+  consequence definitions (no reference to what's proven or bounded),
+  calibrated against IEC 62304 Class B's own S3 boundary and ISO/TR
+  24971 Table 4's five-level descriptor set. New evidence-artifact
+  column added per hazard.
+- **Real, cascading consequence, stated rather than hidden:** every
+  hazard's severity is now an explicit `GAP`, not a regression — the
+  old S1/S2 values were never a valid consequence measurement, so
+  §4.3's acceptance matrix, Section 5's overall-residual-risk method,
+  and the entire "Path to sign-off" section's argument all changed from
+  reporting `Unacceptable`/`Acceptable` outputs to reporting `GAP`. This
+  device's overall residual risk is now `GAP`, not `Unacceptable` — not
+  because it got safer, but because the prior evaluation was never
+  actually computed from what ISO 14971 means by severity.
+- `HAZARD_REGISTER.md`: all 5 hazards' `Severity`/`Risk evaluation`
+  fields updated to `GAP`; `Probability` reverted to §4.2's standing
+  worst-case-default policy for every hazard except `HAZ-GIP-1.2b`,
+  whose probability stays `GAP` by deliberate design per Finding 5,
+  unaffected by R3 either way.
+- `RISK_MANAGEMENT_FINDINGS.md`: Finding 3 marked resolved (model), with
+  the concrete next item now named explicitly — real severity values
+  for all 5 hazards, Steven's clinical call, not an abstract model
+  question anymore. Cross-references from Finding 5 and the R5
+  (equivalence-gap) item updated to reflect the resolution.
+- Two pre-existing staleness bugs fixed in the same pass, found while
+  rewriting affected sections, not separately reported: Section 5 and
+  the "Path to sign-off" section both still said "four hazards," stale
+  since `HAZ-GIP-1.2b` split out earlier the same day (Finding 4).
+- `README.md`'s Status section corrected to say `GAP`, not
+  `Unacceptable`.
+
+236 tests pass, unchanged — documentation-only, no spec/example content
+change.
+
+---
+
 ## 2026-07-15 — Root README.md brought current with the system's actual state
 
 Direct instruction: "update the main readme to reflect the current

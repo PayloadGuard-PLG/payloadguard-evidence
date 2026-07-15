@@ -596,3 +596,56 @@ in-scope controls, not a technical question this repo's assistant can
 answer or draft on his behalf. The new section is explicit that it
 does not pick between these paths or pre-write a justification —
 `Unacceptable` stands until one of them actually happens.
+
+## Amendment 2026-07-15 — Finding 3/R3 resolved: severity model rebuilt consequence-only, Option 3; the `Unacceptable` finding above is superseded, not still current
+
+**Superseded, not merely extended: this file's own two "Amendment
+2026-07-14" entries above (severity bands, and the `Unacceptable`
+overall-residual-risk conclusion that followed from them) describe a
+severity model this repo has since found invalid and replaced.**
+Preserved verbatim above per this file's own audit-trail discipline —
+they're what was actually built and believed true that day — but a
+reader relying on this file for current status should treat the S1/S2
+values and the `Unacceptable` conclusion above as historical record,
+not present fact. Current status: see `RISK_MANAGEMENT_FINDINGS.md`
+and the root `README.md`'s "Risk management (ISO 14971)" section.
+
+Direct instruction: "work through R3's severity model." R3
+(`RISK_MANAGEMENT_FINDINGS.md` Finding 3) had been open since the
+earlier risk-management audit this session: the severity bands built
+in the "Amendment 2026-07-14 (later still)" entry above defined
+severity by *evidence strength* ("S1: Dafny-proven, no harm pathway is
+open") rather than consequence magnitude, contradicting ISO
+14971:2019 §3.27 and directly contradicted by ISO/TR 24971 §5.5.4
+("severity levels... should not include any element of probability").
+
+Option 2 (keep the current model, justify under §7.1 NOTE 2) was
+eliminated on textual grounds before asking Steven to choose — TR
+§5.5.4 leaves no room for it. Presented Option 1 (pure
+consequence-only) versus Option 3 (hybrid: consequence-only severity
+plus an explicit per-hazard evidence-artifact column) via
+`AskUserQuestion`. **Steven chose Option 3.**
+
+**Real, cascading consequence, stated rather than hidden:** every
+hazard's severity in `HAZARD_REGISTER.md` is now an explicit `GAP`,
+not a regression — the old S1/S2 values above were never a valid
+consequence measurement. `RISK_MANAGEMENT_PLAN.md` §4.3's acceptance
+matrix, Section 5's overall-residual-risk method, and the "Path to
+sign-off" section's entire argument all changed from reporting
+`Unacceptable`/`Acceptable` outputs to reporting `GAP`. **This
+device's overall residual risk is now `GAP`, not `Unacceptable`** —
+not because it got safer, but because the prior evaluation (this
+file's own "Amendment 2026-07-14 (yet later)" entry above) was never
+actually computed from what ISO 14971 means by severity.
+
+Two pre-existing staleness bugs also fixed in this pass, both
+predating R3, caught while resolving it: `RISK_MANAGEMENT_PLAN.md`'s
+"Path to sign-off" Step 0 and `HAZARD_REGISTER.md` Section 3 both
+still said "four hazards"/"four rows," stale since `HAZ-GIP-1.2b`
+split out of `HAZ-GIP-1.2`/`HAZ-GIP-1.3` (Finding 4) — this register
+has held five hazard rows since that split, not four.
+
+The concrete next step is real severity values (S1–S4) for each of the
+5 hazards — Steven's clinical call, not an abstract model question
+anymore. Every value marked `GAP` throughout, same discipline as every
+other value this repo has never invented on Steven's behalf.

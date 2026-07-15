@@ -4,7 +4,19 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (Two repo self-consistency lints built,
+Last updated: 2026-07-15 (Finding 3/R3 resolved: `dosage_calculator`'s
+severity model rebuilt consequence-only, Option 3 (hybrid) chosen by
+Steven over Option 1 (`AskUserQuestion`); Option 2 eliminated on
+textual grounds (TR 24971 §5.5.4) before he was asked. Real, cascading
+consequence: every hazard's severity is now an explicit `GAP`, not a
+regression — the old evidence-strength values below (S1-S4, "3 of 4
+Unacceptable") were never a valid consequence measurement, so this
+device's overall residual risk is now `GAP`, not `Unacceptable`. The
+concrete next item is real severity values for the 5 hazards in
+`HAZARD_REGISTER.md` — Steven's clinical call, not an abstract model
+question. Other open items (Finding 5, matrix naming, R5) unchanged.
+No spec/test change; 236 tests pass. See DEVLOG.md's 2026-07-15 entry.)
+Prior entry, preserved: Last updated 2026-07-15 (Two repo self-consistency lints built,
 `evidence/hazard_id_lint.py` and `evidence/citation_registry.py`,
 direct follow-up to PR #50: that PR needed a second fix round because
 a hand-edit collapsed `HAZ-GIP-1.2`/`1.3` into one row, silently
