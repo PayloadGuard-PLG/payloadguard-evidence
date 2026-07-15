@@ -27,6 +27,10 @@ from dosage import calculate_hourly_dose
 from dosage_differential_vectors import VECTORS
 
 HERE = pathlib.Path(__file__).parent
+REPO_ROOT = HERE.parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+from evidence.dafny_adapter import parse_dafny_capture  # noqa: E402
+
 DRIVER = HERE / "dosage_differential_driver.dfy"
 
 
@@ -58,10 +62,16 @@ def _run_dafny_driver() -> dict:
     }
     (HERE / "run_manifest_dafny_differential.json").write_text(json.dumps(manifest, indent=2))
 
-    if proc.returncode != 0:
-        raise RuntimeError(
-            f"dafny run failed (exit {proc.returncode}); see raw_dafny_differential_output.txt"
-        )
+    # Gate C1 discipline means more than capturing raw output verbatim -
+    # it means never trusting exit_code alone (the false-zero guard this
+    # repo has tracked since Phase A). Reuse the same parser every other
+    # Dafny capture in this repo is eventually checked against (Gate C2,
+    # evidence/render/matrix_variants.py::dafny_record) rather than
+    # re-deriving a weaker, ad hoc check here: it refuses on a missing/
+    # duplicate verifier summary line, an "out of resource"/"out of
+    # memory"/"timed out" tail, or a nonzero error count - not just a
+    # nonzero exit code.
+    parse_dafny_capture(raw_output, manifest)
 
     dafny_outputs = {}
     for line in proc.stdout.splitlines():

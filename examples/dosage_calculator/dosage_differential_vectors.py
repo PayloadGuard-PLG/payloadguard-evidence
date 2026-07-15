@@ -5,14 +5,15 @@
 implementations are checked against the identical inputs rather than
 two independently-typed lists that could themselves drift.
 
-Scope, stated explicitly rather than implied: every vector here stays
-within the domain `dosage.dfy`'s own header comment already scopes
-itself to — `raw_dose` finite in the IEEE-754 sense. Dafny's `real`
-type has no overflow concept at all, so a vector genuinely designed to
-overflow Python's `float` (as `overflow_negative_mirrors_test_dosage_concrete`
-below does, deliberately reusing `tests/test_dosage_concrete.py`'s own
-`overflow_negative_rate_clamps_to_zero` case) still produces the same
-output in both — but only because the chosen `max_safe_dose_mg_per_hr`
+Scope, stated explicitly rather than implied: every vector here keeps
+its Dafny-side `raw_dose` within the domain `dosage.dfy`'s own header
+comment already scopes itself to — finite in the IEEE-754 sense, since
+Dafny's `real` type has no overflow concept at all to be out of range
+of. On the Python side, one vector is the deliberate exception:
+`overflow_negative_mirrors_test_dosage_concrete` below genuinely
+overflows Python's `float` (reusing `tests/test_dosage_concrete.py`'s
+own `overflow_negative_rate_clamps_to_zero` case) and still produces the
+same output in both — but only because the chosen `max_safe_dose_mg_per_hr`
 is far smaller than any overflowed value, so both implementations reach
 their respective clamp branch. That agreement is real but coincidental
 to this specific vector's chosen magnitudes, not a general proof that

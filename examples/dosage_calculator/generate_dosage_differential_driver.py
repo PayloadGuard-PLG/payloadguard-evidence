@@ -71,8 +71,21 @@ def _dafny_real_literal(value: float) -> str:
         return f"{int(value)}.0"
     text = repr(value)
     if "e" in text or "E" in text:
-        # 1e10, 1e308 etc. - render as a plain integer-valued decimal,
-        # valid because every such vector in this file is a whole number.
+        # 1e10, 1e308 etc. render here too, since abs(value) >= 1e15
+        # skips the branch above - but int() on a float is only lossless
+        # when the float is already integer-valued (true of every vector
+        # committed today: 1e10, 1e308). A *fractional* scientific-notation
+        # value (e.g. 1e-5) would silently truncate to 0.0 via int() -
+        # refuse rather than guess, matching this repo's own false-zero-
+        # guard discipline (evidence/dafny_adapter.py).
+        if not value.is_integer():
+            raise ValueError(
+                f"_dafny_real_literal cannot serialize {value!r}: it is "
+                "fractional and would render in scientific notation, but "
+                "this function only has a lossless path for integer-valued "
+                "scientific-notation floats. Add explicit plain-decimal "
+                "handling before using a vector like this."
+            )
         return f"{int(value)}.0"
     return text
 

@@ -24,9 +24,14 @@ ART_DIR = REPO_ROOT / "examples" / "dosage_calculator"
 sys.path.insert(0, str(ART_DIR))
 sys.path.insert(0, str(REPO_ROOT))
 
+import pytest
+
 from dosage import calculate_hourly_dose  # noqa: E402
 from dosage_differential_vectors import VECTORS  # noqa: E402
-from generate_dosage_differential_driver import render  # noqa: E402
+from generate_dosage_differential_driver import (  # noqa: E402
+    _dafny_real_literal,
+    render,
+)
 
 
 def _load_results():
@@ -91,6 +96,27 @@ def test_python_side_reproduces_the_captured_values_live():
             f"captured result recorded {record['python_dose']} - "
             "re-run run_verify_dosage_differential.py"
         )
+
+
+def test_real_literal_rejects_fractional_scientific_notation():
+    """Qodo review finding on PR #55: _dafny_real_literal's scientific-
+    notation branch used to convert through int(value) unconditionally,
+    which is lossless for the two committed vectors (1e10, 1e308 - both
+    already integer-valued) but silently truncates a fractional
+    scientific-notation value to 0.0 (confirmed: int(1e-5) == 0). Must
+    now refuse rather than guess, matching this repo's own false-zero-
+    guard discipline."""
+    with pytest.raises(ValueError, match="fractional"):
+        _dafny_real_literal(1e-5)
+
+
+def test_real_literal_still_handles_committed_large_integer_vectors():
+    """The two real scientific-notation-repr'd values this file's
+    vectors actually use (1e10, 1e308) stay lossless through the
+    hardened path - both are exactly integer-valued floats, so int()
+    on them is exact regardless of magnitude."""
+    assert _dafny_real_literal(1e10) == "10000000000.0"
+    assert _dafny_real_literal(1e308) == f"{int(1e308)}.0"
 
 
 def test_overflow_vector_is_explicitly_documented_as_coincidental():
