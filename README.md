@@ -142,7 +142,10 @@ part of the regular test suite.
   Exercises set/membership logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
-- **`tests/`** — regression suite (236 tests).
+- **`tests/`** — regression suite (246 tests; see
+  [`TEST_CATALOG.md`](TEST_CATALOG.md) for the current, generated count
+  and a categorized per-test index — not restated here to avoid the
+  same staleness this file has already needed fixing for once).
 
 ## Quick start
 
@@ -217,3 +220,4 @@ Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 | [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) | Ledger of open items and known gaps. |
 | [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) | How generated artifacts are reviewed before use. |
 | [`sources/README.md`](sources/README.md) | Discipline for adding and citing a primary source. |
+| [`TEST_CATALOG.md`](TEST_CATALOG.md) | Generated, categorized index of every test in the suite — description and file:line pointer per test. Regenerate with `python -m evidence.test_catalog --out TEST_CATALOG.md`. |
