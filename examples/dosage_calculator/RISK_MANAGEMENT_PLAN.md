@@ -159,9 +159,11 @@ Consequence bands, calibrated against generic medical-device harm
 descriptors (this device's own IEC 62304 Class B classification, "non-
 life-threatening injury is possible," already named the S3 boundary;
 ISO/TR 24971 Table 4's five-level consequence-only descriptor set is a
-further real, source-backed calibration reference) — **not yet mapped
-to specific hazards below**, since that mapping is a clinical judgment
-this repo's assistant cannot supply:
+further real, source-backed calibration reference) — **mapped to
+specific hazards below as of 2026-07-15 (later)**, Steven's real
+consequence determination for each, not this repo's assistant's own
+inference (that mapping was, and remains, a clinical judgment only
+Steven can supply):
 
 | Severity | Definition (consequence only — no reference to what's proven or bounded) |
 |---|---|
