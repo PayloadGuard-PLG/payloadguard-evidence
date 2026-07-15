@@ -6,6 +6,35 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — Root README.md brought current with the system's actual state
+
+Direct instruction: "update the main readme to reflect the current
+system." The root `README.md` had drifted in two concrete ways, both
+now fixed:
+
+- **Stale test count** (214 → 236) - both the `tests/` bullet and the
+  implicit count behind "regression suite" were from before this
+  session's REQ-DDI-5/6 build-out and the two new self-consistency
+  lints.
+- **No mention at all of the risk-management artifacts** built this
+  session - `RISK_MANAGEMENT_PLAN.md`/`HAZARD_REGISTER.md` now exist
+  for all three examples (ISO 14971:2019/ISO TR 24971:2020-sourced),
+  consuming this system's own evidence strengths as risk-control input,
+  but the README never named them. Added a new "Risk management (ISO
+  14971)" section between the Gate C1-C6 section and "Repository
+  layout," stating plainly that all three are `DRAFT`, not signed off,
+  and that `dosage_calculator`'s device-level residual risk currently
+  evaluates `Unacceptable` pending a named Clinical SME's determination
+  - an honest status, not softened for a top-level doc. Also added the
+  two new lints (`evidence/hazard_id_lint.py`,
+  `evidence/citation_registry.py`) to the `evidence/` bullet in
+  Repository layout, alongside the existing `citation_gate.py` mention.
+
+No spec/test change; 236 tests pass (confirmed unchanged, this was a
+documentation-only edit).
+
+---
+
 ## 2026-07-15 — Two repo self-consistency lints built: `evidence/hazard_id_lint.py`, `evidence/citation_registry.py`
 
 Direct follow-up to PR #50 (the risk-management-artifact remediation
