@@ -34,6 +34,8 @@ import pathlib
 import re
 from dataclasses import dataclass
 
+from evidence.tracked_files import tracked_files
+
 _QUOTE_LOOKBEHIND_CHARS = 3
 _CONTEXT_BEFORE_CHARS = 60
 _CONTEXT_AFTER_CHARS = 250
@@ -94,8 +96,11 @@ class UnmarkedBannedCitation:
 
 
 def find_unmarked_banned_citations(repo_root: pathlib.Path) -> list:
-    """Scan every tracked markdown file for each BANNED_CITATIONS
-    pattern. A match is allowed - not flagged - if either:
+    """Scan every git-tracked markdown file (via tracked_files(), not a
+    plain filesystem walk - see that module's docstring for why: an
+    untracked/generated .md file shouldn't affect this scan's result)
+    for each BANNED_CITATIONS pattern. A match is allowed - not flagged
+    - if either:
 
     1. It is directly quoted (a quotation mark appears immediately
        before the match), i.e. the text is discussing the phrase as a
@@ -116,7 +121,7 @@ def find_unmarked_banned_citations(repo_root: pathlib.Path) -> list:
     treating an unconfirmed case as needing human attention rather than
     resolving it either direction automatically."""
     findings = []
-    for md_path in sorted(repo_root.rglob("*.md")):
+    for md_path in tracked_files(repo_root, "*.md"):
         if _is_ignored(md_path):
             continue
         text = md_path.read_text(encoding="utf-8")

@@ -3,6 +3,13 @@ point of the module - a live check that this repo's real, committed
 markdown is currently clean. That second test is the one that would
 have caught the actual HAZ-GIP-1.3 bug (PR #50) the day it was
 introduced instead of a day later, via an external reviewer.
+
+Unit tests build a real (if minimal) git repo under tmp_path and stage
+the files under test - find_undefined_references() now scans only
+git-tracked files (see evidence/tracked_files.py, added after a
+separate review finding on PR #51 that the original implementation
+scanned the filesystem regardless of git status), so a bare directory
+with no `.git` no longer works as a test fixture.
 """
 
 import pathlib
@@ -15,6 +22,7 @@ from evidence.hazard_id_lint import (  # noqa: E402
     find_defined_hazard_ids,
     find_undefined_references,
 )
+from tests.conftest import make_git_repo  # noqa: E402
 
 
 def test_real_repo_has_no_undefined_hazard_references():
@@ -44,10 +52,13 @@ def test_real_repo_defines_the_expected_hazard_ids_per_example():
 
 
 def test_detects_an_undefined_reference(tmp_path):
-    register = tmp_path / "HAZARD_REGISTER.md"
-    register.write_text("### HAZ-X-1 — a real hazard\n\nsome content\n")
-    other = tmp_path / "PLAN.md"
-    other.write_text("See HAZ-X-1 for the closed pathway and HAZ-X-2 for the residual.\n")
+    make_git_repo(
+        tmp_path,
+        {
+            "HAZARD_REGISTER.md": "### HAZ-X-1 — a real hazard\n\nsome content\n",
+            "PLAN.md": "See HAZ-X-1 for the closed pathway and HAZ-X-2 for the residual.\n",
+        },
+    )
 
     findings = find_undefined_references(tmp_path)
 
@@ -57,10 +68,13 @@ def test_detects_an_undefined_reference(tmp_path):
 
 
 def test_does_not_flag_a_defined_id_referenced_elsewhere(tmp_path):
-    register = tmp_path / "HAZARD_REGISTER.md"
-    register.write_text("### HAZ-X-1 — a real hazard\n")
-    other = tmp_path / "PLAN.md"
-    other.write_text("Cross-reference: HAZ-X-1.\n")
+    make_git_repo(
+        tmp_path,
+        {
+            "HAZARD_REGISTER.md": "### HAZ-X-1 — a real hazard\n",
+            "PLAN.md": "Cross-reference: HAZ-X-1.\n",
+        },
+    )
 
     assert find_undefined_references(tmp_path) == []
 
@@ -69,10 +83,13 @@ def test_split_hazard_style_ids_are_parsed_correctly(tmp_path):
     """The exact shape of the bug this module exists to catch: a base
     ID (HAZ-X-2) and a lettered split-row ID (HAZ-X-2b) must be treated
     as distinct IDs, not merged or confused."""
-    register = tmp_path / "HAZARD_REGISTER.md"
-    register.write_text("### HAZ-X-2 — narrowed row\n\n### HAZ-X-2b — split residual\n")
-    other = tmp_path / "PLAN.md"
-    other.write_text("See HAZ-X-2 and HAZ-X-2b, but not HAZ-X-3.\n")
+    make_git_repo(
+        tmp_path,
+        {
+            "HAZARD_REGISTER.md": "### HAZ-X-2 — narrowed row\n\n### HAZ-X-2b — split residual\n",
+            "PLAN.md": "See HAZ-X-2 and HAZ-X-2b, but not HAZ-X-3.\n",
+        },
+    )
 
     findings = find_undefined_references(tmp_path)
 
@@ -81,9 +98,13 @@ def test_split_hazard_style_ids_are_parsed_correctly(tmp_path):
 
 
 def test_intentionally_retired_ids_are_not_flagged(tmp_path):
-    other = tmp_path / "DEVLOG.md"
-    other.write_text("HAZ-X-9 was retired and folded into HAZ-X-1.\n")
-    (tmp_path / "HAZARD_REGISTER.md").write_text("### HAZ-X-1 — the survivor\n")
+    make_git_repo(
+        tmp_path,
+        {
+            "DEVLOG.md": "HAZ-X-9 was retired and folded into HAZ-X-1.\n",
+            "HAZARD_REGISTER.md": "### HAZ-X-1 — the survivor\n",
+        },
+    )
 
     findings = find_undefined_references(tmp_path, intentionally_retired=frozenset({"HAZ-X-9"}))
 
@@ -91,8 +112,28 @@ def test_intentionally_retired_ids_are_not_flagged(tmp_path):
 
 
 def test_dotted_and_undotted_ids_both_parse(tmp_path):
-    (tmp_path / "HAZARD_REGISTER.md").write_text(
-        "### HAZ-GIP-1.14 — dotted\n\n### HAZ-RENAL-8 — undotted\n"
+    make_git_repo(
+        tmp_path,
+        {"HAZARD_REGISTER.md": "### HAZ-GIP-1.14 — dotted\n\n### HAZ-RENAL-8 — undotted\n"},
     )
+
     defined = find_defined_hazard_ids(tmp_path)
+
     assert defined == {"HAZ-GIP-1.14", "HAZ-RENAL-8"}
+
+
+def test_untracked_markdown_is_not_scanned(tmp_path):
+    """The exact case an external review (Qodo, PR #51) flagged: a
+    workspace file that was never `git add`-ed - a local scratch note,
+    or something a tool generated (this repo's own working tree already
+    had pytest's cache README as a real, non-hypothetical example) -
+    must not affect the result, even though it references an undefined
+    hazard ID."""
+    make_git_repo(
+        tmp_path,
+        {"HAZARD_REGISTER.md": "### HAZ-X-1 — the only real hazard\n"},
+    )
+    # Written to disk but deliberately never staged.
+    (tmp_path / "UNTRACKED_SCRATCH.md").write_text("References HAZ-X-999, which is fake.\n")
+
+    assert find_undefined_references(tmp_path) == []

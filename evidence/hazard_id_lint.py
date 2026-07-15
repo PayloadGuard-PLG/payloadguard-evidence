@@ -23,6 +23,8 @@ import pathlib
 import re
 from dataclasses import dataclass
 
+from evidence.tracked_files import tracked_files
+
 HAZARD_ID_RE = re.compile(r"\bHAZ-[A-Z]+-[0-9]+(?:\.[0-9]+)?[a-z]?\b")
 DEFINED_HEADING_RE = re.compile(r"^###\s+(HAZ-[A-Z]+-[0-9]+(?:\.[0-9]+)?[a-z]?)\b", re.MULTILINE)
 
@@ -48,12 +50,12 @@ class UndefinedReference:
 
 def find_defined_hazard_ids(repo_root: pathlib.Path) -> set:
     """The set of every hazard ID that has a real `### HAZ-...` heading
-    in any HAZARD_REGISTER.md under repo_root. Repo-wide, not scoped
-    per-example - a cross-reference to a different example's hazard
-    would legitimately resolve too, though none exist as of this
+    in any git-tracked HAZARD_REGISTER.md under repo_root. Repo-wide,
+    not scoped per-example - a cross-reference to a different example's
+    hazard would legitimately resolve too, though none exist as of this
     writing (every example's hazards are self-contained)."""
     defined = set()
-    for register_path in sorted(repo_root.rglob("HAZARD_REGISTER.md")):
+    for register_path in tracked_files(repo_root, "*HAZARD_REGISTER.md"):
         text = register_path.read_text(encoding="utf-8")
         defined.update(DEFINED_HEADING_RE.findall(text))
     return defined
@@ -63,15 +65,20 @@ def find_undefined_references(
     repo_root: pathlib.Path,
     intentionally_retired: frozenset = INTENTIONALLY_RETIRED_IDS,
 ) -> list:
-    """Scan every tracked markdown file for hazard-ID-shaped tokens and
-    flag any that don't resolve to a real heading and aren't
+    """Scan every git-tracked markdown file for hazard-ID-shaped tokens
+    and flag any that don't resolve to a real heading and aren't
     intentionally retired. Returns findings sorted by (file, line,
-    hazard_id) for stable, diffable output - `rglob` + a sort on the
-    returned list already gives deterministic ordering, made explicit
-    here rather than relied on implicitly."""
+    hazard_id) for stable, diffable output.
+
+    Scoped to tracked files specifically (via tracked_files(), not a
+    plain filesystem walk) so results depend only on the committed
+    tree, not on whatever untracked/generated markdown happens to sit
+    in the working directory (e.g. pytest's own `.pytest_cache/README.md`,
+    written on every local test run - confirmed present in this repo's
+    own working tree, not a hypothetical)."""
     defined = find_defined_hazard_ids(repo_root)
     findings = []
-    for md_path in sorted(repo_root.rglob("*.md")):
+    for md_path in tracked_files(repo_root, "*.md"):
         if _is_ignored(md_path):
             continue
         text = md_path.read_text(encoding="utf-8")
@@ -86,5 +93,8 @@ def find_undefined_references(
 
 
 def _is_ignored(path: pathlib.Path) -> bool:
+    """Defense-in-depth only - tracked_files() already restricts
+    scanning to git-tracked paths, so a tracked node_modules/.git entry
+    would be unusual, but this costs nothing to keep."""
     parts = path.parts
     return "node_modules" in parts or ".git" in parts
