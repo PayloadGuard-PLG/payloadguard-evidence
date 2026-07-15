@@ -45,33 +45,46 @@ covering the full pump.
 
 ## 2. Hazard entries
 
-### HAZ-GIP-1.2 — Overinfusion (dose limit exceeded via bolus requests)
+### HAZ-GIP-1.2 — Overinfusion (dose limit exceeded via bolus requests) — kernel-scope delivery pathway
+
+**Narrowed 2026-07-15** (`RISK_MANAGEMENT_FINDINGS.md` Finding 4): this
+row previously named "Overinfusion" while its own `Known, named
+residual` and `Severity` fields already described a different, still-
+open situation (clinician awareness, not delivered dose). Split, not
+renamed — this row now covers only the pathway `calculate_hourly_dose`
+actually proves closed; the real open residual moved to
+`HAZ-GIP-1.2b` below.
 
 | Field | Value |
 |---|---|
 | GIP v1.0 source | HID 1.2, `sources/gip-v1.0-hazard-analysis.md` §2.4.1. Verbatim: Hazard "Overinfusion", Type "All", Cause "Dose limit exceeded due to too many bolus requests", GIP's own stated mitigation "Flow sensor", GIP Safety Req "1.4, 3.4.6" |
-| Cross-reference | This device's existing STRIDE threat entry `THR-GIP-1-2` (`metadata.a.yaml`) cites the same GIP hazard under a different discipline (security threat modeling, not clinical hazard analysis) — see `RISK_MANAGEMENT_PLAN.md` Section 1 for why these are kept distinct, not merged |
-| Hazardous situation at this kernel's scope | A bolus request, when converted to an hourly dose by `calculate_hourly_dose`, would exceed `max_safe_dose_mg_per_hr` |
-| Risk control measure | REQ-GIP-1-4-12, `kernel_scope`: the kernel detects the over-limit condition and returns it via a clamped output value. Formally verified — Dafny `CalculateHourlyDose` (`raw_dafny_output.txt`), CrossHair bounded search, concrete test `kernel_detects_bolus_limit_exceeded` (all three per `traceability_matrix.a.md`) |
-| Known, named residual | REQ-GIP-1-4-12's `system_scope` (the full pump generating an audible/visual alarm *signal* once the kernel reports the condition) is explicitly deferred to integration testing — this kernel's detection is proven, but nothing yet proves a clinician would actually be alerted. Carried forward from `RISK_MANAGEMENT_PLAN.md` Section 1, not new information. |
-| Potential harm (qualitative, not scored) | Per `metadata.a.yaml`'s own `classification_rationale`: "failure could contribute to a non-serious over- or under-dose given clinician oversight" — reused verbatim rather than inventing new harm language |
-| Severity | **DRAFT: S2 — Minor.** The delivered dose itself stays within its proven-safe bound (`raw_dose` is clamped, Dafny-proven); the residual is that a clinician isn't proven to be informed of the anomalous request, per `RISK_MANAGEMENT_PLAN.md` §4.1. Proposed, not confirmed |
-| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)** — mandated per §4.2/§4.4, no field data exists to justify a lower band |
-| Risk evaluation (acceptable?) | **DRAFT: Unacceptable** under §4.3's proposed matrix (S2×P5) — pending the `system_scope` alarm-signal proof, real field data, or Steven's revision |
+| Cross-reference | This device's existing STRIDE threat entry `THR-GIP-1-2` (`metadata.a.yaml`) cites the same GIP hazard under a different discipline (security threat modeling, not clinical hazard analysis) — see `RISK_MANAGEMENT_PLAN.md` Section 1 for why these are kept distinct, not merged. See also `HAZ-GIP-1.2b` for the split-out residual. |
+| Hazardous situation at this kernel's scope (narrowed) | A bolus request, when converted to an hourly dose by `calculate_hourly_dose`, would produce a raw dose exceeding `max_safe_dose_mg_per_hr` **before clamping** — the pathway this kernel's output is proven to close, not the clinician-awareness question |
+| Risk control measure | REQ-GIP-1-4-12, `kernel_scope`: the kernel detects the over-limit condition and returns it via a clamped output value, so the *delivered* dose never exceeds `max_safe_dose_mg_per_hr`. Formally verified — Dafny `CalculateHourlyDose` (`raw_dafny_output.txt`), CrossHair bounded search, concrete test `kernel_detects_bolus_limit_exceeded` (all three per `traceability_matrix.a.md`) |
+| Known, named residual (narrowed) | None at kernel scope for the delivered-dose question itself — the clamp is proven for every input this kernel accepts. The `system_scope` question (whether a clinician is ever alerted that a clamp fired) is a different hazard mechanism, moved to `HAZ-GIP-1.2b` |
+| Potential harm (qualitative, not scored) | Per `metadata.a.yaml`'s own `classification_rationale`: "failure could contribute to a non-serious over- or under-dose given clinician oversight" — reused verbatim rather than inventing new harm language; applies to the delivered-dose pathway this row now covers |
+| Severity | **STALE, pending re-derivation — not re-scored here.** The prior `DRAFT: S2` value was justified by the clinician-awareness residual, which has moved to `HAZ-GIP-1.2b`. Re-scoring this narrowed, proof-closed pathway is a Finding 3/R3 question (severity model still open — see `RISK_MANAGEMENT_FINDINGS.md`), not resolved by this restructuring |
+| Probability | **STALE, pending re-derivation** — same reason as Severity above |
+| Risk evaluation (acceptable?) | **STALE, pending re-derivation** — cannot be evaluated honestly until Severity/Probability are re-derived under whichever model Finding 3/R3 settles on |
 
-### HAZ-GIP-1.3 — Overinfusion (bolus volume/concentration too high)
+### HAZ-GIP-1.2b — Overinfusion clamp fires with no proven clinician notification
+
+**New 2026-07-15** (`RISK_MANAGEMENT_FINDINGS.md` Finding 4): the real,
+still-open residual split out of `HAZ-GIP-1.2`/`HAZ-GIP-1.3` above —
+this kernel proves a bad request gets clamped, not that anyone is ever
+told it happened.
 
 | Field | Value |
 |---|---|
-| GIP v1.0 source | HID 1.3, same table. Verbatim: Hazard "Overinfusion", Type "All", Cause "(Programmed) Bolus volume/concentration too high", mitigation "Drug library", Safety Req "1.4, 3.4.6" |
-| Cross-reference | `THR-GIP-1-3` (`metadata.a.yaml`) |
-| Hazardous situation at this kernel's scope | A high `concentration_mg_per_ml` or `infusion_rate_ml_per_hr` input drives the computed hourly dose above `max_safe_dose_mg_per_hr` — **the kernel does not distinguish this cause from HAZ-GIP-1.2's** (both collapse to the same detected over-limit condition; `calculate_hourly_dose` has no notion of "too many bolus requests" vs. "one bolus too large," only the resulting dose value). Stated explicitly rather than silently implying two independently-covered hazards. |
-| Risk control measure | Same as HAZ-GIP-1.2 — REQ-GIP-1-4-12, same evidence |
-| Known, named residual | Same `system_scope` gap as HAZ-GIP-1.2 |
-| Potential harm (qualitative, not scored) | Same as HAZ-GIP-1.2 |
-| Severity | **DRAFT: S2 — Minor**, same reasoning as HAZ-GIP-1.2 (proposed, not confirmed) |
-| Probability | **DRAFT: P5 (worst-case default, not a frequency estimate)**, same reasoning |
-| Risk evaluation (acceptable?) | **DRAFT: Unacceptable**, same as HAZ-GIP-1.2 |
+| GIP v1.0 source | Same underlying hazards as HID 1.2/1.3 (`sources/gip-v1.0-hazard-analysis.md` §2.4.1) — this row is not a new GIP-sourced hazard, it is the `system_scope` half of HID 1.2/1.3's own mitigation that this kernel's proof does not reach |
+| Cross-reference | `HAZ-GIP-1.2`, `HAZ-GIP-1.3` (the narrowed, proof-closed rows this splits from). `HAZ-DOSE-003` has a related masking mechanism (an overflow-driven clamp is indistinguishable from a legitimate at-ceiling request) — cross-referenced, deliberately **not** folded into this row; whether they should be merged is Steven's register-organization call, not decided here |
+| Hazardous situation at this kernel's scope | REQ-GIP-1-4-12's `system_scope` component — the full pump generating an audible/visual alarm *signal* once the kernel reports an over-limit clamp — is explicitly deferred to integration testing per `RISK_MANAGEMENT_PLAN.md` Section 1. This kernel's detection and clamping is proven; nothing in this repo proves a clinician is ever alerted that it fired |
+| Risk control measure | **None at kernel scope.** No Dafny, CrossHair, or concrete-test artifact in `examples/dosage_calculator/` addresses alarm signaling — it requires an integrated pump system (hardware, firmware, alarm hardware, UI layer) this POC was never scoped to build, per `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section |
+| Known, named residual | The complete residual *is* this row — no partial evidence exists to describe as "known but incomplete"; this is a full evidence gap, not a weak proof |
+| Potential harm (qualitative, not scored) | A clinician who is never alerted that an over-limit request was clamped may not investigate the underlying cause (miscalculated order, programming error, etc.), potentially leading to a repeated or escalating dosing error — qualitative only, not scored |
+| Severity | **GAP — not scored.** Blocked on the same open Finding 3/R3 question as `HAZ-GIP-1.2` above (which severity model applies), plus genuine clinical-judgment input this repo's assistant cannot supply |
+| Probability | **GAP — deliberately not defaulted to P5.** `RISK_MANAGEMENT_FINDINGS.md` Finding 5: this is arguably exactly TR 24971 §5.5.3's target case (a "software failure"-class hazard with zero evidence of any kind, not merely an unmeasured one), for which the standard's own guidance is to evaluate on severity alone rather than assume worst-case probability and run the full matrix. Whether §5.5.3 applies here, versus the plan's current P5-plus-matrix policy, versus a two-track approach, is Finding 5's open Option A/B/C question — presuming P5 here would prejudge that question, not just restructure the register |
+| Risk evaluation (acceptable?) | **GAP — cannot be evaluated** until both Finding 3/R3 (severity model) and Finding 5 (evaluation procedure for this specific hazard class) are decided. This row is the concrete reason those two open questions matter in practice — not an abstract choice |
 
 ### HAZ-GIP-1.14 — Improper flow (bleed back / reflux within device)
 
@@ -136,6 +149,7 @@ diligence:
 |---|---|---|
 | 2026-07-14 | Initial draft: 4 hazard entries (3 GIP-sourced, 1 DECLARED), scope section, out-of-scope section | First real hazard-register artifact in this repo, chosen as the easiest starting point because this device's primary source is itself a formal hazard analysis already partially cited in `metadata.a.yaml`'s STRIDE threat model — unlike the other two worked examples, which have no equivalent source |
 | 2026-07-14 (later) | Draft severity/probability/evaluation proposal added to all 4 hazards; Steven assigned as Clinical SME | Direct instruction: "assign a clinical SME and start the severity/probability tables." Real finding: none of the 4 hazards reaches S3/S4 given what's actually proven (3 land at S2, 1 — the fully-proven reverse-delivery mitigation — lands at S1); 3 of 4 evaluate provisionally `Unacceptable` under the mandated worst-case probability default. All values marked DRAFT, pending Steven's confirmation, not self-declared as final |
+| 2026-07-15 | `HAZ-GIP-1.2`/`HAZ-GIP-1.3` narrowed to the kernel-proven-closed delivery pathway; new `HAZ-GIP-1.2b` row split out for the real, still-open clinician-notification residual | Audit finding (`RISK_MANAGEMENT_FINDINGS.md` Finding 4, verified against `dosage.py`/`dosage.dfy` directly): the original rows named "Overinfusion" — a pathway this kernel proves closed — while their own residual/severity fields already described a different, open situation. Split, not renamed. `HAZ-GIP-1.2`/`1.3`'s Severity/Probability/Risk-evaluation values are marked stale, pending re-derivation, rather than silently carried over or newly re-scored — that re-scoring is Finding 3/R3's open question. `HAZ-GIP-1.2b`'s Probability is deliberately left `GAP`, not defaulted to P5, per Finding 5's newly-surfaced open question of whether TR 24971 §5.5.3 (severity-alone evaluation) applies to this specific inestimable-probability hazard. Both are register restructuring, not new judgment calls — the severity model, evaluation procedure, and actual scored values remain Steven's decisions |
 
 ---
 

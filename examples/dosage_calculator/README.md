@@ -539,8 +539,13 @@ qualitative probability scale (P1 Improbable through P5 Frequent) was
 adopted, with every hazard defaulting to P5 per this plan's own
 already-established worst-case policy, since no field data exists to
 justify anything lower. A three-region acceptance matrix (Acceptable /
-ALARP / Unacceptable, per ISO 14971's own Annex D discussion) was
-proposed and applied.
+ALARP / Unacceptable) was proposed and applied. **Citation correction,
+2026-07-15**: this was originally attributed to "ISO 14971's own Annex
+D," but the 2019 edition has no Annex D — see
+`RISK_MANAGEMENT_PLAN.md` §4.3's citation correction and
+`RISK_MANAGEMENT_FINDINGS.md` for the real basis (clause 4.2 NOTE 1;
+ISO/TR 24971 Annex C.4/Figure C.1) and the still-open question of
+whether this matrix's region *names* match TR 24971's own wording.
 
 **A real, honest finding, not a formality:** given what this kernel's
 evidence actually proves today, none of the four hazards reaches S3 or

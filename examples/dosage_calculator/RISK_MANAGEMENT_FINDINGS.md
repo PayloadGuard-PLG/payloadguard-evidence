@@ -16,9 +16,9 @@ to know current state.
 | # | Finding | Verdict | Status | Where |
 |---|---|---|---|---|
 | 1 | Clause 4.4 header citation stale | Refuted on audit | Closed, no action | — |
-| 2 | "ISO 14971's own Annex D" cited — doesn't exist in 2019 edition | Confirmed | **Remediated** | `RISK_MANAGEMENT_PLAN.md` §4.3, Path-to-sign-off; `HANDOFF.md`; `DEVLOG.md` (×2); `README.md`; `KNOWN_LIMITATIONS.md` |
+| 2 | "ISO 14971's own Annex D" cited — doesn't exist in 2019 edition | Confirmed | **Remediated, 2026-07-15 (verified applied, not just claimed)** | `RISK_MANAGEMENT_PLAN.md` §4.3, Path-to-sign-off; `HANDOFF.md`; `DEVLOG.md` (×2, corrected in place with a bracketed note per this log's append-only discipline); `README.md`. **Correction to this row's own location list:** `KNOWN_LIMITATIONS.md` was checked directly and does not contain the "Annex D" citation error — its one "ALARP" mention is a correct use of the policy concept (clause 4.2 NOTE 1), not a false citation. This ledger's earlier claim that it needed the fix was itself inaccurate. |
 | 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Open — R3 options below, Steven's decision** | `RISK_MANAGEMENT_PLAN.md` §4.1 |
-| 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally)** — `HAZ-GIP-1.2b` split out; severity of the new row still open | `HAZARD_REGISTER.md` |
+| 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally), 2026-07-15 (verified applied, not just claimed)** — `HAZ-GIP-1.2b` split out; `HAZ-GIP-1.2`/`1.3`'s own Severity/Probability marked stale/pending re-derivation rather than silently carried over; `HAZ-GIP-1.2b`'s Probability left `GAP`, not defaulted to P5, per Finding 5 below | `HAZARD_REGISTER.md` |
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Partially confirmed | **Open — R5 options below** | `dosage.dfy` header comment (unverified), `traceability_matrix.a.md` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
 | — | TR 24971's real three-region matrix uses different region names than "ALARP" | New, from direct TR 24971 read | **Open — naming reconciliation, Steven's call** | `RISK_MANAGEMENT_PLAN.md` §4.3 |
@@ -49,8 +49,14 @@ register-organization call.
 
 **What's still open here:** `HAZ-GIP-1.2b`'s severity is `GAP`, not
 scored — same clinical-judgment dependency as everything else in §4.1.
-Its probability was set to P5, but Finding 5 below questions whether
-P5-plus-matrix is even the right procedure for this specific row.
+Its probability is also left `GAP`, deliberately **not** defaulted to
+P5 — Finding 5 below questions whether P5-plus-matrix is even the
+right procedure for this specific row, and presuming P5 during the
+restructuring would have prejudged that open question rather than
+just restructured the register. `HAZ-GIP-1.2`/`1.3`'s own prior
+`DRAFT: S2`/`P5` values are likewise not carried over to the narrowed
+rows — marked stale/pending re-derivation instead, since that DRAFT
+reasoning was based on the residual that moved to `HAZ-GIP-1.2b`.
 
 ---
 

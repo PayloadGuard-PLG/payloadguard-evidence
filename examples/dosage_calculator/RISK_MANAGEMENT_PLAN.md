@@ -187,13 +187,36 @@ only valid choice.
 ### 4.3 Acceptance matrix
 
 **DRAFT PROPOSAL, 2026-07-14 — same status as 4.1/4.2.** Extended from
-a strict binary (acceptable/unacceptable) to the three-region
-convention ISO 14971's own Annex D discusses (broadly acceptable /
-ALARP — As Low As Reasonably Practicable, tolerable only with
-justification and further risk-reduction effort / unacceptable) —
-proposed as more accurate to real practice than a pure binary split,
-itself a judgment call for Steven to confirm, simplify back to binary,
-or replace outright.
+a strict binary (acceptable/unacceptable) to a three-region
+convention — proposed as more accurate to real practice than a pure
+binary split, itself a judgment call for Steven to confirm, simplify
+back to binary, or replace outright.
+
+**Citation correction, 2026-07-15**: this was previously attributed to
+"ISO 14971's own Annex D" — the 2019 edition has no Annex D (confirmed
+against the standard's own Table B.1: the 2007 edition's Annex D,
+"Risk concepts applied to medical devices," was moved to **ISO/TR
+24971** in the 2019 revision, not retained as an annex). That document
+has since been obtained (`sources/ISO-24971-2020.pdf`) and read
+directly. The real basis: clause 4.2 NOTE 1 permits an ALARP-style
+policy approach at all ("...can define the approaches to risk control:
+reducing risk as low as reasonably practicable..."); **TR 24971 Annex
+C.4, Figure C.1** gives the actual three-region matrix this plan's
+structure is modelled on — confirmed verbatim: *"the risk matrix is
+divided into three regions corresponding to a) unacceptable risk, b)
+insignificant or negligible risk, and c) [risks] that require
+investigation to determine if further risk control is feasible."*
+**One real discrepancy this correction surfaces, left open, not fixed
+here:** TR 24971's own region labels are "unacceptable risk /
+investigate further risk control / insignificant or negligible risk"
+— not "Acceptable / ALARP / Unacceptable" as the table below uses.
+ALARP is a real TR 24971 concept (clause 4.2 NOTE 1 / TR §C.2), but it
+names a risk-control *policy* approach, not this matrix's middle-region
+label — the three-tier *structure* below is now source-backed; the
+*labels* conflate two adjacent TR concepts. Whether to rename the
+middle region to track TR's own wording, or keep "ALARP" as a stated,
+deliberate departure from the source's terminology, is Steven's call —
+see `RISK_MANAGEMENT_FINDINGS.md`'s "matrix region naming" item.
 
 | Probability \ Severity | S1 | S2 | S3 | S4 |
 |---|---|---|---|---|
@@ -334,11 +357,17 @@ product.
    study — neither exists, and neither can be simulated honestly.
 
 2. **A real ALARP determination from Steven, as the named Clinical
-   SME — a policy judgment, not more evidence.** ISO 14971's own Annex
-   D allows exactly this move: risk control has been exhausted within
-   the stated scope (detection is proven, clamping is proven or
-   bounded-checked, clinician oversight is a real compensating control
-   already named in `metadata.a.yaml`'s `classification_rationale`),
+   SME — a policy judgment, not more evidence.** **Citation correction,
+   2026-07-15**: this is not "ISO 14971's own Annex D" — the 2019
+   edition has no Annex D (see the Section 4.3 correction above). The
+   actual basis is clause 4.2 NOTE 1, which names ALARP as one policy
+   a manufacturer's risk-acceptability criteria can adopt and points to
+   ISO/TR 24971 for guidance on defining it; TR 24971 §C.2 is where
+   that guidance actually lives. Substance unchanged: risk control has
+   been exhausted within the stated scope (detection is proven, clamping
+   is proven or bounded-checked, clinician oversight is a real
+   compensating control already named in `metadata.a.yaml`'s
+   `classification_rationale`),
    and the residual risk is accepted as tolerable *given that scope*,
    with the reasoning recorded explicitly — not asserted by omission.
    This is not something this repo's assistant can decide or draft on
