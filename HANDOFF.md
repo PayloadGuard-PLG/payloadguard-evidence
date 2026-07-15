@@ -8,7 +8,29 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-14 — **"Path to sign-off" section added to
+**Last updated:** 2026-07-15 — **Two repo self-consistency lints built:
+`evidence/hazard_id_lint.py` and `evidence/citation_registry.py`.**
+Direct follow-up to PR #50 (merged this session), which needed two
+rounds of fixes because the same failure mode hit twice: the "ISO
+14971's own Annex D" citation error was independently retyped into six
+files with no cross-check, and while fixing that PR's hazard-register
+restructuring, a hand-edit silently collapsed `HAZ-GIP-1.2`/`1.3` into
+one row — caught by an external reviewer, not self-caught. Both lints
+scan the real, committed repo and are covered by regression tests that
+run against it directly (`tests/test_hazard_id_lint.py`,
+`tests/test_citation_registry.py`) — currently zero findings on the
+real repo, since both underlying bugs are already fixed; the value is
+catching the *next* one mechanically. Neither lint resolves any open
+judgment call — R3's severity model, Finding 5's evaluation procedure,
+and the matrix-naming question (all in
+`examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`) remain
+exactly as open as before, still awaiting Steven's decision. 229 tests
+pass (13 new), no spec/example content changed. **Next step: same as
+before — awaiting Steven's decision on the open items above, or
+instruction to wire these two lints into CI as their own check (today
+they run as part of `python -m pytest tests/ -q`, already covered by
+the existing `tests.yml` workflow with no separate wiring needed).**
+**Prior update, preserved below** — 2026-07-14 — **"Path to sign-off" section added to
 `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`.** Direct instruction:
 "let's look at the evidence required in order to ensure a safe sign
 off," then "yes, write it up as a new section." Real finding, now

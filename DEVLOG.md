@@ -6,6 +6,51 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 — Two repo self-consistency lints built: `evidence/hazard_id_lint.py`, `evidence/citation_registry.py`
+
+Direct follow-up to PR #50 (the risk-management-artifact remediation
+that merged this session): that PR needed two rounds of fixes because
+the same failure mode hit twice in one afternoon. First, the original
+"ISO 14971's own Annex D" citation error was independently retyped
+into six files with no cross-check, so PR #50 had to fix all six by
+hand. Second, while fixing the hazard register's `HAZ-GIP-1.2`/`1.3`
+split, a hand-edit collapsed both rows into one, silently dropping
+`HAZ-GIP-1.3`'s own identity while `HAZ-GIP-1.2b` and five other
+documents kept referencing it — caught only by an external reviewer
+(Qodo), not self-caught. Both are the same root problem: a fact
+restated independently across many files, with nothing mechanical
+checking they still agree.
+
+Built the two smallest checks that would have caught each bug on the
+day it was introduced, not a session later:
+
+- `evidence/hazard_id_lint.py` — scans every `.md` file for hazard-ID-
+  shaped tokens (`HAZ-GIP-1.2b`, `HAZ-RENAL-8`, etc.) and flags any
+  that don't resolve to a real `### HAZ-...` heading in some
+  `HAZARD_REGISTER.md`. Run against the real repo today: zero findings
+  (the `HAZ-GIP-1.3` bug is already fixed) — the value is catching the
+  *next* one, mechanically, same-commit.
+- `evidence/citation_registry.py` — a small registry of citations this
+  repo has already disproven (today: exactly the ISO 14971 Annex D
+  claim), plus a scan that flags any occurrence asserted as fact rather
+  than clearly marked as a quotation or a correction. Deliberately
+  narrow — new entries get added to `BANNED_CITATIONS` only after a
+  citation error has actually been found and fixed everywhere it
+  appeared, mirroring how this repo's `citation_gate.py` only checks
+  claims already in hand rather than fetching/inventing anything.
+
+Both ship with regression tests that run against the real, committed
+repo (`test_real_repo_has_no_undefined_hazard_references`,
+`test_real_repo_has_no_unmarked_annex_d_claims`) — these are the tests
+that would have failed on PR #50's first commit, before the external
+review caught it. Neither module resolves or replaces any open
+judgment call (R3's severity model, Finding 5's evaluation procedure,
+the matrix-naming question) — they only prevent the mechanical class of
+error that's orthogonal to those judgment calls but has now bitten this
+repo twice. 229 tests pass (13 new), no spec/example content changed.
+
+---
+
 ## 2026-07-14 — "Path to sign-off" section added to `examples/dosage_calculator/RISK_MANAGEMENT_PLAN.md`: two of three `Unacceptable` hazards have no more buildable evidence at all
 
 Direct instruction: "let's look at the evidence required in order to
