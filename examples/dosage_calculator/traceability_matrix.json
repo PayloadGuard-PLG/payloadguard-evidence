@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix",
-  "generated_utc": "2026-07-04T15:33:32.526979+00:00",
+  "generated_utc": "2026-07-15T20:50:27.466481+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -12,7 +12,7 @@
   "rows": [
     {
       "requirement_id": "REQ-GIP-1-4-12",
-      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12)",
+      "requirement_text": "Bolus request exceeding the maximum permissible dose limit shall trigger a Dose limit exceeded alarm. (GIP v1.0 Safety Requirement 1.4.12: \"If a bolus request causes the bolus dose to exceed the maximum permissible limit, the pump shall issue a Dose limit exceeded alarm.\")",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "crosshair",
       "strength": "BOUNDED_CHECKED",
@@ -31,7 +31,7 @@
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
-      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "requirement_text": "During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md)",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "crosshair",
       "strength": "BOUNDED_CHECKED",

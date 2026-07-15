@@ -1,6 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (later — real severity scoring recorded for
+Last updated: 2026-07-15 (yet later — Finding 6 resolved: a real
+citation-wording drift found in `HAZ-GIP-1.14`'s GIP Safety Requirement
+1.8.1 quote, fixed against the actual GIP v1.0 PDF obtained directly
+from the University of Pennsylvania. No architecture, gate, or
+data-flow change — content within existing risk-management and
+`sources/` document types, plus one new archived primary source
+(`sources/gip-v1.0-full-2009.pdf`). Traceability matrices regenerated
+via the existing pipeline (`generate_artifacts.py`, `generate_matrix.py`),
+not hand-edited. Full record: `KNOWN_LIMITATIONS.md`,
+`RISK_MANAGEMENT_FINDINGS.md` Finding 6. 253 tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (later — real severity
+scoring recorded for
 `dosage_calculator`'s 5-hazard register (`RISK_MANAGEMENT_PLAN.md`,
 `HAZARD_REGISTER.md`): Steven scored every hazard `S3 — Serious`,
 mechanically producing this device's overall residual risk of

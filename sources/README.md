@@ -23,6 +23,20 @@ requirements documents, standards excerpts) that ground the claims in
   Safety Requirements v1.0," University of Pennsylvania / FDA OSEL /
   Fraunhofer CESE. Audit-trail record behind
   `examples/dosage_calculator/metadata.yaml`.
+- `gip-v1.0-full-2009.pdf` — added 2026-07-15. The actual GIP v1.0 PDF
+  (17 pages, complete — Introduction through §4 Conclusion and Future
+  Work), obtained directly from the University of Pennsylvania and
+  supplied by Steven, not a third-party mirror. Used to independently
+  re-verify `gip-v1.0-hazard-analysis.md`'s own transcription against
+  the real primary text — found and fixed one real wording drift in
+  Safety Requirement 1.8.1 (reverse delivery), confirmed the full
+  §2.4.1 Operational Hazards table (HID 1.1–1.28) matches, and
+  confirmed **no hazard table in this document, across all eight
+  categories, carries a severity column for any hazard** — GIP v1.0
+  itself never scores severity, a source-backed fact now citable
+  directly rather than inferred from `metadata.a.yaml`'s
+  `classification_rationale`. Full account:
+  `examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`.
 - `req-gip-1-4-12-alarm-scope-decision.md` — added 2026-07-05 (Gate 1
   review). Per rule 2 above: this document **extends** the existing
   REQ-GIP-1-4-12 entry (dual-scope split per IEC 60601-1-8's ALARM

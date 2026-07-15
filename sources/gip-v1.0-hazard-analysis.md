@@ -10,6 +10,16 @@
 > `examples/dosage_calculator/metadata.yaml`. Per this repo's `sources/README.md`
 > rule: read closely before touching metadata.yaml; propose changes, don't
 > silently overwrite.
+>
+> **Correction, 2026-07-15**: that "wording... unchanged" claim was false
+> for one line — Safety Requirement 1.8.1 below had silently reworded
+> GIP's own sentence structure (clause order, "or" for "and/or", a
+> dropped "of the equipment"). Found and fixed after Steven obtained and
+> supplied the actual PDF directly from the University of Pennsylvania
+> (`sources/gip-v1.0-full-2009.pdf`, archived here); every other line in
+> this file has NOT been re-verified against that PDF word-for-word —
+> only 1.8.1 and the full §2.4.1 Operational Hazards table (HID 1.1–1.28)
+> were checked directly. Full account: `RISK_MANAGEMENT_FINDINGS.md`.
 
 ## Abstract
 
@@ -287,7 +297,7 @@ left as an open question (see `sources/README.md`).
 1.7.1 If powered off, dose settings and patient data retained ≥4 hours.
 
 **1.8 Reverse delivery**
-1.8.1 Continuous reverse delivery shall not be possible during normal use or a single-fault condition (from IEC 601-2-24).
+1.8.1 During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible (from IEC 601-2-24).
 
 **1.9 Air-in-line alarm**
 1.9.1 Alarm triggered if air bubbles >200 µL detected.

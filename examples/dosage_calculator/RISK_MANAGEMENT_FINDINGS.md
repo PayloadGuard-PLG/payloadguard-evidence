@@ -7,8 +7,11 @@ example only.
 these two artifacts to date, whether resolved or open, so a reader
 doesn't need the original chat session or the standalone audit report
 to know current state.
-**Last updated:** 2026-07-15 (later — real severity scoring recorded,
-Finding 3 fully closed, device overall residual risk now `Unacceptable`).
+**Last updated:** 2026-07-15 (yet later — Finding 6 resolved: a real
+wording drift found in `HAZ-GIP-1.14`'s "verbatim" GIP citation,
+fixed against the actual GIP v1.0 PDF obtained directly from the
+University of Pennsylvania; GIP's hazard tables confirmed to carry no
+severity rating for any hazard).
 
 ---
 
@@ -23,6 +26,7 @@ Finding 3 fully closed, device overall residual risk now `Unacceptable`).
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Confirmed, then resolved | **Resolved, 2026-07-15 — Option 2 (differential-testing harness) built; 9/9 vectors matched; postcondition drift found and fixed in the same pass** | `dosage_differential_vectors.py`, `dosage_differential_driver.dfy`, `differential_test_results.json` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
 | — | TR 24971's real three-region matrix uses different region names than "ALARP" | New, from direct TR 24971 read | **Open — naming reconciliation, Steven's call** | `RISK_MANAGEMENT_PLAN.md` §4.3 |
+| 6 | `HAZ-GIP-1.14`'s GIP Safety Requirement 1.8.1 citation, quoted as "verbatim" in this repo, was never checked against the primary IEC-cited text | Confirmed — real wording drift found | **Remediated, 2026-07-15.** Corrected in `sources/gip-v1.0-hazard-analysis.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`; traceability matrices regenerated via `generate_artifacts.py`/`generate_matrix.py` (no hand-editing). Real primary source (`sources/gip-v1.0-full-2009.pdf`) now archived, obtained directly from the University of Pennsylvania by Steven, not a third-party mirror. Confirmed as a byproduct: GIP v1.0 assigns no severity rating to any hazard in any of its 8 hazard-table categories — a source-backed fact, not an absence this repo failed to find | `sources/gip-v1.0-hazard-analysis.md`, `sources/gip-v1.0-full-2009.pdf`, `sources/README.md`, `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` |
 
 ---
 
@@ -129,6 +133,79 @@ Dafny: the exact large value, also `< 0`) — coincidental to this
 vector's chosen magnitudes, not a general REQ-DOSE-003 equivalence
 claim, which is structurally impossible in Dafny's `real` type and
 remains permanently out of reach (`dosage.dfy`'s own header comment).
+
+---
+
+## Resolved — Finding 6: `HAZ-GIP-1.14`'s "verbatim" GIP citation had never been checked against the primary text
+
+Surfaced by Steven pressing on the S3 severity discussion for
+`HAZ-GIP-1.14`: this repo cited GIP Safety Requirement 1.8.1
+("Continuous reverse delivery shall not be possible during normal use
+or a single-fault condition," attributed to IEC 601-2-24) as if it were
+a direct quote, in `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`,
+and `sources/gip-v1.0-hazard-analysis.md` — but that transcription had
+never actually been checked against GIP v1.0's own PDF. This repo only
+ever had a reformatted markdown copy of that PDF, whose own header
+claimed "wording... unchanged" without that claim ever being tested.
+
+**What actually happened, in order:**
+
+1. Steven independently researched the underlying IEC 60601-2-24
+   citation externally (free-flow vs. reverse-delivery distinction,
+   edition history) and found a secondary (ResearchGate-hosted)
+   rendering of GIP's own text that read: "During normal use and/or
+   single fault condition of the equipment, continuous reverse delivery
+   shall not be possible (from IEC 601-2-24)" — reported as a "verbatim
+   match" to this repo's citation.
+2. Direct comparison against what this repo actually had committed
+   showed it was **not** a verbatim match — clause order reversed, "or"
+   vs. "and/or", "of the equipment" present in one and not the other.
+   Flagged rather than accepted at face value: this repo's own
+   transcription and the newly-found secondary source disagreed on
+   exact wording, and neither had been checked against a primary copy.
+3. Steven obtained the actual GIP v1.0 PDF directly from the University
+   of Pennsylvania (not a mirror) and supplied it. Read directly, all 17
+   pages (`sources/gip-v1.0-full-2009.pdf`, now archived).
+
+**Result: the secondary (ResearchGate) source was right; this repo's
+own transcription was the one that had drifted.** The primary PDF's
+§1.8 "Reverse delivery," requirement 1.8.1 (page 12), reads exactly:
+"During normal use and/or single fault condition of the equipment,
+continuous reverse delivery shall not be possible (from IEC 601-2-24)."
+Fixed in all six places it appeared, verbatim, not by choosing whichever
+reading seemed more natural. The §2.4.1 Operational Hazards table row
+for HID 1.14 ("Improper flow," Type `FRN`, Cause "Bleed back; Reflux
+within device," mitigated by "Flow sensor," Safety Req "1.8") was also
+checked directly and matches this repo's existing citation exactly — no
+drift there, so that row's own long-standing "not yet independently
+re-verified against the raw §2.4.1 text" caveat is now resolved too.
+
+**A genuine byproduct, not the original question, but now closed
+either way**: the primary PDF's hazard tables span all eight categories
+(§2.4.1–2.4.8, HID 1.1 through 8.14 across Operational, Environmental,
+Electrical, Hardware, Software, Mechanical, Biological/Chemical, and
+Use hazards) — none of them carry a severity column. GIP v1.0 simply
+never rates severity for any hazard it lists, confirmed directly rather
+than inferred from `metadata.a.yaml`'s `classification_rationale`
+alone. This closes the "GIP's own hazard-table severity rating" item
+that was still open in the `HAZ-GIP-1.14` severity discussion — not by
+finding a rating, but by confirming none exists to find.
+
+**What this does not resolve:** the IEC 601-2-24 (or 60601-2-24)
+standard's own text is still unread by anyone in this chain — this
+repo's evidentiary basis for HAZ-GIP-1.14's regulatory citation remains
+GIP v1.0 as a trusted secondary source (FDA OSEL co-authored), one hop
+short of the standard itself. That gap is named, not silently
+narrowed by this fix — GIP's citation is now independently confirmed
+accurate as a *transcription*, which is a different claim from the
+*standard's own clause* being independently confirmed.
+
+Full pipeline discipline followed: no traceability matrix was
+hand-edited — `generate_artifacts.py` (variants a/b/symbolic/concrete/
+formal) and `generate_matrix.py` (the frozen base) were both re-run
+against the corrected `metadata.*.yaml` files, all Tier 1 gates
+(schema validation, both CONFLICT gate types, fact-equality, structural
+PROVEN sweep) passed clean. 253 tests pass, unchanged.
 
 ---
 

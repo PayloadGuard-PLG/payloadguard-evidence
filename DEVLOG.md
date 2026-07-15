@@ -6,6 +6,59 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 (yet later) — Finding 6 resolved: `HAZ-GIP-1.14`'s "verbatim" GIP citation had never been checked against the primary text; a real wording drift found and fixed
+
+Steven pressed on the S3 severity discussion for `HAZ-GIP-1.14`
+(reverse delivery) — this repo's `HAZARD_REGISTER.md` cited GIP Safety
+Requirement 1.8.1 as a direct quote, attributed to IEC 601-2-24, but
+that quote had never actually been checked against GIP v1.0's own PDF.
+This repo only ever had a reformatted markdown copy
+(`sources/gip-v1.0-hazard-analysis.md`) whose own header claimed
+"wording... unchanged" without that claim ever being tested.
+
+Steven independently researched the underlying IEC citation and found
+a secondary (ResearchGate-hosted) rendering of GIP's own text that
+read differently from this repo's version — clause order reversed,
+"or" vs. "and/or," "of the equipment" present in one but not the
+other. Direct comparison flagged this as a real discrepancy, not
+accepted as either source being automatically right. Steven then
+obtained the actual GIP v1.0 PDF directly from the University of
+Pennsylvania (not a mirror) and supplied it — read directly, all 17
+pages.
+
+**Result: the secondary source was right; this repo's own
+transcription was the one that had drifted.** Fixed to the verbatim
+primary text ("During normal use and/or single fault condition of the
+equipment, continuous reverse delivery shall not be possible") in all
+six places it appeared: `sources/gip-v1.0-hazard-analysis.md`,
+`metadata.yaml`/`.a`/`.b`/`.c.yaml`, and `HAZARD_REGISTER.md`. The
+§2.4.1 hazard-table row for HID 1.14 was also checked directly and
+matches exactly — no drift there, closing that row's long-standing
+"not yet independently re-verified" caveat too.
+
+**A genuine byproduct, now closed either way**: the primary PDF's
+hazard tables span all eight categories and none carry a severity
+column — GIP v1.0 never rates severity for any hazard, confirmed
+directly rather than inferred. This closes the "GIP's own hazard-table
+severity rating" question live in the `HAZ-GIP-1.14` severity
+discussion — not by finding a rating, but by confirming none exists.
+
+**What this does not resolve**: the IEC 601-2-24/60601-2-24 standard's
+own text is still unread by anyone in this chain — this repo's
+evidentiary basis remains GIP v1.0 as a trusted secondary source, one
+hop short of the standard itself, named explicitly rather than
+silently narrowed by this fix.
+
+No traceability matrix hand-edited: `generate_artifacts.py` (variants
+a/b/symbolic/concrete/formal) and `generate_matrix.py` (the frozen
+base) both re-run against the corrected metadata files — all Tier 1
+gates (schema validation, both CONFLICT gate types, fact-equality,
+structural PROVEN sweep) passed clean. `sources/gip-v1.0-full-2009.pdf`
+archived as the new primary source. 253 tests pass, unchanged. Full
+record: `RISK_MANAGEMENT_FINDINGS.md` Finding 6.
+
+---
+
 ## 2026-07-15 (later) — Real severity scoring recorded for all 5 `dosage_calculator` hazards; device overall residual risk now `Unacceptable`
 
 Direct instruction: "start on the severity values for the 5 hazards."

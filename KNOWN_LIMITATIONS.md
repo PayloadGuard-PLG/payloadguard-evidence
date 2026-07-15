@@ -4,7 +4,23 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (later — real severity scoring recorded for
+Last updated: 2026-07-15 (yet later — Finding 6 resolved: a real
+wording drift found in `HAZ-GIP-1.14`'s "verbatim" GIP citation.
+Steven independently researched the IEC 601-2-24/60601-2-24 citation,
+found a secondary source whose rendering of GIP Safety Requirement
+1.8.1 disagreed with this repo's own transcription, then obtained the
+actual GIP v1.0 PDF directly from the University of Pennsylvania to
+settle it. This repo's own citation had drifted, not the secondary
+source — fixed to the verbatim primary text across all six places it
+appeared (`sources/gip-v1.0-hazard-analysis.md`,
+`metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`); traceability
+matrices regenerated via the real pipeline, all Tier 1 gates passed
+clean. Byproduct: GIP v1.0's hazard tables carry no severity column for
+any hazard, confirmed directly. Still open: the IEC standard's own
+text remains unread. `sources/gip-v1.0-full-2009.pdf` archived. 253
+tests pass, unchanged. Full account: `RISK_MANAGEMENT_FINDINGS.md`
+Finding 6.) Prior entry, preserved: Last updated 2026-07-15 (later —
+real severity scoring recorded for
 `dosage_calculator`'s 5 hazards. Direct instruction: "start on the
 severity values for the 5 hazards." Steven, the named Clinical SME,
 scored every hazard `S3 — Serious` via `AskUserQuestion`, one hazard at

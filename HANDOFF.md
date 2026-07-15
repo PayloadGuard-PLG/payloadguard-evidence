@@ -8,7 +8,42 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 (later) — **Real severity scoring
+**Last updated:** 2026-07-15 (yet later) — **Finding 6 resolved: a real
+wording drift caught in `HAZ-GIP-1.14`'s "verbatim" GIP citation, fixed
+against the actual primary PDF.** Steven pressed on the S3 severity
+scoring for `HAZ-GIP-1.14`, independently researched the underlying IEC
+601-2-24/60601-2-24 citation, and found a secondary (ResearchGate)
+rendering of GIP Safety Requirement 1.8.1 that read differently from
+this repo's own citation — reported as "verbatim," it wasn't. Rather
+than accept either source at face value, the discrepancy was flagged.
+Steven then obtained the actual GIP v1.0 PDF directly from the
+University of Pennsylvania (not a mirror) and supplied it. **The
+secondary source was right; this repo's own transcription had
+drifted** (clause order reversed, "or" vs. "and/or," a dropped "of the
+equipment") — despite `sources/gip-v1.0-hazard-analysis.md`'s own
+header claiming "wording... unchanged," a claim that had never actually
+been tested until now. Fixed to the verbatim primary text in all six
+places it appeared: `sources/gip-v1.0-hazard-analysis.md`,
+`metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`. The
+§2.4.1 hazard-table row itself was also checked directly and confirmed
+accurate — closing that row's long-standing unverified caveat too.
+**Byproduct, now closed**: GIP v1.0's hazard tables (all 8 categories)
+carry no severity column for any hazard — confirmed directly, not
+inferred, closing the "GIP's own severity rating" question from the
+severity discussion. **What's still open**: the IEC standard's own text
+remains unread by anyone in this chain — this repo's basis stays GIP
+v1.0 as a trusted secondary source, one hop short of the standard
+itself, named explicitly. No traceability matrix hand-edited —
+`generate_artifacts.py` and `generate_matrix.py` both re-run against
+the corrected metadata, every Tier 1 gate passed clean.
+`sources/gip-v1.0-full-2009.pdf` archived as the new primary source.
+253 tests pass, unchanged. **Next step: same open items as before** —
+choosing between the two paths off `Unacceptable` (real field data or
+a recorded ALARP determination), Finding 5 (`HAZ-GIP-1.2b`'s procedural
+question), matrix region naming — or independently reading the IEC
+standard's own text if that's judged worth the effort.
+**Prior update, preserved below** — 2026-07-15 (later) — **Real
+severity scoring
 recorded for all 5 `dosage_calculator` hazards — the concrete blocking
 item this repo has named since Finding 3/R3's model-only fix earlier
 the same day.** Direct instruction: "start on the severity values for
