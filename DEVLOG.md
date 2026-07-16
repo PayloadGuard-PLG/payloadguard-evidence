@@ -6,6 +6,24 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-16 (even later) — `HAZARD_REGISTER.md` built for `aeb_kernel`: fourth hazard register in this repo, first ISO 26262-informed one
+
+Direct instruction, immediately following the ISO 26262 sourcing entry below: "build the hazard register now please."
+
+10 hazard entries landed at `examples/aeb_kernel/HAZARD_REGISTER.md`, one per `REQ-AEB-*` — following `renal_adjustment`'s convention (no published numbered hazard table to transcribe from, unlike `dosage_calculator`'s GIP source), but a further step removed: `aeb_kernel` also has no internal audit document like `GATE_1C_AUDIT.md` to draw hand-traced findings from, so every entry's `Source`/`Hazardous situation`/`Risk control measure` fields are built directly from `metadata.a.yaml`'s sourced requirement text, `aeb_kernel.dfy`'s real Dafny captures, and § 571.127's own text.
+
+**Severity, Exposure, Controllability, and the resulting ASIL are left explicit `GAP` throughout — for a reason stated precisely rather than copying the three ISO 14971 registers' framing verbatim.** Those three registers' severity/probability gaps were blocked by one thing: no named clinical SME had scored them yet (later resolved for `dosage_calculator` when Steven took that role). This register is blocked by two independent things: no named automotive-safety reviewer has classified these hazards, *and* the HARA methodology itself (§ 6.4.2 "Situation analysis and hazard identification" — the clause that actually defines how to derive Exposure and Controllability from an operational situation) isn't sourced in this repo at all. What's sourced from the entry immediately below — Table 4 (the S×E×C→ASIL lookup) and § 6.4.4 (safety-goal-statement rules) — is the *mechanical* half of risk evaluation, not the *judgment* half; assigning S/E/C without either the methodology text or a qualified reviewer would be exactly the kind of self-declared, unearned confidence this repo's discipline exists to refuse, so it wasn't attempted.
+
+Section 3 ("Explicitly out of scope") names what § 571.127 itself covers that this kernel's ten hazards don't address at all: sensor fusion/perception (every function takes an already-measured value as a trusted input, the same trust-boundary pattern as `renal_adjustment`'s `HAZ-RENAL-8`), S6/S7/S8/S9's test-conduct methodology (confirmed, per `aeb_kernel.dfy`'s own header finding, to be NHTSA's compliance-verification procedure rather than a vehicle requirement), S10's brake-actuator mechanics, and S5.4.2.1/S5.4.2.2's named deactivation exceptions (a further extension of `HAZ-AEB-10`'s territory, not modeled even as a `GAP` row since `REQ-AEB-10` itself isn't formalized).
+
+One hazard worth flagging: `HAZ-AEB-10` (malfunction/degradation going undetected or unnotified) is named as the highest-priority candidate for future formalization among this register's two unbuilt requirements, using the same reasoning `renal_adjustment`'s register applied to `HAZ-RENAL-4` — a silent, undetected loss of protection is a materially worse failure mode than any single mis-timed activation, since it removes the driver's own awareness that manual vigilance is now required.
+
+Documentation ripple: `PHASE1_PLAN.md` (new status block), `README.md` (new amendment section), `SYSTEM_BLUEPRINT.md` (Section 9 addendum, component-map tree entry). No code/spec change — hazard-identification content only, all traced to already-committed evidence.
+
+265 tests pass, unchanged (no code touched).
+
+---
+
 ## 2026-07-16 (later) — ISO 26262-3 sourcing: a partial preview archived, a pasted secondary-source ASIL table caught wrong, and the real Table 4/6.4.4 found for free
 
 Continuing directly from the fourth-worked-example entry below: `aeb_kernel`'s risk-management artifacts need ISO 26262 the way the medical-device examples needed ISO 14971, and that document wasn't in the repo yet.

@@ -155,6 +155,41 @@ hand-typed.
   `drug_interaction_checker`). Full detail:
   `tests/test_aeb_kernel_matrix.py`.
 
+## Amendment 2026-07-16 (later) — ISO 26262-3 sourced (partially) and `HAZARD_REGISTER.md` built
+
+Sourcing this domain's risk-management standard turned into its own
+verification saga, worth recording. `sources/ISO-26262-3-2018.pdf`
+(the iTeh preview, Clauses 1–5 only) landed first, missing exactly the
+clauses needed (6 and 7). A pasted secondary-source summary of those
+clauses was checked directly and found wrong: its "workflow steps"
+didn't match the real clause structure already read from the preview's
+own table of contents, and its ASIL determination matrix disagreed with
+independent public sources on multiple cells. A follow-up "resolution"
+message claiming an absolute "C1 always defaults to QM" rule was
+directly falsified — both by the real primary text eventually found,
+and by the fact that it contradicted the original pasted table's own
+first version.
+
+The real Table 4 (ASIL determination) and Clause 6.4.4 (Determination
+of safety goals) were then found for free and archived:
+`sources/iso-26262-3-2018-table4-and-6.4.4.md`, sourced from a 2-page
+PDF (page 10 of the actual standard) bundled as a regression-test
+fixture in the open-source PyMuPDF library's test suite, cross-verified
+authentic against the preview's own table of contents. Steven's
+explicit scope call: this is a proof-of-concept for review, not a real
+regulatory submission, so paying for the full standard to source two
+clauses wasn't warranted once a real, independently-verifiable free
+source existed. Full account: `DEVLOG.md`'s 2026-07-16 (later) entry.
+
+`HAZARD_REGISTER.md` built the same session, using what's now sourced:
+10 hazard entries, one per `REQ-AEB-*`. Severity/Exposure/
+Controllability/ASIL left explicit `GAP` — Table 4 makes the *lookup*
+possible once S/E/C are known, but the HARA methodology clause (6.4.2)
+that defines how to derive E and C from an operational situation is
+still unsourced, and no automotive-safety reviewer has been named
+(the domain-equivalent of the three ISO 14971 registers' clinical-SME
+gap).
+
 ## Open questions
 
 Not resolved here — named, not guessed at:

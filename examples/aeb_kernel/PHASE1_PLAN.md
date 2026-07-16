@@ -8,6 +8,18 @@ audit-trail record (source documents, interpretive-call caveats,
 structural findings) and `KNOWN_LIMITATIONS.md` for how this changes the
 repo's live gate ledger.
 
+**`HAZARD_REGISTER.md` built, 2026-07-16 (later).** 10 hazard entries
+(one per `REQ-AEB-*`), fourth hazard register in this repo and its
+first ISO 26262-informed one. Hazard identification is real, drawn from
+sourced requirement text and real Dafny captures. Severity/Exposure/
+Controllability/ASIL left explicit `GAP` throughout — not blocked only
+by the absence of a named automotive-safety reviewer (as with the three
+ISO 14971 registers' clinical-SME gap), but doubly blocked: the HARA
+methodology clause (§ 6.4.2) that defines how to derive E and C from an
+operational situation isn't sourced either, only Table 4's lookup
+mechanism and § 6.4.4's safety-goal-statement rules are. See
+`HAZARD_REGISTER.md` itself for the full reasoning.
+
 ## What's built
 
 - **`aeb_kernel.dfy`** — 6 functions, 8 requirement clauses total
