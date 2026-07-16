@@ -77,6 +77,50 @@ the verbatim captured output at each step, is committed under
 `examples/drug_interaction_checker/`; the gates are described in full in
 [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) §4.
 
+### Timed example: primary source to formal proof
+
+`examples/aeb_kernel/` (built 2026-07-16) is a concrete, timed instance
+of the pipeline above run end to end against a domain it wasn't built
+for, using only a public source document — no clinical, patient, or
+otherwise proprietary data. Source: NHTSA/DOT's public Final Rule
+"Automatic Emergency Braking Systems for Light Vehicles" (49 CFR
+571.127), a 317-page federal regulation.
+
+Every number below is taken from committed git history and Dafny run
+manifests, not reconstructed from memory:
+
+- **Under 9 minutes** from the source document landing in the
+  repository to a from-scratch formal specification — 6 Dafny
+  functions, covering 8 distinct regulatory requirement clauses —
+  verifying clean on its first real capture. This includes locating
+  the actual operative clauses inside the document: ~300 of the 317
+  pages are rulemaking preamble, not the codified regulatory text.
+- **Under 8 minutes more** to run the remaining five independent
+  verification gates for real: plain-English contract confirmation
+  against the source text, 31 boundary-value proof lemmas, a
+  precondition-satisfiability and postcondition-strength lint (zero
+  weak-postcondition warnings — the tightest result this pipeline has
+  produced across any example so far), a 63-mutant adversarial stress
+  test of the proofs themselves, and a machine-generated regulatory
+  traceability matrix.
+- **Result:** 8 regulatory requirements with machine-checked (`PROVEN`)
+  evidence status, and 2 requirements left as explicit, named open
+  gaps rather than glossed over — the same discipline this system
+  applies to every example, including the three medical-device ones.
+- **No change to the underlying pipeline was needed.** The same code
+  that verifies infusion-pump dosing logic against a clinical hazard
+  analysis ran, unmodified, against a federal vehicle-safety
+  regulation it had never been built or tuned for.
+
+We haven't found a comparable automated, six-gate,
+document-to-formal-proof pipeline elsewhere, and are treating that as
+a real, differentiated capability until shown otherwise — research
+still in progress. Accordingly, *how* each gate works stays described
+here only at the level already used above; the implementation itself
+is proprietary (see [`LICENSE`](LICENSE)). What's shown in this
+example is the outcome, timed and reproducible from a public source
+document — not the method.
+
 ## Risk management (ISO 14971)
 
 Each of the three examples also carries a **risk management plan** and
