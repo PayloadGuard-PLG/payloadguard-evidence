@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix
 
-Generated (UTC): 2026-07-04T15:33:32.526979+00:00
+Generated (UTC): 2026-07-16T04:25:22.400247+00:00
 Tool versions: {'crosshair': 'crosshair-tool 0.0.107'}
 CrossHair bounds: {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1}
 

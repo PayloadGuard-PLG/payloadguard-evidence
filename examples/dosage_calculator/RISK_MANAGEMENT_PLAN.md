@@ -9,7 +9,7 @@ references, per clause 4.5's own traceability requirements for the
 risk management file as a whole (neither of those documents exists yet
 for this device — see Section 8).
 
-**Status:** DRAFT | Version: 0.1 | Last reviewed: 2026-07-14
+**Status:** DRAFT | Version: 0.2 | Last reviewed: 2026-07-15
 
 **Provenance:** Third and last of three plans built this session,
 mirroring `examples/drug_interaction_checker/RISK_MANAGEMENT_PLAN.md`
@@ -159,9 +159,11 @@ Consequence bands, calibrated against generic medical-device harm
 descriptors (this device's own IEC 62304 Class B classification, "non-
 life-threatening injury is possible," already named the S3 boundary;
 ISO/TR 24971 Table 4's five-level consequence-only descriptor set is a
-further real, source-backed calibration reference) — **not yet mapped
-to specific hazards below**, since that mapping is a clinical judgment
-this repo's assistant cannot supply:
+further real, source-backed calibration reference) — **mapped to
+specific hazards below as of 2026-07-15 (later)**, Steven's real
+consequence determination for each, not this repo's assistant's own
+inference (that mapping was, and remains, a clinical judgment only
+Steven can supply):
 
 | Severity | Definition (consequence only — no reference to what's proven or bounded) |
 |---|---|
@@ -175,27 +177,25 @@ probability claim:
 
 | Hazard | Severity | Evidence artifact (drives Probability) |
 |---|---|---|
-| `HAZ-GIP-1.14` (reverse delivery, kernel-proven-closed pathway) | `GAP` — **pending Steven's consequence determination**: what harm would reverse drug delivery actually cause if it reached a patient, independent of how strongly this kernel proves it doesn't. Not S1 by default just because the pathway is proven closed — that reasoning is exactly what Finding 3 found invalid | `raw_dafny_output.txt` / `run_manifest_dafny.json` — Dafny-**proven** `CalculateHourlyDose` yields exactly zero delivered dose on any negative-rate fault, both ordinary and overflow-magnitude (`ordinary_negative_rate_clamps_to_zero`, `overflow_negative_rate_clamps_to_zero`). The strongest evidence artifact in this register — now correctly read as a probability claim, not a severity one. **R5, resolved 2026-07-15**: this proof's probability credit now extends to `dosage.py`'s real, independently-executed behavior too, not just the spec — `differential_test_results.json`, 9/9 vectors matched (`RISK_MANAGEMENT_FINDINGS.md`) |
-| `HAZ-GIP-1.2` (over-limit bolus request, kernel-proven-closed delivery pathway) | `GAP` — pending Steven's consequence determination for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound. Same R5 differential-testing confirmation as `HAZ-GIP-1.14` above applies here |
-| `HAZ-GIP-1.3` (over-limit bolus request, kernel-proven-closed delivery pathway — same evidence as `HAZ-GIP-1.2`, distinct GIP `HID 1.3` traceability anchor per `HAZARD_REGISTER.md`) | `GAP` — pending Steven's consequence determination for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.2` and `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound. Same R5 differential-testing confirmation applies |
-| `HAZ-GIP-1.2b` (clamp fires, clinician notification unproven) | `GAP` — pending Steven's consequence determination. Blocked on the same open question as everywhere else in this table, plus this row's own residual: even once severity is scored, whether a *probability* can be estimated for this specific hazard is Finding 5's separate open question, not resolved by Finding 3 | **None.** No Dafny, CrossHair, or concrete-test artifact addresses alarm signaling — a complete evidence gap, not a weak one (see `HAZARD_REGISTER.md`) |
-| `HAZ-DOSE-003` (non-finite/out-of-range result) | `GAP` — pending Steven's consequence determination | `raw_crosshair_output.txt` + concrete test `normal_in_range_exact_value` — `BOUNDED_CHECKED`, not `PROVEN`; **structurally, permanently capped at this strength** in this toolchain (Dafny's `real` type has no IEEE-754 overflow/NaN semantics to prove against — see the "Path to sign-off" section below) |
+| `HAZ-GIP-1.14` (reverse delivery, kernel-proven-closed pathway) | **`S3` — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`): what harm reverse drug delivery would actually cause if it reached a patient, independent of how strongly this kernel proves it doesn't. Not S1 by default just because the pathway is proven closed — that reasoning is exactly what Finding 3 found invalid | `raw_dafny_output.txt` / `run_manifest_dafny.json` — Dafny-**proven** `CalculateHourlyDose` yields exactly zero delivered dose on any negative-rate fault, both ordinary and overflow-magnitude (`ordinary_negative_rate_clamps_to_zero`, `overflow_negative_rate_clamps_to_zero`). The strongest evidence artifact in this register — correctly read as a probability claim, not a severity one. **R5, resolved 2026-07-15**: this proof's probability credit now extends to `dosage.py`'s real, independently-executed behavior too, not just the spec — `differential_test_results.json`, 9/9 vectors matched (`RISK_MANAGEMENT_FINDINGS.md`) |
+| `HAZ-GIP-1.2` (over-limit bolus request, kernel-proven-closed delivery pathway) | **`S3` — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`), for the narrowed, proof-closed pathway | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound. Same R5 differential-testing confirmation as `HAZ-GIP-1.14` above applies here |
+| `HAZ-GIP-1.3` (over-limit bolus request, kernel-proven-closed delivery pathway — same evidence as `HAZ-GIP-1.2`, distinct GIP `HID 1.3` traceability anchor per `HAZARD_REGISTER.md`) | **`S3` — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`), scored independently of `HAZ-GIP-1.2` despite the identical underlying mechanism, and landed at the same value | Same Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.2` and `HAZ-GIP-1.14`'s kernel-scope claim (`raw_dafny_output.txt`, `traceability_matrix.a.md`) — the delivered dose is proven to stay within its safe bound. Same R5 differential-testing confirmation applies |
+| `HAZ-GIP-1.2b` (clamp fires, clinician notification unproven) | **`S3` — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`). Severity is no longer this row's blocker — even with it known, whether a *probability* can be estimated for this specific hazard is Finding 5's separate open question, not resolved by this scoring | **None.** No Dafny, CrossHair, or concrete-test artifact addresses alarm signaling — a complete evidence gap, not a weak one (see `HAZARD_REGISTER.md`) |
+| `HAZ-DOSE-003` (non-finite/out-of-range result) | **`S3` — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`) | `raw_crosshair_output.txt` + concrete test `normal_in_range_exact_value` — `BOUNDED_CHECKED`, not `PROVEN`; **structurally, permanently capped at this strength** in this toolchain (Dafny's `real` type has no IEEE-754 overflow/NaN semantics to prove against — see the "Path to sign-off" section below) |
 
-**What this section does and does not do.** It replaces an invalid
+**What this section does and does not do.** It replaced an invalid
 severity model with a valid one, mechanically — every definition above
-is consequence-only, sourced, and buildable without clinical input.
-What it does **not** do is invent a severity value for any hazard:
-doing so would require exactly the clinical judgment on real-world
-consequence that this repo's assistant has never supplied for a
-Gate C6 sign-off or an ALARP determination, and R3's own resolution
-doesn't change that discipline. **Every hazard's severity is `GAP`
-below** — not a regression from the old model's S1/S2 values, since
-those values were never validly derived in the first place (they
-measured evidence strength, not consequence). Section 4.3's matrix and
-Section 5's overall-residual-risk method cannot produce an evaluation
-until these are scored; both sections below state that cascading
-effect explicitly rather than continuing to display the old,
-invalidated Acceptable/Unacceptable outputs.
+is consequence-only, sourced, and buildable without clinical input —
+and then (2026-07-15, later) Steven, as the named Clinical SME, scored
+every hazard against it: **`S3 — Serious`, all five.** This repo's
+assistant did not invent, propose, or infer any of these five values;
+each was recorded via `AskUserQuestion` against the real consequence
+bands above and each hazard's own documented harm text, matching the
+same discipline every Gate C6 sign-off in this repo has held to.
+Section 4.3's matrix and Section 5's overall-residual-risk method can
+now produce a real evaluation for the first time — see both below for
+what that evaluation actually is, stated plainly rather than left
+implicit.
 
 ### 4.2 Probability bands
 
@@ -266,29 +266,44 @@ see `RISK_MANAGEMENT_FINDINGS.md`'s "matrix region naming" item.
 | P2 — Remote | Acceptable | Acceptable | ALARP | ALARP |
 | P1 — Improbable | Acceptable | Acceptable | Acceptable | ALARP |
 
-**Applied — as of 2026-07-15, this cannot produce an evaluation for any
-hazard.** §4.1's R3 rebuild replaced the old evidence-strength severity
-values with `GAP` for every hazard, pending Steven's consequence-based
-scoring — the S1/S2 values this matrix used to be applied against no
-longer exist. This matrix cell lookup is a real mechanism, not
-abandoned, but it has nothing to evaluate yet:
-**Acceptable/ALARP/Unacceptable is `GAP` for every hazard in
-`HAZARD_REGISTER.md` until §4.1's severity column is scored.**
+**Applied — updated 2026-07-15 (later), now that §4.1 has real
+severity values.** Mechanical lookup, per hazard, against the matrix
+above:
+
+| Hazard | Severity | Probability | Evaluation |
+|---|---|---|---|
+| `HAZ-GIP-1.14` | S3 | P5 | **Unacceptable** |
+| `HAZ-GIP-1.2` | S3 | P5 | **Unacceptable** |
+| `HAZ-GIP-1.3` | S3 | P5 | **Unacceptable** |
+| `HAZ-DOSE-003` | S3 | P5 | **Unacceptable** |
+| `HAZ-GIP-1.2b` | S3 | `GAP` (Finding 5) | **`GAP`** — the only row this matrix still cannot resolve, and only because its Probability, not its Severity, is unscored |
+
+**Four of five hazards evaluate `Unacceptable`.** This is a real,
+mechanical output of Steven's own S3 scoring combined with §4.2's
+standing worst-case P5 default — not a new judgment call, and not this
+repo's assistant characterizing the device as unsafe on its own
+authority. It is exactly what this matrix, built and confirmed before
+any severity value existed, was always going to say once given a real
+S3 input at P5. See Section 5 and the "Path to sign-off" section below
+for what this means at the device level and what the two remaining
+live paths off `Unacceptable` are.
 
 **What this replaces, stated so the change is visible, not silent:**
-the prior draft of this section reported `HAZ-GIP-1.2`, `HAZ-GIP-1.3`,
-and `HAZ-DOSE-003` as `Unacceptable` and `HAZ-GIP-1.14` as `Acceptable`
-under the (now-invalidated) evidence-strength severity model. Those
-outputs are not being revised to new values here — they are withdrawn,
-because the severity inputs that produced them were never a valid
-consequence measurement in the first place (Finding 3's own diagnosis:
-a proof of unreachability is a probability claim, not a severity one).
-This is not a finding that the device got safer or riskier; it is a
-finding that the prior evaluation was never actually computed from
-what ISO 14971 means by severity, and an honest matrix cannot
-special-case that away. See Section 5 and the "Path to sign-off"
-section below for what this changes about this device's overall
-residual-risk status.
+the 2026-07-14 draft of this section reported the same four rows
+(under different names — `HAZ-GIP-1.2`/`1.3` had not yet been split
+from `HAZ-GIP-1.2b`) as `Unacceptable` and `HAZ-GIP-1.14` as
+`Acceptable`, under the since-invalidated evidence-strength severity
+model. Those old outputs were withdrawn, not revised, on 2026-07-15
+(Finding 3/R3) because the severity inputs that produced them were
+never a valid consequence measurement (a proof of unreachability is a
+probability claim, not a severity one) — `HAZ-GIP-1.14`'s old
+`Acceptable` in particular was reasoning from proof strength, exactly
+the conflation Finding 3 found invalid. The `Unacceptable` result
+recorded above is a new, independent computation from Steven's real
+consequence-based severity values, not a reinstatement of the old
+draft numbers — it is a coincidence of the matrix's structure, not a
+sign the old reasoning was secretly right, that four of five rows land
+on the same label either way.
 
 ### 4.4 Criteria for accepting risk when probability cannot be estimated
 
@@ -325,20 +340,21 @@ finding, `Tolerable` is what that finding means for the device as a
 whole. This is distinct from per-hazard acceptability (Section 4.3) —
 clause 8 requires it as a genuinely separate step, not a restatement.
 
-**Applied — updated 2026-07-15 alongside §4.1/§4.3's R3 rebuild.** This
-paragraph previously said three of "four" hazards evaluated
-`Unacceptable` — already stale by the time of this correction:
-`HAZARD_REGISTER.md` has held five hazard rows since `HAZ-GIP-1.2b`
-was split out (`RISK_MANAGEMENT_FINDINGS.md` Finding 4), not four, and
-none of them currently evaluate to anything at all. §4.3's matrix
-cannot produce a per-hazard evaluation until severity is scored
-(above), so this method has nothing to combine. **This device's
-overall residual risk is currently `GAP` — not `Unacceptable`, not
-`Acceptable` — pending Steven's consequence-based severity scoring for
-each of the five hazards in `HAZARD_REGISTER.md`.** Once every hazard
-has a real severity value, this method applies exactly as specified
-above; it is unchanged by R3, only what it currently has to work with
-is.
+**Applied — updated 2026-07-15 (later), now that §4.3 has real
+per-hazard evaluations.** Four of the five hazards in
+`HAZARD_REGISTER.md` evaluate `Unacceptable` (§4.3). Per this method
+(stated above, unchanged since 2026-07-14): if any hazard evaluates
+Unacceptable, overall residual risk is Unacceptable until that hazard
+is resolved. **This device's overall residual risk is
+`Unacceptable`.** Not `GAP` — every hazard now has a real, Steven-
+scored severity value, so this method has a real result to report, not
+an unscored input to wait on. Not `Acceptable`, and not merely
+`Tolerable`: `Tolerable` under this method requires every unresolved
+hazard to evaluate no worse than `ALARP` with a recorded justification,
+which is not this device's actual state — four hazards evaluate
+`Unacceptable` outright, a stronger finding than `ALARP`. See the
+"Path to sign-off" section immediately below for the two remaining
+live paths off this result.
 
 Note this device also has an existing STRIDE threat model (Section 1)
 whose severity-like judgments are about security impact, not clinical
@@ -358,13 +374,24 @@ unnumbered rather than forced into the 4.4(a–g) sequence above.
 **Retitled and substantially rewritten 2026-07-15, alongside §4.1's R3
 rebuild.** This section originally targeted "the current `Unacceptable`
 finding" from Section 5's old evidence-strength severity model. That
-finding no longer exists — Section 5's status is now `GAP`, not
-`Unacceptable` — so this section's own premise changed under it. Two
-other staleness items fixed in the same pass, found while rewriting
-this section, not new discoveries requiring a separate note: it said
-"four hazards" (stale since `HAZ-GIP-1.2b` split out, `Finding 4`), and
-it said "the three Section 5 found `Unacceptable`," which presupposed
-the very evaluation R3 just withdrew.
+finding no longer existed at the time of this rewrite — Section 5's
+status was `GAP`, not `Unacceptable` — so this section's own premise
+changed under it. Two other staleness items fixed in the same pass,
+found while rewriting this section, not new discoveries requiring a
+separate note: it said "four hazards" (stale since `HAZ-GIP-1.2b` split
+out, `Finding 4`), and it said "the three Section 5 found
+`Unacceptable`," which presupposed the very evaluation R3 had just
+withdrawn.
+
+**Update, 2026-07-15 (later): superseded by real events, not a second
+rewrite.** Section 5's `GAP` status, described immediately above as the
+reason this section changed, was itself temporary — Steven's real
+severity scoring (Step 0 below) has since produced a new, independently
+computed `Unacceptable` finding (Section 5). The paragraph above is
+preserved as an accurate record of the 2026-07-15 (earlier) state, not
+corrected in place, per this repo's own discipline for superseded
+claims; Step 0 and everything below it now describe this device's
+actual current status, not a hypothetical one.
 
 This section still does the same real job: walking every hazard in
 `HAZARD_REGISTER.md` (five, not four), stating plainly what's still
@@ -373,29 +400,35 @@ work is possible" is never mistaken for "nothing more to do." What
 changed is the ordering — a step that didn't need naming under the old
 model now comes first.
 
-### Step 0 (new under R3): severity scoring blocks everything below it
+### Step 0 (R3): severity scoring — done, 2026-07-15
 
-Before any of the five hazards' *probability* questions matter, all
-five need a real, consequence-based severity value from Steven (§4.1)
-— without it, Section 4.3's matrix and Section 5's combination method
-both stay `GAP` regardless of how strong or weak the probability-side
-evidence below is. This is not evidence this repo's assistant can
-build; it is exactly the clinical judgment §4.1 declined to invent.
+Before any of the five hazards' *probability* questions could matter,
+all five needed a real, consequence-based severity value from Steven
+(§4.1) — without it, Section 4.3's matrix and Section 5's combination
+method both stayed `GAP` regardless of how strong or weak the
+probability-side evidence below was. **This step is now done**: Steven
+scored all five `S3 — Serious` via `AskUserQuestion`, 2026-07-15. What
+follows below is no longer a forward-looking description of what
+*would* block sign-off once severity existed — it is this device's
+actual current state.
 
-### `HAZ-GIP-1.14` — probability side fully proven; severity still `GAP`
+### `HAZ-GIP-1.14` — probability side fully proven; severity `S3`, Steven's determination
 
 Dafny-**proven** to yield exactly zero delivered dose on any
 negative-rate fault, both ordinary and overflow-magnitude — the
 strongest probability-side evidence in this register, unchanged by R3.
 What changed: under the old model this proof was read as directly
 justifying `S1` (severity). Finding 3 found that reading invalid — a
-proof of unreachability is a probability claim, not a severity one — so
-this hazard is no longer "no action needed." Its severity is `GAP`
-pending Steven's consequence determination, same as every other row,
-even though its probability-side evidence is the best this register
-has.
+proof of unreachability is a probability claim, not a severity one —
+and Steven's real scoring confirmed the point concretely: this hazard
+is `S3`, not `S1`, despite carrying this register's strongest
+probability-side evidence. Combined with §4.2's standing P5 default,
+this hazard evaluates `Unacceptable` (§4.3) — the strength of the
+proof affects how conservative the P5 default arguably ought to be
+(§4.2's own still-open question), not whether this hazard needs
+attention at all.
 
-### `HAZ-DOSE-003` — probability side capped at `BOUNDED_CHECKED`, permanently; severity still `GAP`
+### `HAZ-DOSE-003` — probability side capped at `BOUNDED_CHECKED`, permanently; severity `S3`, Steven's determination
 
 `dosage.dfy`'s own header comment already states this precisely, not
 something newly discovered here: *"Dafny's `real` type is exact,
@@ -411,14 +444,17 @@ same class of boundary as `renal_adjustment`'s CKD-EPI `Pow` gap
 (`RISK_MANAGEMENT_PLAN.md` of that example, `HAZ-RENAL-2`) — not a task
 waiting to be picked up. `CrossHair`'s `BOUNDED_CHECKED` result is the
 strongest evidence this hazard's probability side can ever have in
-this toolchain. Its severity, separately, is `GAP` pending Steven —
-this technical ceiling doesn't touch that question either way.
+this toolchain. Its severity, separately, is `S3` — Steven's
+determination, same as every other row — this technical ceiling
+doesn't touch that question either way; combined with §4.2's P5
+default this hazard evaluates `Unacceptable` (§4.3).
 
-### `HAZ-GIP-1.2` / `HAZ-GIP-1.3` / `HAZ-GIP-1.2b` — the missing probability-side evidence lives outside this kernel's scope by design; severity still `GAP`
+### `HAZ-GIP-1.2` / `HAZ-GIP-1.3` / `HAZ-GIP-1.2b` — the missing probability-side evidence lives outside this kernel's scope by design; severity `S3` for all three, Steven's determination
 
 `HAZ-GIP-1.2`/`1.3`'s narrowed, proof-closed delivery pathway has the
 same strong Dafny/CrossHair/concrete-test evidence as `HAZ-GIP-1.14`
-(§4.1). `HAZ-GIP-1.2b`'s residual — whether a clinician is ever told a
+(§4.1); both now evaluate `Unacceptable` (§4.3), same mechanism.
+`HAZ-GIP-1.2b`'s residual — whether a clinician is ever told a
 clamp fired — has **no** evidence of any kind; the `system_scope`
 alarm-*signal* gap is scoped by Section 1 to "integration testing
 against a real device/UI layer, per IEC 60601-1-8's alarm-system
@@ -428,23 +464,27 @@ POC. There is no more Dafny, CrossHair, or concrete-test work *inside*
 integrated pump system (hardware, firmware, alarm hardware, UI layer)
 this POC was never scoped to build. Building it would not be "more
 evidence for this hazard," it would be building a different, larger
-product. All three rows' severity is `GAP` pending Steven, same as
-every other hazard; `HAZ-GIP-1.2b`'s probability is additionally `GAP`
+product. All three rows' severity is `S3`, same as every other hazard;
+`HAZ-GIP-1.2b`'s probability is additionally `GAP`
 by design, not defaulted to P5 — see `RISK_MANAGEMENT_FINDINGS.md`
 Finding 5, a separate, still-open question about which procedure
-applies to a hazard with zero evidence of any kind.
+applies to a hazard with zero evidence of any kind, so `HAZ-GIP-1.2b`
+alone still evaluates `GAP` (§4.3), not `Unacceptable` like the other
+four.
 
-### The honest conclusion: one prerequisite, then the same two paths as before
+### The honest conclusion: the prerequisite is done — two paths remain, and one of them is now the live blocking question
 
-**Prerequisite, new under R3:** Steven's real, consequence-based
-severity value for each of the five hazards above (§4.1). Nothing
-below can be evaluated without it — this is not optional groundwork,
-it is the actual blocking step.
+**Prerequisite, from R3, now satisfied:** Steven's real,
+consequence-based severity value for each of the five hazards above
+(§4.1) — `S3 — Serious`, all five, recorded 2026-07-15. This device's
+overall residual risk is now a real, computed `Unacceptable` (Section
+5), not a placeholder waiting on clinical input.
 
-Once severity is scored, the same two paths named in the prior version
-of this section remain the live options for whatever risk level
-results — R3 changed what feeds the matrix, not what the matrix's
-outputs mean once it has real inputs:
+The same two paths named in the prior version of this section remain
+the live options for resolving that result — R3 changed what feeds the
+matrix, not what the matrix's outputs mean once it has real inputs,
+and satisfying the prerequisite above didn't remove the need for one of
+them, it made choosing between them the actual next decision:
 
 1. **Real field/usage probability data.** Section 4.4's worst-case
    default (P5 for every hazard except `HAZ-GIP-1.2b`, whose probability
@@ -473,12 +513,13 @@ outputs mean once it has real inputs:
    about what's an acceptable residual risk for a named person to
    stand behind, not a technical question with a checkable answer.
 
-**What this section does not do:** it does not score any hazard's
-severity, does not pick between the two paths above, does not draft an
-ALARP justification pretending to be Steven's words, and does not
-treat "no more Dafny work is possible" as license to quietly assign a
-severity or relabel any hazard `Acceptable`. Section 5's `GAP` status
-stands until the prerequisite above is actually done.
+**What this section does not do:** it does not pick between the two
+paths above, does not draft an ALARP justification pretending to be
+Steven's words, and does not treat "no more Dafny work is possible" as
+license to quietly relabel any hazard `Acceptable`. Section 5's
+`Unacceptable` status stands — a real, computed result, not a
+placeholder — until Steven picks one of the two paths above and it is
+actually carried through.
 
 ---
 
@@ -547,20 +588,21 @@ it feeds back into Section 4's probability bands, and who reviews it.
 | 2026-07-14 (yet later) | New unnumbered "Path to sign-off" section added between Sections 5 and 6 | Direct instruction: "let's look at the evidence required in order to ensure a safe sign off." Real finding, not previously stated this plainly: two of the three `Unacceptable` hazards (`HAZ-DOSE-003`'s finiteness postcondition, and the `system_scope` alarm-signal gap behind `HAZ-GIP-1.2`/`1.3`) have **no further evidence buildable inside this repo at all** — `dosage.dfy`'s own comment already documents that Dafny's `real` type cannot even represent the IEEE-754 overflow phenomenon REQ-DOSE-003 is about, and `system_scope` requires an integrated pump system outside this POC's stated scope. The only two real paths off `Unacceptable` are real field/usage data (which doesn't exist for a pre-market POC) or a genuine ALARP determination that only Steven, as the named SME, can make — not more spec work this repo's assistant can produce |
 | 2026-07-15 | Finding 3/R3 resolved: severity model rebuilt consequence-only (§4.1), Option 3 (hybrid, evidence-artifact column added) | Direct instruction: "work through R3's severity model." Option 2 eliminated on textual grounds (TR 24971 §5.5.4 states severity must exclude probability, directly contradicting the old evidence-strength bands); Steven chose Option 3 over Option 1 (`AskUserQuestion`). Real, cascading consequence, stated rather than hidden: the old S1/S2 severity values were never a valid consequence measurement, so §4.3's matrix, Section 5's overall-residual-risk method, and the "Path to sign-off" section's entire argument all changed from reporting `Unacceptable`/`Acceptable` outputs to reporting `GAP` — not because the device got safer or riskier, but because the prior evaluation was never actually computed from what ISO 14971 means by severity. Every hazard's severity is now an explicit `GAP` pending Steven's real, consequence-based scoring — the concrete next blocking step, not an abstract model question anymore. Two pre-existing staleness bugs fixed in the same pass (found while rewriting, not separately reported): Section 5 and the "Path to sign-off" section both still said "four hazards," stale since `HAZ-GIP-1.2b` split out on 2026-07-15 earlier the same day (Finding 4) |
 | 2026-07-15 (later) | R5 resolved: differential-testing harness built between `dosage.py`/`dosage.dfy`; postcondition drift found and fixed | Direct instruction: "let's look into R5 directly." Verified the equivalence claim by direct comparison first, not assumed — branch logic matches exactly for every input where `raw_dose` is finite. Found one new, previously-unflagged issue during that verification: `dosage.py`'s docstring postcondition still said `>= 0`, three months stale against `dosage.dfy`'s own strict-`>` tightening (2026-07-07, Gate C5). Steven chose Option 2 (`AskUserQuestion`), confirmed feasible empirically (`dafny run` executes here) before being offered as the recommendation. Built: `dosage_differential_vectors.py` (9 shared vectors), `dosage_differential_driver.dfy` (generated, calls the real `CalculateHourlyDose` via Dafny's own `include`), `run_verify_dosage_differential.py` (real `dafny run` capture, `raw_dafny_differential_output.txt`/`run_manifest_dafny_differential.json`) → `differential_test_results.json`, all 9 vectors matched. Postcondition drift fixed: `dosage.py` tightened to `> 0` matching `dosage.dfy`, CrossHair re-run and re-verified clean, `traceability_matrix.a.*` and siblings regenerated. `RISK_MANAGEMENT_PLAN.md` §4.1's `HAZ-GIP-1.14`/`1.2`/`1.3` evidence-artifact cells updated to cite the new differential confirmation. Full record: `RISK_MANAGEMENT_FINDINGS.md`. 251 tests pass (5 new) |
+| 2026-07-15 (yet later) | Steven's real severity scoring recorded for all 5 hazards (§4.1: `S3 — Serious`, every one); §4.3's matrix and Section 5's overall-residual-risk method both produced real evaluations for the first time | Direct instruction: "start on the severity values for the 5 hazards." Recorded via `AskUserQuestion`, one hazard at a time, against §4.1's real consequence-only bands and each hazard's own documented harm text. **Real, mechanical result: four of five hazards (`HAZ-GIP-1.14`, `1.2`, `1.3`, `HAZ-DOSE-003`) evaluate `Unacceptable` (§4.3: P5 × S3); `HAZ-GIP-1.2b` stays `GAP` at evaluation, blocked only by Finding 5's still-open Probability-side question, not by its now-known Severity. This device's overall residual risk is now `Unacceptable` (Section 5), not `GAP`.** Not a new judgment call by this repo's assistant — a mechanical application of a matrix this plan already specified, now given its first real inputs. The "Path to sign-off" section's two remaining paths (real field data, or a genuine ALARP determination from Steven) are now the live next decision, not a hypothetical one |
 
-**What does not yet exist, stated explicitly — updated 2026-07-15.**
-Hazard *identification* (clause 5.4) is real and complete for this
-device. The severity **model** (clause 5.5) is now real and correctly
-structured (consequence-only, per R3's resolution above); the
-per-hazard severity **values** are not — every one is an explicit
-`GAP` pending Steven's clinical scoring, which in turn blocks
-evaluation (clauses 6, 8) for all five hazards. This is a more
-precise statement than the prior version of this paragraph, which
-described a "draft severity/probability/evaluation proposal" as if the
-model and the values were the same kind of pending item — they
-weren't: the old values were actively wrong (evidence-strength, not
-consequence), not merely unconfirmed. The risk management report
-required by clause 4.5 is still missing entirely. Section 6's table
+**What does not yet exist, stated explicitly — updated 2026-07-15
+(later).** Hazard *identification* (clause 5.4) is real and complete
+for this device. The severity **model** (clause 5.5) is real and
+correctly structured (consequence-only, per R3's resolution above), and
+the per-hazard severity **values** are now real too — `S3 — Serious`,
+all five, Steven's determination, recorded above. Evaluation (clauses
+6, 8) is correspondingly real: four hazards `Unacceptable`, one
+(`HAZ-GIP-1.2b`) still `GAP`, blocked only by Finding 5's open
+Probability-side question. What genuinely does not yet exist: a
+resolution of that `Unacceptable` finding itself — Steven has not yet
+picked between the two paths named in "Path to sign-off" (real field
+data, or a recorded ALARP determination), and the risk management
+report required by clause 4.5 is still missing entirely. Section 6's table
 remains the model for how a hazard entry's risk control measure should
 cite evidence; `HAZARD_REGISTER.md` now does exactly that, per hazard,
 not just per requirement, and §4.1's new evidence-artifact column

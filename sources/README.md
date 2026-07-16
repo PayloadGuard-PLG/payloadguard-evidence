@@ -23,6 +23,36 @@ requirements documents, standards excerpts) that ground the claims in
   Safety Requirements v1.0," University of Pennsylvania / FDA OSEL /
   Fraunhofer CESE. Audit-trail record behind
   `examples/dosage_calculator/metadata.yaml`.
+- `gip-v1.0-full-2009.pdf` — added 2026-07-15. The actual GIP v1.0 PDF
+  (17 pages, complete — Introduction through §4 Conclusion and Future
+  Work), obtained directly from the University of Pennsylvania and
+  supplied by Steven, not a third-party mirror. Used to independently
+  re-verify `gip-v1.0-hazard-analysis.md`'s own transcription against
+  the real primary text — found and fixed one real wording drift in
+  Safety Requirement 1.8.1 (reverse delivery), confirmed the full
+  §2.4.1 Operational Hazards table (HID 1.1–1.28) matches, and
+  confirmed **no hazard table in this document, across all eight
+  categories, carries a severity column for any hazard** — GIP v1.0
+  itself never scores severity, a source-backed fact now citable
+  directly rather than inferred from `metadata.a.yaml`'s
+  `classification_rationale`. Full account:
+  `examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`.
+- `iec-60601-2-24-1998.pdf` — added 2026-07-15 (later). IEC 60601-2-24,
+  First edition, 1998-02, "Medical electrical equipment — Part 2-24:
+  Particular requirements for the safety of infusion pumps and
+  controllers" — the actual edition GIP v1.0 (Feb 2009) cites, obtained
+  and supplied by Steven, read in full (58 pages, cover through Annex
+  ZB). Used to independently verify GIP Safety Requirement 1.8.1's own
+  citation, one hop further than `gip-v1.0-full-2009.pdf` alone could
+  reach: clause **51.102 "Reverse delivery"** (p.36, no Annex AA
+  rationale marker) reads "During NORMAL USE and/or SINGLE FAULT
+  CONDITION of the EQUIPMENT, continuous reverse delivery, which may
+  cause a SAFETY HAZARD, shall not be possible" — GIP's own
+  transcription is a near-verbatim match, omitting only the "which may
+  cause a SAFETY HAZARD" clause. This is this repo's first direct read
+  of the IEC 60601-2-24 standard text itself, not a secondary source.
+  Full account: `examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`
+  Finding 6.
 - `req-gip-1-4-12-alarm-scope-decision.md` — added 2026-07-05 (Gate 1
   review). Per rule 2 above: this document **extends** the existing
   REQ-GIP-1-4-12 entry (dual-scope split per IEC 60601-1-8's ALARM

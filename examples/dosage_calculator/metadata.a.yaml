@@ -54,11 +54,13 @@ requirements:
     spec_target: dosage.dfy
     dafny_method: CalculateHourlyDose
 - id: REQ-GIP-1-8-1
-  text: 'Continuous reverse delivery shall not be possible during normal use or
-    a single-fault condition. Modelled at this kernel as a fault input: a negative
-    infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered
-    dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling
-    added in the 2026-07-04 Option A amendment)
+  text: 'During normal use and/or single fault condition of the equipment, continuous
+    reverse delivery shall not be possible. Modelled at this kernel as a fault input:
+    a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero
+    delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault
+    modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15
+    to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998
+    clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)
 
     '
   implementation: dosage.py::calculate_hourly_dose

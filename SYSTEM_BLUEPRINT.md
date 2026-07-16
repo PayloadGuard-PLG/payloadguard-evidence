@@ -1,6 +1,36 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (Three real Qodo findings on PR #55's
+Last updated: 2026-07-15 (yet later still — Finding 6 fully closed:
+IEC 60601-2-24:1998 clause 51.102 read directly, confirming GIP's
+citation near-verbatim and closing the "IEC standard's own text
+remains unread" gap. `sources/iec-60601-2-24-1998.pdf` archived. No
+architecture, gate, or data-flow change — risk-management content and
+one new `sources/` artifact only. Full record: `KNOWN_LIMITATIONS.md`,
+`RISK_MANAGEMENT_FINDINGS.md` Finding 6. 253 tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (yet later — Finding 6
+resolved: a real
+citation-wording drift found in `HAZ-GIP-1.14`'s GIP Safety Requirement
+1.8.1 quote, fixed against the actual GIP v1.0 PDF obtained directly
+from the University of Pennsylvania. No architecture, gate, or
+data-flow change — content within existing risk-management and
+`sources/` document types, plus one new archived primary source
+(`sources/gip-v1.0-full-2009.pdf`). Traceability matrices regenerated
+via the existing pipeline (`generate_artifacts.py`, `generate_matrix.py`),
+not hand-edited. Full record: `KNOWN_LIMITATIONS.md`,
+`RISK_MANAGEMENT_FINDINGS.md` Finding 6. 253 tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (later — real severity
+scoring recorded for
+`dosage_calculator`'s 5-hazard register (`RISK_MANAGEMENT_PLAN.md`,
+`HAZARD_REGISTER.md`): Steven scored every hazard `S3 — Serious`,
+mechanically producing this device's overall residual risk of
+`Unacceptable` (4 of 5 hazards; `HAZ-GIP-1.2b` stays an evaluation
+`GAP`, blocked by a separate open probability-side question). No
+architecture, gate, evidence-engine, or data-flow change — this is
+content within an already-existing document type (risk-management
+artifacts, Section 5's inventory), not a new component. Full record:
+`KNOWN_LIMITATIONS.md`, `RISK_MANAGEMENT_FINDINGS.md` Finding 3. 253
+tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (Three real Qodo findings on PR #55's
 differential-testing harness fixed, each independently re-verified
 against the real committed code first: the capture script
 (`run_verify_dosage_differential.py`) now actually applies the Gate C1/

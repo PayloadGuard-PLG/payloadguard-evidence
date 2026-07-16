@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: concrete evidence)",
-  "generated_utc": "2026-07-15T14:50:15.192142+00:00",
+  "generated_utc": "2026-07-16T04:25:26.826097+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107"
   },
@@ -47,7 +47,7 @@
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
-      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "requirement_text": "During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998 clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "concrete_test",
       "strength": "EXAMPLE_CHECKED",
@@ -70,7 +70,7 @@
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
-      "requirement_text": "Continuous reverse delivery shall not be possible during normal use or a single-fault condition. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment)",
+      "requirement_text": "During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998 clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)",
       "code_location": "dosage.py::calculate_hourly_dose",
       "method": "concrete_test",
       "strength": "EXAMPLE_CHECKED",

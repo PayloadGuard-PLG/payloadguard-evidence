@@ -106,14 +106,25 @@ Python implementation is now differentially tested rather than merely
 asserted (Finding 5/R5, also resolved 2026-07-15), its citations were
 extended to ISO/TR 24971:2020 during an earlier audit, and a findings
 ledger (`RISK_MANAGEMENT_FINDINGS.md`) tracks corrections already
-applied and what's still open. **Every hazard's severity value is an
-explicit `GAP` across all three examples** — `dosage_calculator`'s
-model and evidence citations are more developed, not its scored values,
-which remain Steven's clinical call same as the other two.
-`renal_adjustment`'s and `drug_interaction_checker`'s hazard registers
-complete identification only, and their plans cite ISO 14971:2019
-alone; extending them to `dosage_calculator`'s TR-24971-informed model
-is future work, not started. Assigning a severity score, accepting a
+applied and what's still open. **`dosage_calculator` now has real,
+Steven-scored severity values for all 5 hazards** (`S3 — Serious`,
+recorded 2026-07-15 via `AskUserQuestion` — a real clinical
+determination, not inferred or defaulted by this repo's assistant),
+which mechanically produce this device's current overall residual risk:
+**`Unacceptable`** (4 of 5 hazards; the fifth, `HAZ-GIP-1.2b`, stays an
+explicit evaluation `GAP`, blocked by a separate open question about
+which procedure applies to a hazard with zero probability-side
+evidence — see `RISK_MANAGEMENT_FINDINGS.md` Finding 5). This is not a
+claim the device is newly unsafe — it is the honest output of a
+real severity input meeting this plan's already-specified, conservative
+worst-case-probability policy for a pre-market POC with no field data;
+resolving it needs either real field data or a recorded ALARP
+determination from Steven, both still open. `renal_adjustment`'s and
+`drug_interaction_checker`'s hazard registers still leave every
+severity value an explicit `GAP` — they complete identification only,
+and their plans cite ISO 14971:2019 alone; extending them to
+`dosage_calculator`'s TR-24971-informed model and real scoring is
+future work, not started. Assigning a severity score, accepting a
 residual risk, or closing a hazard as `Acceptable` is, for all three, a
 human decision this repo's assistant has declined to make on a
 reviewer's behalf, even where no further evidence is buildable.

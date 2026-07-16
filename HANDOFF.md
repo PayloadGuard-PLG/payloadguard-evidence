@@ -8,7 +8,103 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 — **Three real Qodo findings on PR #55 (the
+**Last updated:** 2026-07-15 (yet later still) — **Finding 6 fully
+closed: IEC 60601-2-24:1998 clause 51.102 read directly; GIP's citation
+confirmed near-verbatim.** The prior update (below) closed a wording
+drift in this repo's own GIP transcription but explicitly left one
+thing open: the IEC standard's own text was still unread by anyone in
+this chain. Steven obtained and supplied the actual IEC 60601-2-24:1998
+(First edition, 1998-02) — the correct edition, confirmed again by
+publication-date logic (GIP, Feb 2009, predates Edition 2's October
+2012 publication). Read directly and in full, 58 pages. **Clause
+51.102, "Reverse delivery"** (p.36): "During NORMAL USE and/or SINGLE
+FAULT CONDITION of the EQUIPMENT, continuous reverse delivery, which
+may cause a SAFETY HAZARD, shall not be possible." GIP's own
+transcription is near-verbatim, omitting only "which may cause a
+SAFETY HAZARD" — this repo's first direct read of any IEC 60601-2-24
+edition's actual text, for any requirement. This repo's evidentiary
+basis for `HAZ-GIP-1.14` is no longer GIP as a secondary source one hop
+short of the standard — it's the standard's own clause, read and
+archived directly (`sources/iec-60601-2-24-1998.pdf`). Updated:
+`HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` (clause
+51.102 added to the citation), `RISK_MANAGEMENT_FINDINGS.md` (Finding 6
+fully closed), `sources/README.md`. Matrices regenerated, all Tier 1
+gates passed clean. 253 tests pass, unchanged. **Next step: same open
+items as before** — choosing between the two paths off `Unacceptable`
+(real field data or a recorded ALARP determination), Finding 5, matrix
+region naming. No further IEC-citation work is outstanding for this
+device.
+**Prior update, preserved below** — 2026-07-15 (yet later) — **Finding
+6 resolved: a real
+wording drift caught in `HAZ-GIP-1.14`'s "verbatim" GIP citation, fixed
+against the actual primary PDF.** Steven pressed on the S3 severity
+scoring for `HAZ-GIP-1.14`, independently researched the underlying IEC
+601-2-24/60601-2-24 citation, and found a secondary (ResearchGate)
+rendering of GIP Safety Requirement 1.8.1 that read differently from
+this repo's own citation — reported as "verbatim," it wasn't. Rather
+than accept either source at face value, the discrepancy was flagged.
+Steven then obtained the actual GIP v1.0 PDF directly from the
+University of Pennsylvania (not a mirror) and supplied it. **The
+secondary source was right; this repo's own transcription had
+drifted** (clause order reversed, "or" vs. "and/or," a dropped "of the
+equipment") — despite `sources/gip-v1.0-hazard-analysis.md`'s own
+header claiming "wording... unchanged," a claim that had never actually
+been tested until now. Fixed to the verbatim primary text in all six
+places it appeared: `sources/gip-v1.0-hazard-analysis.md`,
+`metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`. The
+§2.4.1 hazard-table row itself was also checked directly and confirmed
+accurate — closing that row's long-standing unverified caveat too.
+**Byproduct, now closed**: GIP v1.0's hazard tables (all 8 categories)
+carry no severity column for any hazard — confirmed directly, not
+inferred, closing the "GIP's own severity rating" question from the
+severity discussion. **What's still open**: the IEC standard's own text
+remains unread by anyone in this chain — this repo's basis stays GIP
+v1.0 as a trusted secondary source, one hop short of the standard
+itself, named explicitly. No traceability matrix hand-edited —
+`generate_artifacts.py` and `generate_matrix.py` both re-run against
+the corrected metadata, every Tier 1 gate passed clean.
+`sources/gip-v1.0-full-2009.pdf` archived as the new primary source.
+253 tests pass, unchanged. **Next step: same open items as before** —
+choosing between the two paths off `Unacceptable` (real field data or
+a recorded ALARP determination), Finding 5 (`HAZ-GIP-1.2b`'s procedural
+question), matrix region naming — or independently reading the IEC
+standard's own text if that's judged worth the effort.
+**Prior update, preserved below** — 2026-07-15 (later) — **Real
+severity scoring
+recorded for all 5 `dosage_calculator` hazards — the concrete blocking
+item this repo has named since Finding 3/R3's model-only fix earlier
+the same day.** Direct instruction: "start on the severity values for
+the 5 hazards." As the named Clinical SME (`RISK_MANAGEMENT_PLAN.md`
+Section 2), Steven scored each hazard via `AskUserQuestion`, one at a
+time, against §4.1's real consequence-only bands and each hazard's own
+documented harm text — never proposed, defaulted, or inferred by this
+repo's assistant, matching the same discipline every Gate C6 sign-off
+has held to. **Result: `S3 — Serious`, all five** (`HAZ-GIP-1.14`,
+`HAZ-GIP-1.2`, `HAZ-GIP-1.3`, `HAZ-GIP-1.2b`, `HAZ-DOSE-003`) —
+notably including `HAZ-GIP-1.14` despite it carrying this register's
+strongest probability-side evidence (a full Dafny proof), a concrete
+confirmation that severity and proof strength are genuinely independent
+axes, exactly the point Finding 3 established abstractly. Mechanically
+applying `RISK_MANAGEMENT_PLAN.md` §4.3's already-specified matrix (a
+lookup, not a new judgment call): `HAZ-GIP-1.14`/`1.2`/`1.3`/
+`HAZ-DOSE-003` → `Unacceptable` (P5 × S3); `HAZ-GIP-1.2b` stays an
+evaluation `GAP`, blocked by Finding 5's separate, still-open
+Probability-side question, not its now-known Severity. **This device's
+overall residual risk is now `Unacceptable`** (Section 5) — a real,
+computed result, replacing the `GAP` placeholder R3's model-only fix
+left standing hours earlier. Updated: `HAZARD_REGISTER.md` (all 5
+hazard rows), `RISK_MANAGEMENT_PLAN.md` (§4.1, §4.3, Section 5, "Path
+to sign-off" — its two remaining paths, real field data or a recorded
+ALARP determination, are now the live next decision, not hypothetical),
+`RISK_MANAGEMENT_FINDINGS.md` (Finding 3 fully closed), `README.md`,
+`KNOWN_LIMITATIONS.md`, `SYSTEM_BLUEPRINT.md`. No code/spec/test
+change; 253 tests pass, unchanged. **Next step: awaiting Steven's
+choice between the two paths off `Unacceptable`** (real field data,
+which doesn't exist for a pre-market POC, or a recorded ALARP
+determination) — or Finding 5 (the `HAZ-GIP-1.2b` procedural question)
+or matrix region naming, both still separately open.
+**Prior update, preserved below** — 2026-07-15 — **Three real Qodo
+findings on PR #55 (the
 R5 harness) fixed, all independently re-verified before acting, not
 accepted on the review's word alone.** (1) `run_verify_dosage_differential.py`
 claimed "Gate C1 discipline" but only checked `proc.returncode`, never

@@ -6,6 +6,163 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 (yet later still) — Finding 6 fully closed: IEC 60601-2-24:1998 clause 51.102 read directly, GIP's citation confirmed near-verbatim
+
+Continuing directly from Finding 6 below: that entry closed a wording
+drift in this repo's own GIP transcription but left one thing
+explicitly open — "the IEC 601-2-24 standard's own text is still
+unread by anyone in this chain." This entry closes that.
+
+Steven obtained and supplied the actual IEC 60601-2-24:1998 (First
+edition, 1998-02) — confirmed, again by publication-date logic (GIP,
+Feb 2009, predates Edition 2's October 2012 publication by three
+years), to be the correct edition GIP's authors would have cited. Read
+directly and in full: 58 pages, cover through Annex ZB, not excerpted,
+not assumed complete from a table of contents.
+
+**Clause 51.102, "Reverse delivery" (p.36) — one of the few clauses in
+this standard with no Annex AA rationale marker:**
+"During NORMAL USE and/or SINGLE FAULT CONDITION of the EQUIPMENT,
+continuous reverse delivery, which may cause a SAFETY HAZARD, shall not
+be possible." Compared directly against GIP v1.0's own transcription
+(already fixed in this repo per the entry below): the match is
+near-verbatim — identical clause order, "and/or," "single fault
+condition of the equipment" — GIP omits only the middle clause "which
+may cause a SAFETY HAZARD." Not a coincidental resemblance; a citation
+this close to word-for-word that this repo can now confirm directly.
+
+This repo's evidentiary basis for `HAZ-GIP-1.14`'s regulatory citation
+is no longer GIP v1.0 as a trusted secondary source one hop short of
+the standard — it is the standard's own clause text, read and archived
+directly (`sources/iec-60601-2-24-1998.pdf`), with GIP's paraphrase
+independently confirmed faithful to it. First direct read of any IEC
+60601-2-24 edition's actual text, for any requirement, in this repo's
+history.
+
+Updated: `HAZARD_REGISTER.md` (`HAZ-GIP-1.14`'s "Hazardous situation"
+field), `metadata.yaml`/`.a`/`.b`/`.c.yaml` (REQ-GIP-1-8-1's citation,
+clause 51.102 added), `RISK_MANAGEMENT_FINDINGS.md` (Finding 6's
+status ledger row and full write-up), `sources/README.md`. Matrices
+regenerated via `generate_artifacts.py`/`generate_matrix.py`, all Tier
+1 gates passed clean. 253 tests pass, unchanged.
+
+---
+
+## 2026-07-15 (yet later) — Finding 6 resolved: `HAZ-GIP-1.14`'s "verbatim" GIP citation had never been checked against the primary text; a real wording drift found and fixed
+
+Steven pressed on the S3 severity discussion for `HAZ-GIP-1.14`
+(reverse delivery) — this repo's `HAZARD_REGISTER.md` cited GIP Safety
+Requirement 1.8.1 as a direct quote, attributed to IEC 601-2-24, but
+that quote had never actually been checked against GIP v1.0's own PDF.
+This repo only ever had a reformatted markdown copy
+(`sources/gip-v1.0-hazard-analysis.md`) whose own header claimed
+"wording... unchanged" without that claim ever being tested.
+
+Steven independently researched the underlying IEC citation and found
+a secondary (ResearchGate-hosted) rendering of GIP's own text that
+read differently from this repo's version — clause order reversed,
+"or" vs. "and/or," "of the equipment" present in one but not the
+other. Direct comparison flagged this as a real discrepancy, not
+accepted as either source being automatically right. Steven then
+obtained the actual GIP v1.0 PDF directly from the University of
+Pennsylvania (not a mirror) and supplied it — read directly, all 17
+pages.
+
+**Result: the secondary source was right; this repo's own
+transcription was the one that had drifted.** Fixed to the verbatim
+primary text ("During normal use and/or single fault condition of the
+equipment, continuous reverse delivery shall not be possible") in all
+six places it appeared: `sources/gip-v1.0-hazard-analysis.md`,
+`metadata.yaml`/`.a`/`.b`/`.c.yaml`, and `HAZARD_REGISTER.md`. The
+§2.4.1 hazard-table row for HID 1.14 was also checked directly and
+matches exactly — no drift there, closing that row's long-standing
+"not yet independently re-verified" caveat too.
+
+**A genuine byproduct, now closed either way**: the primary PDF's
+hazard tables span all eight categories and none carry a severity
+column — GIP v1.0 never rates severity for any hazard, confirmed
+directly rather than inferred. This closes the "GIP's own hazard-table
+severity rating" question live in the `HAZ-GIP-1.14` severity
+discussion — not by finding a rating, but by confirming none exists.
+
+**What this does not resolve**: the IEC 601-2-24/60601-2-24 standard's
+own text is still unread by anyone in this chain — this repo's
+evidentiary basis remains GIP v1.0 as a trusted secondary source, one
+hop short of the standard itself, named explicitly rather than
+silently narrowed by this fix.
+
+No traceability matrix hand-edited: `generate_artifacts.py` (variants
+a/b/symbolic/concrete/formal) and `generate_matrix.py` (the frozen
+base) both re-run against the corrected metadata files — all Tier 1
+gates (schema validation, both CONFLICT gate types, fact-equality,
+structural PROVEN sweep) passed clean. `sources/gip-v1.0-full-2009.pdf`
+archived as the new primary source. 253 tests pass, unchanged. Full
+record: `RISK_MANAGEMENT_FINDINGS.md` Finding 6.
+
+---
+
+## 2026-07-15 (later) — Real severity scoring recorded for all 5 `dosage_calculator` hazards; device overall residual risk now `Unacceptable`
+
+Direct instruction: "start on the severity values for the 5 hazards."
+Finding 3/R3 (earlier the same day) had rebuilt the severity **model**
+consequence-only but left every hazard's severity **value** an explicit
+`GAP` pending Steven's clinical scoring — this session did that
+scoring, not the model work again.
+
+As the named Clinical SME (`RISK_MANAGEMENT_PLAN.md` Section 2), Steven
+scored all five hazards in `HAZARD_REGISTER.md` via `AskUserQuestion`,
+one at a time (four in a first batch, the fifth — `HAZ-DOSE-003`,
+non-GIP-sourced — separately), against §4.1's real consequence-only
+bands (S1–S4) and each hazard's own documented `Potential harm` text.
+This repo's assistant did not propose, default, or infer any of the
+five values — each was a real clinical determination, recorded with
+attribution, matching the discipline every Gate C6 sign-off in this
+repo has held to (substantive work prepared, but the actual
+confirmation a recorded human decision).
+
+**Result: `S3 — Serious`, all five** (`HAZ-GIP-1.14`, `HAZ-GIP-1.2`,
+`HAZ-GIP-1.3`, `HAZ-GIP-1.2b`, `HAZ-DOSE-003`). Notable: `HAZ-GIP-1.14`
+scored `S3` despite carrying this register's strongest probability-side
+evidence (Dafny-**proven** zero delivered dose on any negative-rate
+fault) — a concrete demonstration, not just an abstract claim, that
+severity and proof strength are genuinely independent axes, exactly
+the conflation Finding 3 found and fixed in the model itself.
+
+Mechanically applying `RISK_MANAGEMENT_PLAN.md` §4.3's
+already-specified acceptance matrix to these real values (a lookup, not
+a new judgment call) — `HAZ-GIP-1.14`/`HAZ-GIP-1.2`/`HAZ-GIP-1.3`/
+`HAZ-DOSE-003` combine `S3` with §4.2's standing `P5` worst-case default
+to **`Unacceptable`**; `HAZ-GIP-1.2b` stays an evaluation `GAP`, since
+its `Probability` — not its now-known `Severity` — is blocked by
+`RISK_MANAGEMENT_FINDINGS.md` Finding 5's separate, still-open question
+(whether TR 24971 §5.5.3's severity-alone evaluation applies to a
+hazard with zero probability-side evidence of any kind). Per Section
+5's already-specified combination method (unchanged since 2026-07-14):
+if any hazard evaluates `Unacceptable`, overall residual risk is
+`Unacceptable` until resolved. **This device's overall residual risk is
+now `Unacceptable`** — a real, computed result, not the `GAP`
+placeholder Finding 3's model-only fix left standing hours earlier.
+
+This is not a claim the device got less safe — it is the honest output
+of a real severity input meeting this plan's already-specified,
+conservative worst-case-probability policy for a pre-market POC with no
+field data. `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section's
+two remaining paths (real field/usage probability data, which doesn't
+exist yet; or a recorded ALARP determination from Steven as the named
+Clinical SME) are now the live next decision, not a hypothetical one.
+
+Updated: `HAZARD_REGISTER.md` (all 5 hazard rows' Severity/Risk
+evaluation fields, top status block, change log), `RISK_MANAGEMENT_PLAN.md`
+(§4.1's severity table, §4.3's applied matrix, Section 5's applied
+method, "Path to sign-off" section throughout, Section 8 change log),
+`RISK_MANAGEMENT_FINDINGS.md` (status ledger, Finding 3's full record
+and "what's still open" note, the "what actually needs Steven" summary),
+`README.md`'s Risk management section, `KNOWN_LIMITATIONS.md`,
+`SYSTEM_BLUEPRINT.md`, `HANDOFF.md`. No code, spec, or test change —
+253 tests pass, unchanged.
+
+---
+
 ## 2026-07-15 — Three real Qodo findings on PR #55 (the R5 harness) fixed: unvalidated Dafny capture, a latent float-serialization bug, a docstring self-contradiction
 
 An externally-supplied Qodo review of PR #55 flagged three issues. Each
