@@ -170,6 +170,13 @@ part of the regular test suite.
 - **`examples/drug_interaction_checker/`** — DOAC drug-interaction
   checking; requirements from NHS Specialist Pharmacy Service guidance.
   Exercises set/membership logic.
+- **`examples/aeb_kernel/`** — a generic (non-manufacturer-specific)
+  Autonomous Emergency Braking kernel; requirements from NHTSA FMVSS No.
+  127 (49 CFR 571.127). The first example outside the medical-device
+  domain, built to test whether the Gate C1–C6 architecture generalizes
+  to a different regulatory domain entirely — it does, with no
+  shared-code changes required. Exercises speed-envelope and
+  deceleration-threshold logic.
 - **`sources/`** — primary source documents, archived verbatim so every
   sourced requirement can be checked against the original.
 - **`tests/`** — regression suite. Run `python -m pytest tests/ -q` for
@@ -213,7 +220,16 @@ extending the system to a new example, see
   (`REQ-RENAL-3/4/6/7`, and `REQ-RENAL-8`'s classification-flag
   provenance) are deliberately unbuilt and tracked as open items; none
   blocks the pipeline.
-- **Risk management artifacts (all three examples)** — `DRAFT`, not
+- **Generic AEB kernel** — complete: all six gates built and confirmed,
+  sourced directly from NHTSA FMVSS No. 127. The first example outside
+  the medical-device domain — proves the pipeline is domain-agnostic,
+  not medical-device-specific; every shared tool (`evidence.cli`,
+  spec lint, NL confirmation, mutation testing) ran unmodified. Two
+  requirements (`REQ-AEB-9` vehicle-class eligibility, `REQ-AEB-10`
+  malfunction detection/mode controls) are deliberately unbuilt,
+  tracked as open `GAP` rows; no ISO 26262 risk-management artifacts
+  exist for this example yet.
+- **Risk management artifacts (the three medical-device examples)** — `DRAFT`, not
   signed off. `dosage_calculator`'s is the most developed: hazard
   identification is real and complete, its severity model was rebuilt
   2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR 24971

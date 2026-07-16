@@ -8,9 +8,95 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 (yet later still) — **Finding 6 fully
-closed: IEC 60601-2-24:1998 clause 51.102 read directly; GIP's citation
-confirmed near-verbatim.** The prior update (below) closed a wording
+**Last updated:** 2026-07-16 — **Fourth worked example built end to
+end: `examples/aeb_kernel/`, a Generic Autonomous Emergency Braking
+kernel — the first example outside the medical-device domain,
+specifically to test whether the Gate C1-C6 architecture generalizes to
+a new regulatory domain.** Direct instruction: "let's look at the task
+and reframe it so our system can handle it... we're not reinventing the
+wheel, just looking for another domain and device we can apply our
+architecture to." An uploaded research document initially framed this
+around a named commercial vehicle; reframed to a generic AEB kernel
+before any spec content was written (`AskUserQuestion` — real sourcing/
+reputational risk in naming a specific manufacturer, no OEM-specific
+implementation detail is public anyway). Steven located and manually
+committed the real primary source: NHTSA/DOT Final Rule "Automatic
+Emergency Braking Systems for Light Vehicles," 49 CFR 571.127, Docket
+No. NHTSA-2023-0021 (`sources/nhtsa-fmvss-127-2024.pdf`, 317 pages).
+The actual codified regulatory text (§ 571.127, S1-S10) was located
+within the document — confirmed the first ~300 pages are rulemaking
+preamble, not the standard itself — via `pdftotext`/line search, then
+read directly through the `Read` tool before any spec content was
+written, this repo's standing sourcing discipline held exactly as it
+was for GIP/IEC 60601-2-24/KDIGO/MHRA/NHS SPS.
+
+**Real structural finding, resolved an open design question rather than
+requiring new engineering to solve it**: § 571.127's actual performance
+requirements (S5) are entirely speed-envelope/deceleration-threshold
+based — no wall-clock timing appears anywhere in the vehicle's real
+obligations. The document's millisecond-level timing figures (500 ms
+pedal release, 1.0±0.1s brake onset) are confined to S7/S8, NHTSA's own
+test-conduct procedure for verifying compliance on a track, not a claim
+the AEB kernel itself must satisfy. So the `elapsedMs`-parameter-vs-
+`system_scope`-split question carried into this build from the earlier
+scoping discussion never had to be answered — neither was needed. Unlike
+`dosage_calculator`'s IEEE-754 gap or `renal_adjustment`'s `Pow`-
+exponent gap, this domain hit no Dafny/Z3 structural expressiveness
+limit at all.
+
+Built in one session: **`aeb_kernel.dfy`** (6 functions, 8 requirement
+clauses — `FCWRequiredActive`/`AEBRequiredActive` each cover a lead-
+vehicle and a pedestrian requirement; `6 verified, 0 errors`). **Gate
+C6** run immediately after the spec first verified clean, per this
+repo's own established best practice for a brand-new spec, followed for
+the first time on an actual first build rather than applied
+retroactively — all six functions' contracts checked against § 571.127's
+text directly, confirmed. **Gate C4**: 31 STP lemmas, every strict-vs-
+inclusive boundary tested at its exact value (`31 verified, 0 errors`).
+**Gate C3**: all 6 functions `sat`, **0 weak-postcondition warnings
+across all 6** — the tightest spec-lint result of any example so far
+(every ensures clause is a full bi-implication). **Gate C5**: 63
+mutants — 38 killed, 17 filtered, 4 survivors (all
+`IsFalseActivationCompliant`'s non-negativity precondition, real but
+non-load-bearing — same category as `renal_adjustment`'s documented
+survivors), 4 unclassifiable (a real, newly-named
+`evidence/dafny_mutate.py` COI-generator gap: negating a
+`target == X ==>` guard clause produces Dafny's "invalid
+UnaryExpression" — same class of shared-tooling gap as
+`renal_adjustment`'s documented `||`-chain limitation, named not
+worked around). **Phase 3**: `metadata.a.yaml`,
+`dafny_captures_index.json`, `traceability_matrix.a.json`/`.md` — 8
+`PROVEN` rows (REQ-AEB-1/3 sharing `FCWRequiredActive`'s proof,
+REQ-AEB-2/4 sharing `AEBRequiredActive`'s — the many-requirements-to-
+one-proof pattern `drug_interaction_checker` established), 2 honest
+`GAP` rows (REQ-AEB-9 vehicle-class eligibility, REQ-AEB-10 malfunction
+detection/mode controls — the first rows in this repo to exercise
+`metadata.schema.a.json`'s `system_scope` field, which renders as a real
+structured GAP evidence record rather than an empty array).
+
+**No shared-code change of any kind was needed** — `evidence.cli`,
+`dafny_spec_lint.py`, `dafny_nl_summary.py`, and `dafny_mutate.py` all
+ran against `aeb_kernel.dfy` unmodified. That's itself the result this
+build was testing for: the Gate C1-C6 architecture is domain-agnostic,
+not medical-device-specific. New files: `examples/aeb_kernel/` (12
+files), 3 new test files
+(`tests/test_aeb_kernel_spec_lint.py`, `tests/test_aeb_kernel_mutation_report.py`,
+`tests/test_aeb_kernel_matrix.py`). 265 tests pass (up from 253, 12
+new). Documentation ripple: `SYSTEM_BLUEPRINT.md` (new Section 9 plus a
+new component-map entry and evidence-inventory row), `KNOWN_LIMITATIONS.md`,
+this file. **No ISO 26262 (automotive functional safety) risk-
+management artifacts exist for this example yet** — named as a real,
+open gap in `examples/aeb_kernel/PHASE1_PLAN.md`, not silently assumed
+out of scope. **Next step: not yet instructed** — natural candidates are
+an ISO 26262 risk-management pass for `aeb_kernel` (mirroring the three
+medical-device examples' ISO 14971 artifacts), or REQ-AEB-9/10's own
+formalization (S5.4 would need a state-machine modeling approach this
+kernel doesn't use anywhere else) — or the standing open items on
+`dosage_calculator` (choosing between the two paths off `Unacceptable`,
+Finding 5, matrix region naming), still untouched by this session.
+**Prior update, preserved below** — 2026-07-15 (yet later still) —
+**Finding 6 fully closed: IEC 60601-2-24:1998 clause 51.102 read
+directly; GIP's citation confirmed near-verbatim.** The prior update (below) closed a wording
 drift in this repo's own GIP transcription but explicitly left one
 thing open: the IEC standard's own text was still unread by anyone in
 this chain. Steven obtained and supplied the actual IEC 60601-2-24:1998

@@ -6,6 +6,186 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-16 — Fourth worked example built: `examples/aeb_kernel/`, a Generic AEB kernel — first example outside the medical-device domain
+
+Direct instruction, continuing from an earlier-session discussion about
+this repo's Gate C1-C6 architecture being "pretty novel" in how the
+tools are chained together: "let's look at the task and reframe it so
+our system can handle it... we're not reinventing the wheel, just
+looking for another domain and device we can apply our architecture
+to." An uploaded research document initially framed the target around a
+named commercial vehicle ("Tesla or otherwise"); reframed via
+`AskUserQuestion` to a generic, non-manufacturer-specific AEB kernel
+before any spec content was written — naming a specific commercial
+product would have been a real sourcing/reputational risk this repo's
+evidence discipline can't actually support (no OEM's real AEB
+implementation detail is public), and the stated goal was proving the
+architecture generalizes, not evaluating one company's system.
+
+Asked to name real candidate source documents "line by line" so Steven
+could obtain them before any build started — landed on NHTSA/DOT's 2024
+Final Rule, "Automatic Emergency Braking Systems for Light Vehicles" (49
+CFR Parts 571/595/596, Docket No. NHTSA-2023-0021, RIN 2127-AM37).
+Steven found, verified via a screenshot of the document's own title
+page, and manually committed the real 317-page PDF to
+`sources/nhtsa-fmvss-127-2024.pdf` (commit `fc460c5`, "Nhtsa").
+
+**Locating the real regulatory text.** The document is ~300 pages of
+rulemaking preamble followed by the actual codified standard
+(§ 571.127). Confirmed via `pdftotext -layout` + `grep -n` that
+"§ 571.127 Standard No. 127..." begins at text-line 14282 of 15975;
+converted to a PDF page number by counting form-feed page breaks with
+`awk` (page 277), then read pages 275-294 directly via the `Read` tool —
+the full codified text, S1 (Scope) through the start of S8 (pedestrian
+test setup), read before a single line of `aeb_kernel.dfy` was written.
+This is the same primary-source-first discipline this repo has held to
+for GIP/IEC 60601-2-24/KDIGO/MHRA/NHS SPS, applied for the first time
+outside the medical-device domain.
+
+**Real structural finding, resolving an open design question rather
+than requiring new engineering to solve it.** § 571.127's actual
+performance requirements (S5 — Forward Collision Warning and Automatic
+Emergency Braking, both vs. lead vehicles and pedestrians) are entirely
+speed-envelope and deceleration-threshold based:
+
+- S5.1.1/S5.1.2 (FCW/AEB, lead vehicle): "...traveling at any forward
+  speed that is greater than 10 km/h (6.2 mph) and less than 145 km/h
+  (90.1 mph)."
+- S5.2.1/S5.2.2 (FCW/AEB, pedestrian): same structure, 10-73 km/h.
+- S4 definitions: subject vehicle braking onset = 0.15g deceleration,
+  lead vehicle braking onset = 0.05g deceleration, brake pedal
+  application onset = 11 N force.
+- S5.3 (false activation): peak additional deceleration must not exceed
+  manual-braking-equivalent by 0.25g or greater.
+
+No wall-clock timing appears anywhere in these actual requirements. The
+document's millisecond/second-level timing figures (500 ms accelerator-
+pedal release, 1.0±0.1s brake-application onset) are all confined to
+S7/S8 — NHTSA's own test-CONDUCT procedure for verifying compliance on
+a physical track, not a claim the vehicle's AEB system itself must
+always satisfy. This meant the open design question carried into this
+build from the earlier AEB scoping discussion (model the "10ms"-class
+timing as an `elapsedMs: nat` Dafny parameter, or split it into an
+unprovable `system_scope` claim) resolved itself: neither was needed.
+Unlike `dosage_calculator`'s IEEE-754 gap (`HAZ-DOSE-003`) or
+`renal_adjustment`'s CKD-EPI `Pow`-exponent gap, this domain's core
+requirements hit no Dafny/Z3 structural expressiveness limit at all —
+every S4/S5 clause is provable as ordinary real-number interval
+arithmetic.
+
+**Built, all in one session:**
+
+- **`aeb_kernel.dfy`** — 6 functions (`FCWRequiredActive`,
+  `AEBRequiredActive`, `IsSubjectVehicleBrakingOnset`,
+  `IsLeadVehicleBrakingOnset`, `IsBrakePedalApplicationOnset`,
+  `IsFalseActivationCompliant`) covering 8 requirement clauses
+  (`FCWRequiredActive`/`AEBRequiredActive` each carry a lead-vehicle and
+  a pedestrian requirement — numerically identical envelopes but
+  confirmed, by reading both source clause pairs directly, to be
+  distinct legal obligations, kept as separate functions so the
+  traceability matrix credits both). `6 verified, 0 errors` (Gate C1,
+  `run_verify_aeb.py`).
+- **Gate C6**, run immediately after the spec first verified clean —
+  per this repo's own established recommendation for a brand-new spec
+  (first articulated in `renal_adjustment`'s Section 7 discussion),
+  actually followed on a first build for the first time here rather
+  than applied retroactively. All six functions' NL summaries
+  (`evidence.dafny_nl_summary.summarize_method`) checked against
+  § 571.127's text directly — `nl_confirmation_aeb_kernel_dfy.md`,
+  confirmed 2026-07-16. One real thing worth naming: S5.3's compliance
+  condition (`< 0.25`) is the logical negation of the source's stated
+  *violation* condition ("exceeds... by 0.25g or greater") — the one
+  function in this spec whose boundary direction was easy to get
+  backwards by reading too quickly, caught during this review.
+- **Gate C4** — `aeb_kernel_stp_suite.dfy`, 31 Spec-Testing Proof
+  lemmas. Every strict-vs-inclusive boundary in the spec (the S5.1/S5.2
+  envelopes and S5.3's limit are strict `<`; the S4 onset definitions
+  are inclusive `>=`) tested with an ACCEPT at the exact boundary value,
+  an ACCEPT one step inside, and REJECT lemmas confirming the wrong
+  boolean is provably impossible. `31 verified, 0 errors`.
+- **Gate C3** — all 6 functions `sat` (vector 1, no vacuous
+  preconditions). **0 weak-postcondition warnings across all 6**
+  (vector 2) — the tightest spec-lint result of any example built so
+  far: every ensures clause is a full bi-implication (`<==>`), not a
+  bare one-way `==>`, confirmed empirically (`scan_weak_postconditions`
+  treats any clause containing `<==>` as strong regardless of an outer
+  one-way `==>` guard, which is exactly `FCWRequiredActive`/
+  `AEBRequiredActive`'s shape). `tests/test_aeb_kernel_spec_lint.py`.
+- **Gate C5** — `run_mutation_suite_aeb.py`, reusing
+  `evidence/dafny_mutate.py`'s ROR/LOR/AOR/LVR/COI generators unmodified
+  (`function_name=None` throughout — all six functions are pure
+  comparison/match logic with no `+`/`-`/`*`/`/` in any body, confirmed
+  by reading the spec directly, so only clause-level mutation applies).
+  63 mutants: 38 killed, 12 filtered_static, 5
+  filtered_magnitude_implied, **4 survived** — all
+  `IsFalseActivationCompliant`'s `requires peakAdditionalDecelG >= 0.0`
+  precondition weakened (ROR to `<=`/`!=`/`<`, LVR to `-0.01`), real but
+  not load-bearing for the function's single ensures clause (the
+  biconditional holds regardless of sign) — same category
+  `renal_adjustment`'s ledger already names ("requires-clause
+  weakenings not load-bearing for the specific ensures clause currently
+  proven"). **4 unclassifiable** — all COI (negate ensures clause) on
+  `FCWRequiredActive`/`AEBRequiredActive`'s `target == X ==>` guard
+  clauses, Dafny rejecting the mutated form with "invalid
+  UnaryExpression" (negating a one-way implication whose antecedent is
+  itself an equality comparison) — a real, newly-named
+  `evidence/dafny_mutate.py` engine gap, same class as
+  `renal_adjustment`'s documented `||`-chain ambiguity limitation, named
+  rather than worked around (real new engineering, not a bounded fix).
+  `tests/test_aeb_kernel_mutation_report.py`.
+- **Phase 3** (evidence packaging) — `metadata.a.yaml`,
+  `dafny_captures_index.json`, `traceability_matrix.a.json`/`.md`, built
+  via `python -m evidence.cli build --variant a` with `--manifest`/
+  `--concrete` omitted entirely (no crosshair/concrete_test evidence, as
+  with `renal_adjustment`/`drug_interaction_checker`). 8 `PROVEN` rows —
+  REQ-AEB-1/3 sharing `FCWRequiredActive`'s one proof, REQ-AEB-2/4
+  sharing `AEBRequiredActive`'s — the many-requirements-to-one-proof
+  binding `drug_interaction_checker` established, exercised for the
+  second time. 2 honest `GAP` rows: REQ-AEB-9 (S3, vehicle-class
+  eligibility — GVWR <= 4,536 kg) and REQ-AEB-10 (S5.4, malfunction
+  detection and mode controls). Both are the first rows in this repo to
+  set `metadata.schema.a.json`'s `system_scope` field, which the matrix
+  binder renders as one structured GAP evidence record (`strength: GAP`,
+  `scope: system_scope`, a real note) rather than the empty evidence
+  array `renal_adjustment`'s no-Dafny-target GAP rows produce (neither
+  `kernel_scope` nor `system_scope` set there) — a real, useful
+  rendering difference worth naming, not a bug (confirmed by reading the
+  produced JSON directly, a test assumption corrected once during
+  writing rather than silently weakened). `tests/test_aeb_kernel_matrix.py`,
+  7 tests.
+
+**No shared-code change of any kind was needed anywhere in this
+build** — `evidence.cli`, `evidence/dafny_spec_lint.py`,
+`evidence/dafny_nl_summary.py`, and `evidence/dafny_mutate.py` all ran
+against `aeb_kernel.dfy` completely unmodified. That is itself the
+result this whole build was designed to test: the Gate C1-C6 evidence
+architecture is domain-agnostic, not dosage-calculator- or even
+medical-device-specific — the same six gates, the same shared modules,
+the same Phase 3 packaging pipeline, applied unmodified to an
+automotive-safety regulation nobody involved in building this
+architecture had read when it was designed.
+
+**Documentation**: `examples/aeb_kernel/README.md` (new — audit-trail
+record: source documents, requirement-to-source mapping, four
+interpretive-call caveats, fixture/capture formats, open questions),
+`examples/aeb_kernel/PHASE1_PLAN.md` (new — living status document),
+`SYSTEM_BLUEPRINT.md` (new Section 9, a new component-map tree entry, a
+new Phase 3 evidence-inventory table row, new top header),
+`KNOWN_LIMITATIONS.md` (new top entry naming both Gate C5 findings),
+`HANDOFF.md` (new top entry). **No ISO 26262 (automotive functional
+safety) risk-management artifacts exist for this example** — named as a
+real, open gap in `PHASE1_PLAN.md`'s "Still open" section, not silently
+assumed out of scope; unlike the three medical-device examples' ISO
+14971 `RISK_MANAGEMENT_PLAN.md`/`HAZARD_REGISTER.md` pairs, this
+automotive-domain equivalent hasn't been sourced or built.
+
+265 tests pass (up from 253; 12 new:
+`tests/test_aeb_kernel_spec_lint.py` (2),
+`tests/test_aeb_kernel_mutation_report.py` (3),
+`tests/test_aeb_kernel_matrix.py` (7)).
+
+---
+
 ## 2026-07-15 (yet later still) — Finding 6 fully closed: IEC 60601-2-24:1998 clause 51.102 read directly, GIP's citation confirmed near-verbatim
 
 Continuing directly from Finding 6 below: that entry closed a wording

@@ -1,0 +1,27 @@
+{
+  "tool": "dafny",
+  "tool_version": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2",
+  "command_template": [
+    "dafny",
+    "verify",
+    "<mutant>.dfy"
+  ],
+  "started_utc": "2026-07-16T12:22:11.572308+00:00",
+  "target": "aeb_kernel.dfy",
+  "functions": [
+    "FCWRequiredActive",
+    "AEBRequiredActive",
+    "IsSubjectVehicleBrakingOnset",
+    "IsLeadVehicleBrakingOnset",
+    "IsBrakePedalApplicationOnset",
+    "IsFalseActivationCompliant"
+  ],
+  "total_mutants": 63,
+  "counts": {
+    "filtered_static": 12,
+    "killed": 38,
+    "unclassifiable": 4,
+    "filtered_magnitude_implied": 5,
+    "survived": 4
+  }
+}

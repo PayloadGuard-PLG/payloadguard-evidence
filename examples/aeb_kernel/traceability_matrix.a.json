@@ -1,0 +1,245 @@
+{
+  "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
+  "generated_utc": "2026-07-16T12:25:14.888910+00:00",
+  "tool_versions": {
+    "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
+  },
+  "crosshair_bounds": null,
+  "bounds": {
+    "declared": null,
+    "effective": null,
+    "enforcement_note": ""
+  },
+  "rows": [
+    {
+      "requirement_id": "REQ-AEB-1",
+      "requirement_text": "Forward collision warning vs. a lead vehicle must operate at any forward speed greater than 10 km/h (6.2 mph) and less than 145 km/h (90.1 mph) (\u00a7 571.127 S5.1.1).",
+      "code_location": "aeb_kernel.dfy::FCWRequiredActive",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::FCWRequiredActive",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-2",
+      "requirement_text": "Automatic emergency braking vs. a lead vehicle must operate at any forward speed greater than 10 km/h (6.2 mph) and less than 145 km/h (90.1 mph) (\u00a7 571.127 S5.1.2) - a distinct obligation from REQ-AEB-1 (the AEB action, not the FCW warning), confirmed against the source text even though the numeric envelope coincides.",
+      "code_location": "aeb_kernel.dfy::AEBRequiredActive",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::AEBRequiredActive",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-3",
+      "requirement_text": "Forward collision warning vs. a pedestrian must operate at any forward speed greater than 10 km/h (6.2 mph) and less than 73 km/h (45.3 mph) (\u00a7 571.127 S5.2.1).",
+      "code_location": "aeb_kernel.dfy::FCWRequiredActive",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::FCWRequiredActive",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-4",
+      "requirement_text": "Automatic emergency braking vs. a pedestrian must operate at any forward speed greater than 10 km/h (6.2 mph) and less than 73 km/h (45.3 mph) (\u00a7 571.127 S5.2.2).",
+      "code_location": "aeb_kernel.dfy::AEBRequiredActive",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::AEBRequiredActive",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-5",
+      "requirement_text": "Subject vehicle braking onset is the point at which the subject vehicle achieves a deceleration of 0.15 g due to automatic control of the service brakes (\u00a7 571.127 S4).",
+      "code_location": "aeb_kernel.dfy::IsSubjectVehicleBrakingOnset",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::IsSubjectVehicleBrakingOnset",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-6",
+      "requirement_text": "Lead vehicle braking onset is the point at which the lead vehicle achieves a deceleration of 0.05 g due to brake application (\u00a7 571.127 S4).",
+      "code_location": "aeb_kernel.dfy::IsLeadVehicleBrakingOnset",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::IsLeadVehicleBrakingOnset",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-7",
+      "requirement_text": "Brake pedal application onset is when 11 N of force has been applied to the brake pedal (\u00a7 571.127 S4).",
+      "code_location": "aeb_kernel.dfy::IsBrakePedalApplicationOnset",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::IsBrakePedalApplicationOnset",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-8",
+      "requirement_text": "False activation: the vehicle must not automatically apply braking that results in peak additional deceleration exceeding what manual braking would produce by 0.25 g or greater (\u00a7 571.127 S5.3).",
+      "code_location": "aeb_kernel.dfy::IsFalseActivationCompliant",
+      "evidence": [
+        {
+          "method": "dafny",
+          "strength": "PROVEN",
+          "caveat": "Formally proven against the stated specification.",
+          "code_location": "aeb_kernel.dfy::IsFalseActivationCompliant",
+          "result_status": "proven",
+          "verifier_completion_status": "completed",
+          "bounds": null,
+          "counterexample": null,
+          "test_id": null,
+          "inputs": null,
+          "expected": null,
+          "observed": null
+        }
+      ],
+      "intent_ok": true,
+      "notes": []
+    },
+    {
+      "requirement_id": "REQ-AEB-9",
+      "requirement_text": "Vehicle-class eligibility: this standard applies to passenger cars and to multipurpose passenger vehicles, trucks, and buses with a GVWR of 4,536 kg (10,000 lb) or less (\u00a7 571.127 S3). Named, sourced, not formalized as a Dafny signature - this is a vehicle-class gate on whether \u00a7 571.127 applies at all, not a claim the AEB kernel's own logic must satisfy.",
+      "code_location": "none - prose only, not yet formalized",
+      "evidence": [
+        {
+          "method": null,
+          "strength": "GAP",
+          "caveat": "Not established. Human input required.",
+          "scope": "system_scope",
+          "scope_text": "Vehicle-class eligibility (GVWR threshold) is a fleet/homologation fact checked once per vehicle model, not a runtime decision the AEB kernel evaluates per detection event - out of this kernel's proof scope by construction, mirroring dosage_calculator's kernel_scope/system_scope split (REQ-GIP-1-4-12).",
+          "code_location": null,
+          "result_status": null,
+          "note": "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
+        }
+      ],
+      "intent_ok": false,
+      "notes": [
+        "no evidence bound for this requirement",
+        "intended DECLARED, realized GAP",
+        "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
+      ]
+    },
+    {
+      "requirement_id": "REQ-AEB-10",
+      "requirement_text": "Malfunction detection and controls: the system must continuously detect malfunctions (including sensor-obstruction-caused performance degradation) and provide a telltale notification; the system must always return to its default AEB mode at the start of each ignition cycle except for two named exceptions (\u00a7 571.127 S5.4). Named, sourced, not formalized as a Dafny signature.",
+      "code_location": "none - prose only, not yet formalized",
+      "evidence": [
+        {
+          "method": null,
+          "strength": "GAP",
+          "caveat": "Not established. Human input required.",
+          "scope": "system_scope",
+          "scope_text": "A stateful, continuous-monitoring/mode-control requirement (system state across time and ignition cycles), not a pure function of a single detection event's inputs - a genuinely different kind of claim than REQ-AEB-1..8, not a smaller version of the same kind. Would need a state-machine modeling approach if formalized, not the pure-function style this kernel currently uses throughout.",
+          "code_location": null,
+          "result_status": null,
+          "note": "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
+        }
+      ],
+      "intent_ok": false,
+      "notes": [
+        "no evidence bound for this requirement",
+        "intended DECLARED, realized GAP",
+        "system_scope declared but not evidenced at this phase; deferred to integration testing (explicit GAP, not omission)"
+      ]
+    }
+  ]
+}
