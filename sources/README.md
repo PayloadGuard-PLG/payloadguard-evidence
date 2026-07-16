@@ -225,10 +225,41 @@ requirements documents, standards excerpts) that ground the claims in
   are the clauses that would play the role ISO 14971 played for the
   three medical-device examples' hazard registers/risk-management
   plans — **no ISO 26262 risk-management artifact should be built from
-  this file alone**. Steven's explicit decision (`AskUserQuestion`,
-  2026-07-16): get the full Clause 6/7 text before starting any such
-  artifact, rather than build on Clauses 1–5 alone or treat the gap as
-  a silent open item. Full account: `examples/aeb_kernel/PHASE1_PLAN.md`.
+  this file alone**.
+
+  **Update, 2026-07-16 (later):** Table 4 (ASIL determination) and
+  Clause 6.4.4 (Determination of safety goals) — the two most
+  operationally load-bearing pieces of Clause 6 — are now sourced for
+  real, verbatim, from a different, independent fragment: see
+  `iso-26262-3-2018-table4-and-6.4.4.md` below. Steven's explicit
+  decision on cost/scope: `aeb_kernel` is a proof-of-concept testing
+  architecture generalization, not a real regulatory submission ("lives
+  aren't on the line... this is a big ass test environment") — paying
+  for the full standard to source two clauses wasn't warranted once a
+  legitimate free verbatim source was found and independently verified.
+  Still not sourced: 6.4.1 (Initiation), 6.4.2 (Situation analysis and
+  hazard identification — the actual HARA methodology), 6.4.3.1–.10
+  (the classification methodology itself, as opposed to just its output
+  table), 6.4.5 (Management of variances — not relevant to `aeb_kernel`'s
+  light-vehicle scope regardless), 6.4.6 (Verification), and all of
+  Clause 7 (Functional safety concept). Full account:
+  `examples/aeb_kernel/PHASE1_PLAN.md`, `DEVLOG.md`'s 2026-07-16 entry.
+
+- `iso-26262-3-2018-table4-and-6.4.4.md` — added 2026-07-16. Verbatim
+  transcription of Table 4 (ASIL determination) and Clause 6.4.4
+  (Determination of safety goals), sourced from an unusual but
+  legitimate provenance: a 2-page PDF (page 10 of the real standard)
+  bundled as a regression-test fixture in the open-source PyMuPDF
+  library's test suite, obtained via Debian's official source-package
+  mirror, originally attached to a public PyMuPDF GitHub issue as an
+  incidental table-extraction bug report. Cross-checked and confirmed
+  authentic against `ISO-26262-3-2018.pdf`'s own table of contents (the
+  page-10 location for "6.4.4 Determination of safety goals" matches
+  exactly). Also documents a real, checked correction to a pasted
+  secondary-source ASIL table that had three wrong cells, and a
+  follow-up "resolution" message whose "C1 always defaults to QM"
+  claim and Clause 7.4.3 title claim were both directly falsified by
+  this real text — full triangulation account in the file itself.
 
 ## Resolved questions
 
