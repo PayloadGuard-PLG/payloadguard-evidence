@@ -260,3 +260,4 @@ Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 | [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) | How generated artifacts are reviewed before use. |
 | [`sources/README.md`](sources/README.md) | Discipline for adding and citing a primary source. |
 | [`TEST_CATALOG.md`](TEST_CATALOG.md) | Generated, categorized index of every test in the suite — description and file:line pointer per test. Regenerate with `python -m evidence.test_catalog --out TEST_CATALOG.md`. |
+| [`LICENSE`](LICENSE) | Proprietary — all rights reserved. Not open source. |
