@@ -1,0 +1,157 @@
+# VARIANT A metadata (T4-A) for the Generic AEB kernel.
+# Dafny-only (no crosshair/concrete_test evidence exists for this example -
+# matching renal_adjustment.dfy and drug_interaction_checker.dfy, this
+# repo's other Dafny-only worked examples).
+# Validated by evidence/schema/metadata.schema.a.json.
+device:
+  name: Generic Autonomous Emergency Braking (AEB) Kernel (POC)
+  intended_use: >
+    Determine, from a light vehicle's forward speed and target type
+    (lead vehicle or pedestrian), whether forward-collision-warning and
+    automatic-emergency-braking activation are required to be active per
+    NHTSA FMVSS No. 127 (49 CFR 571.127); classify onset conditions for
+    subject-vehicle braking, lead-vehicle braking, and brake-pedal
+    application against their regulatory thresholds; and check a
+    measured peak additional deceleration against the false-activation
+    limit. Explicitly scoped to a GENERIC light-vehicle AEB system, not
+    any named commercial vehicle or manufacturer - see aeb_kernel.dfy's
+    header comment. Not a full AEB controller - see REQ-AEB-9/REQ-AEB-10
+    for named, unformalized scope (vehicle-class eligibility,
+    malfunction detection/mode controls) and this file's kernel_scope/
+    system_scope fields for the test-procedure-vs-requirement split.
+  safety_classification: B
+  classification_rationale: >
+    DECLARED - not assigned by NHTSA, which specifies vehicle-level
+    performance requirements but does not assign IEC 62304 software
+    safety classes (§ 571.127 is a Federal Motor Vehicle Safety
+    Standard, not a software-lifecycle standard). Provisional: this
+    kernel's failure could contribute to a missed or false AEB
+    activation decision, but no OEM-specific functional-safety file
+    (e.g. ISO 26262 ASIL determination) exists for this proof-of-concept
+    - matching renal_adjustment.dfy's DECLARED classification, this
+    repo's own precedent for a domain-standard source that doesn't
+    itself issue a software safety class.
+requirements:
+  - id: REQ-AEB-1
+    text: >
+      Forward collision warning vs. a lead vehicle must operate at any
+      forward speed greater than 10 km/h (6.2 mph) and less than 145
+      km/h (90.1 mph) (§ 571.127 S5.1.1).
+    implementation: aeb_kernel.dfy::FCWRequiredActive
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: FCWRequiredActive
+  - id: REQ-AEB-2
+    text: >
+      Automatic emergency braking vs. a lead vehicle must operate at any
+      forward speed greater than 10 km/h (6.2 mph) and less than 145
+      km/h (90.1 mph) (§ 571.127 S5.1.2) - a distinct obligation from
+      REQ-AEB-1 (the AEB action, not the FCW warning), confirmed against
+      the source text even though the numeric envelope coincides.
+    implementation: aeb_kernel.dfy::AEBRequiredActive
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: AEBRequiredActive
+  - id: REQ-AEB-3
+    text: >
+      Forward collision warning vs. a pedestrian must operate at any
+      forward speed greater than 10 km/h (6.2 mph) and less than 73
+      km/h (45.3 mph) (§ 571.127 S5.2.1).
+    implementation: aeb_kernel.dfy::FCWRequiredActive
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: FCWRequiredActive
+  - id: REQ-AEB-4
+    text: >
+      Automatic emergency braking vs. a pedestrian must operate at any
+      forward speed greater than 10 km/h (6.2 mph) and less than 73
+      km/h (45.3 mph) (§ 571.127 S5.2.2).
+    implementation: aeb_kernel.dfy::AEBRequiredActive
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: AEBRequiredActive
+  - id: REQ-AEB-5
+    text: >
+      Subject vehicle braking onset is the point at which the subject
+      vehicle achieves a deceleration of 0.15 g due to automatic control
+      of the service brakes (§ 571.127 S4).
+    implementation: aeb_kernel.dfy::IsSubjectVehicleBrakingOnset
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: IsSubjectVehicleBrakingOnset
+  - id: REQ-AEB-6
+    text: >
+      Lead vehicle braking onset is the point at which the lead vehicle
+      achieves a deceleration of 0.05 g due to brake application
+      (§ 571.127 S4).
+    implementation: aeb_kernel.dfy::IsLeadVehicleBrakingOnset
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: IsLeadVehicleBrakingOnset
+  - id: REQ-AEB-7
+    text: >
+      Brake pedal application onset is when 11 N of force has been
+      applied to the brake pedal (§ 571.127 S4).
+    implementation: aeb_kernel.dfy::IsBrakePedalApplicationOnset
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: IsBrakePedalApplicationOnset
+  - id: REQ-AEB-8
+    text: >
+      False activation: the vehicle must not automatically apply braking
+      that results in peak additional deceleration exceeding what manual
+      braking would produce by 0.25 g or greater (§ 571.127 S5.3).
+    implementation: aeb_kernel.dfy::IsFalseActivationCompliant
+    intended_method: PROVEN
+    evidence:
+      - method: dafny
+        spec_target: aeb_kernel.dfy
+        dafny_method: IsFalseActivationCompliant
+  - id: REQ-AEB-9
+    text: >
+      Vehicle-class eligibility: this standard applies to passenger cars
+      and to multipurpose passenger vehicles, trucks, and buses with a
+      GVWR of 4,536 kg (10,000 lb) or less (§ 571.127 S3). Named,
+      sourced, not formalized as a Dafny signature - this is a
+      vehicle-class gate on whether § 571.127 applies at all, not a
+      claim the AEB kernel's own logic must satisfy.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: DECLARED
+    system_scope: >
+      Vehicle-class eligibility (GVWR threshold) is a fleet/homologation
+      fact checked once per vehicle model, not a runtime decision the
+      AEB kernel evaluates per detection event - out of this kernel's
+      proof scope by construction, mirroring dosage_calculator's
+      kernel_scope/system_scope split (REQ-GIP-1-4-12).
+  - id: REQ-AEB-10
+    text: >
+      Malfunction detection and controls: the system must continuously
+      detect malfunctions (including sensor-obstruction-caused
+      performance degradation) and provide a telltale notification; the
+      system must always return to its default AEB mode at the start of
+      each ignition cycle except for two named exceptions (§ 571.127
+      S5.4). Named, sourced, not formalized as a Dafny signature.
+    implementation: "none - prose only, not yet formalized"
+    intended_method: DECLARED
+    system_scope: >
+      A stateful, continuous-monitoring/mode-control requirement (system
+      state across time and ignition cycles), not a pure function of a
+      single detection event's inputs - a genuinely different kind of
+      claim than REQ-AEB-1..8, not a smaller version of the same kind.
+      Would need a state-machine modeling approach if formalized, not
+      the pure-function style this kernel currently uses throughout.
+toolchain: {}

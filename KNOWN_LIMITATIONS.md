@@ -4,7 +4,45 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (yet later still — Finding 6 fully closed:
+Last updated: 2026-07-16 (fourth worked example built:
+`examples/aeb_kernel/`, a Generic AEB kernel, sourced directly from
+NHTSA FMVSS No. 127 (§ 571.127) — the first example outside the
+medical-device domain. All six Gate C1-C6 steps plus Phase 3 built end
+to end in one session, all shared tooling (`evidence.cli`,
+`dafny_spec_lint.py`, `dafny_nl_summary.py`, `dafny_mutate.py`) reused
+unmodified. Two new named findings, same discipline as
+`renal_adjustment`'s ledger entries below:
+
+- **Gate C5 real finding:** 4 survivors, all
+  `IsFalseActivationCompliant`'s `requires peakAdditionalDecelG >= 0.0`
+  precondition weakened (ROR to `<=`/`!=`/`<`, LVR to `-0.01`) — real,
+  but not load-bearing for the function's single ensures clause (the
+  biconditional `... <==> peakAdditionalDecelG < 0.25` holds regardless
+  of sign). Same category as `renal_adjustment`'s "requires-clause
+  weakenings not load-bearing" survivors — the precondition still
+  correctly documents a real physical fact (deceleration magnitude is
+  non-negative), it just isn't proof-necessary for what's currently
+  established.
+- **Gate C5 real, named shared-tooling gap:** 4 unclassifiable mutants,
+  all COI (negate ensures clause) on `FCWRequiredActive`/
+  `AEBRequiredActive`'s `target == X ==>` guard clauses — Dafny rejects
+  the mutated form with "invalid UnaryExpression" (negating a one-way
+  implication whose antecedent is itself an equality comparison). A
+  real gap in `evidence/dafny_mutate.py`'s COI generator, same class as
+  `renal_adjustment`'s documented `||`-chain ambiguity limitation — not
+  fixed here (real new engineering, not a bounded fix), named instead.
+
+Also worth recording as a positive structural finding, not a
+limitation: § 571.127's core performance requirements (S5) are entirely
+speed-envelope/deceleration-threshold based, not wall-clock-timing
+based — the standard's millisecond-level timing figures are confined to
+its test-conduct procedures (S7/S8), not its requirements. So unlike
+`dosage_calculator`'s IEEE-754 gap or `renal_adjustment`'s `Pow`-
+exponent gap, this domain hit no Dafny/Z3 structural expressiveness
+limit at all. Full record: `examples/aeb_kernel/README.md`,
+`examples/aeb_kernel/PHASE1_PLAN.md`, `SYSTEM_BLUEPRINT.md` Section 9.
+265 tests pass (up from 253).)
+Prior header, preserved: Last updated 2026-07-15 (yet later still — Finding 6 fully closed:
 IEC 60601-2-24:1998 clause 51.102 read directly (58 pages, cover
 through Annex ZB), confirming GIP's citation is near-verbatim (GIP
 omits only "which may cause a SAFETY HAZARD"). This closes the "IEC

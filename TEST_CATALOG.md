@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 242 test functions across 30 categories.**
+**Total: 254 test functions across 33 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -22,6 +22,33 @@ several cases with different data. Run `python -m pytest tests/ -q`
 for the actual collected-case count.
 
 ---
+
+## Aeb Kernel Matrix (`tests/test_aeb_kernel_matrix.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_cli_omitting_manifest_and_concrete_entirely_still_works` | Cli omitting manifest and concrete entirely still works. | `tests/test_aeb_kernel_matrix.py:45` |
+| `test_cli_writes_markdown_matching_committed` | Cli writes markdown matching committed. | `tests/test_aeb_kernel_matrix.py:60` |
+| `test_single_function_requirements_bind_correctly` | Single function requirements bind correctly. | `tests/test_aeb_kernel_matrix.py:85` |
+| `test_fcw_required_active_backs_both_req_1_and_req_3` | FCWRequiredActive's ensures clause is a single function covering both the lead-vehicle (S5.1.1) and pedestrian (S5.2.1) envelopes - two distinct requirements, one proof, mirroring drug_interaction_checker's CheckInterac… | `tests/test_aeb_kernel_matrix.py:103` |
+| `test_aeb_required_active_backs_both_req_2_and_req_4` | Aeb required active backs both req 2 and req 4. | `tests/test_aeb_kernel_matrix.py:117` |
+| `test_declared_scope_requirements_render_as_honest_gaps` | REQ-AEB-9 (vehicle-class eligibility) and REQ-AEB-10 (malfunction detection/mode controls) are named, sourced, and deliberately not Dafny targets for this kernel - intended_method DECLARED, so the gap note reads "intend… | `tests/test_aeb_kernel_matrix.py:127` |
+| `test_committed_matrix_passes_the_structural_proven_check` | Committed matrix passes the structural proven check. | `tests/test_aeb_kernel_matrix.py:148` |
+
+## Aeb Kernel Mutation Report (`tests/test_aeb_kernel_mutation_report.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_aeb_kernel_mutation_report.py:40` |
+| `test_survivors_are_all_false_activation_non_negativity_precondition_weakenings` | Survivors are all false activation non negativity precondition weakenings. | `tests/test_aeb_kernel_mutation_report.py:55` |
+| `test_unclassifiable_are_all_coi_on_target_equality_guard_clauses` | Unclassifiable are all coi on target equality guard clauses. | `tests/test_aeb_kernel_mutation_report.py:66` |
+
+## Aeb Kernel Spec Lint (`tests/test_aeb_kernel_spec_lint.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_every_function_precondition_is_satisfiable` | None of the six functions' requires clauses are vacuous - a Dafny 'clean pass' on aeb_kernel.dfy proves what it appears to prove, not something trivially true because no input could ever satisfy the precondition. | `tests/test_aeb_kernel_spec_lint.py:32` |
+| `test_no_function_has_weak_postcondition_warnings` | Every ensures clause in aeb_kernel.dfy is a bi-implication (<==>), not a bare one-way ==> - each function's postcondition pins its result exactly for every input, not just in one direction. | `tests/test_aeb_kernel_spec_lint.py:44` |
 
 ## Citation Gate (`tests/test_citation_gate.py`)
 

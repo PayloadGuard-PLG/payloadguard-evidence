@@ -1,0 +1,38 @@
+{
+  "aeb_kernel.dfy::FCWRequiredActive": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "FCWRequiredActive"
+  },
+  "aeb_kernel.dfy::AEBRequiredActive": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "AEBRequiredActive"
+  },
+  "aeb_kernel.dfy::IsSubjectVehicleBrakingOnset": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "IsSubjectVehicleBrakingOnset"
+  },
+  "aeb_kernel.dfy::IsLeadVehicleBrakingOnset": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "IsLeadVehicleBrakingOnset"
+  },
+  "aeb_kernel.dfy::IsBrakePedalApplicationOnset": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "IsBrakePedalApplicationOnset"
+  },
+  "aeb_kernel.dfy::IsFalseActivationCompliant": {
+    "spec_source_path": "aeb_kernel.dfy",
+    "raw_output_path": "raw_dafny_output_aeb.txt",
+    "manifest_path": "run_manifest_dafny_aeb.json",
+    "dafny_method": "IsFalseActivationCompliant"
+  }
+}
