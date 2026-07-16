@@ -194,6 +194,41 @@ requirements documents, standards excerpts) that ground the claims in
   plan's matrix structure is modelled on, though the plan's own region
   *labels* have not yet been reconciled to this source's wording — open
   item, `RISK_MANAGEMENT_FINDINGS.md`'s "matrix region naming" entry.
+- `ISO-26262-3-2018.pdf` — added 2026-07-16, obtained and committed
+  directly by Steven (pushed straight to `main` via GitHub's web
+  upload), not via this repo's assistant. ISO 26262-3:2018(E), second
+  edition, "Road vehicles — Functional safety — Part 3: Concept phase."
+  **Confirmed PARTIAL — this is the iTeh "STANDARD PREVIEW" excerpt,
+  not the full purchased standard**: 12 pages, encrypted (RC4,
+  print/copy allowed, no edit/annotate), against a real document whose
+  own table of contents runs to page 28 plus a Bibliography. Read
+  directly via the `Read` tool before this entry was written, same
+  discipline as every other file in this folder.
+
+  **What this file actually contains** (real, citable): Clause 1
+  (Scope) in full; Clause 2 (Normative references) in full; Clause 3
+  (Terms and definitions, a pointer to ISO 26262-1) in full; Clause 4
+  (Requirements for compliance, 4.1–4.6) in full; Clause 5 (Item
+  definition) partial — 5.1 Objectives, 5.2 General, 5.3 Inputs, and
+  5.4.1's requirement list (a)–(e) with its three notes, cutting off
+  immediately after.
+
+  **What this file does NOT contain, and it's the part that matters
+  most for building any risk-management artifact for `aeb_kernel`**:
+  Clause 6 (Hazard analysis and risk assessment — situation analysis,
+  hazard identification, classification of hazardous events,
+  determination of safety goals) and Clause 7 (Functional safety
+  concept — derivation of functional safety requirements, safety
+  validation criteria) are both entirely absent; so are Annex A
+  (overview/workflow of the concept phase), Annex B (a worked hazard
+  analysis and risk assessment example), and the Bibliography. These
+  are the clauses that would play the role ISO 14971 played for the
+  three medical-device examples' hazard registers/risk-management
+  plans — **no ISO 26262 risk-management artifact should be built from
+  this file alone**. Steven's explicit decision (`AskUserQuestion`,
+  2026-07-16): get the full Clause 6/7 text before starting any such
+  artifact, rather than build on Clauses 1–5 alone or treat the gap as
+  a silent open item. Full account: `examples/aeb_kernel/PHASE1_PLAN.md`.
 
 ## Resolved questions
 

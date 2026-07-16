@@ -69,11 +69,17 @@ repo's live gate ledger.
    kernel doesn't use anywhere else, a genuinely different kind of claim
    than REQ-AEB-1..8, not a smaller version of the same kind.
 2. **No ISO 26262 (automotive functional safety) risk-management
-   artifacts exist for this example** — unlike the three medical-device
-   examples, which each build ISO 14971 `RISK_MANAGEMENT_PLAN.md`/
-   `HAZARD_REGISTER.md` artifacts, this domain's equivalent standard
-   (ISO 26262) has not been sourced or read. Named as a real gap, not
-   silently assumed out of scope — a natural next step if this example
-   is extended, not attempted here without the primary source in hand.
+   artifacts exist for this example, and the source needed to build
+   them is only partially in hand.** `sources/ISO-26262-3-2018.pdf`
+   (added 2026-07-16) is the iTeh "STANDARD PREVIEW" excerpt — 12 of a
+   real ~28+ page document, covering Clauses 1–5 (Scope through Item
+   definition) but **not** Clause 6 (Hazard analysis and risk
+   assessment) or Clause 7 (Functional safety concept) — exactly the
+   two clauses that would play the role ISO 14971 played for the three
+   medical-device examples' hazard registers/risk-management plans.
+   Steven's explicit decision (`AskUserQuestion`, 2026-07-16): get the
+   full Clause 6/7 text before building any ISO 26262 artifact, rather
+   than build on the partial source or leave the gap unremarked. Full
+   detail: `sources/README.md`'s `ISO-26262-3-2018.pdf` entry.
 3. **This is a proof-of-concept kernel, not a production AEB
    controller.** See `README.md`'s "Open questions" for the full framing.
