@@ -7,11 +7,11 @@ example only.
 these two artifacts to date, whether resolved or open, so a reader
 doesn't need the original chat session or the standalone audit report
 to know current state.
-**Last updated:** 2026-07-15 (yet later — Finding 6 resolved: a real
-wording drift found in `HAZ-GIP-1.14`'s "verbatim" GIP citation,
-fixed against the actual GIP v1.0 PDF obtained directly from the
-University of Pennsylvania; GIP's hazard tables confirmed to carry no
-severity rating for any hazard).
+**Last updated:** 2026-07-15 (yet later still — Finding 6 fully closed:
+the underlying IEC 60601-2-24:1998 clause 51.102 itself now read
+directly and confirmed to match GIP's citation near-verbatim, closing
+the "IEC standard's own text remains unread" gap Finding 6 originally
+left open).
 
 ---
 
@@ -26,7 +26,7 @@ severity rating for any hazard).
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Confirmed, then resolved | **Resolved, 2026-07-15 — Option 2 (differential-testing harness) built; 9/9 vectors matched; postcondition drift found and fixed in the same pass** | `dosage_differential_vectors.py`, `dosage_differential_driver.dfy`, `differential_test_results.json` |
 | 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
 | — | TR 24971's real three-region matrix uses different region names than "ALARP" | New, from direct TR 24971 read | **Open — naming reconciliation, Steven's call** | `RISK_MANAGEMENT_PLAN.md` §4.3 |
-| 6 | `HAZ-GIP-1.14`'s GIP Safety Requirement 1.8.1 citation, quoted as "verbatim" in this repo, was never checked against the primary IEC-cited text | Confirmed — real wording drift found | **Remediated, 2026-07-15.** Corrected in `sources/gip-v1.0-hazard-analysis.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`; traceability matrices regenerated via `generate_artifacts.py`/`generate_matrix.py` (no hand-editing). Real primary source (`sources/gip-v1.0-full-2009.pdf`) now archived, obtained directly from the University of Pennsylvania by Steven, not a third-party mirror. Confirmed as a byproduct: GIP v1.0 assigns no severity rating to any hazard in any of its 8 hazard-table categories — a source-backed fact, not an absence this repo failed to find | `sources/gip-v1.0-hazard-analysis.md`, `sources/gip-v1.0-full-2009.pdf`, `sources/README.md`, `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` |
+| 6 | `HAZ-GIP-1.14`'s GIP Safety Requirement 1.8.1 citation, quoted as "verbatim" in this repo, was never checked against the primary IEC-cited text | Confirmed — real wording drift found, then the underlying IEC clause itself independently confirmed | **Fully closed, 2026-07-15.** GIP-transcription wording corrected in `sources/gip-v1.0-hazard-analysis.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`; traceability matrices regenerated (no hand-editing). Two primary sources now archived, both obtained directly by Steven, not third-party mirrors: `sources/gip-v1.0-full-2009.pdf` (GIP v1.0 itself) and `sources/iec-60601-2-24-1998.pdf` (the actual IEC standard, Edition 1). **Clause 51.102 "Reverse delivery" read directly — GIP's citation confirmed near-verbatim.** Byproduct, also confirmed directly: GIP v1.0 assigns no severity rating to any hazard in any of its 8 hazard-table categories | `sources/gip-v1.0-hazard-analysis.md`, `sources/gip-v1.0-full-2009.pdf`, `sources/iec-60601-2-24-1998.pdf`, `sources/README.md`, `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` |
 
 ---
 
@@ -191,14 +191,33 @@ alone. This closes the "GIP's own hazard-table severity rating" item
 that was still open in the `HAZ-GIP-1.14` severity discussion — not by
 finding a rating, but by confirming none exists to find.
 
-**What this does not resolve:** the IEC 601-2-24 (or 60601-2-24)
-standard's own text is still unread by anyone in this chain — this
-repo's evidentiary basis for HAZ-GIP-1.14's regulatory citation remains
-GIP v1.0 as a trusted secondary source (FDA OSEL co-authored), one hop
-short of the standard itself. That gap is named, not silently
-narrowed by this fix — GIP's citation is now independently confirmed
-accurate as a *transcription*, which is a different claim from the
-*standard's own clause* being independently confirmed.
+**Update, 2026-07-15 (later): the remaining gap is now closed too.**
+The paragraph above, as originally written, said the IEC standard's own
+text remained unread — that stood only briefly. Steven obtained and
+supplied the actual IEC 60601-2-24:1998 (First edition, 1998-02) — the
+correct edition, confirmed by the same publication-date logic already
+established (GIP, Feb 2009, predates Edition 2's October 2012
+publication by three years). Read directly and in full, 58 pages,
+cover through Annex ZB, not excerpted or assumed.
+
+**Clause 51.102, "Reverse delivery" (p.36, no Annex AA rationale
+marker — one of the few clauses in this standard without one):**
+"During NORMAL USE and/or SINGLE FAULT CONDITION of the EQUIPMENT,
+continuous reverse delivery, which may cause a SAFETY HAZARD, shall not
+be possible." Compared directly against GIP's own transcription (fixed
+above): the match is near-verbatim — same clause order, same "and/or,"
+same "single fault condition of the equipment" — GIP omits only the
+middle clause "which may cause a SAFETY HAZARD." Not a loose paraphrase
+GIP happened to get right; a citation this close to word-for-word that
+this repo can now confirm directly, not take on GIP's authority alone.
+
+This repo's evidentiary basis for `HAZ-GIP-1.14`'s regulatory citation
+is no longer GIP v1.0 as a trusted secondary source one hop short of
+the standard — it is now the standard's own clause text, read directly,
+archived (`sources/iec-60601-2-24-1998.pdf`), with GIP's paraphrase
+independently confirmed faithful to it. This is this repo's first
+direct read of any IEC 60601-2-24 edition's actual text, for any
+requirement.
 
 Full pipeline discipline followed: no traceability matrix was
 hand-edited — `generate_artifacts.py` (variants a/b/symbolic/concrete/

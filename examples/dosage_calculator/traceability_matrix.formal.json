@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant C: formally proven evidence)",
-  "generated_utc": "2026-07-15T20:50:35.865164+00:00",
+  "generated_utc": "2026-07-16T04:25:26.830706+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107",
     "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
@@ -43,7 +43,7 @@
     },
     {
       "requirement_id": "REQ-GIP-1-8-1",
-      "requirement_text": "During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md)",
+      "requirement_text": "During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998 clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)",
       "code_location": "dosage.dfy::CalculateHourlyDose",
       "method": "dafny",
       "strength": "PROVEN",

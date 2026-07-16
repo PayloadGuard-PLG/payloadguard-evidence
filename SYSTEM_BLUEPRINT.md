@@ -1,6 +1,14 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-15 (yet later — Finding 6 resolved: a real
+Last updated: 2026-07-15 (yet later still — Finding 6 fully closed:
+IEC 60601-2-24:1998 clause 51.102 read directly, confirming GIP's
+citation near-verbatim and closing the "IEC standard's own text
+remains unread" gap. `sources/iec-60601-2-24-1998.pdf` archived. No
+architecture, gate, or data-flow change — risk-management content and
+one new `sources/` artifact only. Full record: `KNOWN_LIMITATIONS.md`,
+`RISK_MANAGEMENT_FINDINGS.md` Finding 6. 253 tests pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-15 (yet later — Finding 6
+resolved: a real
 citation-wording drift found in `HAZ-GIP-1.14`'s GIP Safety Requirement
 1.8.1 quote, fixed against the actual GIP v1.0 PDF obtained directly
 from the University of Pennsylvania. No architecture, gate, or

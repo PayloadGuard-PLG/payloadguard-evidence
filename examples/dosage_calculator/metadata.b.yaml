@@ -52,7 +52,8 @@ requirements:
     a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero
     delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault
     modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15
-    to match the primary PDF verbatim, see sources/README.md)
+    to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998
+    clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)
 
     '
   implementation: dosage.py::calculate_hourly_dose

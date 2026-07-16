@@ -6,6 +6,48 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-15 (yet later still) — Finding 6 fully closed: IEC 60601-2-24:1998 clause 51.102 read directly, GIP's citation confirmed near-verbatim
+
+Continuing directly from Finding 6 below: that entry closed a wording
+drift in this repo's own GIP transcription but left one thing
+explicitly open — "the IEC 601-2-24 standard's own text is still
+unread by anyone in this chain." This entry closes that.
+
+Steven obtained and supplied the actual IEC 60601-2-24:1998 (First
+edition, 1998-02) — confirmed, again by publication-date logic (GIP,
+Feb 2009, predates Edition 2's October 2012 publication by three
+years), to be the correct edition GIP's authors would have cited. Read
+directly and in full: 58 pages, cover through Annex ZB, not excerpted,
+not assumed complete from a table of contents.
+
+**Clause 51.102, "Reverse delivery" (p.36) — one of the few clauses in
+this standard with no Annex AA rationale marker:**
+"During NORMAL USE and/or SINGLE FAULT CONDITION of the EQUIPMENT,
+continuous reverse delivery, which may cause a SAFETY HAZARD, shall not
+be possible." Compared directly against GIP v1.0's own transcription
+(already fixed in this repo per the entry below): the match is
+near-verbatim — identical clause order, "and/or," "single fault
+condition of the equipment" — GIP omits only the middle clause "which
+may cause a SAFETY HAZARD." Not a coincidental resemblance; a citation
+this close to word-for-word that this repo can now confirm directly.
+
+This repo's evidentiary basis for `HAZ-GIP-1.14`'s regulatory citation
+is no longer GIP v1.0 as a trusted secondary source one hop short of
+the standard — it is the standard's own clause text, read and archived
+directly (`sources/iec-60601-2-24-1998.pdf`), with GIP's paraphrase
+independently confirmed faithful to it. First direct read of any IEC
+60601-2-24 edition's actual text, for any requirement, in this repo's
+history.
+
+Updated: `HAZARD_REGISTER.md` (`HAZ-GIP-1.14`'s "Hazardous situation"
+field), `metadata.yaml`/`.a`/`.b`/`.c.yaml` (REQ-GIP-1-8-1's citation,
+clause 51.102 added), `RISK_MANAGEMENT_FINDINGS.md` (Finding 6's
+status ledger row and full write-up), `sources/README.md`. Matrices
+regenerated via `generate_artifacts.py`/`generate_matrix.py`, all Tier
+1 gates passed clean. 253 tests pass, unchanged.
+
+---
+
 ## 2026-07-15 (yet later) — Finding 6 resolved: `HAZ-GIP-1.14`'s "verbatim" GIP citation had never been checked against the primary text; a real wording drift found and fixed
 
 Steven pressed on the S3 severity discussion for `HAZ-GIP-1.14`

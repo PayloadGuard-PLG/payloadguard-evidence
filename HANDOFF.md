@@ -8,7 +8,34 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-15 (yet later) — **Finding 6 resolved: a real
+**Last updated:** 2026-07-15 (yet later still) — **Finding 6 fully
+closed: IEC 60601-2-24:1998 clause 51.102 read directly; GIP's citation
+confirmed near-verbatim.** The prior update (below) closed a wording
+drift in this repo's own GIP transcription but explicitly left one
+thing open: the IEC standard's own text was still unread by anyone in
+this chain. Steven obtained and supplied the actual IEC 60601-2-24:1998
+(First edition, 1998-02) — the correct edition, confirmed again by
+publication-date logic (GIP, Feb 2009, predates Edition 2's October
+2012 publication). Read directly and in full, 58 pages. **Clause
+51.102, "Reverse delivery"** (p.36): "During NORMAL USE and/or SINGLE
+FAULT CONDITION of the EQUIPMENT, continuous reverse delivery, which
+may cause a SAFETY HAZARD, shall not be possible." GIP's own
+transcription is near-verbatim, omitting only "which may cause a
+SAFETY HAZARD" — this repo's first direct read of any IEC 60601-2-24
+edition's actual text, for any requirement. This repo's evidentiary
+basis for `HAZ-GIP-1.14` is no longer GIP as a secondary source one hop
+short of the standard — it's the standard's own clause, read and
+archived directly (`sources/iec-60601-2-24-1998.pdf`). Updated:
+`HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` (clause
+51.102 added to the citation), `RISK_MANAGEMENT_FINDINGS.md` (Finding 6
+fully closed), `sources/README.md`. Matrices regenerated, all Tier 1
+gates passed clean. 253 tests pass, unchanged. **Next step: same open
+items as before** — choosing between the two paths off `Unacceptable`
+(real field data or a recorded ALARP determination), Finding 5, matrix
+region naming. No further IEC-citation work is outstanding for this
+device.
+**Prior update, preserved below** — 2026-07-15 (yet later) — **Finding
+6 resolved: a real
 wording drift caught in `HAZ-GIP-1.14`'s "verbatim" GIP citation, fixed
 against the actual primary PDF.** Steven pressed on the S3 severity
 scoring for `HAZ-GIP-1.14`, independently researched the underlying IEC

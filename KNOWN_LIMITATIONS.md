@@ -4,7 +4,18 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-15 (yet later — Finding 6 resolved: a real
+Last updated: 2026-07-15 (yet later still — Finding 6 fully closed:
+IEC 60601-2-24:1998 clause 51.102 read directly (58 pages, cover
+through Annex ZB), confirming GIP's citation is near-verbatim (GIP
+omits only "which may cause a SAFETY HAZARD"). This closes the "IEC
+standard's own text remains unread" gap the prior entry below left
+open. `sources/iec-60601-2-24-1998.pdf` archived — this repo's first
+direct read of any IEC 60601-2-24 edition. Updated:
+`HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`,
+`RISK_MANAGEMENT_FINDINGS.md`, `sources/README.md`. Matrices
+regenerated, all Tier 1 gates passed. 253 tests pass, unchanged.)
+Prior entry, preserved: Last updated 2026-07-15 (yet later — Finding 6
+resolved: a real
 wording drift found in `HAZ-GIP-1.14`'s "verbatim" GIP citation.
 Steven independently researched the IEC 601-2-24/60601-2-24 citation,
 found a secondary source whose rendering of GIP Safety Requirement

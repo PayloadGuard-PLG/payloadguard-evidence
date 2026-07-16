@@ -37,6 +37,22 @@ requirements documents, standards excerpts) that ground the claims in
   directly rather than inferred from `metadata.a.yaml`'s
   `classification_rationale`. Full account:
   `examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`.
+- `iec-60601-2-24-1998.pdf` — added 2026-07-15 (later). IEC 60601-2-24,
+  First edition, 1998-02, "Medical electrical equipment — Part 2-24:
+  Particular requirements for the safety of infusion pumps and
+  controllers" — the actual edition GIP v1.0 (Feb 2009) cites, obtained
+  and supplied by Steven, read in full (58 pages, cover through Annex
+  ZB). Used to independently verify GIP Safety Requirement 1.8.1's own
+  citation, one hop further than `gip-v1.0-full-2009.pdf` alone could
+  reach: clause **51.102 "Reverse delivery"** (p.36, no Annex AA
+  rationale marker) reads "During NORMAL USE and/or SINGLE FAULT
+  CONDITION of the EQUIPMENT, continuous reverse delivery, which may
+  cause a SAFETY HAZARD, shall not be possible" — GIP's own
+  transcription is a near-verbatim match, omitting only the "which may
+  cause a SAFETY HAZARD" clause. This is this repo's first direct read
+  of the IEC 60601-2-24 standard text itself, not a secondary source.
+  Full account: `examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md`
+  Finding 6.
 - `req-gip-1-4-12-alarm-scope-decision.md` — added 2026-07-05 (Gate 1
   review). Per rule 2 above: this document **extends** the existing
   REQ-GIP-1-4-12 entry (dual-scope split per IEC 60601-1-8's ALARM

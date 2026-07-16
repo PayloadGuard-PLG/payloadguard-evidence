@@ -826,3 +826,39 @@ fact-equality, structural PROVEN sweep) passed clean.
 `sources/gip-v1.0-full-2009.pdf` is now archived as this repo's
 primary source for GIP v1.0. 253 tests pass, unchanged. Full record:
 `RISK_MANAGEMENT_FINDINGS.md` Finding 6.
+
+## Amendment 2026-07-15 (yet later still) — Finding 6 fully closed: IEC 60601-2-24:1998 clause 51.102 read directly, GIP's citation confirmed near-verbatim
+
+The amendment immediately above closed a wording drift in this repo's
+own GIP transcription, but explicitly left one thing open: "the IEC
+601-2-24/60601-2-24 standard's own clause text remains unread by
+anyone in this chain." This amendment closes that.
+
+Steven obtained and supplied the actual IEC 60601-2-24:1998 (First
+edition, 1998-02) — confirmed, again by publication-date logic (GIP,
+Feb 2009, predates Edition 2's October 2012 publication by three
+years), to be the correct edition GIP's authors would have cited. Read
+directly and in full: 58 pages, cover through Annex ZB.
+
+**Clause 51.102, "Reverse delivery" (p.36) — one of the few clauses in
+this standard with no Annex AA rationale marker:** "During NORMAL USE
+and/or SINGLE FAULT CONDITION of the EQUIPMENT, continuous reverse
+delivery, which may cause a SAFETY HAZARD, shall not be possible."
+Compared directly against GIP v1.0's own transcription: the match is
+near-verbatim — identical clause order, "and/or," "single fault
+condition of the equipment" — GIP omits only the middle clause "which
+may cause a SAFETY HAZARD."
+
+This repo's evidentiary basis for `HAZ-GIP-1.14`'s regulatory citation
+is no longer GIP v1.0 as a trusted secondary source one hop short of
+the standard — it is the standard's own clause text, read and archived
+directly (`sources/iec-60601-2-24-1998.pdf`), with GIP's paraphrase
+independently confirmed faithful to it. This is this repo's first
+direct read of any IEC 60601-2-24 edition's actual text, for any
+requirement.
+
+Updated: `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`
+(clause 51.102 added to the citation), `RISK_MANAGEMENT_FINDINGS.md`
+(Finding 6 fully closed), `sources/README.md`. Matrices regenerated via
+`generate_artifacts.py`/`generate_matrix.py`, all Tier 1 gates passed
+clean. 253 tests pass, unchanged.
