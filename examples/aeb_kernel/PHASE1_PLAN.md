@@ -8,6 +8,18 @@ audit-trail record (source documents, interpretive-call caveats,
 structural findings) and `KNOWN_LIMITATIONS.md` for how this changes the
 repo's live gate ledger.
 
+**`HAZARD_REGISTER.md` built, 2026-07-16 (later).** 10 hazard entries
+(one per `REQ-AEB-*`), fourth hazard register in this repo and its
+first ISO 26262-informed one. Hazard identification is real, drawn from
+sourced requirement text and real Dafny captures. Severity/Exposure/
+Controllability/ASIL left explicit `GAP` throughout — not blocked only
+by the absence of a named automotive-safety reviewer (as with the three
+ISO 14971 registers' clinical-SME gap), but doubly blocked: the HARA
+methodology clause (§ 6.4.2) that defines how to derive E and C from an
+operational situation isn't sourced either, only Table 4's lookup
+mechanism and § 6.4.4's safety-goal-statement rules are. See
+`HAZARD_REGISTER.md` itself for the full reasoning.
+
 ## What's built
 
 - **`aeb_kernel.dfy`** — 6 functions, 8 requirement clauses total
@@ -69,11 +81,30 @@ repo's live gate ledger.
    kernel doesn't use anywhere else, a genuinely different kind of claim
    than REQ-AEB-1..8, not a smaller version of the same kind.
 2. **No ISO 26262 (automotive functional safety) risk-management
-   artifacts exist for this example** — unlike the three medical-device
-   examples, which each build ISO 14971 `RISK_MANAGEMENT_PLAN.md`/
-   `HAZARD_REGISTER.md` artifacts, this domain's equivalent standard
-   (ISO 26262) has not been sourced or read. Named as a real gap, not
-   silently assumed out of scope — a natural next step if this example
-   is extended, not attempted here without the primary source in hand.
+   artifacts exist for this example yet, and the source is now
+   partially — not fully — in hand.** `sources/ISO-26262-3-2018.pdf`
+   (the iTeh "STANDARD PREVIEW" excerpt, Clauses 1-5 only) plus
+   `sources/iso-26262-3-2018-table4-and-6.4.4.md` (added 2026-07-16,
+   later — verbatim Table 4 "ASIL determination" and Clause 6.4.4
+   "Determination of safety goals," obtained via an independent, free,
+   legitimate source and cross-verified against the first file's own
+   table of contents). Together these cover the actual *computation*
+   rules (the S×E×C→ASIL lookup table, the safety-goal assignment
+   rules) but **not** the HARA *methodology* (6.4.1 Initiation, 6.4.2
+   Situation analysis and hazard identification, 6.4.3.1–.10
+   classification procedure, 6.4.6 Verification) or Clause 7
+   (Functional safety concept — FSR derivation). Steven's explicit
+   scope call, 2026-07-16: this is a proof-of-concept testing
+   architecture generalization, not a real regulatory submission, so
+   paying for the full standard wasn't warranted once real, verbatim,
+   independently-verifiable text for the operationally load-bearing
+   clauses was found for free. A first-pass `HAZARD_REGISTER.md`-style
+   artifact is buildable from what's now sourced (classify each
+   REQ-AEB-* hazard's S/E/C, look up its real ASIL via Table 4, state
+   its safety goal per 6.4.4's rules); the methodology/FSR-derivation
+   clauses remain a named gap for any future extension. Full detail:
+   `sources/README.md`'s `ISO-26262-3-2018.pdf` and
+   `iso-26262-3-2018-table4-and-6.4.4.md` entries, `DEVLOG.md`'s
+   2026-07-16 entry.
 3. **This is a proof-of-concept kernel, not a production AEB
    controller.** See `README.md`'s "Open questions" for the full framing.

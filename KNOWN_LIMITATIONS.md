@@ -4,7 +4,24 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-16 (fourth worked example built:
+Last updated: 2026-07-16 (later still — `HAZARD_REGISTER.md` built for
+`aeb_kernel`, 10 hazard entries, one per `REQ-AEB-*`. Preceded by
+sourcing ISO 26262-3's Table 4 and Clause 6.4.4 verbatim for free
+(`sources/iso-26262-3-2018-table4-and-6.4.4.md`) after a pasted
+secondary-source ASIL matrix and a follow-up "resolution" message were
+both checked and found wrong — full account in `DEVLOG.md`'s two
+2026-07-16 (later)/(even later) entries. **New, doubly-blocked gap,
+distinct from the three ISO 14971 registers' single clinical-SME gap**:
+this register's Severity/Exposure/Controllability/ASIL fields are `GAP`
+because BOTH no named automotive-safety reviewer exists AND the HARA
+methodology clause (§ 6.4.2) that defines how to derive Exposure/
+Controllability from an operational situation is still unsourced —
+only Table 4's lookup mechanism and § 6.4.4's safety-goal rules are.
+`HAZ-AEB-10` (malfunction/degradation going undetected) named as the
+highest-priority formalization candidate, same fail-open reasoning as
+`renal_adjustment`'s `HAZ-RENAL-4`. No code/spec change. 265 tests
+pass, unchanged.)
+Prior header, preserved: Last updated 2026-07-16 (fourth worked example built:
 `examples/aeb_kernel/`, a Generic AEB kernel, sourced directly from
 NHTSA FMVSS No. 127 (§ 571.127) — the first example outside the
 medical-device domain. All six Gate C1-C6 steps plus Phase 3 built end

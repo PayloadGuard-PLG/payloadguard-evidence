@@ -8,7 +8,53 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-16 — **Fourth worked example built end to
+**Last updated:** 2026-07-16 (later) — **`HAZARD_REGISTER.md` built for
+`aeb_kernel`: 10 hazard entries, one per `REQ-AEB-*`, this repo's
+fourth hazard register and first ISO 26262-informed one.** Direct
+instruction: "build the hazard register now please." Preceded by a real
+sourcing saga (same session): the initial `sources/ISO-26262-3-2018.pdf`
+(iTeh preview) covers only Clauses 1–5, missing exactly the two clauses
+(6, Hazard analysis; 7, Functional safety concept) needed. A pasted
+secondary-source summary of those clauses was checked directly and
+found wrong — its "workflow" structure didn't match the real clause
+list already read from the preview's own table of contents, and its
+ASIL determination matrix disagreed with independent public sources on
+several cells; a follow-up "resolution" message's "C1 always defaults
+to QM" claim was then directly falsified, both by the real text
+eventually found and by the fact that it contradicted the pasted
+table's own first version from the same conversation. The real Table 4
+(ASIL determination) and Clause 6.4.4 (Determination of safety goals)
+were then found for free — a 2-page PDF (page 10 of the actual
+standard) bundled as a regression-test fixture in the open-source
+PyMuPDF library's test suite, cross-verified authentic against the
+preview's own table of contents — and archived at
+`sources/iso-26262-3-2018-table4-and-6.4.4.md`. Steven's explicit scope
+call throughout: `aeb_kernel` is "a big ass test environment" for
+architecture review, not a real regulatory submission — sourcing rigor
+held (nothing built on an unverified paraphrase) without requiring
+purchase of the full standard once a real, verifiable free source
+existed for the two operationally load-bearing clauses.
+
+`HAZARD_REGISTER.md` itself: hazard identification is real throughout
+(drawn from `metadata.a.yaml`, `aeb_kernel.dfy`'s real captures, and
+§ 571.127's text directly). Severity/Exposure/Controllability/ASIL left
+explicit `GAP` — **doubly blocked**, not just the single clinical-SME
+gap the three ISO 14971 registers have: no named automotive-safety
+reviewer exists, *and* the HARA methodology clause (§ 6.4.2 — how to
+actually derive Exposure and Controllability from an operational
+situation) still isn't sourced, only Table 4's lookup mechanism and
+§ 6.4.4's safety-goal rules are. `HAZ-AEB-10` (malfunction/degradation
+going undetected) flagged as the highest-priority candidate for future
+formalization, same fail-open reasoning `renal_adjustment`'s
+`HAZ-RENAL-4` used. Documentation ripple:
+`examples/aeb_kernel/PHASE1_PLAN.md`, `README.md`, `SYSTEM_BLUEPRINT.md`
+Section 9. No code/spec change; 265 tests pass, unchanged. **Next step:
+not yet instructed** — natural candidates are risk *evaluation* once
+6.4.2 is sourced or a reviewer is named, `RISK_MANAGEMENT_PLAN.md` for
+`aeb_kernel` (not yet built, unlike the three medical-device examples),
+or opening a PR for this session's `aeb_kernel` sourcing/register work.
+**Prior update, preserved below** — 2026-07-16 — **Fourth worked example
+built end to
 end: `examples/aeb_kernel/`, a Generic Autonomous Emergency Braking
 kernel — the first example outside the medical-device domain,
 specifically to test whether the Gate C1-C6 architecture generalizes to

@@ -1340,11 +1340,19 @@ payloadguard-evidence/
 │   ├── metadata.a.yaml          Phase 3: 8 PROVEN + 2 honest GAP rows
 │   │   dafny_captures_index.json (REQ-AEB-9/10, first use of
 │   │   traceability_matrix.a.json/.md  system_scope field in this repo)
+│   ├── HAZARD_REGISTER.md       Added 2026-07-16 (later) — 10 hazard
+│   │                            entries (one per REQ-AEB-*), fourth
+│   │                            hazard register in this repo, first
+│   │                            ISO 26262-informed one. S/E/C/ASIL
+│   │                            left GAP throughout (doubly blocked:
+│   │                            no named reviewer AND HARA methodology
+│   │                            clause 6.4.2 unsourced)
 │   └── README.md                Fixed audit-trail record — source
 │                                citations, interpretive-call caveats
 │                                (boundary direction, FCW/AEB distinct-
 │                                but-identical-envelope finding, S3/S5.4
-│                                exclusions)
+│                                exclusions), ISO 26262 sourcing saga
+│                                amendment
 ├── sources/
 │   ├── README.md                Standing rule for adding source documents
 │   ├── gip-v1.0-hazard-analysis.md  GIP v1.0 archived verbatim
@@ -2350,8 +2358,22 @@ naming any specific commercial vehicle or company.
   scoping discussion — unlike `dosage_calculator`'s IEEE-754 gap or
   `renal_adjustment`'s `Pow`-exponent gap, this domain's core
   requirements hit no Dafny/Z3 structural expressiveness limit at all.
-- No ISO 26262 (automotive functional safety) risk-management artifacts
-  exist for this example yet — named as a real, open gap in
-  `examples/aeb_kernel/PHASE1_PLAN.md`, not silently assumed out of
-  scope; the three medical-device examples' ISO 14971 artifacts have no
-  built automotive-domain equivalent here.
+- **Update, 2026-07-16 (later): `HAZARD_REGISTER.md` built** — 10
+  hazard entries, one per `REQ-AEB-*`, this repo's fourth hazard
+  register and first ISO 26262-informed one. Preceded by its own
+  sourcing saga: the initial `sources/ISO-26262-3-2018.pdf` (iTeh
+  preview) covers only Clauses 1–5; a pasted secondary-source summary
+  of Clauses 6/7 was checked and found wrong (a fabricated "workflow"
+  structure, an ASIL matrix that disagreed with independent public
+  sources, and a follow-up "resolution" message directly falsified by
+  the real text once found); the real Table 4 (ASIL determination) and
+  § 6.4.4 (safety-goal determination) were then found for free via an
+  open-source PDF library's test-suite fixture and archived as
+  `sources/iso-26262-3-2018-table4-and-6.4.4.md`, cross-verified
+  authentic against the preview's own table of contents. Severity/
+  Exposure/Controllability/ASIL left explicit `GAP` throughout the new
+  register — doubly blocked (no named automotive-safety reviewer, and
+  the HARA methodology clause 6.4.2 itself still unsourced), not just
+  the single clinical-SME gap the three ISO 14971 registers have. Full
+  account: `DEVLOG.md`'s 2026-07-16 (later) entry,
+  `examples/aeb_kernel/HAZARD_REGISTER.md`.
