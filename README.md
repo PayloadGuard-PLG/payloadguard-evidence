@@ -129,6 +129,20 @@ residual risk, or closing a hazard as `Acceptable` is, for all three, a
 human decision this repo's assistant has declined to make on a
 reviewer's behalf, even where no further evidence is buildable.
 
+**A real citation-integrity gap was also found and closed, 2026-07-15**
+(`RISK_MANAGEMENT_FINDINGS.md` Finding 6): `dosage_calculator`'s
+`HAZ-GIP-1.14` row had quoted its GIP source as "verbatim" without that
+claim ever being checked against GIP v1.0's own PDF — a wording drift
+this repo's own transcription had introduced, caught only when Steven
+independently sourced and supplied the real document. Fixed against the
+primary text, then taken one step further: Steven also obtained the
+actual IEC 60601-2-24:1998 standard GIP's citation traces to, and its
+clause 51.102 confirms GIP's citation is near-verbatim. Both primary
+sources are now archived (`sources/gip-v1.0-full-2009.pdf`,
+`sources/iec-60601-2-24-1998.pdf`) — this repo's first direct read of
+the actual IEC 60601-2-24 standard text for any requirement, not a
+secondary source taken on trust.
+
 Two repo-wide self-consistency lints (`evidence/hazard_id_lint.py`,
 `evidence/citation_registry.py`) guard against exactly the kind of
 cross-file drift this discipline is exposed to: a hazard ID referenced
@@ -201,14 +215,20 @@ extending the system to a new example, see
   blocks the pipeline.
 - **Risk management artifacts (all three examples)** — `DRAFT`, not
   signed off. `dosage_calculator`'s is the most developed: hazard
-  identification is real and complete, and its severity model was
-  rebuilt 2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR
-  24971 §5.5.4), replacing an earlier model that measured evidence
-  strength instead. The device's overall residual risk currently
-  evaluates `GAP` — not `Acceptable`, not `Unacceptable` — pending a
-  named Clinical SME's real, consequence-based severity score for each
-  hazard, an explicit, honestly-rendered open finding, not a gap in the
-  pipeline. See
+  identification is real and complete, its severity model was rebuilt
+  2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR 24971
+  §5.5.4), and Steven, the named Clinical SME, has since scored all 5
+  hazards (`S3 — Serious`, every one). The device's overall residual
+  risk is now **`Unacceptable`** — a real, computed result (four of
+  five hazards; the fifth, `HAZ-GIP-1.2b`, stays an evaluation `GAP`,
+  blocked by a separate open question about which procedure applies to
+  a hazard with zero probability-side evidence), not the `GAP`
+  placeholder the model-only fix left standing. This isn't a claim the
+  device got less safe — it's the honest output of a real severity
+  input meeting an already-conservative worst-case-probability policy
+  for a pre-market POC with no field data. Resolving it needs either
+  real field/usage data or a recorded ALARP determination from Steven —
+  both still open. See
   [`RISK_MANAGEMENT_FINDINGS.md`](examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md)
   for the live list of what's still undecided.
 
