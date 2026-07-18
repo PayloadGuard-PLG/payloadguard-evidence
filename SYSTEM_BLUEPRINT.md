@@ -1,6 +1,12 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-16 (fourth worked example built: `examples/aeb_kernel/`,
+Last updated: 2026-07-18 (`SYSTEM_REFERENCE.md` added at the repo root
+— a new, pure current-state technical reference, regenerated in
+substance rather than appended to, contrasting deliberately with this
+file's own accumulated "new entry, prior preserved below" narrative
+structure. No architecture, gate, or data-flow change; documentation
+only. Full record: `DEVLOG.md`'s 2026-07-18 entry.)
+Prior header, preserved: Last updated 2026-07-16 (fourth worked example built: `examples/aeb_kernel/`,
 a Generic Autonomous Emergency Braking kernel — the first example
 outside the medical-device domain, testing whether the Gate C1–C6
 architecture generalizes to a new regulatory domain (NHTSA FMVSS No.

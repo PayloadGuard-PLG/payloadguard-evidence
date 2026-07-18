@@ -8,7 +8,34 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-16 (later) — **`HAZARD_REGISTER.md` built for
+**Last updated:** 2026-07-18 — **`SYSTEM_REFERENCE.md` added: a new
+root document, pure current-state technical reference, regenerated in
+substance rather than appended to.** Source: a different Claude Code
+session produced `SYSTEM_REFERENCE.pdf` (37 pages) from an independent
+review of this repo; every specific, checkable claim in it was verified
+directly against the live repo before adoption — the two most novel
+technical claims (`crosshair-tool` 0.0.107's hardcoded solver seed at
+`statespace.py:744`; `.github/workflows/payloadguard.yml`'s
+exit-code-vs-verdict-string gating) confirmed exactly by reading the
+installed package and the workflow file directly, and every worked
+example's mutation-testing/traceability-matrix numbers cross-checked
+against the real committed JSON reports (all four matched exactly:
+`dosage_calculator` 56/41/15/0/0, `renal_adjustment` 450/250/137/51/10/2,
+`drug_interaction_checker` 1342/744/522/44/26/6, `aeb_kernel`
+63/38/17/4/4). Also adopted the same session's `evidence/polish_lint.py`
+and `tests/test_polish_lint.py` (a narrow, high-precision phrase-list
+scanner for decision-journal narrative language — "turned out,"
+"we decided," dated body references — that fails CI if
+`SYSTEM_REFERENCE.md` drifts toward the narrative style `HANDOFF.md`/
+`SYSTEM_BLUEPRINT.md` have already drifted into) — `test_polish_lint.py`
+was supplied directly this time, not written fresh. `TEST_CATALOG.md`
+regenerated (257 functions/34 categories, up from 254/33; 268 collected
+test cases, up from 265) to include the three new polish-lint tests.
+No code/spec change to any existing example. 268 tests pass (up from
+265). **Next step: not yet instructed** — a real follow-on question
+named but not decided is whether `SYSTEM_BLUEPRINT.md` should be
+trimmed now that a current-state-only reference exists alongside it.
+**Prior update, preserved below** — 2026-07-16 (later) — **`HAZARD_REGISTER.md` built for
 `aeb_kernel`: 10 hazard entries, one per `REQ-AEB-*`, this repo's
 fourth hazard register and first ISO 26262-informed one.** Direct
 instruction: "build the hazard register now please." Preceded by a real
