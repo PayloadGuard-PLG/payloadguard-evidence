@@ -418,6 +418,12 @@ standalone tool, called directly (`evidence.citation_gate.verify_citation`
 pip install crosshair-tool jsonschema pyyaml pytest
 # Dafny 4.11.0: dotnet tool install --global dafny  (requires .NET SDK)
 # Z3: must be on PATH; Dafny's installer typically bundles a compatible version
+#
+# Alternatively, `pip install .` (pyproject.toml) installs evidence.cli's
+# traceability-matrix builder alone, as a `plg-evidence` console script -
+# the Dafny/CrossHair toolchain above is still required for anything that
+# captures new evidence rather than building a matrix from what's already
+# captured.
 
 # --- Full test suite ---
 python -m pytest tests/ -v

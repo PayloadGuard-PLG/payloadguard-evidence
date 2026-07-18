@@ -6,6 +6,20 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-18 (even later) — README evidence-strength totals and pip-install docs, plus a real drift-guard fix from Qodo
+
+Direct instruction, following the merged `pyproject.toml` PR (#63): "update readme to include our count of proof, bounded checked etc and the new install, materials stale doc update," with an explicit constraint attached mid-turn: "don't use ambiguous test results on main readme. it needs polish and honesty, but no development hurdles."
+
+Computed real, row-level evidence-strength totals directly from the four committed `examples/*/traceability_matrix.a.json` files (a row's realized strength is its strongest real evidence entry; GAP only when no real evidence entry exists at all) and cross-checked the row counts against each example's `metadata.a.yaml`: 28 requirements total (3 + 9 + 6 + 10), 20 `PROVEN`, 1 `BOUNDED_CHECKED` (`dosage_calculator`'s overflow-safety check — a permanent Dafny/Z3 `real`-type limit, not an unbuilt item), 7 explicit `GAP`. Added a compact table to `README.md` right after the Evidence strengths section, and the `pip install .` / `plg-evidence` console-script path to Quick start — the exact command shown was run for real from the repo root and diffed byte-identical (timestamp aside) against the committed matrix before being committed to the README. `OPERATIONS_MANUAL.md`'s command reference got the same install note for consistency.
+
+**Qodo's review on PR #64 caught a real gap, not a false positive**: the README's new totals table hard-codes numbers derived from files that can change independently, with no mechanical check tying them together — the same failure mode PRs #54/#56 already fixed for this repo's other hard-coded doc counts. Fixed with `tests/test_readme_evidence_totals.py`: recomputes the same row-level totals from the committed matrices on every test run and asserts README's table matches, failing CI on drift rather than letting the numbers go stale silently. Positive-controlled before committing — deliberately edited README's stated PROVEN count to a wrong value, confirmed the test failed with a clear message, then restored the file and reran clean.
+
+Adding the new test file changed the real test-suite counts again, the same self-referential effect this repo has now hit three times this week (`test_polish_lint.py`, `test_packaging.py`, now this one): 261→264 functions, 35→36 categories, 272→275 collected cases. `TEST_CATALOG.md` regenerated for real; `SYSTEM_REFERENCE.md`'s Section 9 (Testing) and Section 12 (Repository layout) counts corrected before commit. `evidence/polish_lint.py` run clean against the updated draft.
+
+275 tests pass (up from 272; 3 new: `tests/test_readme_evidence_totals.py`).
+
+---
+
 ## 2026-07-18 (later) — `pyproject.toml` makes the repository pip-installable, verified end to end before committing
 
 Continuing directly from the entry below: Steven supplied `pyproject.toml.pdf` and `test_packaging.pdf` (plus re-uploads of `polish_lint.pdf`/`test_polish_lint.pdf`, confirmed byte-identical to what was already committed) with the instruction "to run e[nd] to end via pip install... verify before building."

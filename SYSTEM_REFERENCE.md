@@ -461,10 +461,10 @@ clinical SME has scored either device's hazards yet.
 
 ## 9. Testing
 
-261 test functions across 35 categories (`TEST_CATALOG.md`, generated
+264 test functions across 36 categories (`TEST_CATALOG.md`, generated
 by AST-parsing the real test suite — CI fails if this file drifts
 from what the generator produces against the committed suite). Pytest
-collects 272 individual test cases from those 261 functions (the gap
+collects 275 individual test cases from those 264 functions (the gap
 is parametrized functions expanding into multiple cases).
 
 The committed test suite reads committed verification captures; it
@@ -545,7 +545,7 @@ examples/               one directory per worked example
   drug_interaction_checker/
   aeb_kernel/
 sources/                 archived primary-source documents, one per citation
-tests/                   the test suite (261 functions / 272 collected cases)
+tests/                   the test suite (264 functions / 275 collected cases)
 dashboards/              dated HTML status snapshots, not auto-regenerated
 .github/workflows/       tests.yml, payloadguard.yml
 ```
