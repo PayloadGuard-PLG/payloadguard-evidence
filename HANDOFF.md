@@ -8,7 +8,38 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-18 — **`SYSTEM_REFERENCE.md` added: a new
+**Last updated:** 2026-07-18 (later) — **`pyproject.toml` makes the
+repository pip-installable, verified end to end, not just via static
+self-consistency checks.** Instruction: "to run e[nd] to end via pip
+install... verify before building." `pyproject.toml` (setuptools
+backend, runtime deps exact-pinned to match `requirements.txt`,
+`plg-evidence` console script at `evidence.cli:main`, `evidence.schema`
+JSON files declared as package data) and `tests/test_packaging.py`
+(pin-drift and console-script-target guards) verified against the live
+repo before being written, then verified again by actually installing:
+built an isolated venv, ran `pip install .` against the real source
+tree, and from outside the repository confirmed the installed
+`plg-evidence` console script runs, the schema JSON files are present
+as real installed package data, and `plg-evidence build --variant a`
+against `dosage_calculator`'s real committed metadata/captures produces
+output byte-identical to the committed `traceability_matrix.a.json`
+except for the generation timestamp. `.gitignore` gained the packaging
+build-artifacts block (`build/`, `dist/`, `*.egg-info/`).
+`TEST_CATALOG.md` regenerated again (261 functions/35 categories, up
+from 257/34; 272 collected test cases, up from 268) for the four new
+packaging tests; `SYSTEM_REFERENCE.md` corrected in three places before
+commit — Section 6 now describes the `pip install .` path (replacing
+the now-false "no `pyproject.toml`" claim), Section 11's "no packaging
+exists" limitation replaced with the real remaining gap (installable
+CLI, still no library API for external metadata), Section 9/12's test
+counts bumped alongside. `evidence/polish_lint.py` run clean against
+the updated draft. No code/spec change to any existing example. 272
+tests pass (up from 268). **Next step: not yet instructed** — the
+already-pushed `SYSTEM_REFERENCE.md`/`polish_lint.py` commit still has
+no PR open (asked, not yet answered); this packaging work may bundle
+into that PR or need its own, unconfirmed. The `SYSTEM_BLUEPRINT.md`
+trim question named below also remains open.
+**Prior update, preserved below** — 2026-07-18 — **`SYSTEM_REFERENCE.md` added: a new
 root document, pure current-state technical reference, regenerated in
 substance rather than appended to.** Source: a different Claude Code
 session produced `SYSTEM_REFERENCE.pdf` (37 pages) from an independent

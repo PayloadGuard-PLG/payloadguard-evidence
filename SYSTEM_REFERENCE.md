@@ -349,9 +349,15 @@ python -m evidence.cli build \
   other tools). Markdown is written only when `--out-md` is given
   explicitly, never printed to stdout.
 
-Must be run from the repository root; the package has no installer or
-packaging configuration (no `pyproject.toml`/`setup.py`/`setup.cfg`
-exists in this repository).
+Also installable via `pyproject.toml` (setuptools backend): `pip
+install .` from the repository root exposes the same CLI as a
+`plg-evidence` console script (`evidence.cli:main`), runnable from any
+directory once installed — the `evidence.schema` JSON files travel
+with the package as declared package data. Runtime dependency pins in
+`pyproject.toml` are kept exactly in sync with `requirements.txt`
+(`tests/test_packaging.py` guards this). Running as `python -m
+evidence.cli` from a cloned repository's root, with no install step,
+remains supported and is what CI uses.
 
 ## 7. Worked examples — current status
 
@@ -455,10 +461,10 @@ clinical SME has scored either device's hazards yet.
 
 ## 9. Testing
 
-257 test functions across 34 categories (`TEST_CATALOG.md`, generated
+261 test functions across 35 categories (`TEST_CATALOG.md`, generated
 by AST-parsing the real test suite — CI fails if this file drifts
 from what the generator produces against the committed suite). Pytest
-collects 268 individual test cases from those 257 functions (the gap
+collects 272 individual test cases from those 261 functions (the gap
 is parametrized functions expanding into multiple cases).
 
 The committed test suite reads committed verification captures; it
@@ -523,10 +529,11 @@ items, see `KNOWN_LIMITATIONS.md`.
   Dafny rejects the mutated form outright ("invalid UnaryExpression").
   Confirmed present in both `renal_adjustment` (as a `||`-chain
   ambiguity) and `aeb_kernel` (as this specific COI case).
-- No packaging exists. The system runs only as `python -m evidence.cli`
-  from a cloned repository's root; there is no installable package and
-  no documented interface for a team outside this repository to point
-  the engine at their own, externally-hosted metadata and evidence.
+- Packaging (`pyproject.toml`) makes the CLI pip-installable but there
+  is still no documented interface for a team outside this repository
+  to point the engine at their own, externally-hosted metadata and
+  evidence — installing the package gets you the same CLI, not a
+  library API for third-party data.
 
 ## 12. Repository layout
 
@@ -538,7 +545,7 @@ examples/               one directory per worked example
   drug_interaction_checker/
   aeb_kernel/
 sources/                 archived primary-source documents, one per citation
-tests/                   the test suite (254 functions / 265 collected cases)
+tests/                   the test suite (261 functions / 272 collected cases)
 dashboards/              dated HTML status snapshots, not auto-regenerated
 .github/workflows/       tests.yml, payloadguard.yml
 ```

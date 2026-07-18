@@ -1,6 +1,15 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-18 (`SYSTEM_REFERENCE.md` added at the repo root
+Last updated: 2026-07-18 (later) (`pyproject.toml` added at the repo
+root — the CLI (`python -m evidence.cli`, described throughout this
+file) is now also installable via `pip install .` as a `plg-evidence`
+console script, verified end to end in an isolated venv. No
+architecture, gate, or data-flow change; the module invocations
+described throughout this file remain accurate as-is, this is an
+additional entry point, not a replacement. Full record: `DEVLOG.md`'s
+2026-07-18 (later) entry; current-state summary in
+`SYSTEM_REFERENCE.md` Section 6.)
+Prior header, preserved: Last updated: 2026-07-18 (`SYSTEM_REFERENCE.md` added at the repo root
 — a new, pure current-state technical reference, regenerated in
 substance rather than appended to, contrasting deliberately with this
 file's own accumulated "new entry, prior preserved below" narrative

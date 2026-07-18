@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "payloadguard-evidence"
+version = "0.1.0"
+description = "Formally verified medical device software compliance evidence system (Dafny/Z3/CrossHair) targeting UKCA/MHRA, IEC 62304, and ISO 14971."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    "jsonschema==4.26.0",
+    "PyYAML==6.0.1",
+    "z3-solver==4.16.0.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1"]
+
+[project.scripts]
+plg-evidence = "evidence.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["evidence*"]
+
+[tool.setuptools.package-data]
+"evidence.schema" = ["*.json"]

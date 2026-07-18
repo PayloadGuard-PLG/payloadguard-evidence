@@ -1,6 +1,12 @@
 __pycache__/
 *.pyc
 
+# packaging build artifacts (2026-07-18, pyproject.toml added) - `python
+# -m build` and `pip install -e .` both write these; neither is source.
+build/
+dist/
+*.egg-info/
+
 # `dafny run`/`dafny build` compiler byproducts (C# target, the default
 # here) - not source, not captured evidence. Added 2026-07-15 building
 # the R5 differential-testing harness, whose driver .dfy is run

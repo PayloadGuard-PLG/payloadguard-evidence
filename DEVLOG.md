@@ -6,6 +6,24 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-18 (later) — `pyproject.toml` makes the repository pip-installable, verified end to end before committing
+
+Continuing directly from the entry below: Steven supplied `pyproject.toml.pdf` and `test_packaging.pdf` (plus re-uploads of `polish_lint.pdf`/`test_polish_lint.pdf`, confirmed byte-identical to what was already committed) with the instruction "to run e[nd] to end via pip install... verify before building."
+
+**Verified against the live repo before writing anything**: `requirements.txt` pins (`jsonschema==4.26.0`, `PyYAML==6.0.1`, `z3-solver==4.16.0.0`, `pytest==9.1.1`) match the PDF's proposed `pyproject.toml` dependencies exactly, with `pytest` correctly excluded from the runtime `dependencies` list (declared under `[project.optional-dependencies]` instead); `evidence/cli.py` has a real `def main(argv=None):` entry point; `evidence/schema/` has four real `*.json` files; `LICENSE` exists; neither `pyproject.toml` nor `tests/test_packaging.py` already existed.
+
+`pyproject.toml` and `tests/test_packaging.py` committed as supplied. `.gitignore` gained the packaging build-artifacts block (`build/`, `dist/`, `*.egg-info/`) from Steven's pasted version.
+
+**"Verify before building" and "end to end via pip install" both taken literally, not treated as satisfied by the static self-consistency tests alone**: built an isolated venv, ran `pip install .` against the real local source tree, then — from `/tmp`, not the repository — confirmed the installed `plg-evidence` console script runs, `evidence.schema`'s JSON files are present as real installed package data (not just declared), and `plg-evidence build --variant a` against `dosage_calculator`'s real committed metadata/captures produces output byte-identical to the committed `traceability_matrix.a.json` except for the generation timestamp. Scratch venv and output deleted after the check; nothing about the verification method is captured in the committed test suite, matching `test_packaging.py`'s own stated precedent that a real build+install pass is a manual/release-time check, not something CI re-proves every run.
+
+Adding `tests/test_packaging.py` changed the real test-suite counts again, the same self-referential effect caught when `test_polish_lint.py` was added: 257→261 functions, 34→35 categories, 268→272 collected cases. Caught by re-running `evidence/test_catalog.py` and `pytest --collect-only` for real; `SYSTEM_REFERENCE.md` corrected before commit, not left stale. `SYSTEM_REFERENCE.md` also updated for the packaging capability itself: Section 6 (CLI) now describes the `pip install .` path, replacing the now-false claim that no `pyproject.toml`/`setup.py`/`setup.cfg` exists; Section 11 (Known permanent limitations) now describes the still-real gap correctly (installable CLI, still no library API for external metadata) instead of the now-false "no packaging exists" bullet; Section 12's repository-layout test count corrected alongside Section 9's.
+
+Ran `evidence/polish_lint.py` against the updated `SYSTEM_REFERENCE.md` draft — clean.
+
+272 tests pass (up from 268; 4 new: `tests/test_packaging.py`).
+
+---
+
 ## 2026-07-18 — `SYSTEM_REFERENCE.md` and `evidence/polish_lint.py` adopted, from an independently-produced document verified before being trusted
 
 Steven had a different Claude Code session review this repo independently and produce `SYSTEM_REFERENCE.pdf` (37 pages) — a current-state-only technical reference, explicitly not an append-only log, contrasting with `DEVLOG.md`/`HANDOFF.md`'s dated narrative style and `SYSTEM_BLUEPRINT.md`'s now 2270+-line chain of "new entry, prior preserved below" amendments. Also supplied: `evidence/polish_lint.py` and `tests/test_polish_lint.py`, a narrow phrase-list scanner built to keep exactly this kind of document from drifting toward narrative prose the way `HANDOFF.md`/`SYSTEM_BLUEPRINT.md` already have (confirmed directly: both contain "turned out," "mistake," and dated entries scattered through body text, not just headers).
