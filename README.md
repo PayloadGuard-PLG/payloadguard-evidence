@@ -43,6 +43,24 @@ machine-generated from these inputs — it is never hand-edited, and
 generation fails rather than emit a `PROVEN` label that is not backed by
 a real, completed proof.
 
+### What this has actually produced
+
+Across the four worked examples, every one of 28 formalized
+requirements carries a real evidence status — counted directly from
+the committed traceability matrices, not estimated:
+
+| Strength | Requirements |
+|---|---|
+| `PROVEN` | 20 |
+| `BOUNDED_CHECKED` | 1 |
+| `GAP` (explicit, named) | 7 |
+
+The single `BOUNDED_CHECKED` requirement is `dosage_calculator`'s
+overflow-safety check — a permanent Dafny/Z3 limit (no IEEE-754
+overflow semantics for `real`), not an unbuilt item. Every `GAP` is
+named and reasoned in [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md),
+never dropped silently.
+
 ## The verification pipeline (Gates C1–C6)
 
 Requirements backed by a formal (Dafny) specification pass through six
@@ -245,6 +263,25 @@ python -m pytest tests/ -v
 cd examples/dosage_calculator
 python generate_artifacts.py
 ```
+
+The traceability-matrix builder is also installable standalone, via
+`pyproject.toml`:
+
+```bash
+pip install .
+plg-evidence build --variant a \
+  --metadata examples/dosage_calculator/metadata.a.yaml \
+  --manifest examples/dosage_calculator/run_manifest.json \
+  --concrete examples/dosage_calculator/concrete_results.json \
+  --dafny-captures examples/dosage_calculator/dafny_captures_index.json \
+  --out-json matrix.json --out-md matrix.md
+```
+
+This installs `evidence.cli` as a `plg-evidence` console script,
+runnable from any directory — useful for building a matrix from
+already-captured evidence without a full clone. It does not install
+the verification toolchain: regenerating an example's underlying
+Dafny/CrossHair evidence still needs the clone-based setup above.
 
 For re-running the verification tools, adding a requirement, or
 extending the system to a new example, see
