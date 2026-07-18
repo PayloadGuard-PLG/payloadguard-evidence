@@ -578,5 +578,5 @@ the repository).
 - Not a tool that infers evidence strength. Strength labels come only
   from a verification tool's recorded output, never from a
   requirement's intended or hoped-for outcome.
-- Not currently packaged for use outside this repository. See Section
-  11.
+- Installable as a CLI (`pyproject.toml`, Section 6) but not a library
+  API for external metadata/evidence. See Section 11.
