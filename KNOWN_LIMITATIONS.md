@@ -4,7 +4,14 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-16 (later still — `HAZARD_REGISTER.md` built for
+Last updated: 2026-07-18 (`SYSTEM_REFERENCE.md` adopted, a new root
+current-state-only reference doc verified against the live repo before
+commit — no new limitation surfaced by that verification pass beyond
+what's already recorded below. `evidence/polish_lint.py` added
+alongside it as a new self-consistency mechanism, keeping that new
+document from drifting toward narrative language. Full account:
+`DEVLOG.md`'s 2026-07-18 entry.)
+Prior header, preserved: Last updated 2026-07-16 (later still — `HAZARD_REGISTER.md` built for
 `aeb_kernel`, 10 hazard entries, one per `REQ-AEB-*`. Preceded by
 sourcing ISO 26262-3's Table 4 and Clause 6.4.4 verbatim for free
 (`sources/iso-26262-3-2018-table4-and-6.4.4.md`) after a pasted

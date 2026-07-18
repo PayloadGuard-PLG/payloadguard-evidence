@@ -8,7 +8,65 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-16 (later) — **`HAZARD_REGISTER.md` built for
+**Last updated:** 2026-07-18 (later) — **`pyproject.toml` makes the
+repository pip-installable, verified end to end, not just via static
+self-consistency checks.** Instruction: "to run e[nd] to end via pip
+install... verify before building." `pyproject.toml` (setuptools
+backend, runtime deps exact-pinned to match `requirements.txt`,
+`plg-evidence` console script at `evidence.cli:main`, `evidence.schema`
+JSON files declared as package data) and `tests/test_packaging.py`
+(pin-drift and console-script-target guards) verified against the live
+repo before being written, then verified again by actually installing:
+built an isolated venv, ran `pip install .` against the real source
+tree, and from outside the repository confirmed the installed
+`plg-evidence` console script runs, the schema JSON files are present
+as real installed package data, and `plg-evidence build --variant a`
+against `dosage_calculator`'s real committed metadata/captures produces
+output byte-identical to the committed `traceability_matrix.a.json`
+except for the generation timestamp. `.gitignore` gained the packaging
+build-artifacts block (`build/`, `dist/`, `*.egg-info/`).
+`TEST_CATALOG.md` regenerated again (261 functions/35 categories, up
+from 257/34; 272 collected test cases, up from 268) for the four new
+packaging tests; `SYSTEM_REFERENCE.md` corrected in three places before
+commit — Section 6 now describes the `pip install .` path (replacing
+the now-false "no `pyproject.toml`" claim), Section 11's "no packaging
+exists" limitation replaced with the real remaining gap (installable
+CLI, still no library API for external metadata), Section 9/12's test
+counts bumped alongside. `evidence/polish_lint.py` run clean against
+the updated draft. No code/spec change to any existing example. 272
+tests pass (up from 268). **Next step: not yet instructed** — the
+already-pushed `SYSTEM_REFERENCE.md`/`polish_lint.py` commit still has
+no PR open (asked, not yet answered); this packaging work may bundle
+into that PR or need its own, unconfirmed. The `SYSTEM_BLUEPRINT.md`
+trim question named below also remains open.
+**Prior update, preserved below** — 2026-07-18 — **`SYSTEM_REFERENCE.md` added: a new
+root document, pure current-state technical reference, regenerated in
+substance rather than appended to.** Source: a different Claude Code
+session produced `SYSTEM_REFERENCE.pdf` (37 pages) from an independent
+review of this repo; every specific, checkable claim in it was verified
+directly against the live repo before adoption — the two most novel
+technical claims (`crosshair-tool` 0.0.107's hardcoded solver seed at
+`statespace.py:744`; `.github/workflows/payloadguard.yml`'s
+exit-code-vs-verdict-string gating) confirmed exactly by reading the
+installed package and the workflow file directly, and every worked
+example's mutation-testing/traceability-matrix numbers cross-checked
+against the real committed JSON reports (all four matched exactly:
+`dosage_calculator` 56/41/15/0/0, `renal_adjustment` 450/250/137/51/10/2,
+`drug_interaction_checker` 1342/744/522/44/26/6, `aeb_kernel`
+63/38/17/4/4). Also adopted the same session's `evidence/polish_lint.py`
+and `tests/test_polish_lint.py` (a narrow, high-precision phrase-list
+scanner for decision-journal narrative language — "turned out,"
+"we decided," dated body references — that fails CI if
+`SYSTEM_REFERENCE.md` drifts toward the narrative style `HANDOFF.md`/
+`SYSTEM_BLUEPRINT.md` have already drifted into) — `test_polish_lint.py`
+was supplied directly this time, not written fresh. `TEST_CATALOG.md`
+regenerated (257 functions/34 categories, up from 254/33; 268 collected
+test cases, up from 265) to include the three new polish-lint tests.
+No code/spec change to any existing example. 268 tests pass (up from
+265). **Next step: not yet instructed** — a real follow-on question
+named but not decided is whether `SYSTEM_BLUEPRINT.md` should be
+trimmed now that a current-state-only reference exists alongside it.
+**Prior update, preserved below** — 2026-07-16 (later) — **`HAZARD_REGISTER.md` built for
 `aeb_kernel`: 10 hazard entries, one per `REQ-AEB-*`, this repo's
 fourth hazard register and first ISO 26262-informed one.** Direct
 instruction: "build the hazard register now please." Preceded by a real

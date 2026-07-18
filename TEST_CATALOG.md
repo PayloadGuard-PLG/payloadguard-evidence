@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 254 test functions across 33 categories.**
+**Total: 261 test functions across 35 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -350,6 +350,23 @@ for the actual collected-case count.
 | Test | Description | Code |
 |---|---|---|
 | `test_double_it_overflows_to_inf_on_ieee_hardware` | Deterministic IEEE violation of overflow_probe.py's postcondition (post: math.isfinite(__return__)): 1e308 * 2.0 overflows to inf. | `tests/test_overflow_probe.py:6` |
+
+## Packaging (`tests/test_packaging.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_pyproject_is_valid_toml_with_expected_shape` | Pyproject is valid toml with expected shape. | `tests/test_packaging.py:60` |
+| `test_runtime_dependencies_match_requirements_txt_pins` | Every runtime dep in pyproject.toml must match requirements.txt's pin exactly - not "compatible", not "close enough". | `tests/test_packaging.py:66` |
+| `test_console_script_points_at_a_real_callable_main` | Console script points at a real callable main. | `tests/test_packaging.py:100` |
+| `test_schema_json_files_are_declared_as_package_data` | Schema json files are declared as package data. | `tests/test_packaging.py:118` |
+
+## Polish Lint (`tests/test_polish_lint.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_system_reference_has_no_narrative_language` | System reference has no narrative language. | `tests/test_polish_lint.py:22` |
+| `test_scanner_actually_detects_narrative_language` | Positive-control test: prove the scanner isn't vacuously passing by feeding it text it must flag. | `tests/test_polish_lint.py:33` |
+| `test_last_updated_header_line_is_exempt_from_the_date_check` | The one legitimate date in the document -- its own header -- must not itself trip the dated-reference check. | `tests/test_polish_lint.py:47` |
 
 ## Proven Exclusivity (`tests/test_proven_exclusivity.py`)
 

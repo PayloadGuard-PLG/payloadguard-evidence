@@ -312,8 +312,9 @@ Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 | Document | Contents |
 |---|---|
 | [`HANDOFF.md`](HANDOFF.md) | Current status and next steps for picking up the repository. |
+| [`SYSTEM_REFERENCE.md`](SYSTEM_REFERENCE.md) | Pure current-state technical reference — no build history, regenerated in substance (not appended to) whenever the system's facts change. |
 | [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) | Technical reference: architecture, each gate, command reference, adding an example. |
-| [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference. |
+| [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference (build-history document, not current-state). |
 | [`dashboards/`](dashboards/) | Dated HTML status snapshots (not auto-regenerated; see its README). |
 | [`DEVLOG.md`](DEVLOG.md) | Dated, append-only build log. |
 | [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) | Ledger of open items and known gaps. |

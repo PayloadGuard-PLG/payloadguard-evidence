@@ -15,10 +15,12 @@ Usage:
         --concrete examples/dosage_calculator/concrete_results.json \
         --out-json /tmp/out.json --out-md /tmp/out.md
 
-Must be run from the repository root (this repo has no packaging/install
-step yet - `python -m` needs the `evidence` package importable from the
-current directory, the same constraint every other script here already
-has via its own REPO_ROOT/sys.path handling).
+Must be run from the repository root when invoked this way - `python -m`
+needs the `evidence` package importable from the current directory, the
+same constraint every other script here already has via its own
+REPO_ROOT/sys.path handling. Also installable via `pyproject.toml`
+(`pip install .`), which exposes this same entry point as a `plg-evidence`
+console script runnable from any directory.
 
 --schema is optional: if omitted, it defaults to
 evidence/schema/metadata.schema.<a|b|c>.json for the given --variant -
