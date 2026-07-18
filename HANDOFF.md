@@ -8,7 +8,24 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-18 (later) — **`pyproject.toml` makes the
+**Last updated:** 2026-07-18 (even later) — **`README.md` gained a
+system-wide evidence-strength totals table (28 requirements: 20
+`PROVEN`, 1 `BOUNDED_CHECKED`, 7 `GAP`) and the pip-installable CLI
+path, then a guard test after a real Qodo finding on the PR.** Counts
+computed directly from `examples/*/traceability_matrix.a.json`, cross-
+checked against each example's `metadata.a.yaml` requirement count.
+Qodo (PR #64) correctly flagged the hard-coded numbers as drift-prone
+against the committed matrices — fixed with
+`tests/test_readme_evidence_totals.py`, which recomputes the same
+totals on every run and fails CI if README's table goes stale,
+positive-controlled against an intentionally wrong number before
+committing. `TEST_CATALOG.md` regenerated again (264 functions/36
+categories, up from 261/35; 275 collected cases, up from 272) for the
+new test file; `SYSTEM_REFERENCE.md`'s Section 9/12 counts bumped to
+match. `OPERATIONS_MANUAL.md`'s command reference got the same
+pip-install note as README for consistency. 275 tests pass (up from
+272). **Next step: not yet instructed.**
+**Prior update, preserved below** — 2026-07-18 (later) — **`pyproject.toml` makes the
 repository pip-installable, verified end to end, not just via static
 self-consistency checks.** Instruction: "to run e[nd] to end via pip
 install... verify before building." `pyproject.toml` (setuptools

@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 261 test functions across 35 categories.**
+**Total: 264 test functions across 36 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -380,6 +380,14 @@ for the actual collected-case count.
 | `test_negative_dafny_method_with_incomplete_status_is_still_refused` | Negative dafny method with incomplete status is still refused. | `tests/test_proven_exclusivity.py:90` |
 | `test_row_level_strength_cell_honors_the_same_rule` | Variant B/C rows carry strength/method directly on the row, not inside an evidence list - the same R3 gate must cover that shape too. | `tests/test_proven_exclusivity.py:96` |
 | `test_committed_matrix_artifacts_still_pass_unchanged` | R3 must not regress the existing, fully-CrossHair/concrete-sourced committed artifacts - none of them contain a dafny record today, so they must pass exactly as they did under R2. | `tests/test_proven_exclusivity.py:113` |
+
+## Readme Evidence Totals (`tests/test_readme_evidence_totals.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_readme_total_requirement_count_matches_committed_matrices` | Readme total requirement count matches committed matrices. | `tests/test_readme_evidence_totals.py:56` |
+| `test_readme_evidence_strength_table_matches_committed_matrices` | Readme evidence strength table matches committed matrices. | `tests/test_readme_evidence_totals.py:73` |
+| `test_no_realized_strength_is_silently_missing_from_the_readme_table` | Every strength this repo's four matrices actually produce must appear as its own row - not folded into another number unnoticed. | `tests/test_readme_evidence_totals.py:96` |
 
 ## Renal Adjustment Matrix (`tests/test_renal_adjustment_matrix.py`)
 
