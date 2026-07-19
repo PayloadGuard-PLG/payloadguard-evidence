@@ -4,7 +4,17 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-18 (`SYSTEM_REFERENCE.md` adopted, a new root
+Last updated: 2026-07-19 (Gate C5 accuracy pass: automated
+caller-isolation (`evidence/dafny_isolate.py`) now attributes every
+mutation kill to the mutated function's own contract rather than a
+downstream caller; two LVR generator fixes (arithmetic-embedded literal
+coverage + a one-sided-arithmetic false-pass); two renal spec
+tightenings making `RoundHalfUp`/`ComposedCeiling` preconditions
+load-bearing. Renal Gate C5 re-derived: 504 mutants, 53 explained
+survivors. An external session's package, re-derived against our own
+Dafny before trust. Not yet applied to dosage/drug_interaction_checker —
+named as next step. Full account: `DEVLOG.md`'s 2026-07-19 entry.)
+Prior header, preserved: Last updated 2026-07-18 (`SYSTEM_REFERENCE.md` adopted, a new root
 current-state-only reference doc verified against the live repo before
 commit — no new limitation surfaced by that verification pass beyond
 what's already recorded below. `evidence/polish_lint.py` added
@@ -303,8 +313,8 @@ plan's structure and already-verified clause citations. Filled with
 this repo's own real evidence: `metadata.a.yaml`'s intended-use text,
 Gate C1-C6 references for the 5 `PROVEN` rows, honest `GAP` rows for
 REQ-RENAL-3/4/6/7 (named, sourced, unformalized) and REQ-RENAL-8
-(permanent trust boundary), the Gate C5 residual (51 survivors, all
-three categories already explained, not silently carried), and Gate
+(permanent trust boundary), the Gate C5 residual (53 survivors, all
+four categories already explained, not silently carried), and Gate
 C6's closed status (2026-07-11). Sections needing clinical judgment
 left as explicit `GAP`s, matching `classification_rationale`'s
 `DECLARED` status. A real, pre-existing staleness bug found and fixed

@@ -1,6 +1,6 @@
 # SYSTEM_REFERENCE — payloadguard-evidence
 
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 This document describes what this system does and what state it is in
 today. It contains no build history, no narrative of how any decision
@@ -380,11 +380,12 @@ verify together (`7 verified, 0 errors`), including a proven
 Cockcroft-Gault creatinine-clearance computation from raw patient
 inputs. CKD-EPI eGFR remains caller-supplied — a permanent, confirmed
 Dafny/Z3 expressiveness limit (no real-valued fractional-exponentiation
-primitive on a variable base). Gate C5: 450 mutants, 250 killed,
-137 filtered pre-verification, 51 survived (three named,
-explained categories), 10 unclassifiable, 2 blocked (a literal embedded
-in arithmetic rather than adjacent to a comparison operator, outside
-the LVR locator's scope). `REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`,
+primitive on a variable base). Gate C5 (each mutant verified against the
+mutated function in isolation, so a kill is its own contract's, not a
+caller's): 504 mutants, 294 killed, 147 filtered pre-verification, 53
+survived (four named, explained categories), 10 unclassifiable. Two spec
+tightenings (`ensures RoundHalfUp(x) >= 0`, `ensures ComposedCeiling(...)
+> 0.0`) make those functions' preconditions load-bearing. `REQ-RENAL-3`, `REQ-RENAL-4`, `REQ-RENAL-6`,
 `REQ-RENAL-7` render as honest `GAP` rows with
 `intended_method: PROVEN` — real, named future formalization
 candidates, not silently dropped. `REQ-RENAL-8` (drug-classification-flag
@@ -461,10 +462,10 @@ clinical SME has scored either device's hazards yet.
 
 ## 9. Testing
 
-264 test functions across 36 categories (`TEST_CATALOG.md`, generated
+274 test functions across 37 categories (`TEST_CATALOG.md`, generated
 by AST-parsing the real test suite — CI fails if this file drifts
 from what the generator produces against the committed suite). Pytest
-collects 275 individual test cases from those 264 functions (the gap
+collects 285 individual test cases from those 274 functions (the gap
 is parametrized functions expanding into multiple cases).
 
 The committed test suite reads committed verification captures; it
@@ -545,7 +546,7 @@ examples/               one directory per worked example
   drug_interaction_checker/
   aeb_kernel/
 sources/                 archived primary-source documents, one per citation
-tests/                   the test suite (264 functions / 275 collected cases)
+tests/                   the test suite (274 functions / 285 collected cases)
 dashboards/              dated HTML status snapshots, not auto-regenerated
 .github/workflows/       tests.yml, payloadguard.yml
 ```

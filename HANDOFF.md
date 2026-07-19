@@ -8,7 +8,28 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-18 (even later) — **`README.md` gained a
+**Last updated:** 2026-07-19 — **Gate C5 accuracy pass: automated
+caller-isolation, LVR generator fixes, and two renal spec tightenings —
+an external Claude session's package, re-derived against our own Dafny
+before trust.** New `evidence/dafny_isolate.py` verifies every mutant
+against the mutated function in isolation (its callees + datatypes,
+never its callers), so a kill is the function's own contract's, not a
+downstream caller's — the caller-confound (reproduced: RoundHalfUp's
+`requires x >= 0.0` widenings scored KILLED whole-file but the error was
+in a caller) can no longer silently recur. Two `dafny_mutate.py` LVR
+fixes: arithmetic-embedded ensures literals now get coverage (4a), and a
+latent false-pass where a one-sided-arithmetic literal was mis-filtered
+as trivial is closed (4b — a real skipped kill in the shipped tool).
+Two spec tightenings (`ensures RoundHalfUp(x) >= 0`, `ensures
+ComposedCeiling(...) > 0.0`) make those preconditions load-bearing.
+Renal Gate C5 re-derived ourselves: 450→504 mutants, 250→294 killed,
+51→53 survivors (four explained categories), `blocked_lvr_clause_literal`
+gone. `test_renal_mutation_report.py` rewritten; `test_dafny_isolate.py`
+added; 285 tests pass. **Next step: apply the same isolated re-check to
+`dosage_calculator` and `drug_interaction_checker` (their functions with
+callers haven't been re-verified in isolation yet) — named, not assumed
+clean.** Full account: `DEVLOG.md`'s 2026-07-19 entry.
+**Prior update, preserved below** — 2026-07-18 (even later) — **`README.md` gained a
 system-wide evidence-strength totals table (28 requirements: 20
 `PROVEN`, 1 `BOUNDED_CHECKED`, 7 `GAP`) and the pip-installable CLI
 path, then a guard test after a real Qodo finding on the PR.** Counts
@@ -646,7 +667,7 @@ at `examples/renal_adjustment/RISK_MANAGEMENT_PLAN.md`. Sections
 intended-use text, real Gate C1–C6 references for the 5 `PROVEN`
 requirement rows, honest `GAP` rows for REQ-RENAL-3/4/6/7 (named,
 sourced, unformalized) and REQ-RENAL-8 (permanent trust boundary, open
-operational question), the Gate C5 residual (51 survivors, all three
+operational question), the Gate C5 residual (53 survivors, all four
 categories explained, not silently carried), Gate C6's closed status
 (2026-07-11). Sections 2/4 (roles, severity/probability, acceptance
 matrix) left as explicit GAPs, matching `classification_rationale`'s

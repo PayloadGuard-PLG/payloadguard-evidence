@@ -1,6 +1,14 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-18 (later) (`pyproject.toml` added at the repo
+Last updated: 2026-07-19 (Gate C5 accuracy pass: `evidence/dafny_isolate.py`
+added — mutation testing now verifies each mutant against the mutated
+function in isolation (its callees + datatypes, never its callers) so a
+kill is attributed to the function's own contract; two `dafny_mutate.py`
+LVR fixes; two renal spec tightenings. Renal Gate C5 re-derived to 504
+mutants / 53 explained survivors. No data-flow change beyond the new
+isolation module in the Gate C5 path. Full record: `DEVLOG.md`'s
+2026-07-19 entry.)
+Prior header, preserved: Last updated: 2026-07-18 (later) (`pyproject.toml` added at the repo
 root — the CLI (`python -m evidence.cli`, described throughout this
 file) is now also installable via `pip install .` as a `plg-evidence`
 console script, verified end to end in an isolated venv. No
@@ -1057,10 +1065,10 @@ payloadguard-evidence/
 │   ├── run_verify_renal.py, run_verify_dafny_stp_suite(_against_underconstrained)_renal.py
 │   │                            Capture runners, mirroring
 │   │                            dosage_calculator's exact discipline
-│   ├── run_mutation_suite_renal.py  Gate C5: 450 mutants across all 7
-│   │                            functions - 51 survivors, all explained/
-│   │                            categorized; 4 real engine gaps fixed,
-│   │                            2 named and deliberately left unfixed
+│   ├── run_mutation_suite_renal.py  Gate C5: 504 mutants across all 7
+│   │                            functions, each verified in isolation -
+│   │                            53 survivors, all explained/categorized;
+│   │                            1 named &&/|| gap deliberately left unfixed
 │   ├── mutation_report_renal.json/.md, run_manifest_mutation_renal.json
 │   │                            Gate C5: real, committed outcome of
 │   │                            every mutant

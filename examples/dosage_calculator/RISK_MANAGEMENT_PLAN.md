@@ -546,7 +546,7 @@ Gate C5 (mutation testing) residual status, current as of 2026-07-07:
 filtered (6 statically, 4 magnitude-implied, 4 chain-incompatible, 1
 arithmetic-group-incompatible) — **zero survive, zero unclassifiable.**
 This is a genuinely different, cleaner residual than the other two
-worked examples (which have 44 and 51 explained survivors
+worked examples (which have 44 and 53 explained survivors
 respectively) — the mid-run report once had 2 real survivors, both
 closed by two later, real engineering extensions (chain-direction-
 aware ROR, function-body AOR, and a literal-value LVR extension that
