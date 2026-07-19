@@ -325,9 +325,56 @@ def test_locate_clause_numeric_literal_sites_finds_every_zero_with_correct_role(
     assert total_sites == 5
 
 
-def test_locate_clause_numeric_literal_sites_refuses_non_adjacent_literal():
-    with pytest.raises(SystemExit, match="not adjacent to a comparison operator"):
-        _locate_clause_numeric_literal_sites("x == y + 1.0")
+def test_locate_clause_numeric_literal_sites_accepts_arithmetic_embedded_literal():
+    """Pinning fix, 2026-07-19 (Gate C5 finding against
+    renal_adjustment.dfy's RoundHalfUp and CockcroftGaultCrClMlPerMin,
+    both of which have real literals in exactly this shape - `140` in
+    `(140 - ageYears) as real) == ...` and `0.5` in
+    `RoundHalfUp(x) as real) - 0.5 <= x`). This case used to raise
+    SystemExit here; that was over-refusal, not correct caution -
+    refusing to guess a literal's comparison ROLE (needed only for the
+    magnitude-implication static filter) does not require refusing to
+    mutate it at all. `1.0` here is adjacent to `+`, and the clause has
+    a comparison (`==`) elsewhere, so it's now returned as a legitimate
+    site with op_kind/literal_is_lhs both None - the sentinel that
+    tells generate_lvr_mutants to send it straight to real verification,
+    never statically filter it (see _locate_clause_numeric_literal_sites'
+    and generate_lvr_mutants' docstrings for why: an intervening +/-/*//
+    can invert or rescale the narrowing/widening direction in ways this
+    module does not attempt to infer, so never filtering is the only
+    safe choice, not a relaxed one)."""
+    sites = _locate_clause_numeric_literal_sites("x == y + 1.0")
+    assert len(sites) == 1
+    _tstart, _tend, value, op_kind, literal_is_lhs = sites[0]
+    assert value == "1.0"
+    assert op_kind is None
+    assert literal_is_lhs is None
+
+
+def test_locate_clause_numeric_literal_sites_still_refuses_truly_ambiguous_literal():
+    """The narrowed refusal this module still makes after the 2026-07-19
+    fix above: a literal adjacent to neither a comparison NOR an
+    arithmetic operator - here, a bare function-call argument - has no
+    comparison-relevant role established by either recognized case, and
+    mutating it would test something categorically different (changing
+    what's computed, not a magnitude within a proven relation)."""
+    with pytest.raises(
+        SystemExit, match="not adjacent to a comparison or arithmetic operator"
+    ):
+        _locate_clause_numeric_literal_sites("x == Foo(5)")
+
+
+def test_locate_clause_numeric_literal_sites_still_refuses_when_no_comparison_present():
+    """A second still-refused shape: an arithmetic-adjacent literal in a
+    clause with NO comparison operator anywhere. The arithmetic-embedded
+    exception above requires `has_comparison` precisely so a literal
+    genuinely unrelated to any proven relation (e.g. inside a bare
+    boolean combinator with no `==`/`<=`/etc.) is not silently accepted
+    as a site."""
+    with pytest.raises(
+        SystemExit, match="not adjacent to a comparison or arithmetic operator"
+    ):
+        _locate_clause_numeric_literal_sites("SomeBoolFn(y + 1.0)")
 
 
 def test_locate_function_body_numeric_literal_sites_finds_both_zeros():
