@@ -55,6 +55,17 @@ datatype RenalAssessment =
 function RoundHalfUp(x: real): int
   requires x >= 0.0
   ensures (RoundHalfUp(x) as real) - 0.5 <= x < (RoundHalfUp(x) as real) + 0.5 // REQ-RENAL-1a
+  ensures RoundHalfUp(x) >= 0 // REQ-RENAL-1a-EXT, Gate C5 (isolated re-verification,
+  // 2026-07-19): makes `requires x >= 0.0` load-bearing. Without this, three
+  // qualitative weakenings of the precondition (<= 0.0, != 0.0, < 0.0) survive
+  // mutation in isolation - RoundHalfUp's own body satisfies its rounding
+  // ensures for negative x too, so nothing here depended on x >= 0.0 until this
+  // positivity guarantee was stated. The whole-file run had wrongly scored those
+  // three KILLED; the kill was AssessRenalFunction (a caller) failing to
+  // discharge the mutated precondition, not RoundHalfUp itself. Does NOT close
+  // the LVR-scale survivor (x >= -0.01): RoundHalfUp(x) for x in [-0.01, 0) is
+  // still 0, so >= 0 holds; the positivity break only occurs once x < -0.5.
+  // That survivor is a sound consequence, correctly left open, not a spec gap.
 {
   (x + 0.5).Floor
 }
@@ -136,6 +147,13 @@ function ComposedCeiling(existingCeiling: real, renalCeiling: real): real
   ensures ComposedCeiling(existingCeiling, renalCeiling) <= existingCeiling // REQ-RENAL-5
   ensures ComposedCeiling(existingCeiling, renalCeiling) <= renalCeiling // REQ-RENAL-5
   ensures ComposedCeiling(existingCeiling, renalCeiling) == existingCeiling || ComposedCeiling(existingCeiling, renalCeiling) == renalCeiling // REQ-RENAL-5, Gate C4 pinning fix
+  ensures ComposedCeiling(existingCeiling, renalCeiling) > 0.0 // REQ-RENAL-5-EXT, Gate C5 (2026-07-19):
+  // makes the two `requires > 0.0` clauses load-bearing. Without this, every
+  // mutation of those preconditions survived (the min-of-two body verifies its
+  // other ensures regardless of input positivity). ComposedCeiling has no
+  // in-file callers, so this was an honest isolated survivor, not a confounded
+  // one - positivity is preserved through composition, so stating it is real
+  // added content, not a decorative guard.
 {
   if renalCeiling < existingCeiling then renalCeiling else existingCeiling
 }

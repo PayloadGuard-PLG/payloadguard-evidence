@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 273 test functions across 37 categories.**
+**Total: 274 test functions across 37 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -430,15 +430,16 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_renal_mutation_report.py:25` |
-| `test_survivors_are_all_antecedent_narrowing_on_a_one_way_implication` | Category 1 (39 of 51 survivors): ROR/LVR mutations that NARROW the antecedent of a one-way `==>` ensures clause (e.g. | `tests/test_renal_mutation_report.py:43` |
-| `test_survivors_are_all_requires_clause_weakenings_not_load_bearing` | Category 2 (11 of 51 survivors): ROR/LVR mutations to a `requires` clause that Dafny's real verifier can still satisfy under the weakened precondition, because the specific `ensures` clauses proven for that function don… | `tests/test_renal_mutation_report.py:67` |
-| `test_round_half_up_aor_survivor_is_the_one_named_exception` | Category 3 (1 of 51 survivors): RoundHalfUp's self-referential ensures clause (`(RoundHalfUp(x) as real) - 0.5 <= x < ...`) survives a `-` -> `*` mutation for a coincidental numeric reason (the mutated lower bound is lo… | `tests/test_renal_mutation_report.py:86` |
-| `test_all_51_survivors_accounted_for_by_the_three_named_categories` | No survivor should exist outside the three categories above - a future spec change producing a genuinely new, unexplained survivor must fail this test, not blend into an unexamined total. | `tests/test_renal_mutation_report.py:101` |
-| `test_unclassifiable_results_are_all_the_named_lor_ambiguity_gap` | Real, named engine limitation (2026-07-09), not fixed: SelectFormula's ensures clause antecedent is a flat, unparenthesized run of six `\|\|` terms; mutating any one `\|\|` to `&&` produces Dafny's own genuine 'Ambiguous us… | `tests/test_renal_mutation_report.py:116` |
-| `test_lvr_clause_literal_blocked_entries_match_the_named_functions` | Two functions hit the LVR clause-literal locator's documented Tier-1 scope boundary ("every literal sits immediately adjacent to a comparison operator... | `tests/test_renal_mutation_report.py:138` |
-| `test_no_mutant_touches_a_function_body_other_than_the_two_named` | AOR/LVR body mutation is scoped to exactly RoundHalfUp and CockcroftGaultCrClMlPerMin - the only two functions with arithmetic operators or numeric literals in their own bodies (see run_mutation_suite_renal.py's module… | `tests/test_renal_mutation_report.py:154` |
-| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_renal_mutation_report.py:166` |
+| `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_renal_mutation_report.py:36` |
+| `test_verified_mutants_are_recorded_as_isolated` | Every mutant that reached real Dafny verification (i.e. | `tests/test_renal_mutation_report.py:56` |
+| `test_survivors_are_all_antecedent_narrowing_on_a_one_way_implication` | Category 1 (33 of 53 survivors): ROR/LVR mutations that NARROW the antecedent of a one-way `==>` ensures clause (e.g. | `tests/test_renal_mutation_report.py:68` |
+| `test_survivors_are_all_requires_clause_weakenings_not_load_bearing` | Category 2 (17 of 53 survivors): ROR/LVR mutations to a `requires` clause that Dafny's real verifier can still satisfy under the weakened precondition, because the specific `ensures` clauses proven for that function don… | `tests/test_renal_mutation_report.py:90` |
+| `test_round_half_up_aor_survivor_is_the_one_named_exception` | Category 3 (1 of 53 survivors): RoundHalfUp's self-referential ensures clause (`(RoundHalfUp(x) as real) - 0.5 <= x < ...`) survives a `-` -> `*` mutation for a coincidental numeric reason (the mutated lower bound is lo… | `tests/test_renal_mutation_report.py:118` |
+| `test_round_half_up_ensures_lvr_widening_survivors_are_the_named_pair` | Category 4 (2 of 53 survivors): now that the LVR generator covers RoundHalfUp's arithmetic-embedded ensures literal (fix 4a), widening the rounding tolerance `0.5 -> 0.51` in `(RoundHalfUp(x) as real) - 0.5 <= x < (Roun… | `tests/test_renal_mutation_report.py:133` |
+| `test_all_53_survivors_accounted_for_by_the_four_named_categories` | No survivor should exist outside the four categories above - a future spec change producing a genuinely new, unexplained survivor must fail this test, not blend into an unexamined total. | `tests/test_renal_mutation_report.py:152` |
+| `test_unclassifiable_results_are_all_the_named_lor_ambiguity_gap` | Real, named engine limitation (2026-07-09), not fixed: SelectFormula's ensures clause antecedent is a flat, unparenthesized run of six `\|\|` terms; mutating any one `\|\|` to `&&` produces Dafny's own genuine 'Ambiguous us… | `tests/test_renal_mutation_report.py:171` |
+| `test_no_mutant_touches_a_function_body_other_than_the_two_named` | AOR/LVR body mutation is scoped to exactly RoundHalfUp and CockcroftGaultCrClMlPerMin - the only two functions with arithmetic operators or numeric literals in their own bodies (see run_mutation_suite_renal.py's module… | `tests/test_renal_mutation_report.py:186` |
+| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_renal_mutation_report.py:198` |
 
 ## Single Evidence Type (`tests/test_single_evidence_type.py`)
 
