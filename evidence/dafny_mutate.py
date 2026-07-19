@@ -433,30 +433,91 @@ def _locate_clause_sites(source, method_name, keyword):
 
 
 def _locate_clause_numeric_literal_sites(code_text):
-    """Every NUM-kind token in one clause's text, paired with the
-    comparison operator kind it's an operand of and which side it's on
-    (needed by _lvr_trivial to determine narrowing vs widening).
-    Every literal in this repo's real clauses sits immediately adjacent
-    to a comparison operator in the flat token stream - no literal is
-    buried inside a nested arithmetic sub-expression. Refuses (Tier 1)
-    rather than guess a role if that assumption ever breaks, instead of
-    silently treating an arithmetic-embedded literal as a bare
-    comparison operand."""
+    """Every NUM-kind token in one clause's text that is a legitimate LVR
+    mutation site, as (tstart, tend, value, op_kind, literal_is_lhs) -
+    same 5-tuple shape as before this function's 2026-07-19 extension,
+    so every existing caller that unpacks it is unaffected. Two cases:
+
+    - The literal sits immediately adjacent to a comparison operator in
+      the flat token stream (e.g. `x <= 0.5`): op_kind/literal_is_lhs
+      are the real comparison kind/side, letting _lvr_trivial determine
+      whether increasing/decreasing this literal narrows or widens the
+      clause - these sites CAN be statically filtered.
+
+    - The literal sits adjacent to an arithmetic operator (+/-/*//)
+      instead, AND the clause contains a comparison operator somewhere
+      (so the arithmetic expression it's part of plausibly feeds one) -
+      e.g. the `140` in `(140 - ageYears) as real) ... == ...` or the
+      `0.5` in `RoundHalfUp(x) as real) - 0.5 <= x`. Found empirically
+      2026-07-19: renal_adjustment.dfy's RoundHalfUp and
+      CockcroftGaultCrClMlPerMin both have literals in exactly this
+      shape - the pre-2026-07-19 version of this function refused on
+      both (see git history / tests/test_dafny_mutate.py's now-updated
+      test_locate_clause_numeric_literal_sites_refuses_non_adjacent_literal),
+      which was over-refusal, not correct caution: refusing to guess a
+      literal's *comparison role* doesn't require refusing to mutate it
+      at all. For these sites op_kind and literal_is_lhs are both None
+      - a sentinel meaning "do not attempt magnitude-implication
+      filtering," never a real comparison kind. A `+`/`-` sitting
+      between the literal and the comparison can invert which direction
+      is "narrowing" (subtraction flips it) and a `*`/`/` can rescale or
+      invert it depending on the sign of the other operand, which this
+      module does not attempt to infer - so generate_lvr_mutants must
+      treat op_kind is None as "always send to real verification, never
+      statically filter," exactly like a function-body literal (see
+      _locate_function_body_numeric_literal_sites). This is the safe
+      direction to err in - it can only ADD real verification calls,
+      never silently skip one by guessing a direction wrong.
+
+    Still refuses (Tier 1) rather than guess if a literal is adjacent to
+    NEITHER a comparison NOR an arithmetic operator (e.g. a bare literal
+    passed as a function-call argument, like `Foo(x, 5)`, or a clause
+    with no comparison operator anywhere) - that shape has no
+    comparison-relevant role established here, mutating it tests
+    something categorically different (changing what's computed, not a
+    magnitude within a proven relation) and isn't covered by either
+    case above."""
     tokens = _tokenize_with_spans(code_text)
+    has_comparison = any(kind in _CMP_TEXT for kind, _v, _s, _e in tokens)
     sites = []
     for i, (kind, value, tstart, tend) in enumerate(tokens):
         if kind != "NUM":
             continue
-        if i + 1 < len(tokens) and tokens[i + 1][0] in _CMP_TEXT:
-            sites.append((tstart, tend, value, tokens[i + 1][0], True))
-        elif i > 0 and tokens[i - 1][0] in _CMP_TEXT:
-            sites.append((tstart, tend, value, tokens[i - 1][0], False))
-        else:
-            raise SystemExit(
-                f"dafny_mutate: literal {value!r} in {code_text!r} is not "
-                "adjacent to a comparison operator - refusing to guess its "
-                "role rather than risk mutating an unrelated literal"
-            )
+        prev_kind = tokens[i - 1][0] if i > 0 else None
+        next_kind = tokens[i + 1][0] if i + 1 < len(tokens) else None
+        # Bug found empirically 2026-07-19 against renal_adjustment.dfy's
+        # RoundHalfUp (`(RoundHalfUp(x) as real) - 0.5 <= x < ...`):
+        # touching a comparison operator on ONE side does not make a
+        # literal a bare operand if the OTHER side touches an arithmetic
+        # operator - here `0.5` sits between `-` and `<=`, and the
+        # subtraction inverts the narrowing/widening direction
+        # _lvr_trivial computes, which assumes a bare `literal <op> expr`
+        # shape. Confirmed by hand-constructing exactly the mutant this
+        # produced (`-0.5` -> `-0.49`) and running it through real Dafny:
+        # it FAILS to verify (a real, informative, narrowing mutation),
+        # while the pre-fix filter classified it "trivially implied" and
+        # skipped it entirely - a silent false pass, not merely a
+        # coverage gap. So a literal only qualifies for the "cmp"
+        # (filterable) category if its OTHER side is clear of arithmetic
+        # too; otherwise it falls through to the same never-filtered
+        # "embedded" treatment as any other arithmetic-adjacent literal.
+        if next_kind in _CMP_TEXT and prev_kind not in _AR_TEXT:
+            sites.append((tstart, tend, value, next_kind, True))
+            continue
+        if prev_kind in _CMP_TEXT and next_kind not in _AR_TEXT:
+            sites.append((tstart, tend, value, prev_kind, False))
+            continue
+        adjacent_arith = prev_kind in _AR_TEXT or next_kind in _AR_TEXT
+        adjacent_cmp = prev_kind in _CMP_TEXT or next_kind in _CMP_TEXT
+        if (adjacent_arith or adjacent_cmp) and has_comparison:
+            sites.append((tstart, tend, value, None, None))
+            continue
+        raise SystemExit(
+            f"dafny_mutate: literal {value!r} in {code_text!r} is not "
+            "adjacent to a comparison or arithmetic operator - refusing "
+            "to guess its role rather than risk mutating an unrelated "
+            "literal"
+        )
     return sites
 
 
@@ -617,9 +678,11 @@ def generate_lvr_mutants(source, method_name, function_name=None):
     function's body); each is mutated to `original +/- _LVR_DELTA`, the
     clinical-precision floor from
     gate_c5_mutation_testing_research_findings.md. Clause-level literals
-    adjacent to LT/LE/GT/GE are filtered per _lvr_trivial's magnitude-
-    implication principle; EQ/NE-adjacent and all function-body literals
-    are never filtered (see _lvr_trivial and
+    directly adjacent to LT/LE/GT/GE are filtered per _lvr_trivial's
+    magnitude-implication principle; EQ/NE-adjacent literals,
+    arithmetic-embedded clause literals (see
+    _locate_clause_numeric_literal_sites' "embedded" category), and all
+    function-body literals are never filtered (see _lvr_trivial and
     _locate_function_body_numeric_literal_sites' docstrings)."""
     mutants = []
     for keyword in ("requires", "ensures"):
@@ -633,7 +696,11 @@ def generate_lvr_mutants(source, method_name, function_name=None):
                     mutant_text = _format_literal_mutant(value, direction)
                     mutated_clause = code_text[:tstart] + mutant_text + code_text[tend:]
                     mutated_source = source[:abs_start] + mutant_text + source[abs_end:]
-                    trivial = _lvr_trivial(keyword, op_kind, literal_is_lhs, direction)
+                    trivial = (
+                        _lvr_trivial(keyword, op_kind, literal_is_lhs, direction)
+                        if op_kind is not None
+                        else False
+                    )
                     mutants.append(
                         Mutant(
                             operator="LVR",
@@ -643,6 +710,7 @@ def generate_lvr_mutants(source, method_name, function_name=None):
                             description=(
                                 f"LVR on {keyword} clause {code_text!r}: "
                                 f"{value} -> {mutant_text}"
+                                + ("" if op_kind is not None else " (arithmetic-embedded site, unfiltered)")
                             ),
                             mutated_source=mutated_source,
                             filtered_reason=(

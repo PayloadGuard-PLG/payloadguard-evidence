@@ -192,21 +192,25 @@ dropped.
 | REQ-RENAL-7 | BSA-nonindexed eGFR at extremes of body weight for narrow-therapeutic-index drugs | **Not yet formalized** — named, KDIGO-sourced, prose only | none — realized `GAP` |
 | REQ-RENAL-8 | Drug-classification flags are caller-supplied, a deliberate, permanent trust boundary (MHRA's drug lists are illustrative, not closed) | `DECLARED` — a process fact, never a Dafny proof target; open item is only *who* populates the flags operationally | none — realized `GAP`, deliberately parked pending operational data |
 
-Gate C5 (mutation testing) residual status, current as of 2026-07-09:
-450 mutants across all seven functions; 250 killed, 137 filtered
-pre-verification, 2 blocked (`blocked_lvr_clause_literal`), 10
-unclassifiable (a genuine Dafny parser-ambiguity limit on
-`SelectFormula`'s flat `||` chain, independently covered by Gate C4's
-STP suite), **51 survive**. The 51 survivors are a **known, explained
-residual** — not an open gap being silently carried — see
+Gate C5 (mutation testing) residual status, current as of the
+2026-07-19 accuracy pass (each mutant verified against the mutated
+function in isolation, so a kill is its own contract's, not a caller's):
+504 mutants across all seven functions; 294 killed, 147 filtered
+pre-verification, 10 unclassifiable (a genuine Dafny parser-ambiguity
+limit on `SelectFormula`'s flat `||` chain, independently covered by
+Gate C4's STP suite), **53 survive**. The 53 survivors are a **known,
+explained residual** — not an open gap being silently carried — see
 `KNOWN_LIMITATIONS.md` for the full account: 33 are ROR/LVR mutations
 narrowing a one-way `==>` clause's antecedent (a structural blind spot
 of the technique against guard-style clauses, not a proof gap), 17 are
 `requires`-clause weakenings the currently-proven `ensures` clauses
-don't depend on (the preconditions still correctly document real
-domain facts), and 1 is a coincidental numeric survivor on
-`RoundHalfUp`, independently resolved by Gate C4's STP suite. Full
-detail: `mutation_report_renal.md`.
+don't depend on, 1 is a coincidental AOR numeric survivor on
+`RoundHalfUp`, and 2 are `RoundHalfUp`'s rounding-tolerance ensures-LVR
+widenings — all four categories independently resolved by Gate C4's STP
+suite. Two spec tightenings (`ensures RoundHalfUp(x) >= 0`, `ensures
+ComposedCeiling(...) > 0.0`) moved those functions' precondition mutants
+from survived/confounded to legitimately killed. Full detail:
+`mutation_report_renal.md`.
 
 Note the distinction this repo already enforces: a `PROVEN` label
 above means Gate C1–C4's mechanical checks passed, not that a human

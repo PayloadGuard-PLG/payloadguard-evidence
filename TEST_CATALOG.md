@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 264 test functions across 36 categories.**
+**Total: 275 test functions across 37 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -119,6 +119,19 @@ for the actual collected-case count.
 | `test_false_zero_guard_is_not_fooled_by_a_substring_trap` | The core false-zero property: a literal "0 errors" substring appearing anywhere else in the output must not cause a false accept - only the verifier's own summary line's parsed count matters. | `tests/test_dafny_adapter.py:73` |
 | `test_producing_a_proven_result_does_not_reopen_the_matrix_gate` | Belt and suspenders: even after constructing a real PROVEN VerificationResult via this adapter, assert_no_realized_proven still hard-blocks PROVEN from ever appearing in a rendered matrix row - Gate C2 (not built) is wh… | `tests/test_dafny_adapter.py:89` |
 
+## Dafny Isolate (`tests/test_dafny_isolate.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_parse_decls_finds_every_renal_function_and_datatype` | Parse decls finds every renal function and datatype. | `tests/test_dafny_isolate.py:26` |
+| `test_leaf_function_isolates_to_itself_plus_datatypes_no_callers` | Leaf function isolates to itself plus datatypes no callers. | `tests/test_dafny_isolate.py:38` |
+| `test_non_leaf_includes_transitive_callees_excludes_callers` | AssessRenalFunction calls GStage and RoundHalfUp (callees, kept) and is called by AssessRenalFunctionFromInputs (a caller, dropped). | `tests/test_dafny_isolate.py:48` |
+| `test_full_down_closure_for_the_top_orchestrator` | AssessRenalFunctionFromInputs calls SelectFormula, AssessRenalFunction, CockcroftGaultCrClMlPerMin - transitively pulling in GStage and RoundHalfUp too. | `tests/test_dafny_isolate.py:60` |
+| `test_self_reference_does_not_seed_the_closure` | A function names itself in its own ensures clauses; that must not be treated as a call that pulls anything extra in. | `tests/test_dafny_isolate.py:72` |
+| `test_isolate_refuses_unknown_function` | Isolate refuses unknown function. | `tests/test_dafny_isolate.py:80` |
+| `test_isolate_handles_attribute_bearing_declarations` | Dafny allows attribute blocks between the keyword and the name (`function {:axiom} Pow(...)`, `method {:vcs_split_on_every_assert} Foo(...)`). | `tests/test_dafny_isolate.py:85` |
+| `test_synthetic_caller_is_excluded_even_when_it_shares_a_datatype` | Synthetic caller is excluded even when it shares a datatype. | `tests/test_dafny_isolate.py:112` |
+
 ## Dafny Mutate (`tests/test_dafny_mutate.py`)
 
 | Test | Description | Code |
@@ -143,12 +156,14 @@ for the actual collected-case count.
 | `test_locate_function_body_arithmetic_sites_finds_exactly_the_one_star` | Locate function body arithmetic sites finds exactly the one star. | `tests/test_dafny_mutate.py:260` |
 | `test_ror_polarity_flips_between_requires_and_ensures` | The load-bearing, non-obvious design property: strengthening a requires clause is trivial (the original proof still applies under a narrower hypothesis) while weakening an ensures clause is trivial (whatever already sat… | `tests/test_dafny_mutate.py:269` |
 | `test_locate_clause_numeric_literal_sites_finds_every_zero_with_correct_role` | Every literal in dosage.dfy's real clauses is exactly 0.0, at 5 sites, each immediately adjacent to a comparison operator - verified directly against the real spec, not assumed. | `tests/test_dafny_mutate.py:310` |
-| `test_locate_clause_numeric_literal_sites_refuses_non_adjacent_literal` | Locate clause numeric literal sites refuses non adjacent literal. | `tests/test_dafny_mutate.py:328` |
-| `test_locate_function_body_numeric_literal_sites_finds_both_zeros` | Locate function body numeric literal sites finds both zeros. | `tests/test_dafny_mutate.py:333` |
-| `test_lvr_trivial_matches_the_magnitude_implication_principle` | Direct unit test of the pure helper, independent of the real spec. | `tests/test_dafny_mutate.py:342` |
-| `test_lvr_against_real_spec_matches_the_hand_derived_prediction` | The scoping session's own hand-worked prediction (roadmap doc's Gate C5 LVR sub-plan): 14 raw mutants (7 sites x 2 candidates), 4 filtered as magnitude-implied, 10 sent to real verification. | `tests/test_dafny_mutate.py:362` |
-| `test_int_literal_lvr_mutant_stays_int_typed` | Real bug found applying this module to renal_adjustment.dfy (2026-07-09): formatting an int-typed literal's LVR mutant as a decimal (`90.01`) produces a genuine Dafny static type error ('arguments to >= must have a comm… | `tests/test_dafny_mutate.py:379` |
-| `test_lvr_mutated_source_changes_exactly_the_targeted_literal` | Lvr mutated source changes exactly the targeted literal. | `tests/test_dafny_mutate.py:410` |
+| `test_locate_clause_numeric_literal_sites_accepts_arithmetic_embedded_literal` | Pinning fix, 2026-07-19 (Gate C5 finding against renal_adjustment.dfy's RoundHalfUp and CockcroftGaultCrClMlPerMin, both of which have real literals in exactly this shape - `140` in `(140 - ageYears) as real) == ...` an… | `tests/test_dafny_mutate.py:328` |
+| `test_locate_clause_numeric_literal_sites_still_refuses_truly_ambiguous_literal` | The narrowed refusal this module still makes after the 2026-07-19 fix above: a literal adjacent to neither a comparison NOR an arithmetic operator - here, a bare function-call argument - has no comparison-relevant role… | `tests/test_dafny_mutate.py:354` |
+| `test_locate_clause_numeric_literal_sites_still_refuses_when_no_comparison_present` | A second still-refused shape: an arithmetic-adjacent literal in a clause with NO comparison operator anywhere. | `tests/test_dafny_mutate.py:367` |
+| `test_locate_function_body_numeric_literal_sites_finds_both_zeros` | Locate function body numeric literal sites finds both zeros. | `tests/test_dafny_mutate.py:380` |
+| `test_lvr_trivial_matches_the_magnitude_implication_principle` | Direct unit test of the pure helper, independent of the real spec. | `tests/test_dafny_mutate.py:389` |
+| `test_lvr_against_real_spec_matches_the_hand_derived_prediction` | The scoping session's own hand-worked prediction (roadmap doc's Gate C5 LVR sub-plan): 14 raw mutants (7 sites x 2 candidates), 4 filtered as magnitude-implied, 10 sent to real verification. | `tests/test_dafny_mutate.py:409` |
+| `test_int_literal_lvr_mutant_stays_int_typed` | Real bug found applying this module to renal_adjustment.dfy (2026-07-09): formatting an int-typed literal's LVR mutant as a decimal (`90.01`) produces a genuine Dafny static type error ('arguments to >= must have a comm… | `tests/test_dafny_mutate.py:426` |
+| `test_lvr_mutated_source_changes_exactly_the_targeted_literal` | Lvr mutated source changes exactly the targeted literal. | `tests/test_dafny_mutate.py:457` |
 
 ## Dafny NL Summary (`tests/test_dafny_nl_summary.py`)
 
@@ -416,15 +431,16 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_renal_mutation_report.py:25` |
-| `test_survivors_are_all_antecedent_narrowing_on_a_one_way_implication` | Category 1 (39 of 51 survivors): ROR/LVR mutations that NARROW the antecedent of a one-way `==>` ensures clause (e.g. | `tests/test_renal_mutation_report.py:43` |
-| `test_survivors_are_all_requires_clause_weakenings_not_load_bearing` | Category 2 (11 of 51 survivors): ROR/LVR mutations to a `requires` clause that Dafny's real verifier can still satisfy under the weakened precondition, because the specific `ensures` clauses proven for that function don… | `tests/test_renal_mutation_report.py:67` |
-| `test_round_half_up_aor_survivor_is_the_one_named_exception` | Category 3 (1 of 51 survivors): RoundHalfUp's self-referential ensures clause (`(RoundHalfUp(x) as real) - 0.5 <= x < ...`) survives a `-` -> `*` mutation for a coincidental numeric reason (the mutated lower bound is lo… | `tests/test_renal_mutation_report.py:86` |
-| `test_all_51_survivors_accounted_for_by_the_three_named_categories` | No survivor should exist outside the three categories above - a future spec change producing a genuinely new, unexplained survivor must fail this test, not blend into an unexamined total. | `tests/test_renal_mutation_report.py:101` |
-| `test_unclassifiable_results_are_all_the_named_lor_ambiguity_gap` | Real, named engine limitation (2026-07-09), not fixed: SelectFormula's ensures clause antecedent is a flat, unparenthesized run of six `\|\|` terms; mutating any one `\|\|` to `&&` produces Dafny's own genuine 'Ambiguous us… | `tests/test_renal_mutation_report.py:116` |
-| `test_lvr_clause_literal_blocked_entries_match_the_named_functions` | Two functions hit the LVR clause-literal locator's documented Tier-1 scope boundary ("every literal sits immediately adjacent to a comparison operator... | `tests/test_renal_mutation_report.py:138` |
-| `test_no_mutant_touches_a_function_body_other_than_the_two_named` | AOR/LVR body mutation is scoped to exactly RoundHalfUp and CockcroftGaultCrClMlPerMin - the only two functions with arithmetic operators or numeric literals in their own bodies (see run_mutation_suite_renal.py's module… | `tests/test_renal_mutation_report.py:154` |
-| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_renal_mutation_report.py:166` |
+| `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_renal_mutation_report.py:36` |
+| `test_verified_mutants_are_recorded_as_isolated` | Every mutant that reached real Dafny verification (i.e. | `tests/test_renal_mutation_report.py:56` |
+| `test_survivors_are_all_antecedent_narrowing_on_a_one_way_implication` | Category 1 (33 of 53 survivors): ROR/LVR mutations that NARROW the antecedent of a one-way `==>` ensures clause (e.g. | `tests/test_renal_mutation_report.py:68` |
+| `test_survivors_are_all_requires_clause_weakenings_not_load_bearing` | Category 2 (17 of 53 survivors): ROR/LVR mutations to a `requires` clause that Dafny's real verifier can still satisfy under the weakened precondition, because the specific `ensures` clauses proven for that function don… | `tests/test_renal_mutation_report.py:90` |
+| `test_round_half_up_aor_survivor_is_the_one_named_exception` | Category 3 (1 of 53 survivors): RoundHalfUp's self-referential ensures clause (`(RoundHalfUp(x) as real) - 0.5 <= x < ...`) survives a `-` -> `*` mutation for a coincidental numeric reason (the mutated lower bound is lo… | `tests/test_renal_mutation_report.py:118` |
+| `test_round_half_up_ensures_lvr_widening_survivors_are_the_named_pair` | Category 4 (2 of 53 survivors): now that the LVR generator covers RoundHalfUp's arithmetic-embedded ensures literal (fix 4a), widening the rounding tolerance `0.5 -> 0.51` in `(RoundHalfUp(x) as real) - 0.5 <= x < (Roun… | `tests/test_renal_mutation_report.py:133` |
+| `test_all_53_survivors_accounted_for_by_the_four_named_categories` | No survivor should exist outside the four categories above - a future spec change producing a genuinely new, unexplained survivor must fail this test, not blend into an unexamined total. | `tests/test_renal_mutation_report.py:152` |
+| `test_unclassifiable_results_are_all_the_named_lor_ambiguity_gap` | Real, named engine limitation (2026-07-09), not fixed: SelectFormula's ensures clause antecedent is a flat, unparenthesized run of six `\|\|` terms; mutating any one `\|\|` to `&&` produces Dafny's own genuine 'Ambiguous us… | `tests/test_renal_mutation_report.py:171` |
+| `test_no_mutant_touches_a_function_body_other_than_the_two_named` | AOR/LVR body mutation is scoped to exactly RoundHalfUp and CockcroftGaultCrClMlPerMin - the only two functions with arithmetic operators or numeric literals in their own bodies (see run_mutation_suite_renal.py's module… | `tests/test_renal_mutation_report.py:186` |
+| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_renal_mutation_report.py:198` |
 
 ## Single Evidence Type (`tests/test_single_evidence_type.py`)
 

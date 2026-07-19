@@ -168,68 +168,73 @@ Gate C4's ACCEPT/REJECT lemmas, a stronger, proof-based check than this
 heuristic lint provides alone. Full detail and exact counts:
 `tests/test_renal_adjustment_spec_lint.py`.
 
-## Amendment 2026-07-09 — Gate C5 (mutation testing) built: 450 mutants, 51 explained survivors, one named engine gap
+## Amendment 2026-07-09 / accuracy pass 2026-07-19 — Gate C5 (mutation testing): 504 mutants, 53 explained survivors, one named engine gap
 
 Ran the full ROR/LOR/AOR/LVR/COI suite independently against all seven
-functions (`examples/renal_adjustment/run_mutation_suite_renal.py`) —
-450 mutants, real-verified against Dafny 4.11.0: 250 killed, 137
-filtered before verification, 51 survived, 10 unclassifiable, 2 blocked.
-Four real gaps in the shared `evidence/dafny_mutate.py` engine surfaced
-applying it to this spec's different shape (no top-level `method`, seven
-independent proof targets, int-typed boundary literals, a datatype
-discriminator) — full detail in the runner script's module docstring:
+functions (`examples/renal_adjustment/run_mutation_suite_renal.py`).
+Current committed figures, after the 2026-07-19 accuracy pass described
+below: **504 mutants, real-verified against Dafny 4.11.0 — 294 killed,
+147 filtered before verification, 53 survived, 10 unclassifiable.**
 
-- **Fixed:** the lexical tokenizer had no `DOT` or `QUESTION` token, so
-  `RoundHalfUp`'s `.Floor` and `AssessRenalFunction`'s
-  `.EGFRAssessment?`/`.CrClAssessment?` raised "unsupported syntax" —
-  both added, the same class of extension as the existing COMMA/SEMI
-  tolerance.
-- **Fixed:** LVR always formatted a mutated literal as a decimal
-  (`90.01`), breaking Dafny's static typing on this spec's many
-  int-typed boundary literals (`roundedEgfr >= 90`, `ageYears < 140`)
-  — `dosage.dfy`'s literals were all already real-typed, so this never
-  surfaced before. A literal's own lexical form now determines whether
-  its mutant stays an int (+/-1) or a real (+/-0.01).
-- **Named, not fixed — RoundHalfUp and CockcroftGaultCrClMlPerMin's LVR
-  clause literals:** both have a literal embedded in arithmetic
-  (`... - 0.5 <= x`; `140`/`88.4`/`72.0` deep inside a pinning
-  equality's RHS) rather than directly adjacent to a comparison
-  operator — the LVR locator's documented Tier-1 scope boundary. Real
-  new design work, not a bounded fix (the narrowing/widening direction
-  of an arithmetic-embedded literal depends on the enclosing operator);
-  Gate C4's STP suite already independently proves both functions'
-  exact values, so this is a coverage overlap loss, not a proof gap.
-  Recorded as `blocked_lvr_clause_literal` (2 mutants).
+**2026-07-19 accuracy pass (two mechanisms + two spec tightenings):**
+
+- **Automated caller-isolation** (`evidence/dafny_isolate.py`). Every
+  mutant is now verified against the mutated function *in isolation* —
+  its own transitive callees and datatypes, never its callers — so a
+  kill is attributable to the function's own contract. Whole-file
+  verification had over-reported kills: `RoundHalfUp`'s `requires x >=
+  0.0` widenings scored KILLED whole-file, but the error was inside
+  `AssessRenalFunction` (a caller), not `RoundHalfUp` itself.
+- **LVR generator fixes 4a/4b** (`evidence/dafny_mutate.py`). The former
+  "`blocked_lvr_clause_literal`" outcome is gone: arithmetic-embedded
+  ensures literals (`RoundHalfUp`'s `0.5`; `CockcroftGaultCrClMlPerMin`'s
+  `140`/`88.4`/`72.0`/`0.85`) now get real LVR coverage, and a
+  latent false-pass (a literal comparison-adjacent on one side but
+  arithmetic-adjacent on the other, formerly mis-filtered as trivial)
+  is closed.
+- **Two spec tightenings** making previously-non-load-bearing
+  preconditions load-bearing: `ensures RoundHalfUp(x) >= 0` and
+  `ensures ComposedCeiling(...) > 0.0`. With these, the precondition
+  mutants of both functions (formerly confounded-KILLED or honestly
+  survived) now kill for the right reason — at the function's own
+  contract, in isolation.
+
+Two long-standing engine facts unchanged: the tokenizer's `DOT`/
+`QUESTION` support and the int-vs-real literal-typing fix (both
+2026-07-09), and the one remaining named gap —
+
 - **Named, not fixed — SelectFormula's flat `||` chain:** mutating any
   one `||` to `&&` in its six-term, unparenthesized ensures antecedent
   produces Dafny's own genuine "Ambiguous use of && and ||" parser
-  rejection. Unlike ROR's analogous, already-fixed chain-direction
-  problem, this needs real new engineering (grouping same-paren-depth
-  `&&`/`||` runs) that wasn't built here. Recorded as `unclassifiable`
-  (10 mutants, all SelectFormula/LOR).
+  rejection, which needs real new engineering (grouping same-paren-depth
+  `&&`/`||` runs). Recorded as `unclassifiable` (10 mutants, all
+  SelectFormula/LOR).
 
-**All 51 survivors are explained, not an undifferentiated pile** — three
+**All 53 survivors are explained, not an undifferentiated pile** — four
 named categories, each locked in by `tests/test_renal_mutation_report.py`:
 
 1. **33 survivors** — ROR/LVR mutations narrowing a one-way `==>`
    clause's antecedent (e.g. `roundedEgfr >= 90` → `roundedEgfr == 90`).
    A narrower antecedent's true-set is always a subset of the original's,
    so these can *never* be killed regardless of whether the spec is
-   tight — a structural blind spot of this technique against
-   guard-style clauses, not a proof gap. Gate C4's STP suite is the tool
-   that actually pins these boundaries (dedicated lemmas at every
-   G-stage transition).
-2. **17 survivors** — `requires`-clause weakenings that Dafny can still
-   satisfy because the specific `ensures` clauses currently proven don't
-   depend on them (e.g. `ComposedCeiling`'s `<=`/pinning postconditions
-   hold for any real `existingCeiling`/`renalCeiling` pair, not just
-   positive ones). Not a defect: `> 0.0` still correctly documents a
-   real domain fact (dose ceilings and BMI are physically positive) —
-   it just isn't proof-necessary for what's currently established.
+   tight — a structural blind spot against guard-style clauses, not a
+   proof gap. Gate C4's STP suite pins these boundaries.
+2. **17 survivors** — `requires`-clause weakenings not proof-necessary
+   for the ensures currently established. Note what is *no longer* here:
+   `ComposedCeiling`'s and `RoundHalfUp`'s qualitative precondition
+   weakenings, which the two tightenings above moved from survived (or
+   confounded-killed) to legitimately killed. What remains is genuinely
+   not load-bearing — `RoundHalfUp`'s LVR-scale `x >= -0.01` (its output
+   is still `0` on `[-0.01, 0)`) and `CockcroftGaultCrClMlPerMin`'s
+   lower-bound-on-`ageYears` weakenings (its arithmetic holds for any
+   int; only the `< 140` upper bound is proof-necessary).
 3. **1 survivor** — `RoundHalfUp`'s self-referential ensures clause
    survives an AOR `-` → `*` substitution for a coincidental numeric
-   reason specific to that one substitution; its exact integer output is
-   independently pinned by Gate C4's STP suite regardless.
+   reason; its exact integer output is independently pinned by Gate C4.
+4. **2 survivors** — `RoundHalfUp`'s ensures-LVR rounding-tolerance
+   widenings (`0.5 → 0.51`, now generated by the fixed LVR locator): a
+   looser tolerance still holds for the exact round-half-up body. Sound
+   consequence, exact value pinned by Gate C4.
 
 ## Amendment 2026-07-10 — the CKD-EPI/Dafny expressiveness claim, actually tested
 
@@ -283,7 +288,7 @@ hand-typed.
   decision.
 - **`run_mutation_suite_renal.py`** / **`mutation_report_renal.json`/`.md`**
   / **`run_manifest_mutation_renal.json`** — Gate C5: capture runner and
-  the real, committed outcome of every one of the 450 mutants above.
+  the real, committed outcome of every one of the 504 mutants above.
 - **`gate_c1_sketch.md`**, **`gate_c4_stp_plan.md`**, **`GATE_1C_AUDIT.md`**
   — working documents: signature sketches individually verified before
   composition, hand-derived STP predictions checked before building,
@@ -312,7 +317,7 @@ references for the five `PROVEN` requirement rows, honest `GAP` rows
 for REQ-RENAL-3/4/6/7 (named, sourced, not yet formalized as Dafny
 signatures) and REQ-RENAL-8 (a deliberate, permanent trust boundary
 with an open operational question), the current Gate C5
-mutation-testing residual (51 survivors, all three explained in
+mutation-testing residual (53 survivors, all four explained in
 `KNOWN_LIMITATIONS.md`, not silently carried), and Gate C6's closed
 status (2026-07-11). Sections 2 and 4 (roles, severity/probability
 bands, acceptance matrix) left as explicit `GAP`s, not fabricated — no
