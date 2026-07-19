@@ -40,7 +40,18 @@ verifies it identically.
 import re
 
 _COMMENT_RE = re.compile(r"//[^\n]*")
-_DECL_RE = re.compile(r"\b(?P<kind>function|method)\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")
+# Allow zero or more Dafny attribute blocks (`{:axiom}`, `{:trigger ...}`,
+# with or without a space after the keyword) between `function`/`method`
+# and the name - otherwise an attribute-bearing declaration is silently
+# not discovered and isolate_function raises a misleading "no function
+# named X found". `\b` after the keyword keeps `functionFoo` from
+# matching as `function` + name `Foo`. (Attributes appearing later in a
+# header - e.g. on an `ensures` - are a separate, pre-existing brace-scan
+# limitation shared with dafny_mutate/dafny_spec_lint, out of scope here;
+# no spec this runner mutates uses them.)
+_DECL_RE = re.compile(
+    r"\b(?P<kind>function|method)\b\s*(?:\{:[^}]*\}\s*)*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\("
+)
 _DATATYPE_RE = re.compile(
     r"\bdatatype\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*"
     r"(?P<body>.*?)"

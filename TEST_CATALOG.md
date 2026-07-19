@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 274 test functions across 37 categories.**
+**Total: 275 test functions across 37 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -129,7 +129,8 @@ for the actual collected-case count.
 | `test_full_down_closure_for_the_top_orchestrator` | AssessRenalFunctionFromInputs calls SelectFormula, AssessRenalFunction, CockcroftGaultCrClMlPerMin - transitively pulling in GStage and RoundHalfUp too. | `tests/test_dafny_isolate.py:60` |
 | `test_self_reference_does_not_seed_the_closure` | A function names itself in its own ensures clauses; that must not be treated as a call that pulls anything extra in. | `tests/test_dafny_isolate.py:72` |
 | `test_isolate_refuses_unknown_function` | Isolate refuses unknown function. | `tests/test_dafny_isolate.py:80` |
-| `test_synthetic_caller_is_excluded_even_when_it_shares_a_datatype` | Synthetic caller is excluded even when it shares a datatype. | `tests/test_dafny_isolate.py:85` |
+| `test_isolate_handles_attribute_bearing_declarations` | Dafny allows attribute blocks between the keyword and the name (`function {:axiom} Pow(...)`, `method {:vcs_split_on_every_assert} Foo(...)`). | `tests/test_dafny_isolate.py:85` |
+| `test_synthetic_caller_is_excluded_even_when_it_shares_a_datatype` | Synthetic caller is excluded even when it shares a datatype. | `tests/test_dafny_isolate.py:112` |
 
 ## Dafny Mutate (`tests/test_dafny_mutate.py`)
 

@@ -82,6 +82,33 @@ def test_isolate_refuses_unknown_function():
         isolate_function(RENAL, "NoSuchFunction")
 
 
+def test_isolate_handles_attribute_bearing_declarations():
+    """Dafny allows attribute blocks between the keyword and the name
+    (`function {:axiom} Pow(...)`, `method {:vcs_split_on_every_assert}
+    Foo(...)`). Such a declaration must be discovered and isolable, not
+    silently missed - the pre-fix regex raised a misleading 'no function
+    named X found'. Also covers the no-space (`function{:axiom}`) and
+    multi-attribute forms."""
+    source = """
+    function {:axiom} Pow(base: real, exp: real): real
+    function{:opaque} {:fuel 2} Helper(x: int): int
+      requires x >= 0
+    { x }
+    function UsesHelper(y: int): int
+      requires y >= 0
+    { Helper(y) }
+    """
+    _datatypes, funcs = _parse_decls(_strip_comments(source))
+    assert {"Pow", "Helper", "UsesHelper"} <= set(funcs)
+    # UsesHelper isolates with its attribute-bearing callee Helper, not Pow.
+    iso = isolate_function(source, "UsesHelper")
+    assert "Helper" in iso
+    assert "Pow" not in iso
+    # And an attribute-bearing function is itself directly isolable.
+    iso_helper = isolate_function(source, "Helper")
+    assert "Helper" in iso_helper
+
+
 def test_synthetic_caller_is_excluded_even_when_it_shares_a_datatype():
     source = """
     datatype T = A | B
