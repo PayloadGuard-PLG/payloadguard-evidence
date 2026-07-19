@@ -85,13 +85,15 @@ code, tool version, and timestamp.
   weaker ones, independent of the implementation.
 - **C5 — Mutation testing.** `evidence/dafny_mutate.py` perturbs the
   spec's operators and re-runs the verifier, confirming a wrong spec
-  fails to verify. Each mutant is verified against the mutated function
+  fails to verify. A mutant can be verified against the mutated function
   in isolation (`evidence/dafny_isolate.py` — the function with its own
   callees, never its callers), so a kill is attributed to that
   function's own contract rather than to a downstream caller that
   happened to fail; without this, whole-file verification silently
-  over-reports how load-bearing a spec is. Surviving mutants are
-  enumerated and explained.
+  over-reports how load-bearing a spec is. This isolation is currently
+  wired in for `renal_adjustment`; the other examples still verify
+  whole-file, with the rollout tracked under *In progress and designed*
+  below. Surviving mutants are enumerated and explained.
 - **C6 — Confirmation.** `evidence/dafny_nl_summary.py` renders each
   contract clause in plain English for a recorded human review prior to
   sign-off.
