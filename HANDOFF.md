@@ -25,10 +25,34 @@ ComposedCeiling(...) > 0.0`) make those preconditions load-bearing.
 Renal Gate C5 re-derived ourselves: 450→504 mutants, 250→294 killed,
 51→53 survivors (four explained categories), `blocked_lvr_clause_literal`
 gone. `test_renal_mutation_report.py` rewritten; `test_dafny_isolate.py`
-added; 285 tests pass. **Next step: apply the same isolated re-check to
-`dosage_calculator` and `drug_interaction_checker` (their functions with
-callers haven't been re-verified in isolation yet) — named, not assumed
-clean.** Full account: `DEVLOG.md`'s 2026-07-19 entry.
+added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
+
+**Two open threads, both named rather than assumed away:**
+
+1. **Extend isolated mutation testing to the other examples.**
+   `dosage_calculator` (`ExpectedDose` is referenced by `CalculateHourlyDose`'s
+   pinning ensures) and `drug_interaction_checker` still run whole-file
+   Gate C5, so any function-with-callers there could carry the same
+   caller-confound. The machinery is built and generic
+   (`evidence/dafny_isolate.py`); this is applying it (wire into each
+   runner, re-derive counts, update the pinned report tests) — not new
+   design. Not yet done; not assumed clean.
+
+2. **Definitional-vs-property honesty (`proof_content` qualifier).** A
+   separate, larger thread from the mutation-accuracy work above. A
+   verified spec/implementation-gap classifier (prototyped this session,
+   scratch only) shows two of the four worked examples are *definitional*
+   — `aeb_kernel` and `drug_interaction_checker` restate their own
+   implementations (`ensures result <==> body`; per-case `== Constructor`
+   pins), so the `PROVEN` label certifies totality/type-safety/boundary
+   structure but no independent property. `dosage_calculator` and
+   `renal_adjustment` carry real property content (safety bounds strictly
+   weaker than the body). Plan (approved, three tiers — honest labeling,
+   source-fidelity citation + real C6, structural spec/proof separation)
+   is in the plan file; Tier 1 Component A is prototyped and verified but
+   nothing is committed. This is the thread that makes the `PROVEN` label
+   tell the truth about proof *content*, distinct from the mutation-kill
+   *accuracy* work landed 2026-07-19.
 **Prior update, preserved below** — 2026-07-18 (even later) — **`README.md` gained a
 system-wide evidence-strength totals table (28 requirements: 20
 `PROVEN`, 1 `BOUNDED_CHECKED`, 7 `GAP`) and the pip-installable CLI
