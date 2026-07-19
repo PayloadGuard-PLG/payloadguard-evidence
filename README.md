@@ -85,7 +85,15 @@ code, tool version, and timestamp.
   weaker ones, independent of the implementation.
 - **C5 — Mutation testing.** `evidence/dafny_mutate.py` perturbs the
   spec's operators and re-runs the verifier, confirming a wrong spec
-  fails to verify. Surviving mutants are enumerated and explained.
+  fails to verify. A mutant can be verified against the mutated function
+  in isolation (`evidence/dafny_isolate.py` — the function with its own
+  callees, never its callers), so a kill is attributed to that
+  function's own contract rather than to a downstream caller that
+  happened to fail; without this, whole-file verification silently
+  over-reports how load-bearing a spec is. This isolation is currently
+  wired in for `renal_adjustment`; the other examples still verify
+  whole-file, with the rollout tracked under *In progress and designed*
+  below. Surviving mutants are enumerated and explained.
 - **C6 — Confirmation.** `evidence/dafny_nl_summary.py` renders each
   contract clause in plain English for a recorded human review prior to
   sign-off.
@@ -331,6 +339,40 @@ extending the system to a new example, see
 
 Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
+
+## In progress and designed
+
+Two improvements are named here rather than implied complete — each with
+its solution designed, and one already partly landed:
+
+- **Isolated mutation testing — landed for one example, in progress for
+  the rest.** Gate C5 now verifies each mutant against the mutated
+  function in isolation (its own callees, never its callers), so a kill
+  reflects that function's own contract rather than a downstream caller
+  that happened to fail (`evidence/dafny_isolate.py`). Committed and
+  running for `renal_adjustment`; extending it to `dosage_calculator`
+  and `drug_interaction_checker` (whose runners still verify whole-file)
+  is mechanical — the isolation module is generic — and is the current
+  work item, not assumed already clean.
+
+- **Distinguishing a proven property from a definitional restatement —
+  designed.** A `PROVEN` label today means Dafny discharged the spec for
+  every input in scope. It does not yet distinguish a proof of an
+  *independent property* (e.g. `dosage_calculator`'s output-stays-within-
+  safe-bounds — a statement strictly weaker than the computation that
+  produces the output, so a wrong implementation could violate it) from
+  a *definitional* spec that restates its own implementation
+  (`aeb_kernel`'s threshold predicates and `drug_interaction_checker`'s
+  per-case lookup, where the `ensures` clause is the function body). Both
+  are real, machine-checked, and non-vacuous; they differ in how much
+  *independent* content the proof carries beyond the definition. The
+  designed solution is a `proof_content: property | definitional`
+  qualifier derived from a mechanical spec/implementation-gap check
+  (prototyped and verified against all four examples), alongside
+  mechanical source-fidelity citation of every spec constant and a
+  source-anchored human review — so a label states exactly what each
+  proof does and does not establish. Planned, not yet committed; the
+  `PROVEN` counts above are unchanged by it.
 
 ## Scope
 
