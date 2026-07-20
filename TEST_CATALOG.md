@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 299 test functions across 40 categories.**
+**Total: 301 test functions across 40 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -404,9 +404,10 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_committed_matrices_carry_expected_proof_content` | Committed matrices carry expected proof content. | `tests/test_proof_content.py:58` |
-| `test_every_proven_dafny_record_has_a_valid_proof_content_and_caveat` | No PROVEN Dafny row may be left unclassified on the real specs, and the caveat text must match the qualifier (the two can't drift apart). | `tests/test_proof_content.py:66` |
-| `test_aeb_and_ddi_are_entirely_definitional_dosage_and_renal_carry_property` | The headline honest finding: the two predicate/lookup specs prove only definitions; the two arithmetic specs prove real properties. | `tests/test_proof_content.py:78` |
+| `test_committed_matrices_carry_expected_proof_content` | Committed matrices carry expected proof content. | `tests/test_proof_content.py:59` |
+| `test_every_proven_dafny_record_has_a_valid_proof_content_and_caveat` | No PROVEN Dafny row may be left unclassified on the real specs, and the caveat text must match the qualifier (the two can't drift apart). | `tests/test_proof_content.py:67` |
+| `test_proof_content_degrades_to_none_on_any_classifier_failure` | proof_content is annotation only: it must never abort a matrix build. | `tests/test_proof_content.py:79` |
+| `test_aeb_and_ddi_are_entirely_definitional_dosage_and_renal_carry_property` | The headline honest finding: the two predicate/lookup specs prove only definitions; the two arithmetic specs prove real properties. | `tests/test_proof_content.py:94` |
 
 ## Proven Exclusivity (`tests/test_proven_exclusivity.py`)
 
@@ -484,11 +485,12 @@ for the actual collected-case count.
 | `test_mixed_method_has_both_a_definitional_pin_and_a_property_bound` | Mixed method has both a definitional pin and a property bound. | `tests/test_spec_impl_gap.py:70` |
 | `test_guarded_match_function_is_definitional_with_guards_recorded` | Guarded match function is definitional with guards recorded. | `tests/test_spec_impl_gap.py:83` |
 | `test_unknown_declaration_is_refused` | Unknown declaration is refused. | `tests/test_spec_impl_gap.py:92` |
-| `test_aeb_kernel_every_function_is_definitional` | Every aeb_kernel function restates its own body (ensures F <==> E, body E) - the motivating definitional case. | `tests/test_spec_impl_gap.py:103` |
-| `test_dosage_calculate_hourly_dose_is_property_with_a_definitional_pin` | dosage's CalculateHourlyDose pins dose == ExpectedDose(...) (definitional) but also bounds 0.0 <= dose <= max and infusionRate > 0 \|\| dose == 0 (property) - so the row carries real content. | `tests/test_spec_impl_gap.py:117` |
-| `test_renal_carries_both_property_and_definitional_functions` | renal_adjustment mixes real-arithmetic property functions (RoundHalfUp's rounding bound and >= 0 floor, ComposedCeiling's > 0.0) with definitional category-lookup functions (GStage) - the classifier separates them. | `tests/test_spec_impl_gap.py:136` |
-| `test_ddi_check_interaction_is_definitional` | drug_interaction_checker's CheckInteraction is a per-case lookup: every ensures pins the result to an InteractionResult(...) constructor under a guard. | `tests/test_spec_impl_gap.py:148` |
-| `test_structure_and_z3_never_disagree_on_the_committed_specs` | The load-bearing correctness invariant: wherever the Z3 pin-uniqueness cross-check can run, it agrees with the structural verdict. | `tests/test_spec_impl_gap.py:159` |
+| `test_nat_result_z3_check_respects_the_nat_domain` | Regression for the second result symbol dropping build_symbol_table's implicit `>= 0`. | `tests/test_spec_impl_gap.py:108` |
+| `test_aeb_kernel_every_function_is_definitional` | Every aeb_kernel function restates its own body (ensures F <==> E, body E) - the motivating definitional case. | `tests/test_spec_impl_gap.py:128` |
+| `test_dosage_calculate_hourly_dose_is_property_with_a_definitional_pin` | dosage's CalculateHourlyDose pins dose == ExpectedDose(...) (definitional) but also bounds 0.0 <= dose <= max and infusionRate > 0 \|\| dose == 0 (property) - so the row carries real content. | `tests/test_spec_impl_gap.py:142` |
+| `test_renal_carries_both_property_and_definitional_functions` | renal_adjustment mixes real-arithmetic property functions (RoundHalfUp's rounding bound and >= 0 floor, ComposedCeiling's > 0.0) with definitional category-lookup functions (GStage) - the classifier separates them. | `tests/test_spec_impl_gap.py:161` |
+| `test_ddi_check_interaction_is_definitional` | drug_interaction_checker's CheckInteraction is a per-case lookup: every ensures pins the result to an InteractionResult(...) constructor under a guard. | `tests/test_spec_impl_gap.py:173` |
+| `test_structure_and_z3_never_disagree_on_the_committed_specs` | The load-bearing correctness invariant: wherever the Z3 pin-uniqueness cross-check can run, it agrees with the structural verdict. | `tests/test_spec_impl_gap.py:184` |
 
 ## Structural Proven Check (`tests/test_structural_proven_check.py`)
 

@@ -10,6 +10,7 @@ import json
 import pathlib
 
 from evidence.model import PROOF_CONTENT_CAVEAT
+from evidence.render import matrix_variants
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 EX = REPO_ROOT / "examples"
@@ -73,6 +74,21 @@ def test_every_proven_dafny_record_has_a_valid_proof_content_and_caveat():
                     pc = rec.get("proof_content")
                     assert pc in ("definitional", "property"), (example, rec)
                     assert rec.get("proof_content_caveat") == PROOF_CONTENT_CAVEAT[pc]
+
+
+def test_proof_content_degrades_to_none_on_any_classifier_failure(monkeypatch):
+    """proof_content is annotation only: it must never abort a matrix build.
+    A non-SystemExit failure from the classifier (not just its own SystemExit
+    refusals) still degrades to None rather than propagating."""
+    def boom(source, method):
+        raise ValueError("unexpected header shape")
+
+    monkeypatch.setattr(matrix_variants, "classify_declaration", boom)
+    matrix_variants._proof_content_overall.cache_clear()
+    try:
+        assert matrix_variants._proof_content_overall("spec source", "SomeMethod") is None
+    finally:
+        matrix_variants._proof_content_overall.cache_clear()
 
 
 def test_aeb_and_ddi_are_entirely_definitional_dosage_and_renal_carry_property():

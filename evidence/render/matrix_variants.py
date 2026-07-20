@@ -36,12 +36,30 @@ Shared discipline (unchanged from manual_matrix.py):
 """
 
 import datetime
+import functools
 
 from evidence.conflict import run_conflict_gate
 from evidence.dafny_adapter import parse_dafny_capture
 from evidence.dafny_spec_lint import check_precondition_satisfiability
 from evidence.model import CAVEAT, PROOF_CONTENT_CAVEAT, Strength
 from evidence.spec_impl_gap import classify_declaration
+
+
+@functools.lru_cache(maxsize=None)
+def _proof_content_overall(spec_source, dafny_method):
+    """definitional | property | None for one dafny_method, memoized by
+    (spec_source, dafny_method) so a method backing several requirement rows
+    is classified once per build rather than once per row.
+
+    Annotation only: this must never block an otherwise-valid PROVEN binding,
+    so ANY failure degrades to None (unclassified) - not just the classifier's
+    own SystemExit refusals but any unexpected error too. The `except` is
+    deliberately broad for exactly that documented guarantee."""
+    try:
+        overall = classify_declaration(spec_source, dafny_method)["overall"]
+        return overall if overall in PROOF_CONTENT_CAVEAT else None
+    except (SystemExit, Exception):
+        return None
 
 _ARTIFACT_TITLES = {
     "a": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
@@ -132,14 +150,9 @@ def dafny_record(capture, code_location):
     # to None (unclassified) rather than refusing.
     proof_content = None
     if result.strength == Strength.PROVEN:
-        try:
-            overall = classify_declaration(
-                capture["spec_source"], capture["dafny_method"]
-            )["overall"]
-            if overall in PROOF_CONTENT_CAVEAT:
-                proof_content = overall
-        except SystemExit:
-            proof_content = None
+        proof_content = _proof_content_overall(
+            capture["spec_source"], capture["dafny_method"]
+        )
     return {
         "method": "dafny",
         "strength": result.strength.value,

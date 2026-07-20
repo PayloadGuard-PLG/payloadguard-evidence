@@ -94,6 +94,31 @@ def test_unknown_declaration_is_refused():
         classify_declaration(DEFINITIONAL, "NoSuchFunction")
 
 
+# A nat-returning function whose ensures is a bound (structurally property)
+# that nonetheless pins the result uniquely *within the nat domain*: `r < 1`
+# over nat leaves only r == 0.
+NAT_BOUND = """
+function AtMostZero(x: int): nat
+  requires x == 0
+  ensures AtMostZero(x) < 1
+{ 0 }
+"""
+
+
+def test_nat_result_z3_check_respects_the_nat_domain():
+    """Regression for the second result symbol dropping build_symbol_table's
+    implicit `>= 0`. The clause `r < 1` is a bound (structurally property),
+    but over nat it pins r to 0 - so the Z3 cross-check must detect a pin and
+    *disagree* with the structural verdict. That only holds when BOTH result
+    symbols carry nat's implicit constraint; without the second table's copy,
+    Z3 would let the second result be -1 and wrongly report the bound
+    'confirmed' as leaving freedom."""
+    d = classify_declaration(NAT_BOUND, "AtMostZero")
+    c = d["clauses"][0]
+    assert c["classification"] == "property"  # `<` bound, by structure
+    assert c["z3_check"].startswith("disagrees"), c["z3_check"]
+
+
 # ------------------------------------------------------------- real specs
 
 def _by_name(source):

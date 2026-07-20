@@ -288,16 +288,17 @@ def _z3_confirm(source, name, consequent, guards, classification, result_token, 
         header = _find_method_header(source, name)
         params = _parse_params(header)
         enums = _parse_enum_datatypes(source)
-        # Two independent result symbols of the declared type.
-        base = {n: t for n, t in params.items()}
-        base[result_token] = result_type
+        # Two independent result symbols of the declared type. Both symbol
+        # tables' implicit constraints must reach the solver - build_symbol_table
+        # emits `>= 0` for a `nat` result, and dropping the second table's copy
+        # would leave r2 free to take negative values Dafny's `nat` forbids,
+        # making the pin-uniqueness check operate over a wider domain for r2
+        # than for r1 (an unsound cross-check for nat-typed results).
         r2_token = "__result2__"
-        base2 = dict(base)
-        base2[result_token] = result_type  # placeholder; r2 built separately
         symbols, implicit = build_symbol_table(
             {**{n: t for n, t in params.items()}, result_token: result_type}, enums
         )
-        symbols2, _ = build_symbol_table({r2_token: result_type}, enums)
+        symbols2, implicit2 = build_symbol_table({r2_token: result_type}, enums)
         r1 = symbols[result_token]
         r2 = symbols2[r2_token]
 
@@ -313,7 +314,7 @@ def _z3_confirm(source, name, consequent, guards, classification, result_token, 
         c2 = translate_clause(consequent, sym_r2, f"ensures of {name!r} (2nd result)")
 
         solver = z3.Solver()
-        solver.add(*implicit, *pre, *guard_z3, c1, c2, r1 != r2)
+        solver.add(*implicit, *implicit2, *pre, *guard_z3, c1, c2, r1 != r2)
         outcome = solver.check()
     except SystemExit as e:
         return f"not_attempted:{e}"
