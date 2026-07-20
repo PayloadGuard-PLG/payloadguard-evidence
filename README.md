@@ -346,14 +346,16 @@ Two improvements are named here rather than implied complete — each with
 its solution designed, and one already partly landed:
 
 - **Isolated mutation testing — landed for one example, in progress for
-  the rest.** Gate C5 now verifies each mutant against the mutated
-  function in isolation (its own callees, never its callers), so a kill
-  reflects that function's own contract rather than a downstream caller
-  that happened to fail (`evidence/dafny_isolate.py`). Committed and
-  running for `renal_adjustment`; extending it to `dosage_calculator`
-  and `drug_interaction_checker` (whose runners still verify whole-file)
-  is mechanical — the isolation module is generic — and is the current
-  work item, not assumed already clean.
+  the rest.** Gate C5 verifies each mutant against the mutated function
+  in isolation (its own callees, never its callers), so a kill reflects
+  that function's own contract rather than a downstream caller that
+  happened to fail. The composition is a single sanctioned entry point,
+  `evidence/gate_c5_runner.py`, which always isolates — there is no
+  whole-file mode to forget; `renal_adjustment`'s runner now calls it and
+  reproduces its committed report byte-for-byte. Extending Gate C5 to
+  `dosage_calculator` and `drug_interaction_checker` (whose runners still
+  verify whole-file) is now a matter of pointing them at that runner —
+  the current work item, not assumed already clean.
 
 - **Distinguishing a proven property from a definitional restatement —
   designed.** A `PROVEN` label today means Dafny discharged the spec for

@@ -29,14 +29,23 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
 
 **Two open threads, both named rather than assumed away:**
 
-1. **Extend isolated mutation testing to the other examples.**
+1. **Extend isolated mutation testing to the other examples.** The
+   sanctioned runner now exists: `evidence/gate_c5_runner.py`
+   (`mutants_with_outcomes` / `run_gate_c5`) composes generate → static
+   filter → vacuous-precondition filter → isolate → verify → classify,
+   always isolating, with no whole-file mode to forget.
+   `run_mutation_suite_renal.py` calls it and reproduces its committed
+   report byte-for-byte (parity-locked by `test_renal_mutation_report.py`).
    `dosage_calculator` (`ExpectedDose` is referenced by `CalculateHourlyDose`'s
    pinning ensures) and `drug_interaction_checker` still run whole-file
    Gate C5, so any function-with-callers there could carry the same
-   caller-confound. The machinery is built and generic
-   (`evidence/dafny_isolate.py`); this is applying it (wire into each
-   runner, re-derive counts, update the pinned report tests) — not new
-   design. Not yet done; not assumed clean.
+   caller-confound. Remaining work is now just pointing those two runners
+   at `gate_c5_runner`, re-deriving their counts, and updating their
+   pinned report tests — no new design. Not yet done; not assumed clean.
+   (An independent `run_gate_c5` cross-check confirmed the renal
+   findings: ComposedCeiling 0 survivors, RoundHalfUp 4, CockcroftGault 2
+   — the corrected numbers, at generated counts 46/41/121, superseding an
+   earlier session's stale 12/28/95 reference.)
 
 2. **Definitional-vs-property honesty (`proof_content` qualifier).** A
    separate, larger thread from the mutation-accuracy work above. A

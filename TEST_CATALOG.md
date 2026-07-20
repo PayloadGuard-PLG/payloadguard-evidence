@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 275 test functions across 37 categories.**
+**Total: 281 test functions across 38 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -332,6 +332,17 @@ for the actual collected-case count.
 | `test_gate_fails_on_fact_divergence` | Gate fails on fact divergence. | `tests/test_fact_equality.py:41` |
 | `test_gate_fails_on_intent_divergence` | Gate fails on intent divergence. | `tests/test_fact_equality.py:50` |
 | `test_gate_fails_on_base_subset_divergence` | Gate fails on base subset divergence. | `tests/test_fact_equality.py:61` |
+
+## Gate C5 Runner (`tests/test_gate_c5_runner.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_in_file_callers_reverse_lookup_matches_the_real_spec` | In file callers reverse lookup matches the real spec. | `tests/test_gate_c5_runner.py:42` |
+| `test_in_file_callers_refuses_unknown_function` | In file callers refuses unknown function. | `tests/test_gate_c5_runner.py:53` |
+| `test_every_verified_mutant_is_isolated` | The hard constraint: anything that reaches real verification is verified in isolation - there is no whole-file path. | `tests/test_gate_c5_runner.py:58` |
+| `test_filtered_mutants_never_reach_verification` | Statically filtered and vacuous-precondition mutants are tallied without a verify call and carry no isolation_status. | `tests/test_gate_c5_runner.py:81` |
+| `test_run_gate_c5_summary_shape_and_tally` | Run gate c5 summary shape and tally. | `tests/test_gate_c5_runner.py:95` |
+| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:116` |
 
 ## Hazard ID Lint (`tests/test_hazard_id_lint.py`)
 

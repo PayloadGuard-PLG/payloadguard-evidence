@@ -6,6 +6,20 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-19 (later) — `evidence/gate_c5_runner.py`: the sanctioned Gate C5 entry point, extracted from the renal runner with byte-parity
+
+The isolation work landed earlier this day wired `isolate_function` into `run_mutation_suite_renal.py` inline. This extracts that pipeline into a shared, sanctioned module so the caller-confound cannot recur by omission and so extending Gate C5 to the other examples is a call, not a copied loop.
+
+`evidence/gate_c5_runner.py` composes generate (all five operator classes) → static filter → vacuous-precondition filter → isolate → real Dafny verify → classify. `mutants_with_outcomes(source, function_name, body_arithmetic)` returns the per-mutant records; `run_gate_c5(filepath, function_name, ...)` returns a summary dict with `in_file_callers` (a reverse-lookup over `dafny_isolate._referenced_funcs`), `isolation_used: true`, and the enumerated survivors. Isolation is unconditional — there is no whole-file mode to forget, which is the whole point; the module docstring names that as the hard constraint and points Gate C5 at itself as the required entry point.
+
+`run_mutation_suite_renal.py` was refactored to call `mutants_with_outcomes` (its `_classify`/`_real_verify`/`_filtered_outcome`/`_version` helpers removed and now sourced from the shared module). The regenerated `mutation_report_renal.json` is **byte-identical to the committed one** (exact ordered record equality, 504 records), so the two paths provably cannot drift; the timestamp-only churn in the `.md`/manifest was discarded since the evidence is unchanged.
+
+Independent validation via `run_gate_c5` against the three functions the task named, run live against the real Dafny 4.11.0: **ComposedCeiling** (no in-file callers) generated 46 / killed 37 / **survived 0**; **RoundHalfUp** (caller: AssessRenalFunction) 41 / 26 / **survived 4**; **CockcroftGaultCrClMlPerMin** (caller: AssessRenalFunctionFromInputs) 121 / 94 / **survived 2**. The survivor counts (0/4/2) confirm the corrected findings exactly. The task spec's reference numbers (12/28/95 generated, RoundHalfUp 7 survivors) were an earlier session's *pre-LVR-fix* isolation figures and are correctly superseded — the current generator produces more mutants (the arithmetic-embedded LVR literals), which is coverage gained, not a wiring bug; flagged rather than tuned away.
+
+New `tests/test_gate_c5_runner.py` (6): caller reverse-lookup against the real spec, refusal on an unknown function, and — with the Dafny verify step monkeypatched — that every verified mutant is isolated (the isolated unit never contains the caller), that filtered mutants skip verification, and the summary tally shape. Scope held to `renal_adjustment`; dosage/drug_interaction_checker rollout is named follow-on, deliberately untouched. 292 tests pass (up from 286).
+
+---
+
 ## 2026-07-19 — Gate C5 accuracy: automated caller-isolation, LVR generator fixes, renal spec tightening — an external session's package, re-derived here before trust
 
 Steven supplied a package of Gate C5 work produced by a different Claude session that could read this repo and run Dafny (a fine-grained-traceability handoff plus `gate_c5_isolation_correction.json`, `gate_c5_cockcroftgault_manual_lvr.json`, `gate_c5_mutation_results_raw.json`, a `renal_adjustment_TIGHTENED.dfy`, and patches to `dafny_mutate.py`/`test_dafny_mutate.py`). Every claim was verified against this repo's own installed Dafny 4.11.0 before anything was trusted or integrated — the numbers were re-derived here, not imported.
