@@ -104,22 +104,56 @@ def test_structural_and_design_decision_need_no_source():
     assert dd["kind"] == "design_decision" and dd["verdict"] == "declared"
 
 
-# ------------------------------------------------------------- real renal
+# ----------------------------------------------------------- real examples
+
+EXAMPLES_DIR = REPO_ROOT / "examples"
+
+# Every worked example whose numeric constants are now literal-cited. Each
+# entry: (spec .dfy, manifest .yaml). aeb_kernel/dosage_calculator are pending
+# their PDF sources being converted to text.
+COMMITTED = {
+    "renal_adjustment": ("renal_adjustment.dfy", "literal_citations.yaml"),
+    "drug_interaction_checker": ("drug_interaction_checker.dfy", "literal_citations.yaml"),
+}
+
+
+def _manifest(example, manifest_name):
+    return yaml.safe_load((EXAMPLES_DIR / example / manifest_name).read_text())["literals"]
+
+
+@pytest.mark.parametrize("example", sorted(COMMITTED))
+def test_committed_example_every_constant_is_cited_or_declared(example):
+    """The real gate: every numeric literal in the spec is accounted for, and
+    every source-cited constant's quote is CONFIRMED present in its actual
+    source document."""
+    dfy, manifest_name = COMMITTED[example]
+    report = check_example(
+        EXAMPLES_DIR / example / dfy, _manifest(example, manifest_name), SOURCES
+    )
+    assert report["uncited"] == [], (example, report["uncited"])
+    assert report["not_found"] == [], (example, report["not_found"])
+    assert report["stale"] == [], (example, report["stale"])
+    assert report["malformed"] == [], (example, report["malformed"])
+    assert report["ok"] is True
+
 
 def _renal_manifest():
-    return yaml.safe_load((RENAL_DIR / "literal_citations.yaml").read_text())["literals"]
+    return _manifest("renal_adjustment", "literal_citations.yaml")
 
 
-def test_renal_every_constant_is_cited_or_declared():
-    """The real gate: every numeric literal in renal_adjustment.dfy is
-    accounted for, and every source-cited constant's quote is CONFIRMED
-    present in its actual KDIGO/MHRA/Cockcroft-Gault source document."""
-    report = check_example(RENAL_DIR / "renal_adjustment.dfy", _renal_manifest(), SOURCES)
-    assert report["uncited"] == [], report["uncited"]
-    assert report["not_found"] == [], report["not_found"]
-    assert report["stale"] == [], report["stale"]
-    assert report["malformed"] == [], report["malformed"]
-    assert report["ok"] is True
+def test_ddi_dose_targets_are_source_cited_against_the_sps_document():
+    """drug_interaction_checker's only numeric constants are REQ-DDI-6's dose
+    figures (dabigatran 110 mg, edoxaban 30 mg), both CONFIRMED against the SPS
+    interactions source; the unreachable-arm zero is structural."""
+    report = check_example(
+        EXAMPLES_DIR / "drug_interaction_checker" / "drug_interaction_checker.dfy",
+        _manifest("drug_interaction_checker", "literal_citations.yaml"),
+        SOURCES,
+    )
+    by_lit = {r["literal"]: r for r in report["results"]}
+    assert by_lit["110"]["kind"] == "source" and by_lit["110"]["verdict"] == "confirmed"
+    assert by_lit["30"]["kind"] == "source" and by_lit["30"]["verdict"] == "confirmed"
+    assert by_lit["0"]["kind"] == "structural"
 
 
 def test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers():

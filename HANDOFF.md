@@ -9,14 +9,16 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Last updated:** 2026-07-20 (Tier 2 start) — **`literal_citation`:
-mechanical literal-to-source citation, validated on renal (Component C).**
+mechanical literal-to-source citation, validated on renal + DDI (Component C).**
 `evidence/literal_citation.py` (new) requires every numeric literal in a
 spec's code to be a `source` quote (checked present in the named source via
 `citation_gate`), a `structural` boundary constant, or a named
 `design_decision` — both-way completeness. Validated on `renal_adjustment`
 (19 constants: 16 source-cited and CONFIRMED against KDIGO/MHRA/Cockcroft-Gault,
-0.5 tie-break a design decision, 0.0/0 structural). This is the transcription
-half of Tier-2 source fidelity; extension to the other three examples and
+0.5 tie-break a design decision, 0.0/0 structural) and
+`drug_interaction_checker` (110/30 dose figures CONFIRMED against the SPS
+interactions source). This is the transcription half of Tier-2 source
+fidelity; extension to `aeb_kernel`/`dosage_calculator` (PDF sources) and
 Component D (source-anchored blind Gate C6) remain — see open thread 2. The
 prior same-day work follows.
 
@@ -122,14 +124,15 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
    citation gate: every numeric literal in a spec's code must be a `source`
    quote (checked present in the named source via `citation_gate`), a
    `structural` boundary constant, or a named `design_decision` - completeness
-   enforced both ways. Validated on `renal_adjustment` first
-   (`examples/renal_adjustment/literal_citations.yaml`, 19 constants: 16
+   enforced both ways. Validated on `renal_adjustment` (19 constants: 16
    source-cited and CONFIRMED against KDIGO/MHRA/Cockcroft-Gault sources, the
-   0.5 tie-break declared a design decision, 0.0/0 structural). **Remaining
-   Tier-2 work:** extend Component C to `drug_interaction_checker` (`.md`
-   sources), then `aeb_kernel`/`dosage_calculator` (Steven will convert their
-   PDF sources to text); then Component D (source-anchored, blind, logged Gate
-   C6). **Tier 3 still designed, not built** (frozen-spec + annotation-only
+   0.5 tie-break declared a design decision, 0.0/0 structural) and
+   `drug_interaction_checker` (110/30 dose figures CONFIRMED against
+   `sps-doac-interactions-2024.md`, the unreachable-arm 0 structural).
+   **Remaining Tier-2 work:** extend Component C to
+   `aeb_kernel`/`dosage_calculator` (Steven will convert their PDF sources to
+   text); then Component D (source-anchored, blind, logged Gate C6). **Tier 3
+   still designed, not built** (frozen-spec + annotation-only
    LLM + AST diff-checker). See the plan file. This whole thread makes the
    `PROVEN` label tell the truth about proof *content* and *fidelity*,
    distinct from the mutation-kill *accuracy* work landed 2026-07-19.

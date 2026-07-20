@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 310 test functions across 41 categories.**
+**Total: 311 test functions across 41 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -373,9 +373,10 @@ for the actual collected-case count.
 | `test_stale_manifest_entry_is_flagged` | Stale manifest entry is flagged. | `tests/test_literal_citation.py:75` |
 | `test_malformed_entries_are_flagged` | Malformed entries are flagged. | `tests/test_literal_citation.py:86` |
 | `test_structural_and_design_decision_need_no_source` | Structural and design decision need no source. | `tests/test_literal_citation.py:96` |
-| `test_renal_every_constant_is_cited_or_declared` | The real gate: every numeric literal in renal_adjustment.dfy is accounted for, and every source-cited constant's quote is CONFIRMED present in its actual KDIGO/MHRA/Cockcroft-Gault source document. | `tests/test_literal_citation.py:113` |
-| `test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers` | Pin the classification: the safety-critical numbers trace to a source, the round-half-up tie-break is a declared design decision (not KDIGO), and the domain boundaries are structural. | `tests/test_literal_citation.py:125` |
-| `test_renal_gate_catches_a_mistyped_constant` | Demonstrates the point: mutate a spec constant (90 -> 91) and the gate flags 91 as uncited - the transcription error Dafny itself can't catch. | `tests/test_literal_citation.py:139` |
+| `test_committed_example_every_constant_is_cited_or_declared` | The real gate: every numeric literal in the spec is accounted for, and every source-cited constant's quote is CONFIRMED present in its actual source document. | `tests/test_literal_citation.py:125` |
+| `test_ddi_dose_targets_are_source_cited_against_the_sps_document` | drug_interaction_checker's only numeric constants are REQ-DDI-6's dose figures (dabigatran 110 mg, edoxaban 30 mg), both CONFIRMED against the SPS interactions source; the unreachable-arm zero is structural. | `tests/test_literal_citation.py:144` |
+| `test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers` | Pin the classification: the safety-critical numbers trace to a source, the round-half-up tie-break is a declared design decision (not KDIGO), and the domain boundaries are structural. | `tests/test_literal_citation.py:159` |
+| `test_renal_gate_catches_a_mistyped_constant` | Demonstrates the point: mutate a spec constant (90 -> 91) and the gate flags 91 as uncited - the transcription error Dafny itself can't catch. | `tests/test_literal_citation.py:173` |
 
 ## Mutation Report (`tests/test_mutation_report.py`)
 

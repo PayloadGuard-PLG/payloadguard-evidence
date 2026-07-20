@@ -1,0 +1,25 @@
+# Component C (Gate C3, source-fidelity vector): literal-to-source citations
+# for drug_interaction_checker.dfy. Every numeric literal in the spec's CODE
+# is accounted for as source / structural / design_decision - see
+# evidence/literal_citation.py, verified by tests/test_literal_citation.py.
+# CheckInteraction is entirely enum/datatype logic (no numeric literals); the
+# only numbers are DoseReductionTargetMg's two dose figures plus its
+# unreachable-arm zero.
+literals:
+  # --- REQ-DDI-6 numeric dose-reduction targets (DoseReductionTargetMg) ---
+  "110":
+    kind: source
+    source: sps-doac-interactions-2024.md
+    quote: 'Reduce the dose of dabigatran to 110mg twice daily'
+  "30":
+    kind: source
+    source: sps-doac-interactions-2024.md
+    quote: 'Reduce the edoxaban dose to 30mg daily'
+
+  # --- structural ---
+  "0":
+    kind: structural
+    note: >-
+      Integer zero: the return of the unreachable wildcard match arm
+      (case _ => (assert false; 0)), proven dead by DoseReductionTargetMg's
+      precondition. A structural default value, not a source-transcribed one.
