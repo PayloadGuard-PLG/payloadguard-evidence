@@ -1,6 +1,16 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-20 (`evidence/gate_c5_runner.py` now catches the
+Last updated: 2026-07-20 (later) (`evidence/gate_c5_runner.py`
+generalized into a superset — `body_function` (dosage's method+companion
+mutation shape) and a `survivor_escalation` hook (DDI's STP-suite
+re-verification of survivors) — so all three worked Dafny examples now
+run Gate C5 through this one always-isolating entry point. dosage and
+drug_interaction_checker re-derived against real Dafny with every outcome
+unchanged (neither example's mutation target has an in-file caller, so
+isolation coincides with whole-file and only adds the guarantee). No
+data-flow change beyond both example runners now delegating to the shared
+module. Full record: `DEVLOG.md`'s 2026-07-20 entry.)
+Prior header, preserved: Last updated: 2026-07-20 (`evidence/gate_c5_runner.py` now catches the
 `SystemExit` the Z3 precondition checker raises on `requires` clause
 shapes it can't model and falls through to real isolated verification —
 a confirmed Qodo finding, matching the DDI runner's behavior since PR #26

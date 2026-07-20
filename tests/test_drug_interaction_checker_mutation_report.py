@@ -152,6 +152,27 @@ def test_report_total_and_outcome_counts():
     }
 
 
+def test_every_verified_mutant_was_isolated():
+    """Since 2026-07-20 this example runs through the sanctioned
+    evidence/gate_c5_runner.py, so every mutant reaching real Dafny
+    verification is verified in ISOLATION (the mutated function plus its
+    callees and datatypes, never a caller). Neither CheckInteraction nor
+    DoseReductionTargetMg is an in-file caller of the other, so isolation
+    coincides with whole-file verification and the outcome counts are
+    unchanged - but the guarantee is recorded on every verified record
+    (the STP-escalated ones too, since they first survived isolated
+    verification) and pinned here so it can't silently regress."""
+    records = _report()
+    verified = [
+        r for r in records
+        if r["outcome"] in ("killed", "survived", "unclassifiable",
+                            "killed_via_stp_suite", "unclassifiable_via_stp_suite")
+    ]
+    assert verified
+    for r in verified:
+        assert r["isolation_status"] == "isolated", r["description"]
+
+
 def test_dose_reduction_target_mg_unclassifiable_results_are_the_same_named_type_error_case_at_full_scale():
     """The datatype-ordering type-error category (ROR mutating <=/>= onto
     a datatype-vs-datatype equality, refused by evidence/dafny_spec_lint.py's
@@ -374,7 +395,7 @@ def test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught
         assert r["operator"] == "ROR"
         assert r["original_clause"].count("treatmentIndication ==") == 2
         assert r["mutated_clause"].count("treatmentIndication ==") == 1
-        assert "bare spec survived" in r["detail"]
+        assert "isolated spec survived" in r["detail"]
         assert "STP suite caught it" in r["detail"]
         assert r["stp_suite_detail"] is not None
         assert r["stp_suite_outcome"] == "killed"

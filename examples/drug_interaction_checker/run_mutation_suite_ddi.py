@@ -86,22 +86,24 @@
 import datetime
 import json
 import pathlib
-import re
 import subprocess
 import sys
 import tempfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent.parent))
 
-from evidence.dafny_adapter import _INCOMPLETE_MARKERS, _SUMMARY_RE
-from evidence.dafny_mutate import (
-    generate_aor_mutants,
-    generate_coi_mutants,
-    generate_lor_mutants,
-    generate_lvr_mutants,
-    generate_ror_mutants,
-)
-from evidence.dafny_spec_lint import check_precondition_satisfiability
+# The full mutate -> static-filter -> vacuous-precondition-filter ->
+# isolate -> verify -> classify pipeline lives in the shared, sanctioned
+# runner; this script iterates this example's two functions, layers the
+# STP-suite survivor escalation below on top (via the runner's
+# `survivor_escalation` hook), and writes the report/manifest. Isolation
+# is unconditional there (evidence/gate_c5_runner.py) - and since neither
+# CheckInteraction nor DoseReductionTargetMg is an in-file caller of the
+# other, isolation coincides with whole-file verification here (each
+# isolated unit verifies clean at baseline), adding the guarantee without
+# changing any outcome. `_classify` is reused from the shared runner so
+# the STP escalation below classifies exactly as the bare pass does.
+from evidence.gate_c5_runner import _classify, dafny_version, mutants_with_outcomes
 
 HERE = pathlib.Path(__file__).parent
 TARGET = HERE / "drug_interaction_checker.dfy"
@@ -114,58 +116,6 @@ FUNCTIONS = (
     ("CheckInteraction", False),
     ("DoseReductionTargetMg", False),
 )
-
-
-def _version():
-    r = subprocess.run(["dafny", "--version"], capture_output=True, text=True)
-    return (r.stdout.strip() or r.stderr.strip())
-
-
-_PARSE_ERROR_RE = re.compile(r"^.*: Error: .*$", re.MULTILINE)
-
-
-def _classify(raw_output, exit_code):
-    """Identical discipline to run_mutation_suite_renal.py's _classify."""
-    matches = list(_SUMMARY_RE.finditer(raw_output))
-    if exit_code not in (0, 4):
-        parse_error = _PARSE_ERROR_RE.search(raw_output)
-        if parse_error:
-            detail = re.sub(r"^\S+\.dfy", "<mutant>.dfy", parse_error.group().strip())
-        else:
-            detail = f"unexpected exit_code={exit_code}"
-        return "unclassifiable", detail
-    if not matches:
-        return "unclassifiable", "no verifier summary line in captured output"
-    if len(matches) > 1:
-        return "unclassifiable", f"{len(matches)} summary lines, ambiguous"
-    verified_count, error_count, tail = (
-        int(matches[0].group(1)),
-        int(matches[0].group(2)),
-        matches[0].group(3),
-    )
-    tail_lower = tail.lower()
-    marker = next((m for m in _INCOMPLETE_MARKERS if m in tail_lower), None)
-    if marker is not None:
-        return "unclassifiable", f"incomplete run ({marker!r} in summary line)"
-    if error_count == 0:
-        return "survived", f"{verified_count} verified, {error_count} errors"
-    return "killed", f"{verified_count} verified, {error_count} errors"
-
-
-def _real_verify(mutated_source):
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".dfy", delete=False, dir=HERE
-    ) as f:
-        f.write(mutated_source)
-        tmp_path = pathlib.Path(f.name)
-    try:
-        cmd = ["dafny", "verify", str(tmp_path)]
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        raw = (proc.stdout or "") + (proc.stderr or "")
-        outcome, detail = _classify(raw, proc.returncode)
-        return outcome, detail, proc.returncode, raw
-    finally:
-        tmp_path.unlink(missing_ok=True)
 
 
 def _stp_verify(mutated_source):
@@ -207,115 +157,39 @@ def _stp_verify(mutated_source):
         mutant_path.unlink(missing_ok=True)
 
 
-def _filtered_outcome(reason):
-    if reason.startswith("chain-direction incompatible"):
-        return "filtered_chain_incompatible"
-    if reason.startswith("arithmetic-operator group incompatible"):
-        return "filtered_ar_group_incompatible"
-    if reason.startswith("magnitude-implied"):
-        return "filtered_magnitude_implied"
-    return "filtered_static"
+def _stp_escalation(mutated_source):
+    """Adapt _stp_verify to gate_c5_runner's `survivor_escalation`
+    contract: (outcome, detail, exit_code), dropping the raw text. The
+    runner calls this only for a mutant that survives isolated
+    verification. A "killed" result means the committed STP suite's own
+    ACCEPT/REJECT lemmas caught a scope-leak the bare ensures-spec alone
+    provably cannot (Dafny function-transparency) -- see this module's
+    docstring for the real, hand-verified boundary of what it does and
+    does not catch, and why an "unclassifiable" result must never be
+    silently folded back into "survived" (a Qodo review caught exactly
+    that gap in an earlier draft)."""
+    outcome, detail, exit_code, _raw = _stp_verify(mutated_source)
+    return outcome, detail, exit_code
 
 
 def main():
     source = TARGET.read_text()
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
+    # generate -> static-filter -> vacuous-precondition-filter (incl. the
+    # SystemExit refusal the Z3 translator raises on datatype-vs-datatype
+    # `requires` comparisons, recorded as `z3_translation_refused` then
+    # verified anyway) -> ISOLATE -> verify -> classify all run in the
+    # shared runner; the STP-suite escalation is layered on via its
+    # survivor hook. See evidence/gate_c5_runner.py.
     records = []
     for func_name, use_body_level_lvr in FUNCTIONS:
-        body_fn = func_name if use_body_level_lvr else None
-        mutants = (
-            generate_ror_mutants(source, func_name)
-            + generate_lor_mutants(source, func_name)
-            + generate_aor_mutants(source, func_name)  # no body-arithmetic mode used - see module docstring
-            + generate_lvr_mutants(source, func_name, function_name=body_fn)
-            + generate_coi_mutants(source, func_name)
+        records += mutants_with_outcomes(
+            source,
+            func_name,
+            body_arithmetic=use_body_level_lvr,
+            survivor_escalation=_stp_escalation,
         )
-
-        for m in mutants:
-            record = {
-                "function": func_name,
-                "operator": m.operator,
-                "keyword": m.keyword,
-                "original_clause": m.original_clause,
-                "mutated_clause": m.mutated_clause,
-                "description": m.description,
-            }
-            if m.filtered_reason:
-                record["outcome"] = _filtered_outcome(m.filtered_reason)
-                record["detail"] = m.filtered_reason
-                records.append(record)
-                continue
-
-            if m.keyword == "requires":
-                # A ROR mutant can introduce <,<=,>,>= between two datatype
-                # (DOAC/Agent) operands -- Dafny itself accepts this (its own
-                # structural "rank" ordering), but dafny_spec_lint's Z3
-                # translator only models ordering operators for arithmetic
-                # sorts and now refuses cleanly rather than crash (a real bug
-                # this run found and fixed in that module -- see its
-                # _apply_cmp docstring). Caught here, not silently swallowed:
-                # recorded as its own outcome, then sent to real Dafny
-                # verification anyway, since the checker's refusal to model
-                # this specific requires clause says nothing about whether
-                # the mutant itself survives or is killed.
-                try:
-                    verdict, detail = check_precondition_satisfiability(m.mutated_source, func_name)
-                except SystemExit as e:
-                    record["precondition_check_outcome"] = "z3_translation_refused"
-                    record["precondition_check_detail"] = str(e)
-                else:
-                    if verdict == "unsat":
-                        record["outcome"] = "filtered_vacuous"
-                        record["detail"] = detail
-                        records.append(record)
-                        continue
-
-            outcome, detail, exit_code, raw = _real_verify(m.mutated_source)
-            record["outcome"] = outcome
-            record["detail"] = detail
-            record["exit_code"] = exit_code
-
-            if outcome == "survived":
-                # Escalate to the real, committed STP suite before accepting
-                # this as a genuine survivor -- see module docstring for why
-                # this catches some (a real requires-clause scope-widening
-                # class) but not most (Dafny's function-transparency makes
-                # ensures-clause wording provably irrelevant to a same-module
-                # concrete-literal lemma call, confirmed empirically, not a
-                # gap in this escalation itself).
-                #
-                # Three-way, not two-way: a Qodo review on this PR caught a
-                # real gap in an earlier draft -- only "killed" was handled,
-                # so an inconclusive STP-suite run (unclassifiable: timeout,
-                # unexpected exit code, an ambiguous or missing summary line)
-                # silently stayed "survived", indistinguishable from the STP
-                # suite genuinely having verified clean. Confirmed empirically
-                # this never actually happens against the real, current
-                # mutant set (see test_dose_reduction_target_mg... below and
-                # KNOWN_LIMITATIONS.md), but the code shouldn't rely on that
-                # holding forever -- an inconclusive check must never be
-                # silently treated as a confirmed one.
-                stp_outcome, stp_detail, stp_exit_code, _ = _stp_verify(m.mutated_source)
-                record["stp_suite_detail"] = stp_detail
-                record["stp_suite_outcome"] = stp_outcome
-                if stp_outcome == "killed":
-                    record["outcome"] = "killed_via_stp_suite"
-                    record["detail"] = (
-                        f"bare spec survived ({detail}); "
-                        f"STP suite caught it ({stp_detail})"
-                    )
-                    record["exit_code"] = stp_exit_code
-                elif stp_outcome == "unclassifiable":
-                    record["outcome"] = "unclassifiable_via_stp_suite"
-                    record["detail"] = (
-                        f"bare spec survived ({detail}); "
-                        f"STP suite escalation was inconclusive, not "
-                        f"confirmed either way ({stp_detail})"
-                    )
-                    record["exit_code"] = stp_exit_code
-
-            records.append(record)
 
     counts = {}
     for r in records:
@@ -370,7 +244,7 @@ def main():
 
     manifest = {
         "tool": "dafny",
-        "tool_version": _version(),
+        "tool_version": dafny_version(),
         "command_template": ["dafny", "verify", "<mutant>.dfy"],
         "started_utc": started,
         "target": str(TARGET.relative_to(HERE)),

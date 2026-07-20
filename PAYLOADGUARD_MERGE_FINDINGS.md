@@ -13,6 +13,72 @@ correct; the entries are about PayloadGuard's own detection behaviour.
 
 ---
 
+## 2026-07-20 (later) — False positive: `DESTRUCTIVE`/`CRITICAL` on a dedup-after-consolidation (PR #68)
+
+**Verdict issued:** `DESTRUCTIVE` [CRITICAL] — "❌ DO NOT MERGE." Scan
+2026-07-20 13:48:50, branch commit `99659b7` → target `6c13671`.
+
+**What the change actually was:** the second half of the same
+consolidation the PR #67 entry below describes. PR #67 created the shared
+`evidence/gate_c5_runner.py` and pointed `renal_adjustment` at it; PR #68
+points the last two runners (`run_mutation_suite.py`,
+`run_mutation_suite_ddi.py`) at it too, and **deletes the now-redundant
+duplicate helpers** (`_PARSE_ERROR_RE`, `_classify`, `_filtered_outcome`,
+`_real_verify`, `_version`) from both — five per file — since the runners
+now import them from `gate_c5_runner`. The functionality is fully
+retained: all five helpers live in `evidence/gate_c5_runner.py` (verified
+present) and both runners `import` them from there. Nothing was removed
+from the codebase; duplicate copies were collapsed onto the one canonical
+copy. 298 tests pass; every mutation outcome is multiset-identical to
+before.
+
+**Which layer fired:** Structural Drift (Layer 4) again, CRITICAL — 5
+nodes deleted at 50.0% in `run_mutation_suite.py`, 5 at 41.67% in
+`run_mutation_suite_ddi.py`. Every other layer benign: File Changes
+`Deleted: 0`, line deletion ratio 43.0% (under the >50% flag), Temporal
+CURRENT. Semantic Transparency read `CAUTION_MISMATCH` (MCI 0.200, signal
+`cross_stack_micro_claim`) — a low, soft "review advised" well under the
+deceptive threshold, tripped by the PR body's specific numeric claims
+(mutant/kill counts), not a substantive mismatch.
+
+**Root cause — a distinct variant of the same blind spot.** The PR #67
+entry below is the *cross-file move in one diff* case (Layer 4 can't
+match a moved node to its new home). This is the **delete-redundant-copy-
+after-consolidation** case: the canonical copies landed in a *prior*
+merge (PR #67, already on `main`), so this diff contains only the
+deletions from the duplicate sites with no corresponding additions
+anywhere in it. Layer 4, diffing per-file against the target, correctly
+sees the nodes leave the two runner files and — having no cross-file *or*
+cross-commit awareness of where the canonical definition already lives —
+scores it a large-scale deletion. Deduplication (removing a copy once a
+shared module owns the canonical one) is a routine, safe refactor that
+this blind spot systematically misreads as destruction.
+
+**Recommended product hardening (in addition to the PR #67 entry's
+cross-file move reconciliation):**
+- **Whole-repo symbol resolution, not whole-PR-diff.** Before scoring a
+  named node as *deleted*, check whether a same-named (ideally
+  body-matching) definition still exists **anywhere in the post-merge
+  tree** — including files the PR doesn't touch. A deletion that leaves
+  the symbol still defined elsewhere in the repo, and adds an `import` of
+  it in the deleting file, is a dedup, not a loss. This subsumes the
+  same-diff move case and also catches the consolidation-across-commits
+  case this entry documents.
+- **Import-aware deletion scoring.** When a file deletes a local
+  definition and, in the same diff, adds an import of that same name, the
+  net capability of the file is unchanged — a strong "reclassify from
+  DELETE" signal on its own.
+
+**Disposition in this repo:** merged by the maintainer over the false
+positive, verified by hand that all five helpers remain in
+`gate_c5_runner` and both runners import them. No repo code was contorted
+to appease the scanner (keeping dead duplicate helpers solely to placate
+Layer 4 would defeat the consolidation this work exists to do). This
+entry is the evidence artifact — a second, distinct data point in the
+same structural-drift family.
+
+---
+
 ## 2026-07-20 — False positive: `DESTRUCTIVE`/`CRITICAL` on an extraction refactor (PR #67)
 
 **Verdict issued:** `DESTRUCTIVE` [CRITICAL] — "❌ DO NOT MERGE — This

@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 282 test functions across 38 categories.**
+**Total: 287 test functions across 38 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -303,16 +303,17 @@ for the actual collected-case count.
 | Test | Description | Code |
 |---|---|---|
 | `test_report_total_and_outcome_counts` | Report total and outcome counts. | `tests/test_drug_interaction_checker_mutation_report.py:140` |
-| `test_dose_reduction_target_mg_unclassifiable_results_are_the_same_named_type_error_case_at_full_scale` | The datatype-ordering type-error category (ROR mutating <=/>= onto a datatype-vs-datatype equality, refused by evidence/dafny_spec_lint.py's Z3 translator rather than crashing or guessing) now appears at its real, full… | `tests/test_drug_interaction_checker_mutation_report.py:155` |
-| `test_ddi5_indication_disjunction_survivors_are_now_only_the_deeper_lor_vacuity_case` | Shrunk sharply by Run 4's fix (28 -> 4 of CheckInteraction's survivors): one LOR survivor per REQ-DDI-5 clause (Rifampicin/Carbamazepine/Phenytoin/Phenobarbital + Apixaban), `\|\|` mutated to `&&` on `(treatmentIndication… | `tests/test_drug_interaction_checker_mutation_report.py:195` |
-| `test_ensures_survivors_are_a_broadly_true_consequent_not_load_bearing_antecedent` | Pre-existing category (3 of CheckInteraction's 31 survivors, unchanged this session): ROR on the SSRIOrSNRI/Dabigatran/no-risk- factor clause's `doac == Dabigatran` antecedent (mutated to !=, <, >). | `tests/test_drug_interaction_checker_mutation_report.py:266` |
-| `test_check_interaction_survivors_dropped_sharply_after_the_scope_leak_fix` | CheckInteraction WAS touched in Run 4 (unlike Runs 2-3, which only touched DoseReductionTargetMg) - fixing the apixaban scope-leak bug (branching the four inducer match arms on treatmentIndication instead of ignoring it… | `tests/test_drug_interaction_checker_mutation_report.py:295` |
-| `test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full_scale` | 37 survivors, all on DoseReductionTargetMg's ensures clauses (down from 43 - the 6 requires-clause indication-guard survivors are no longer counted as survivors as of Run 5, since the STP-suite escalation now catches th… | `tests/test_drug_interaction_checker_mutation_report.py:313` |
-| `test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught_by_the_stp_suite` | Run 5's real, measured effect: the 6 requires-clause ROR mutants on the indication guard's own comparisons (`treatmentIndication == AFStrokePrevention`, `treatmentIndication == RecurrentVTEPrevention`, 3 ROR variants ea… | `tests/test_drug_interaction_checker_mutation_report.py:354` |
-| `test_stp_escalation_never_silently_folds_an_inconclusive_check_into_survived` | A Qodo code-review finding on this PR's own diff (not part of the original hand-probing): an earlier draft of the escalation only handled `stp_outcome == "killed"`, silently leaving a mutant `survived` if the STP-suite… | `tests/test_drug_interaction_checker_mutation_report.py:383` |
-| `test_dose_reduction_target_mg_doac_agent_requires_comparisons_are_all_killed` | Unlike the indication sub-condition (redundant, tested above), the requires clause's own doac==Dabigatran/agent==Verapamil and doac==Edoxaban comparisons ARE load-bearing: mutating any of them genuinely changes which (d… | `tests/test_drug_interaction_checker_mutation_report.py:417` |
-| `test_dose_reduction_target_mg_lvr_mutants_all_killed` | The 10 clause-level LVR mutants (110->109/111, 30->29/31 x4) are ALL killed, none survived - confirmed directly, not assumed from the absence of "LVR" in the survivor list above. | `tests/test_drug_interaction_checker_mutation_report.py:447` |
-| `test_all_survivors_are_accounted_for_by_the_three_named_categories` | No fourth, unexplained survivor category exists - the 4 REQ-DDI-5 LOR-vacuity survivors, the 3 pre-existing SSRIOrSNRI survivors, and the 37 DoseReductionTargetMg ensures-clause guard-antecedent survivors add up to the… | `tests/test_drug_interaction_checker_mutation_report.py:462` |
+| `test_every_verified_mutant_was_isolated` | Since 2026-07-20 this example runs through the sanctioned evidence/gate_c5_runner.py, so every mutant reaching real Dafny verification is verified in ISOLATION (the mutated function plus its callees and datatypes, never… | `tests/test_drug_interaction_checker_mutation_report.py:155` |
+| `test_dose_reduction_target_mg_unclassifiable_results_are_the_same_named_type_error_case_at_full_scale` | The datatype-ordering type-error category (ROR mutating <=/>= onto a datatype-vs-datatype equality, refused by evidence/dafny_spec_lint.py's Z3 translator rather than crashing or guessing) now appears at its real, full… | `tests/test_drug_interaction_checker_mutation_report.py:176` |
+| `test_ddi5_indication_disjunction_survivors_are_now_only_the_deeper_lor_vacuity_case` | Shrunk sharply by Run 4's fix (28 -> 4 of CheckInteraction's survivors): one LOR survivor per REQ-DDI-5 clause (Rifampicin/Carbamazepine/Phenytoin/Phenobarbital + Apixaban), `\|\|` mutated to `&&` on `(treatmentIndication… | `tests/test_drug_interaction_checker_mutation_report.py:216` |
+| `test_ensures_survivors_are_a_broadly_true_consequent_not_load_bearing_antecedent` | Pre-existing category (3 of CheckInteraction's 31 survivors, unchanged this session): ROR on the SSRIOrSNRI/Dabigatran/no-risk- factor clause's `doac == Dabigatran` antecedent (mutated to !=, <, >). | `tests/test_drug_interaction_checker_mutation_report.py:287` |
+| `test_check_interaction_survivors_dropped_sharply_after_the_scope_leak_fix` | CheckInteraction WAS touched in Run 4 (unlike Runs 2-3, which only touched DoseReductionTargetMg) - fixing the apixaban scope-leak bug (branching the four inducer match arms on treatmentIndication instead of ignoring it… | `tests/test_drug_interaction_checker_mutation_report.py:316` |
+| `test_dose_reduction_target_mg_survivors_are_guard_antecedent_pattern_at_full_scale` | 37 survivors, all on DoseReductionTargetMg's ensures clauses (down from 43 - the 6 requires-clause indication-guard survivors are no longer counted as survivors as of Run 5, since the STP-suite escalation now catches th… | `tests/test_drug_interaction_checker_mutation_report.py:334` |
+| `test_dose_reduction_target_mg_requires_clause_indication_guard_is_now_caught_by_the_stp_suite` | Run 5's real, measured effect: the 6 requires-clause ROR mutants on the indication guard's own comparisons (`treatmentIndication == AFStrokePrevention`, `treatmentIndication == RecurrentVTEPrevention`, 3 ROR variants ea… | `tests/test_drug_interaction_checker_mutation_report.py:375` |
+| `test_stp_escalation_never_silently_folds_an_inconclusive_check_into_survived` | A Qodo code-review finding on this PR's own diff (not part of the original hand-probing): an earlier draft of the escalation only handled `stp_outcome == "killed"`, silently leaving a mutant `survived` if the STP-suite… | `tests/test_drug_interaction_checker_mutation_report.py:404` |
+| `test_dose_reduction_target_mg_doac_agent_requires_comparisons_are_all_killed` | Unlike the indication sub-condition (redundant, tested above), the requires clause's own doac==Dabigatran/agent==Verapamil and doac==Edoxaban comparisons ARE load-bearing: mutating any of them genuinely changes which (d… | `tests/test_drug_interaction_checker_mutation_report.py:438` |
+| `test_dose_reduction_target_mg_lvr_mutants_all_killed` | The 10 clause-level LVR mutants (110->109/111, 30->29/31 x4) are ALL killed, none survived - confirmed directly, not assumed from the absence of "LVR" in the survivor list above. | `tests/test_drug_interaction_checker_mutation_report.py:468` |
+| `test_all_survivors_are_accounted_for_by_the_three_named_categories` | No fourth, unexplained survivor category exists - the 4 REQ-DDI-5 LOR-vacuity survivors, the 3 pre-existing SSRIOrSNRI survivors, and the 37 DoseReductionTargetMg ensures-clause guard-antecedent survivors add up to the… | `tests/test_drug_interaction_checker_mutation_report.py:483` |
 
 ## Drug Interaction Checker Spec Lint (`tests/test_drug_interaction_checker_spec_lint.py`)
 
@@ -337,13 +338,16 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_in_file_callers_reverse_lookup_matches_the_real_spec` | In file callers reverse lookup matches the real spec. | `tests/test_gate_c5_runner.py:42` |
-| `test_in_file_callers_refuses_unknown_function` | In file callers refuses unknown function. | `tests/test_gate_c5_runner.py:53` |
-| `test_every_verified_mutant_is_isolated` | The hard constraint: anything that reaches real verification is verified in isolation - there is no whole-file path. | `tests/test_gate_c5_runner.py:58` |
-| `test_filtered_mutants_never_reach_verification` | Statically filtered and vacuous-precondition mutants are tallied without a verify call and carry no isolation_status. | `tests/test_gate_c5_runner.py:81` |
-| `test_precondition_refusal_is_recorded_and_does_not_abort_the_run` | A SystemExit from the Z3 precondition checker is an expected refusal (clause shapes it can't model, e.g. | `tests/test_gate_c5_runner.py:95` |
-| `test_run_gate_c5_summary_shape_and_tally` | Run gate c5 summary shape and tally. | `tests/test_gate_c5_runner.py:132` |
-| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:153` |
+| `test_in_file_callers_reverse_lookup_matches_the_real_spec` | In file callers reverse lookup matches the real spec. | `tests/test_gate_c5_runner.py:58` |
+| `test_in_file_callers_refuses_unknown_function` | In file callers refuses unknown function. | `tests/test_gate_c5_runner.py:69` |
+| `test_every_verified_mutant_is_isolated` | The hard constraint: anything that reaches real verification is verified in isolation - there is no whole-file path. | `tests/test_gate_c5_runner.py:74` |
+| `test_filtered_mutants_never_reach_verification` | Statically filtered and vacuous-precondition mutants are tallied without a verify call and carry no isolation_status. | `tests/test_gate_c5_runner.py:97` |
+| `test_precondition_refusal_is_recorded_and_does_not_abort_the_run` | A SystemExit from the Z3 precondition checker is an expected refusal (clause shapes it can't model, e.g. | `tests/test_gate_c5_runner.py:111` |
+| `test_run_gate_c5_summary_shape_and_tally` | Run gate c5 summary shape and tally. | `tests/test_gate_c5_runner.py:148` |
+| `test_body_function_mutates_a_distinct_companion_body` | The dosage method+companion shape: clauses come from the clause target (TopLevel), body AOR/LVR from a distinct companion (Companion). | `tests/test_gate_c5_runner.py:169` |
+| `test_body_arithmetic_and_body_function_are_mutually_exclusive` | Body arithmetic and body function are mutually exclusive. | `tests/test_gate_c5_runner.py:194` |
+| `test_survivor_escalation_retags_killed_and_inconclusive` | The DDI STP-escalation shape: a mutant that survives isolated verification is re-checked against a stronger oracle. | `tests/test_gate_c5_runner.py:201` |
+| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:245` |
 
 ## Hazard ID Lint (`tests/test_hazard_id_lint.py`)
 
@@ -370,7 +374,8 @@ for the actual collected-case count.
 | `test_function_body_aor_mutants_present_and_division_free_candidate_filtered` | Built 2026-07-07 from external research: ExpectedDose's function body (part of the formal spec, referenced by the pinning ensures clause) now gets AOR mutation on its one `*` operator, restricted per MutDafny's own grou… | `tests/test_mutation_report.py:90` |
 | `test_lvr_mutants_present_and_all_real_verified_candidates_killed` | Built 2026-07-07 from a scoped sub-plan (LVR extension): every numeric literal in the spec is exactly 0.0, mutated to +/-0.01. | `tests/test_mutation_report.py:108` |
 | `test_no_mutant_touches_the_calculatehourlydose_method_implementation_body` | Mutation testing perturbs the SPEC, never CalculateHourlyDose's trusted implementation - every recorded mutant comes from a requires/ensures clause, an explicit COI negation of one, or ExpectedDose's function body (also… | `tests/test_mutation_report.py:126` |
-| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_mutation_report.py:137` |
+| `test_every_verified_mutant_was_isolated` | Since 2026-07-20 this example runs through the sanctioned evidence/gate_c5_runner.py, so every mutant that reaches real Dafny verification is verified against CalculateHourlyDose in ISOLATION (the method plus its Expect… | `tests/test_mutation_report.py:137` |
+| `test_run_manifest_records_real_dafny_version_and_matching_counts` | Run manifest records real dafny version and matching counts. | `tests/test_mutation_report.py:153` |
 
 ## Overflow Probe (`tests/test_overflow_probe.py`)
 

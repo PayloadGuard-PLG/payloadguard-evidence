@@ -1,5 +1,6 @@
 [
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -7,9 +8,11 @@
     "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> <=",
     "outcome": "killed",
     "detail": "0 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -17,9 +20,11 @@
     "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> >=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -27,9 +32,11 @@
     "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> ==",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -37,9 +44,11 @@
     "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> !=",
     "outcome": "killed",
     "detail": "0 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -47,9 +56,11 @@
     "description": "ROR on requires clause 'concentrationMgPerMl > 0.0': > -> <",
     "outcome": "killed",
     "detail": "0 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -57,9 +68,11 @@
     "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> <=",
     "outcome": "killed",
     "detail": "0 verified, 3 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -67,9 +80,11 @@
     "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> >=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -77,9 +92,11 @@
     "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> ==",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -87,9 +104,11 @@
     "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> !=",
     "outcome": "killed",
     "detail": "0 verified, 3 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -97,9 +116,11 @@
     "description": "ROR on requires clause 'maxSafeDoseMgPerHr > 0.0': > -> <",
     "outcome": "killed",
     "detail": "0 verified, 3 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
@@ -109,6 +130,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
@@ -118,6 +140,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
@@ -125,9 +148,11 @@
     "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> !=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
@@ -135,9 +160,11 @@
     "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> <",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
@@ -145,9 +172,11 @@
     "description": "ROR on ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -157,6 +186,7 @@
     "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -164,9 +194,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> ==",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -174,9 +206,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> !=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -184,9 +218,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> <",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -196,6 +232,7 @@
     "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -205,6 +242,7 @@
     "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -212,9 +250,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> ==",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -222,9 +262,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> !=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -232,9 +274,11 @@
     "description": "ROR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': <= -> <",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -244,6 +288,7 @@
     "detail": "chain-direction incompatible with a sibling comparison in the same chain - would be a Dafny parse error, not a semantic test (Dafny Reference Manual Sec 5.2.1-5.2.2)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -251,9 +296,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': > -> <=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -263,6 +310,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -270,9 +318,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': > -> ==",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -282,6 +332,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -289,9 +340,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': > -> <",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -301,6 +354,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -310,6 +364,7 @@
     "detail": "statically weaker (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -317,9 +372,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': == -> !=",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -327,9 +384,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': == -> <",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "ROR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -337,9 +396,11 @@
     "description": "ROR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': == -> >",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LOR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -347,9 +408,11 @@
     "description": "LOR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': || -> &&",
     "outcome": "killed",
     "detail": "1 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "AOR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body operator '*'",
@@ -357,9 +420,11 @@
     "description": "AOR on ExpectedDose's function body: * -> +",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "AOR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body operator '*'",
@@ -367,9 +432,11 @@
     "description": "AOR on ExpectedDose's function body: * -> -",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "AOR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body operator '*'",
@@ -379,6 +446,43 @@
     "detail": "arithmetic-operator group incompatible (MutDafny's own restriction: never introduce / from +/-/*, avoiding a division-by-zero false-kill by construction)"
   },
   {
+    "function": "CalculateHourlyDose",
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
+    "mutated_clause": "!(dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr))",
+    "description": "COI: negate ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)'",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4,
+    "isolation_status": "isolated"
+  },
+  {
+    "function": "CalculateHourlyDose",
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
+    "mutated_clause": "!(0.0 <= dose <= maxSafeDoseMgPerHr)",
+    "description": "COI: negate ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr'",
+    "outcome": "killed",
+    "detail": "1 verified, 1 errors",
+    "exit_code": 4,
+    "isolation_status": "isolated"
+  },
+  {
+    "function": "CalculateHourlyDose",
+    "operator": "COI",
+    "keyword": "ensures",
+    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
+    "mutated_clause": "!(infusionRateMlPerHr > 0.0 || dose == 0.0)",
+    "description": "COI: negate ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0'",
+    "outcome": "killed",
+    "detail": "1 verified, 2 errors",
+    "exit_code": 4,
+    "isolation_status": "isolated"
+  },
+  {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -386,9 +490,11 @@
     "description": "LVR on requires clause 'concentrationMgPerMl > 0.0': 0.0 -> -0.01",
     "outcome": "killed",
     "detail": "0 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "requires",
     "original_clause": "concentrationMgPerMl > 0.0",
@@ -398,6 +504,7 @@
     "detail": "magnitude-implied (requires)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -405,9 +512,11 @@
     "description": "LVR on requires clause 'maxSafeDoseMgPerHr > 0.0': 0.0 -> -0.01",
     "outcome": "killed",
     "detail": "0 verified, 3 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "requires",
     "original_clause": "maxSafeDoseMgPerHr > 0.0",
@@ -417,6 +526,7 @@
     "detail": "magnitude-implied (requires)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -426,6 +536,7 @@
     "detail": "magnitude-implied (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
@@ -433,9 +544,11 @@
     "description": "LVR on ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr': 0.0 -> 0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -445,6 +558,7 @@
     "detail": "magnitude-implied (ensures)"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -452,9 +566,11 @@
     "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> 0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -462,9 +578,11 @@
     "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> -0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "ensures",
     "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
@@ -472,9 +590,11 @@
     "description": "LVR on ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0': 0.0 -> 0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body literal '0.0'",
@@ -482,9 +602,11 @@
     "description": "LVR on ExpectedDose's function body: 0.0 -> -0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body literal '0.0'",
@@ -492,9 +614,11 @@
     "description": "LVR on ExpectedDose's function body: 0.0 -> 0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body literal '0.0'",
@@ -502,9 +626,11 @@
     "description": "LVR on ExpectedDose's function body: 0.0 -> -0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   },
   {
+    "function": "CalculateHourlyDose",
     "operator": "LVR",
     "keyword": "function_body",
     "original_clause": "ExpectedDose body literal '0.0'",
@@ -512,36 +638,7 @@
     "description": "LVR on ExpectedDose's function body: 0.0 -> 0.01",
     "outcome": "killed",
     "detail": "1 verified, 1 errors",
-    "exit_code": 4
-  },
-  {
-    "operator": "COI",
-    "keyword": "ensures",
-    "original_clause": "dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)",
-    "mutated_clause": "!(dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr))",
-    "description": "COI: negate ensures clause 'dose == ExpectedDose(concentrationMgPerMl, infusionRateMlPerHr, maxSafeDoseMgPerHr)'",
-    "outcome": "killed",
-    "detail": "1 verified, 1 errors",
-    "exit_code": 4
-  },
-  {
-    "operator": "COI",
-    "keyword": "ensures",
-    "original_clause": "0.0 <= dose <= maxSafeDoseMgPerHr",
-    "mutated_clause": "!(0.0 <= dose <= maxSafeDoseMgPerHr)",
-    "description": "COI: negate ensures clause '0.0 <= dose <= maxSafeDoseMgPerHr'",
-    "outcome": "killed",
-    "detail": "1 verified, 1 errors",
-    "exit_code": 4
-  },
-  {
-    "operator": "COI",
-    "keyword": "ensures",
-    "original_clause": "infusionRateMlPerHr > 0.0 || dose == 0.0",
-    "mutated_clause": "!(infusionRateMlPerHr > 0.0 || dose == 0.0)",
-    "description": "COI: negate ensures clause 'infusionRateMlPerHr > 0.0 || dose == 0.0'",
-    "outcome": "killed",
-    "detail": "1 verified, 2 errors",
-    "exit_code": 4
+    "exit_code": 4,
+    "isolation_status": "isolated"
   }
 ]

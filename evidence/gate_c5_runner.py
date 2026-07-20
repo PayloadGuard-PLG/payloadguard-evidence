@@ -135,14 +135,45 @@ def in_file_callers(source, function_name):
     }
 
 
-def mutants_with_outcomes(source, function_name, body_arithmetic=False):
-    """Every mutant of `function_name` (all five operator classes; body
-    AOR/LVR too when `body_arithmetic` is set), each carried through
-    static filtering, the vacuous-precondition filter, and - for anything
-    that reaches real verification - ISOLATED Dafny verification. Returns
-    a list of record dicts. Isolation is unconditional: there is no
-    whole-file path here (see module docstring)."""
-    body_fn = function_name if body_arithmetic else None
+def mutants_with_outcomes(source, function_name, body_arithmetic=False,
+                          body_function=None, survivor_escalation=None):
+    """Every mutant of `function_name` (all five operator classes), each
+    carried through static filtering, the vacuous-precondition filter,
+    and - for anything that reaches real verification - ISOLATED Dafny
+    verification. Returns a list of record dicts. Isolation is
+    unconditional: there is no whole-file path here (see module docstring).
+
+    `function_name` is the *clause target*: the function or method whose
+    requires/ensures clauses are mutated, and the unit isolated for
+    verification (its own callees and datatypes, never its callers).
+
+    Body-arithmetic (AOR/LVR) mutation of a function's own body is opt-in,
+    two shapes:
+      - `body_arithmetic=True` mutates `function_name`'s OWN body - the
+        renal shape, where each of the seven declarations is a `function`
+        that is both clause target and body target.
+      - `body_function="ExpectedDose"` mutates a DISTINCT companion
+        function's body while the clauses come from `function_name` - the
+        dosage shape, where `method CalculateHourlyDose`'s clauses are
+        mutated and `function ExpectedDose` (its pinning companion, pulled
+        into the isolated unit as a callee) supplies the body arithmetic.
+    The two are mutually exclusive.
+
+    `survivor_escalation`, when given, is a callable(mutated_source) ->
+    (outcome, detail, exit_code), invoked ONLY on a mutant that survives
+    isolated verification, to re-check it against a stronger oracle - the
+    drug_interaction_checker example passes its committed STP suite here.
+    A "killed" escalation re-tags the record `killed_via_stp_suite`; an
+    "unclassifiable" one `unclassifiable_via_stp_suite` (an inconclusive
+    escalation is never silently folded back into `survived`). Left None,
+    survivors stand as survivors - the renal/dosage path."""
+    if body_arithmetic and body_function is not None:
+        raise SystemExit(
+            "gate_c5_runner: pass body_arithmetic (mutate function_name's own "
+            "body) OR body_function (a distinct companion function's body), "
+            "not both"
+        )
+    body_fn = function_name if body_arithmetic else body_function
     mutants = (
         generate_ror_mutants(source, function_name)
         + generate_lor_mutants(source, function_name)
@@ -214,6 +245,47 @@ def mutants_with_outcomes(source, function_name, body_arithmetic=False):
         record["detail"] = detail
         record["exit_code"] = exit_code
         record["isolation_status"] = "isolated"
+
+        if outcome == "survived" and survivor_escalation is not None:
+            # A stronger oracle than the isolated bare spec: re-check the
+            # (whole, un-isolated) mutated source against a hand-authored
+            # suite - the DDI example's committed STP lemmas, which catch a
+            # requires-clause scope-leak class the bare ensures-spec alone
+            # provably cannot (Dafny function-transparency). The escalation
+            # runs on the whole mutated_source, not the isolated unit,
+            # because the suite `include`s the whole spec.
+            esc_outcome, esc_detail, esc_exit_code = survivor_escalation(m.mutated_source)
+            record["stp_suite_outcome"] = esc_outcome
+            record["stp_suite_detail"] = esc_detail
+            if esc_outcome == "killed":
+                record["outcome"] = "killed_via_stp_suite"
+                record["detail"] = (
+                    f"isolated spec survived ({detail}); "
+                    f"STP suite caught it ({esc_detail})"
+                )
+                record["exit_code"] = esc_exit_code
+            elif esc_outcome != "survived":
+                # Only a clean "survived" from the escalation leaves the
+                # record a survivor. Every other result - "unclassifiable",
+                # or ANY unexpected label a future/buggy hook might return -
+                # is treated as inconclusive and retagged, never silently
+                # folded back into "survived" (which would miscount an
+                # unchecked mutant as a confirmed real survivor). The
+                # docstring promises exactly this three-way discipline; the
+                # explicit catch-all is what makes it hold for a label the
+                # shared `_classify` doesn't currently produce.
+                record["outcome"] = "unclassifiable_via_stp_suite"
+                how = (
+                    "inconclusive"
+                    if esc_outcome == "unclassifiable"
+                    else f"an unexpected outcome {esc_outcome!r}"
+                )
+                record["detail"] = (
+                    f"isolated spec survived ({detail}); STP suite escalation "
+                    f"was {how}, not confirmed either way ({esc_detail})"
+                )
+                record["exit_code"] = esc_exit_code
+
         records.append(record)
 
     return records
