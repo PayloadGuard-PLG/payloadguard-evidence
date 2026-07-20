@@ -4,7 +4,18 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-19 (Gate C5 accuracy pass: automated
+Last updated: 2026-07-20 (`gate_c5_runner` precondition-refusal
+robustness + a PayloadGuard false-positive log. The sanctioned Gate C5
+runner now catches the `SystemExit` the Z3 precondition checker raises on
+unmodellable `requires` clause shapes (records `z3_translation_refused`,
+continues to real isolated verification) — a confirmed Qodo finding; the
+DDI runner has done this since PR #26, and the extracted runner needed it
+too before it can be reused on DDI. Renal output unchanged. New
+`PAYLOADGUARD_MERGE_FINDINGS.md` logs PR #67's PayloadGuard `DESTRUCTIVE`
+false positive (Layer-4 structural-drift cannot distinguish a cross-file
+function move from a deletion) as evidence to harden that product. Full
+account: `DEVLOG.md`'s 2026-07-20 entry.)
+Prior header, preserved: Last updated: 2026-07-19 (Gate C5 accuracy pass: automated
 caller-isolation (`evidence/dafny_isolate.py`) now attributes every
 mutation kill to the mutated function's own contract rather than a
 downstream caller; two LVR generator fixes (arithmetic-embedded literal
