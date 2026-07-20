@@ -6,6 +6,18 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-20 (Tier 3) — Component F: the frozen-contract integrity gate (dosage pilot)
+
+Tier 3 (structural separation) begins. Tiers 1–2 made the pipeline honest about what a proof *establishes* and whether the numbers *transcribe* the source; but a `PROVEN` label is only trustworthy if the contract that was proven wasn't itself gamed to be provable. Two classic evasions: weaken the `ensures` until a wrong implementation passes (this repo already owns `dosage_underconstrained.dfy`), or add `assume`/`{:axiom}`/`{:extern}` to force verification. Component F closes this by structurally separating the human-owned safety contract from machine/LLM-authored proof scaffolding and mechanically proving the separation held — the drafter!=checker principle (`citation_gate`) finally applied to the load-bearing artifact, the spec itself. It is an *integrity* guarantee, not a correctness one.
+
+**`evidence/frozen_contract.py` (new).** The frozen contract is the canonical, AST-normalized *contract surface* of a spec: per declaration, its signature + `requires` + `ensures`, plus `function`/`predicate` bodies (which, for a predicate spec, ARE the spec). `build_frozen_contract` extracts it once from the human-authored `.dfy` (generated, committed, drift-checked, like Component D's template); `check_contract` re-extracts a candidate's surface, proves it matches the frozen manifest exactly, and scans the whole candidate for forbidden soundness-escape constructs — `method` bodies are NOT frozen (they're the implementation, where `assert`/`invariant`/`decreases` legitimately live). "AST-grade" = comparison on a normalized token stream (comments stripped, whitespace/formatting irrelevant), so a real clause/body change is caught while a reformat is not. Reuses `dafny_spec_lint`'s `extract_requires/ensures_clauses` and `literal_citation.strip_comments`.
+
+**The verified outcome, all four cases captured (dosage):** case 1 — real `dosage.dfy` → **CONTRACT_INTACT** (Dafny verifies). case 2 — `dosage_underconstrained.dfy` (weakened `ensures`) → **CONTRACT_VIOLATED**, naming the dropped pinning `ensures` and the vanished `ExpectedDose`, while Dafny reports `1 verified, 0 errors`. case 3 — new `dosage_assume_escape.dfy`: contract surface pristine, wrong implementation, `assume false` forces it through — Dafny reports `2 verified, 0 errors` (and `dafny verify --allow-warnings` gives a clean exit-0, so its soundness *warning* is not a robust guard) → **CONTRACT_VIOLATED** on the forbidden `assume`, which the contract-surface diff alone can't see. case 4 — new `dosage_scaffolded.dfy` (identical contract, correct impl, an inert `assert`) → **CONTRACT_INTACT**, the control proving the gate doesn't cry wolf on honest scaffolding. Both new exhibits carry committed Dafny captures + run-manifests.
+
+This is the first concrete mitigation of the long-BLOCKED Vector-4 "specification stripping" concern (`dafny_spec_lint`): no longer without any defense, though not a fully-scoped close (the original source material is still missing). `tests/test_frozen_contract.py` (8): drift, the four outcome cases (each paired with what Dafny itself said), and units for canonicalization (reformat invisible, token change caught), `{:axiom}` detection, and added-lemma-allowed-but-added-function-not. **Scoped to dosage**; extension to renal/aeb/ddi and the frozen-spec authoring migration are deferred. Full suite: 350 passed.
+
+---
+
 ## 2026-07-20 (Tier 2 cont.) — Component C + D extended to all four examples; Qodo review on the renal Component D PR
 
 Two pieces this session, on `claude/repo-docs-review-9l23t8` after PR #71 (renal Component D) merged.

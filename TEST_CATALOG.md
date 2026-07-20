@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 322 test functions across 42 categories.**
+**Total: 330 test functions across 43 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -333,6 +333,19 @@ for the actual collected-case count.
 | `test_gate_fails_on_fact_divergence` | Gate fails on fact divergence. | `tests/test_fact_equality.py:41` |
 | `test_gate_fails_on_intent_divergence` | Gate fails on intent divergence. | `tests/test_fact_equality.py:50` |
 | `test_gate_fails_on_base_subset_divergence` | Gate fails on base subset divergence. | `tests/test_fact_equality.py:61` |
+
+## Frozen Contract (`tests/test_frozen_contract.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_committed_frozen_contract_matches_the_generator` | No drift between the committed frozen_contract.yaml and what the generator extracts from the current dosage.dfy. | `tests/test_frozen_contract.py:43` |
+| `test_case1_real_spec_is_contract_intact` | Case1 real spec is contract intact. | `tests/test_frozen_contract.py:56` |
+| `test_case2_underconstrained_is_violated_while_dafny_verifies_it` | The existing weakened-ensures specimen: Dafny verifies it (it proves almost nothing), the checker rejects it, naming the dropped pinning ensures and the vanished ExpectedDose. | `tests/test_frozen_contract.py:63` |
+| `test_case3_assume_escape_is_violated_on_the_forbidden_assume` | Contract surface pristine, implementation wrong, `assume false` forces Dafny to accept it (verifier reports 0 errors). | `tests/test_frozen_contract.py:74` |
+| `test_case4_legitimate_scaffolding_is_intact` | The true-negative control: same contract, correct implementation, plus a whitelisted `assert` in the (non-frozen) method body. | `tests/test_frozen_contract.py:88` |
+| `test_canonicalization_ignores_formatting_but_catches_token_changes` | AST-grade: reformatting (whitespace, comments) is invisible; a real token change is not. | `tests/test_frozen_contract.py:101` |
+| `test_axiom_attribute_is_a_forbidden_construct` | `{:axiom}` (an unproven-axiom marker) is caught the same way `assume` is - a declaration asserted true without proof. | `tests/test_frozen_contract.py:119` |
+| `test_added_lemma_is_allowed_but_added_function_is_not` | A new lemma is proof scaffolding and allowed; a new spec-bearing function that wasn't in the frozen contract is not. | `tests/test_frozen_contract.py:130` |
 
 ## Gate C5 Runner (`tests/test_gate_c5_runner.py`)
 

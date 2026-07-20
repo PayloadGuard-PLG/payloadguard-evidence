@@ -8,8 +8,27 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (Tier 2 cont.) — **Component C + D now cover
-all four worked examples; PR #71 Qodo findings fixed.** Tier-2 source
+**Last updated:** 2026-07-20 (Tier 3) — **Component F: the frozen-contract
+integrity gate (dosage pilot).** `evidence/frozen_contract.py` freezes a
+spec's human-authored contract surface (signatures + `requires` + `ensures`
++ function bodies, AST-normalized) as a committed, drift-checked manifest
+(`examples/dosage_calculator/frozen_contract.yaml`); `check_contract` proves
+any candidate `.dfy` preserves it exactly and introduces no soundness escape
+(`assume`/`{:axiom}`/`{:extern}`) — `method` bodies aren't frozen, so honest
+proof scaffolding is allowed. Integrity, not correctness: it proves the
+contract wasn't altered by an automated contributor (drafter!=checker,
+applied to the spec itself). Four captured cases prove it catches what Dafny
+accepts: real spec → INTACT; `dosage_underconstrained.dfy` (weak `ensures`)
+→ VIOLATED; new `dosage_assume_escape.dfy` (`assume false`, Dafny `2
+verified, 0 errors`) → VIOLATED on the assume; new `dosage_scaffolded.dfy`
+(inert `assert`) → INTACT. First concrete mitigation of the long-BLOCKED
+Vector-4 spec-stripping concern. **Scoped to dosage**; extending to
+renal/aeb/ddi and the frozen-spec authoring migration are the remaining
+Tier-3 work. This completes the first Tier-3 unit. The prior same-day work
+follows.
+
+**Earlier 2026-07-20 (Tier 2 cont.) — Component C + D now cover
+all four worked examples; PR #71/#72 Qodo findings fixed.** Tier-2 source
 fidelity is complete across the board: every example carries a
 `literal_citations.yaml` (Component C — every spec numeric literal is a
 CONFIRMED source quote or an honestly declared structural/design value) and

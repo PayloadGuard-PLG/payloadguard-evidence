@@ -887,3 +887,47 @@ guarantee, now recorded and test-pinned
 that a future function-with-callers can't silently reintroduce the
 caller-confound. `mutation_report.md` and `run_manifest_mutation.json`
 regenerated to match.
+
+## Amendment 2026-07-20 (Tier 3) — Component F: frozen-contract integrity gate piloted here
+
+Tier 3 of the "PROVEN ≠ meaningful" work (structural separation) is
+piloted on this example. A `PROVEN` label is only trustworthy if the
+contract that was proven wasn't itself gamed to be provable —
+`evidence/frozen_contract.py` freezes this spec's human-authored
+**contract surface** (per declaration: signature + `requires` +
+`ensures`, plus `ExpectedDose`'s body, which *is* spec) as a committed,
+drift-checked manifest, `frozen_contract.yaml`, and proves any candidate
+`.dfy` preserves it exactly and adds no soundness escape
+(`assume`/`{:axiom}`/`{:extern}`). `CalculateHourlyDose`'s method body is
+**not** frozen — it's the implementation, where honest proof scaffolding
+(`assert`/`invariant`/`decreases`) lives. This is an *integrity*
+guarantee (the contract wasn't altered by an automated contributor —
+drafter≠checker applied to the spec itself), **not** a correctness one;
+correctness stays with Gates C1–C6.
+
+Two new honesty exhibits (same discipline as `dosage_underconstrained.dfy`
+and `dosage_naive_widening.py`) show the checker catching what Dafny
+accepts:
+
+- **`dosage_assume_escape.dfy`** — the frozen contract surface is
+  *identical* to `dosage.dfy` (same `ExpectedDose`, same signature/
+  requires/ensures), but the implementation is wrong and `assume false;`
+  forces Dafny to accept it: `raw_dafny_output_assume_escape.txt` reports
+  `2 verified, 0 errors` (and `dafny verify --allow-warnings` gives a
+  clean exit-0, so Dafny's own soundness *warning* on the assume is not a
+  robust guard). `check_contract` returns **CONTRACT_VIOLATED** on the
+  forbidden `assume` — the escape the contract-surface diff alone cannot
+  see.
+- **`dosage_scaffolded.dfy`** — identical contract, correct
+  implementation, plus an inert whitelisted `assert`. Dafny verifies and
+  the checker returns **CONTRACT_INTACT** — the control proving the gate
+  doesn't cry wolf on honest scaffolding.
+
+Paired with the existing `dosage_underconstrained.dfy` (weakened
+`ensures`, `1 verified, 0 errors`, checker **CONTRACT_VIOLATED** on the
+dropped pinning clause) and the real spec (checker **CONTRACT_INTACT**),
+this is the full four-case verified outcome, pinned in
+`tests/test_frozen_contract.py`. It is the first concrete mitigation of
+the long-BLOCKED Vector-4 "specification stripping" concern in
+`KNOWN_LIMITATIONS.md`. Extension to the other three examples, and the
+frozen-spec authoring migration, are deferred.

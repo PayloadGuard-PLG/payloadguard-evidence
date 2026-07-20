@@ -4,7 +4,29 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-20 (even later) (**Named limitation: 14 of the 20
+Last updated: 2026-07-20 (Tier 3) (**Component F: the frozen-contract
+integrity gate (dosage pilot).** `evidence/frozen_contract.py` freezes a
+spec's human-authored contract surface (per-declaration signature +
+`requires` + `ensures` + function bodies, AST-normalized) as a committed,
+drift-checked manifest, and `check_contract` proves any candidate `.dfy`
+preserves it exactly and introduces no soundness-escape construct
+(`assume` / `{:axiom}` / `{:extern}`). It is an integrity guarantee, not a
+correctness one — it proves the contract was **not** altered by an automated
+contributor, the drafter!=checker principle finally applied to the spec
+itself. This is the **first concrete mitigation of the Vector-4
+"specification stripping" concern** below (still BLOCKED as a fully-scoped
+vector for lack of the original source material, but no longer without any
+defense): two honesty exhibits show the gate catching what Dafny accepts —
+`dosage_underconstrained.dfy` (weakened `ensures`, Dafny `1 verified, 0
+errors`) is rejected on the dropped pinning clause, and a new
+`dosage_assume_escape.dfy` (`assume false` forces a wrong result through;
+Dafny `2 verified, 0 errors`, and `--allow-warnings` even yields a clean
+exit-0) is rejected on the forbidden `assume`; `dosage_scaffolded.dfy` (an
+inert `assert`) stays INTACT, proving it doesn't cry wolf on honest
+scaffolding. **Scoped to dosage**; extension to renal/aeb/ddi and the
+frozen-spec authoring migration are deferred. Full account: `DEVLOG.md`'s
+2026-07-20 (Tier 3) entry.)
+Prior header, preserved: Last updated: 2026-07-20 (even later) (**Named limitation: 14 of the 20
 `PROVEN` rows are definitional, not property-bearing.**
 `evidence/spec_impl_gap.py` (Gate C3 vector 3, Component A) now classifies
 each proven `ensures` clause as definitional (restates the body - the

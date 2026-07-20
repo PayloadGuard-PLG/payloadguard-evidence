@@ -1,0 +1,8 @@
+dosage_assume_escape.dfy(52,2): Warning: assume statement has no {:axiom} annotation
+   |
+52 |   assume false; // soundness escape: forces Dafny to accept the wrong result
+   |   ^^^^^^
+
+
+Dafny program verifier finished with 2 verified, 0 errors
+Compilation failed because warnings were found and --allow-warnings is false
