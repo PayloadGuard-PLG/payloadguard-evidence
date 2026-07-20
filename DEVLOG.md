@@ -6,6 +6,18 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-20 (Tier 2 cont.) — `source_anchored_review`: the source-anchored, blind, logged Gate C6 (Component D), renal template
+
+Second half of Tier-2 source fidelity. Component C (`literal_citation`) closes *transcription* - the spec's numbers match the source. Component D reforms the *review*: the original Gate C6 (`dafny_nl_summary`) asks a human to confirm the spec matches a plain-English summary the same system generated from that spec - drafter and checker are the same kind of system, so the checker inherits the drafter's blind spots (the exact rubber-stamp the plan named). This makes the review source-anchored, blind, and logged instead.
+
+**`evidence/source_anchored_review.py` (new).** Builds a review template where each numeric constant is shown next to the verbatim SOURCE quote it must transcribe (reused from Component C's `literal_citations.yaml`, already CONFIRMED present in the source), the reviewer writes the value/boundary they expect FROM THE SOURCE *before* the spec's constant is revealed (kept in a collapsed block - the "blind" step, so agreement means source and spec independently point to the same number), and reviewer + date + an explicit drafter != checker attestation are recorded. `check_structure` mechanically verifies the artifact's structure (every source quote present and CONFIRMED, every required field marker present) and reports `review_complete` (no `_PENDING_` left) separately.
+
+**Deliberately does NOT perform the review.** The sign-off is a human act; having the drafting system fill it would recreate the rubber stamp this component exists to remove. So a freshly generated template is PENDING - structurally valid but not yet reviewed - and per the chosen approach the structure gate PASSES on a PENDING template (`structure_ok=True, review_complete=False`); requiring a completed human review is a separate, out-of-band signal, not a CI blocker. `examples/renal_adjustment/source_anchored_review_renal.md` committed in that PENDING state.
+
+`tests/test_source_anchored_review.py` (4): the generated template is structurally valid but PENDING; the committed renal artifact matches the generator (no drift) with every quote CONFIRMED; replacing every `_PENDING_` flips `review_complete`; and a tampered template (a dropped quote, or a quote absent from the source) is caught. Extension to DDI/aeb/dosage is the remaining Component D rollout. 329 tests pass.
+
+---
+
 ## 2026-07-20 (Tier 2 start) — `literal_citation`: mechanical literal-to-source citation, validated on renal + drug_interaction_checker (Component C)
 
 Tier 2 of the "PROVEN != meaningful" work is source *fidelity*: Tier 1 (`proof_content`) says whether a proof carries independent content, but not whether the spec's NUMBERS faithfully transcribe the source. A single mistyped digit (145 -> 154) is a silent, unprovable defect - Dafny happily proves a spec built on the wrong number. This is Component C, the transcription half, built and validated on `renal_adjustment` first (per Steven's "renal first, then extend" scope choice) and then extended to `drug_interaction_checker`; `aeb_kernel`/`dosage_calculator` (PDF sources, pending text conversion) and Component D (source-anchored blind Gate C6) are the remaining Tier-2 work.

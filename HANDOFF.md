@@ -8,18 +8,18 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (Tier 2 start) — **`literal_citation`:
-mechanical literal-to-source citation, validated on renal + DDI (Component C).**
-`evidence/literal_citation.py` (new) requires every numeric literal in a
-spec's code to be a `source` quote (checked present in the named source via
-`citation_gate`), a `structural` boundary constant, or a named
-`design_decision` — both-way completeness. Validated on `renal_adjustment`
-(19 constants: 16 source-cited and CONFIRMED against KDIGO/MHRA/Cockcroft-Gault,
-0.5 tie-break a design decision, 0.0/0 structural) and
-`drug_interaction_checker` (110/30 dose figures CONFIRMED against the SPS
-interactions source). This is the transcription half of Tier-2 source
-fidelity; extension to `aeb_kernel`/`dosage_calculator` (PDF sources) and
-Component D (source-anchored blind Gate C6) remain — see open thread 2. The
+**Last updated:** 2026-07-20 (Tier 2 cont.) — **`source_anchored_review`:
+the source-anchored, blind, logged Gate C6 (Component D), renal template.**
+`evidence/source_anchored_review.py` (new) reforms Gate C6 so the reviewer
+checks the spec against the verbatim SOURCE (reusing Component C's confirmed
+quotes) and records the expected value *before* the spec's constant is
+revealed (blind), with reviewer/date/drafter!=checker attestation. It builds
++ structure-checks the template but never signs off; a fresh template is
+PENDING and the structure gate passes on PENDING
+(`examples/renal_adjustment/source_anchored_review_renal.md`). This is the
+review half of Tier-2 fidelity, on top of Component C (`literal_citation`,
+transcription, on renal + DDI). Extension of both C and D to
+`aeb_kernel`/`dosage_calculator` (PDF sources) remains — see open thread 2. The
 prior same-day work follows.
 
 **Earlier 2026-07-20 (even later) — `proof_content`: the
@@ -129,9 +129,17 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
    0.5 tie-break declared a design decision, 0.0/0 structural) and
    `drug_interaction_checker` (110/30 dose figures CONFIRMED against
    `sps-doac-interactions-2024.md`, the unreachable-arm 0 structural).
-   **Remaining Tier-2 work:** extend Component C to
-   `aeb_kernel`/`dosage_calculator` (Steven will convert their PDF sources to
-   text); then Component D (source-anchored, blind, logged Gate C6). **Tier 3
+   **Component D STARTED (2026-07-20):** `evidence/source_anchored_review.py`
+   reforms Gate C6 into a source-anchored, blind, logged review - each
+   constant shown next to its verbatim source quote (reused from Component C),
+   the reviewer records the expected value from the source *before* the spec's
+   constant is revealed, with reviewer/date/drafter!=checker attestation. It
+   builds the template and structure-checks it but never performs the sign-off
+   (that would recreate the rubber stamp). A fresh template is PENDING and the
+   structure gate PASSES on PENDING (`examples/renal_adjustment/source_anchored_review_renal.md`
+   committed PENDING; a real human fills it out-of-band). **Remaining Tier-2
+   work:** extend Component C + Component D to `aeb_kernel`/`dosage_calculator`
+   (Steven will convert their PDF sources to text). **Tier 3
    still designed, not built** (frozen-spec + annotation-only
    LLM + AST diff-checker). See the plan file. This whole thread makes the
    `PROVEN` label tell the truth about proof *content* and *fidelity*,
