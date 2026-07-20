@@ -347,7 +347,7 @@ for the actual collected-case count.
 | `test_body_function_mutates_a_distinct_companion_body` | The dosage method+companion shape: clauses come from the clause target (TopLevel), body AOR/LVR from a distinct companion (Companion). | `tests/test_gate_c5_runner.py:169` |
 | `test_body_arithmetic_and_body_function_are_mutually_exclusive` | Body arithmetic and body function are mutually exclusive. | `tests/test_gate_c5_runner.py:194` |
 | `test_survivor_escalation_retags_killed_and_inconclusive` | The DDI STP-escalation shape: a mutant that survives isolated verification is re-checked against a stronger oracle. | `tests/test_gate_c5_runner.py:201` |
-| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:233` |
+| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:245` |
 
 ## Hazard ID Lint (`tests/test_hazard_id_lint.py`)
 

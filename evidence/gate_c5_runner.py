@@ -264,11 +264,25 @@ def mutants_with_outcomes(source, function_name, body_arithmetic=False,
                     f"STP suite caught it ({esc_detail})"
                 )
                 record["exit_code"] = esc_exit_code
-            elif esc_outcome == "unclassifiable":
+            elif esc_outcome != "survived":
+                # Only a clean "survived" from the escalation leaves the
+                # record a survivor. Every other result - "unclassifiable",
+                # or ANY unexpected label a future/buggy hook might return -
+                # is treated as inconclusive and retagged, never silently
+                # folded back into "survived" (which would miscount an
+                # unchecked mutant as a confirmed real survivor). The
+                # docstring promises exactly this three-way discipline; the
+                # explicit catch-all is what makes it hold for a label the
+                # shared `_classify` doesn't currently produce.
                 record["outcome"] = "unclassifiable_via_stp_suite"
+                how = (
+                    "inconclusive"
+                    if esc_outcome == "unclassifiable"
+                    else f"an unexpected outcome {esc_outcome!r}"
+                )
                 record["detail"] = (
                     f"isolated spec survived ({detail}); STP suite escalation "
-                    f"was inconclusive, not confirmed either way ({esc_detail})"
+                    f"was {how}, not confirmed either way ({esc_detail})"
                 )
                 record["exit_code"] = esc_exit_code
 

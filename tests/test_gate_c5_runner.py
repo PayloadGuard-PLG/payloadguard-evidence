@@ -224,6 +224,18 @@ def test_survivor_escalation_retags_killed_and_inconclusive(monkeypatch):
     assert verified
     assert all(r["outcome"] == "unclassifiable_via_stp_suite" for r in verified)
 
+    # An unexpected label a future/buggy hook might return must NOT be left
+    # as a confirmed survivor - it is inconclusive, so it retags too.
+    unexpected = mutants_with_outcomes(
+        SYNTHETIC, "Leaf", survivor_escalation=lambda src: ("timeout", "hook glitch", 1)
+    )
+    verified = [r for r in unexpected if r.get("isolation_status") == "isolated"]
+    assert verified
+    for r in verified:
+        assert r["outcome"] != "survived"
+        assert r["outcome"] == "unclassifiable_via_stp_suite"
+        assert "unexpected outcome 'timeout'" in r["detail"]
+
     stood = mutants_with_outcomes(SYNTHETIC, "Leaf")
     verified = [r for r in stood if r.get("isolation_status") == "isolated"]
     assert verified
