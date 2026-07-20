@@ -13,6 +13,68 @@ correct; the entries are about PayloadGuard's own detection behaviour.
 
 ---
 
+## 2026-07-20 (Tier 3) — Soft misfire: `CAUTION_MISMATCH` (`cross_stack_micro_claim`) as the SOLE signal on a purely additive feature PR (PR #73)
+
+**Verdict issued:** `REVIEW` [LOW] — "✓ Proceed with normal review
+process." Scan 2026-07-20 19:45:36, branch commit `e3acc24` → target
+`ee7c7e5`. Non-blocking (exit-0 verdict; `payloadguard.yml` gates on exit
+code, not the verdict string).
+
+**What the change actually was:** Component F — the frozen-contract
+integrity gate (dosage pilot). Purely **additive**: 9 files added, 5
+modified, **743 added / 4 deleted** (0.5% deletion ratio), no file
+deletions. Layer 4 Structural Drift `LOW`, 0.0% max deletion — nothing
+removed or gutted. Temporal `CURRENT`.
+
+**Which layer fired:** Semantic Transparency (Layer 5b) **alone** —
+`CAUTION_MISMATCH`, MCI `0.200`, signal `cross_stack_micro_claim`. Every
+other layer benign. This is the notable part: in the PR #67/#68 entries
+below, `cross_stack_micro_claim` (MCI 0.200) appeared only as a soft
+co-signal *underneath* a hard Layer-4 `DESTRUCTIVE` verdict. Here it is the
+**only** signal, on a change with **zero deletions** — isolating the
+signal's behaviour from any structural-drift event for the first time in
+this log.
+
+**Root cause.** Layer 5b compares the PR description's language against the
+diff's profile to catch the deceptive-payload pattern (low-impact
+*wording* concealing high-impact *removal* — the April 2026 incident
+shape). This PR's description is dense with precise, *cross-stack* micro-
+claims: verbatim Dafny verifier strings (`2 verified, 0 errors`), exit
+codes, `--allow-warnings` behaviour (the Dafny toolchain) sitting next to
+`check_contract`'s `CONTRACT_INTACT`/`VIOLATED` verdicts (the Python
+module). The heuristic reads that specificity-spanning-two-stacks as a
+partial intent/diff divergence. But the profile is the **opposite** of the
+deception pattern: the diff is net-additive with a near-zero deletion
+ratio, and every micro-claim is backed by a committed Dafny capture or a
+test — accurate, not minimizing. "Specific + cross-stack" is a hallmark of
+honest, evidence-grounded engineering writing (pervasive in this repo), not
+of concealment.
+
+**Recommended product hardening:**
+- **Gate `cross_stack_micro_claim` on the deletion profile.** The
+  deceptive-payload pattern Layer 5b targets is low-impact-description-over-
+  high-impact-*removal*. When the diff is net-additive with a near-zero
+  deletion ratio **and** Layer 4 is `LOW`, this signal has no deception
+  substrate to sit on — down-weight or suppress it rather than surfacing a
+  `CAUTION_MISMATCH`. An all-additive PR cannot be hiding a destructive
+  payload it does not contain.
+- **Distinguish "specific + cross-stack" from "vague + minimizing."** The
+  real deception signal is *under*-description of scope; dense, verifiable,
+  capture-backed claims that happen to reference two stacks are the inverse
+  and should not raise the same flag.
+
+**Disposition in this repo:** the overall verdict (`REVIEW`, "proceed") is
+reasonable and non-blocking; only the Layer-5b sub-signal misfired. The
+description was verified accurate against the diff — every micro-claim
+traces to a committed capture or test. **Nothing was changed to appease the
+scanner:** trimming the verified claims to lower the MCI would itself be the
+transparency-gaming this check exists to prevent, so the honest description
+stands. Logged as field evidence — the first isolated data point on the
+`cross_stack_micro_claim` signal, distinct from the structural-drift family
+below.
+
+---
+
 ## 2026-07-20 (later) — False positive: `DESTRUCTIVE`/`CRITICAL` on a dedup-after-consolidation (PR #68)
 
 **Verdict issued:** `DESTRUCTIVE` [CRITICAL] — "❌ DO NOT MERGE." Scan
