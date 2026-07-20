@@ -30,9 +30,12 @@ def _manifest():
 
 
 def _source_texts(manifest):
+    from evidence.literal_citation import _resolve_within
     from evidence.source_anchored_review import _source_constants
+    # go through the same containment guard check_example() uses, so a
+    # malformed manifest path (absolute or `..`) can't escape SOURCES here
     return {
-        e["source"]: (SOURCES / e["source"]).read_text(encoding="utf-8")
+        e["source"]: _resolve_within(SOURCES, e["source"]).read_text(encoding="utf-8")
         for _lit, e in _source_constants(manifest)
     }
 
@@ -84,3 +87,20 @@ def test_tampered_template_is_caught():
     r2 = check_structure(md2, bad_manifest, _source_texts(manifest))
     assert r2["structure_ok"] is False
     assert "90" in r2["unconfirmed"]
+
+
+def test_deleting_a_block_whose_quote_is_shared_is_still_caught():
+    """The shared-quote hole: renal's 89 and 60 both cite the same KDIGO row,
+    so deleting 60's whole block leaves that quote present (via 89's block) and
+    a bare quote-presence test would pass. The per-literal marker check catches
+    it because two constants never share a marker."""
+    manifest = _manifest()
+    assert manifest["89"]["quote"] == manifest["60"]["quote"]  # the shared row
+    md = build_review("renal_adjustment.dfy", manifest)
+    # remove exactly 60's per-literal marker (its block), leaving 89's intact
+    gutted = md.replace("The spec's constant here is `60`.\n", "")
+    assert md != gutted
+    report = check_structure(gutted, manifest, _source_texts(manifest))
+    assert "60" in report["missing_blocks"]
+    assert "60" not in report["missing_quotes"]  # the shared quote survives
+    assert report["structure_ok"] is False

@@ -121,24 +121,44 @@ def build_review(spec_name, manifest):
     return "\n".join(lines)
 
 
+def _spec_marker(lit):
+    """The per-literal line `build_review` emits inside each constant's block.
+    It embeds the literal itself, so it is unique to that block even when two
+    constants share the same verbatim source quote (e.g. renal's 89 and 60
+    both cite one KDIGO row) - which a bare quote-presence test cannot tell
+    apart."""
+    return f"The spec's constant here is `{lit}`."
+
+
 def check_structure(markdown, manifest, source_texts):
     """Mechanically check a review artifact's STRUCTURE (not its human
     verdicts). Returns a report dict:
       - missing_fields:    required field markers absent from the artifact
+      - missing_blocks:    source constants whose own review block (its unique
+                           per-literal marker) is absent - the per-constant
+                           guarantee a shared-quote substring test can't give
       - missing_quotes:    source constants whose verbatim quote isn't shown
       - unconfirmed:       shown source quotes NOT found in their source text
       - structure_ok:      True iff the above are all empty (PENDING is fine)
       - review_complete:   True iff no `_PENDING_` remains (a human filled it)
     A well-formed but unreviewed template is structure_ok=True,
-    review_complete=False - which is the expected committed state."""
+    review_complete=False - which is the expected committed state.
+
+    The per-literal marker check is what stops a specific constant's block
+    being deleted and masked by another constant that happens to cite the
+    same quote: because two literals never share a marker, dropping one
+    block always drops its marker, whatever its quote."""
     missing_fields = [f for f in _HEADER_FIELDS if f not in markdown]
     for f in _PER_CONSTANT_FIELDS:
         if _source_constants(manifest) and f not in markdown:
             missing_fields.append(f)
 
+    missing_blocks = []
     missing_quotes = []
     unconfirmed = []
     for lit, entry in _source_constants(manifest):
+        if _spec_marker(lit) not in markdown:
+            missing_blocks.append(lit)
         quote = entry["quote"]
         if quote not in markdown:
             missing_quotes.append(lit)
@@ -152,9 +172,12 @@ def check_structure(markdown, manifest, source_texts):
 
     return {
         "missing_fields": missing_fields,
+        "missing_blocks": missing_blocks,
         "missing_quotes": missing_quotes,
         "unconfirmed": unconfirmed,
-        "structure_ok": not (missing_fields or missing_quotes or unconfirmed),
+        "structure_ok": not (
+            missing_fields or missing_blocks or missing_quotes or unconfirmed
+        ),
         "review_complete": PENDING not in markdown,
     }
 
