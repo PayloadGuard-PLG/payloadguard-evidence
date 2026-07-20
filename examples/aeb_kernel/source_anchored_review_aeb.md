@@ -115,7 +115,7 @@ The spec's constant here is `11.0`.
 
 **Source says (verbatim):**
 
-> exceeds what manual braking would produce by 0.25 g or greater
+> exceeds what manual braking would produce by 0.25 g
 
 **Blind expectation** (fill from the source above, before revealing the spec's value): _PENDING_
 

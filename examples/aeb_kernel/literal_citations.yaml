@@ -46,7 +46,7 @@ literals:
   "0.25":
     kind: source
     source: nhtsa-fmvss-127-2024.md
-    quote: "exceeds what manual braking would produce by 0.25 g or greater"
+    quote: "exceeds what manual braking would produce by 0.25 g"
 
   # --- structural ---
   "0.0":

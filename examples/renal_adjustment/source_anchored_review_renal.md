@@ -259,7 +259,7 @@ The spec's constant here is `0.85`.
 
 **Source says (verbatim):**
 
-> conversion factor (88.4)
+> (88.4) is standard clinical chemistry
 
 **Blind expectation** (fill from the source above, before revealing the spec's value): _PENDING_
 

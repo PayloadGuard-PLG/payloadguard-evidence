@@ -160,6 +160,34 @@ def test_committed_example_every_constant_is_cited_or_declared(example):
     assert report["ok"] is True
 
 
+@pytest.mark.parametrize("example", sorted(COMMITTED))
+def test_committed_source_quotes_are_contiguous_verbatim_substrings(example):
+    """The citation gate normalizes whitespace (deliberately, to survive PDF
+    line-wraps - see citation_gate._normalize), so it CONFIRMS a quote even
+    when the source wraps it across a newline. But every quote is shown to a
+    human as "Source says (verbatim)" in the Component D template, and that
+    promise only holds if the displayed string is literally findable in the
+    source - a reviewer Ctrl-F-ing a quote that spans a line break would fail.
+    This gate enforces the stronger, human-facing property the normalized
+    check can't: each source quote is an exact, contiguous substring of its
+    source text, not merely a normalized match."""
+    _dfy, manifest_name = COMMITTED[example]
+    manifest = _manifest(example, manifest_name)
+    non_contiguous = []
+    for lit, entry in manifest.items():
+        if entry.get("kind") != "source":
+            continue
+        source_text = (SOURCES / entry["source"]).read_text(encoding="utf-8")
+        if entry["quote"] not in source_text:
+            non_contiguous.append((lit, entry["source"], entry["quote"]))
+    assert non_contiguous == [], (
+        f"{example}: these source quotes are not contiguous substrings of "
+        f"their source (they match only after whitespace normalization, so "
+        f"the 'verbatim' promise is broken for a human searching the source): "
+        f"{non_contiguous}"
+    )
+
+
 def _renal_manifest():
     return _manifest("renal_adjustment", "literal_citations.yaml")
 
