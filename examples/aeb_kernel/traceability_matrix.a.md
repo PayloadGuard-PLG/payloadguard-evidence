@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant A: evidence array per requirement)
 
-Generated (UTC): 2026-07-16T12:25:14.888910+00:00
+Generated (UTC): 2026-07-20T14:22:54.843415+00:00
 Tool versions: {'dafny': '4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2'}
 Declared bounds (intended envelope): N/A (no crosshair evidence in this metadata)
 Effective bounds (demonstrated by capture): N/A (no crosshair evidence in this metadata)
@@ -23,6 +23,7 @@ Enforcement note:
 
 - **PROVEN**: Formally proven against the stated specification.
 - **GAP**: Not established. Human input required.
+- **PROVEN / definitional**: Definitional proof: the postcondition restates the implementation (ensures is equivalent to the body), so the proof obligation is a tautology discharged by reflexivity. Certified: totality, type-safety, match-exhaustiveness, and the literal boundary structure of the definition. NOT certified: an independent property beyond the definition, or fidelity to the source requirement.
 
 ## Notes
 

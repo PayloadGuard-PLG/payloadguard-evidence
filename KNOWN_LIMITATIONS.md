@@ -4,7 +4,27 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-20 (later) (dosage and drug_interaction_checker
+Last updated: 2026-07-20 (even later) (**Named limitation: 14 of the 20
+`PROVEN` rows are definitional, not property-bearing.**
+`evidence/spec_impl_gap.py` (Gate C3 vector 3, Component A) now classifies
+each proven `ensures` clause as definitional (restates the body - the
+proof obligation is a tautology) or property (strictly weaker than the
+body - real content), and every `PROVEN` matrix row carries a
+`proof_content` qualifier with distinct caveat text (Component B). The
+mechanical result, matching the by-hand analysis: `aeb_kernel` (8) and
+`drug_interaction_checker` (6) are entirely definitional - predicate and
+per-case-lookup specs whose `ensures` is the body - so their `PROVEN`
+label certifies totality/type-safety/exhaustiveness/boundary-structure but
+**no independent property**; only `dosage_calculator` (2) and
+`renal_adjustment` (4) prove genuine properties (safety bounds strictly
+weaker than the arithmetic). This is disclosed, not fixed: the label was
+overclaiming by implication, and the qualifier corrects the implication.
+**Still open (Tier 2, not built):** none of this certifies *fidelity* -
+that a spec's numbers/modeling faithfully transcribe the source; that
+needs the mechanical source-citation + source-anchored blind review named
+in the root `README.md`. Full account: `DEVLOG.md`'s 2026-07-20 (even
+later) entry.)
+Prior header, preserved: Last updated: 2026-07-20 (later) (dosage and drug_interaction_checker
 Gate C5 moved onto the sanctioned isolated runner. `gate_c5_runner` was
 generalized into a superset — `body_function` for dosage's
 method+companion shape and a `survivor_escalation` hook preserving DDI's

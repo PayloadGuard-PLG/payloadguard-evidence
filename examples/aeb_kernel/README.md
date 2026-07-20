@@ -205,3 +205,22 @@ Not resolved here — named, not guessed at:
    of this example is that the Gate C1–C6 evidence architecture
    generalizes to a new domain's real, numeric, citable requirements,
    not that this kernel is a complete AEB system.
+
+## Amendment 2026-07-20 — proof-content qualifier: all 8 rows are definitional
+
+`evidence/spec_impl_gap.py` (Gate C3 vector 3) now classifies each proven
+`ensures` clause as **definitional** (restates the body) or **property**
+(strictly weaker than the body). Every one of aeb_kernel's 8 `PROVEN` rows
+is **definitional**: each function's `ensures` is `F(args) <==> E` with body
+`E` (the FCW/AEB speed envelopes are `match`-per-target, the onset predicates
+are single comparisons), so the proof obligation is `E <==> E`, discharged by
+reflexivity — every clause is Z3-confirmed to pin its result uniquely.
+
+What the 8 `PROVEN` rows therefore certify is real but bounded: **totality,
+type-safety, `match`-exhaustiveness, and the literal boundary structure**
+(`<` vs `<=`, and the exact numbers 10/145/73/0.15/0.05/11/0.25) — the same
+scope Gate C4's STP suite pins. They do **not** certify an independent
+property beyond the definition, nor that those numbers faithfully transcribe
+§571.127 (a separate, still-open fidelity question — see the root
+`README.md`'s "In progress and designed" note). The `traceability_matrix.a.json`
+rows now carry `proof_content: "definitional"` with the matching caveat.

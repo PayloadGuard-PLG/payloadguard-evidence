@@ -36,11 +36,30 @@ Shared discipline (unchanged from manual_matrix.py):
 """
 
 import datetime
+import functools
 
 from evidence.conflict import run_conflict_gate
 from evidence.dafny_adapter import parse_dafny_capture
 from evidence.dafny_spec_lint import check_precondition_satisfiability
-from evidence.model import CAVEAT, Strength
+from evidence.model import CAVEAT, PROOF_CONTENT_CAVEAT, Strength
+from evidence.spec_impl_gap import classify_declaration
+
+
+@functools.lru_cache(maxsize=None)
+def _proof_content_overall(spec_source, dafny_method):
+    """definitional | property | None for one dafny_method, memoized by
+    (spec_source, dafny_method) so a method backing several requirement rows
+    is classified once per build rather than once per row.
+
+    Annotation only: this must never block an otherwise-valid PROVEN binding,
+    so ANY failure degrades to None (unclassified) - not just the classifier's
+    own SystemExit refusals but any unexpected error too. The `except` is
+    deliberately broad for exactly that documented guarantee."""
+    try:
+        overall = classify_declaration(spec_source, dafny_method)["overall"]
+        return overall if overall in PROOF_CONTENT_CAVEAT else None
+    except (SystemExit, Exception):
+        return None
 
 _ARTIFACT_TITLES = {
     "a": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
@@ -123,10 +142,23 @@ def dafny_record(capture, code_location):
             "a vacuous or undecidable precondition"
         )
     result = parse_dafny_capture(capture["raw_output"], capture["manifest"])
+    # Proof-content qualifier (Gate C3 vector 3): definitional (the ensures
+    # restates the body - a tautology proof) vs property (strictly weaker than
+    # the body - real content). Derived mechanically from the spec source, per
+    # the dafny_method this row binds. Annotation only: a classification
+    # failure must not block an otherwise-valid PROVEN binding, so it degrades
+    # to None (unclassified) rather than refusing.
+    proof_content = None
+    if result.strength == Strength.PROVEN:
+        proof_content = _proof_content_overall(
+            capture["spec_source"], capture["dafny_method"]
+        )
     return {
         "method": "dafny",
         "strength": result.strength.value,
         "caveat": CAVEAT[result.strength],
+        "proof_content": proof_content,
+        "proof_content_caveat": PROOF_CONTENT_CAVEAT.get(proof_content),
         "code_location": code_location,
         "result_status": "proven",
         "verifier_completion_status": result.verifier_completion_status,
@@ -465,6 +497,15 @@ def _md_caveats(records):
         if rec["strength"] not in seen:
             seen.append(rec["strength"])
             lines.append(f"- **{rec['strength']}**: {rec['caveat'] if 'caveat' in rec else CAVEAT[Strength(rec['strength'])]}")
+    # Proof-content qualifiers on PROVEN rows (definitional vs property) - one
+    # line per kind actually present, so a reader sees which PROVEN rows carry
+    # independent content and which merely restate their implementation.
+    seen_pc = []
+    for rec in records:
+        pc = rec.get("proof_content")
+        if pc and pc not in seen_pc:
+            seen_pc.append(pc)
+            lines.append(f"- **PROVEN / {pc}**: {rec['proof_content_caveat']}")
     return lines
 
 

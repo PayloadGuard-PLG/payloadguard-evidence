@@ -810,3 +810,21 @@ bare spec alone misses. Pinned by
 `tests/test_drug_interaction_checker_mutation_report.py::test_every_verified_mutant_was_isolated`.
 `mutation_report_ddi.md` and `run_manifest_mutation_ddi.json` regenerated
 to match.
+
+## Amendment 2026-07-20 — proof-content qualifier: all 6 rows are definitional
+
+`evidence/spec_impl_gap.py` (Gate C3 vector 3) classifies each proven
+`ensures` clause as definitional (restates the body) or property (strictly
+weaker). All 6 `PROVEN` rows here are **definitional**: `CheckInteraction`
+and `DoseReductionTargetMg` are per-case lookup tables whose every `ensures`
+is `guard ==> F(...) == <constructor-or-literal>` — the clause restates the
+match arm. (The `InteractionResult(...)` parameterized-datatype RHS is not
+Z3-translatable, so these rest on the structural pin-analysis, correctly
+refused rather than mis-modelled.)
+
+So the proof certifies totality, the discriminated-union shape, and
+`match`-exhaustiveness over all `(doac, agent, indication)` cases — not an
+independent property, and not that the per-cell outcomes faithfully
+transcribe the SPS/eMC/MHRA sources (the fidelity question the source-citation
+Tier-2 work will address). `traceability_matrix.a.json` rows now carry
+`proof_content: "definitional"`.

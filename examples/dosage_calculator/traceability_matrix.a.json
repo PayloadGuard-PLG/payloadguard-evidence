@@ -1,6 +1,6 @@
 {
   "artifact": "IEC 62304 Traceability Matrix (variant A: evidence array per requirement)",
-  "generated_utc": "2026-07-16T04:25:25.939707+00:00",
+  "generated_utc": "2026-07-20T14:22:53.890764+00:00",
   "tool_versions": {
     "crosshair": "crosshair-tool 0.0.107",
     "dafny": "4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2"
@@ -61,6 +61,8 @@
           "method": "dafny",
           "strength": "PROVEN",
           "caveat": "Formally proven against the stated specification.",
+          "proof_content": "property",
+          "proof_content_caveat": "Property proof: the postcondition is strictly weaker than the implementation (the body implies it but not conversely), so the proof establishes content beyond the definition - a wrong implementation could satisfy the body's shape yet violate it. Still does not certify fidelity of the numbers/modeling to the source.",
           "code_location": "dosage.dfy::CalculateHourlyDose",
           "result_status": "proven",
           "verifier_completion_status": "completed",
@@ -142,6 +144,8 @@
           "method": "dafny",
           "strength": "PROVEN",
           "caveat": "Formally proven against the stated specification.",
+          "proof_content": "property",
+          "proof_content_caveat": "Property proof: the postcondition is strictly weaker than the implementation (the body implies it but not conversely), so the proof establishes content beyond the definition - a wrong implementation could satisfy the body's shape yet violate it. Still does not certify fidelity of the numbers/modeling to the source.",
           "code_location": "dosage.dfy::CalculateHourlyDose",
           "result_status": "proven",
           "verifier_completion_status": "completed",

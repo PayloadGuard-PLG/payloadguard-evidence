@@ -55,6 +55,31 @@ the committed traceability matrices, not estimated:
 | `BOUNDED_CHECKED` | 1 |
 | `GAP` (explicit, named) | 7 |
 
+Each `PROVEN` row now also carries a mechanically-derived **proof-content
+qualifier** (`evidence/spec_impl_gap.py`, Gate C3 vector 3) distinguishing
+what the proof actually establishes — because `PROVEN` alone conflates two
+very different things. Of the 20 `PROVEN` requirements, **14 are
+definitional** (the postcondition restates the implementation, so the proof
+certifies totality/type-safety/exhaustiveness/boundary structure but not an
+*independent* property) and **6 are property-bearing** (the postcondition is
+strictly weaker than the body, so the proof carries content beyond the
+definition):
+
+| Example | definitional | property |
+|---|---|---|
+| `aeb_kernel` | 8 | 0 |
+| `drug_interaction_checker` | 6 | 0 |
+| `dosage_calculator` | 0 | 2 |
+| `renal_adjustment` | 0 | 4 |
+
+This is not a downgrade of the label — Dafny did discharge every spec — but
+an honest statement of *which* `PROVEN` rows prove a non-trivial property and
+which restate a definition. `aeb_kernel` and `drug_interaction_checker` are
+predicate/lookup specs (`ensures` equivalent to the body); `dosage_calculator`
+and `renal_adjustment` do real arithmetic, so their safety bounds are genuine
+content. Neither the qualifier nor this table certifies fidelity of the
+numbers to the source — that is a separate, named limitation.
+
 The single `BOUNDED_CHECKED` requirement is `dosage_calculator`'s
 overflow-safety check — a permanent Dafny/Z3 limit (no IEEE-754
 overflow semantics for `real`), not an unbuilt item. Every `GAP` is
@@ -342,10 +367,10 @@ Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 
 ## In progress and designed
 
-Two improvements are named here rather than implied complete — the
-first now fully landed (kept here for continuity, since this section
-tracked it while it was in progress), the second designed but not yet
-committed:
+Two improvements are named here rather than implied complete. Both have
+landed in substance and are kept here for continuity (this section tracked
+each while it was in progress); each still names the piece that remains
+designed-but-unbuilt:
 
 - **Isolated mutation testing — landed for all three worked Dafny
   examples (2026-07-20).** Gate C5 verifies each mutant against the
@@ -362,23 +387,23 @@ committed:
   guarantee is now in place and test-pinned, not merely available.
 
 - **Distinguishing a proven property from a definitional restatement —
-  designed.** A `PROVEN` label today means Dafny discharged the spec for
-  every input in scope. It does not yet distinguish a proof of an
+  landed (classification + labelling), 2026-07-20.** A `PROVEN` label
+  means Dafny discharged the spec, but it conflates a proof of an
   *independent property* (e.g. `dosage_calculator`'s output-stays-within-
-  safe-bounds — a statement strictly weaker than the computation that
-  produces the output, so a wrong implementation could violate it) from
-  a *definitional* spec that restates its own implementation
-  (`aeb_kernel`'s threshold predicates and `drug_interaction_checker`'s
-  per-case lookup, where the `ensures` clause is the function body). Both
-  are real, machine-checked, and non-vacuous; they differ in how much
-  *independent* content the proof carries beyond the definition. The
-  designed solution is a `proof_content: property | definitional`
-  qualifier derived from a mechanical spec/implementation-gap check
-  (prototyped and verified against all four examples), alongside
-  mechanical source-fidelity citation of every spec constant and a
-  source-anchored human review — so a label states exactly what each
-  proof does and does not establish. Planned, not yet committed; the
-  `PROVEN` counts above are unchanged by it.
+  safe-bounds — strictly weaker than the computation that produces it, so
+  a wrong implementation could violate it) with a *definitional* spec that
+  restates its own implementation (`aeb_kernel`'s threshold predicates and
+  `drug_interaction_checker`'s per-case lookup, where the `ensures` clause
+  is the function body). Both are real and machine-checked; they differ in
+  how much *independent* content the proof carries. `evidence/spec_impl_gap.py`
+  now classifies each `ensures` clause mechanically (structural
+  pin-vs-bound analysis with a Z3 pin-uniqueness cross-check), and every
+  `PROVEN` matrix row carries a `proof_content: definitional | property`
+  qualifier with distinct caveat text (see the breakdown table above: 14
+  definitional, 6 property). Still designed but **not** yet built: the
+  Tier-2 fidelity work — mechanical source-citation of every spec constant
+  and a source-anchored, blind human review — so a label also attests the
+  numbers match the source, not only that the proof is internally sound.
 
 ## Scope
 
