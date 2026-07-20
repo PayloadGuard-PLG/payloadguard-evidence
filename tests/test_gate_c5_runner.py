@@ -38,6 +38,22 @@ function Caller(y: int): int
 { Leaf(y) }
 """
 
+# The dosage shape: a top-level `method` (clause target) pinned to a
+# companion `function` whose body supplies the arithmetic. TopLevel has no
+# in-file caller; Companion's only caller is TopLevel (so isolating
+# TopLevel keeps the pin, isolating Companion alone would drop it).
+SYNTHETIC_METHOD = """
+function Companion(x: int): int
+  requires x >= 0
+{ x * 2 }
+method TopLevel(x: int) returns (y: int)
+  requires x >= 0
+  ensures y == Companion(x)
+{
+  y := x * 2;
+}
+"""
+
 
 def test_in_file_callers_reverse_lookup_matches_the_real_spec():
     # ComposedCeiling is called by nothing; the two called functions are
@@ -148,6 +164,70 @@ def test_run_gate_c5_summary_shape_and_tally(monkeypatch, tmp_path):
     # every survivor row carries the reporting fields, no internals
     for s in summary["survivors"]:
         assert set(s) == {"operator", "keyword", "original_clause", "mutated_clause", "description"}
+
+
+def test_body_function_mutates_a_distinct_companion_body(monkeypatch):
+    """The dosage method+companion shape: clauses come from the clause
+    target (TopLevel), body AOR/LVR from a distinct companion (Companion).
+    Passing `body_function` must add the companion's body mutants, and the
+    unit isolated for verification is still the clause target (with the
+    companion pulled in as a callee, never a caller)."""
+    seen = {"sources": []}
+
+    def fake_verify(source):
+        seen["sources"].append(source)
+        return "killed", "0 verified, 1 error", 1
+
+    monkeypatch.setattr(gate_c5_runner, "_real_verify", fake_verify)
+
+    without_body = mutants_with_outcomes(SYNTHETIC_METHOD, "TopLevel")
+    with_body = mutants_with_outcomes(SYNTHETIC_METHOD, "TopLevel", body_function="Companion")
+    # the companion's `x * 2` body arithmetic adds mutants the clause-only
+    # pass doesn't have
+    assert len(with_body) > len(without_body)
+    assert seen["sources"], "some mutant should have reached verification"
+    # the isolated unit is the clause target plus its companion callee
+    for src in seen["sources"]:
+        assert "TopLevel" in src and "Companion" in src
+
+
+def test_body_arithmetic_and_body_function_are_mutually_exclusive():
+    with pytest.raises(SystemExit, match="not both"):
+        mutants_with_outcomes(
+            SYNTHETIC_METHOD, "TopLevel", body_arithmetic=True, body_function="Companion"
+        )
+
+
+def test_survivor_escalation_retags_killed_and_inconclusive(monkeypatch):
+    """The DDI STP-escalation shape: a mutant that survives isolated
+    verification is re-checked against a stronger oracle. A 'killed'
+    escalation re-tags it `killed_via_stp_suite`; an inconclusive one
+    `unclassifiable_via_stp_suite` - never silently folded back into
+    survived. With no hook, survivors stand."""
+    monkeypatch.setattr(
+        gate_c5_runner, "_real_verify",
+        lambda s: ("survived", "1 verified, 0 errors", 0),
+    )
+
+    killed = mutants_with_outcomes(
+        SYNTHETIC, "Leaf", survivor_escalation=lambda src: ("killed", "0 verified, 1 error", 1)
+    )
+    verified = [r for r in killed if r.get("isolation_status") == "isolated"]
+    assert verified
+    assert all(r["outcome"] == "killed_via_stp_suite" for r in verified)
+    assert all(r["stp_suite_outcome"] == "killed" for r in verified)
+
+    inconclusive = mutants_with_outcomes(
+        SYNTHETIC, "Leaf", survivor_escalation=lambda src: ("unclassifiable", "timeout", 1)
+    )
+    verified = [r for r in inconclusive if r.get("isolation_status") == "isolated"]
+    assert verified
+    assert all(r["outcome"] == "unclassifiable_via_stp_suite" for r in verified)
+
+    stood = mutants_with_outcomes(SYNTHETIC, "Leaf")
+    verified = [r for r in stood if r.get("isolation_status") == "isolated"]
+    assert verified
+    assert all(r["outcome"] == "survived" for r in verified)
 
 
 def test_run_gate_c5_reports_no_callers_for_a_leaf(monkeypatch, tmp_path):

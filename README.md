@@ -90,10 +90,10 @@ code, tool version, and timestamp.
   callees, never its callers), so a kill is attributed to that
   function's own contract rather than to a downstream caller that
   happened to fail; without this, whole-file verification silently
-  over-reports how load-bearing a spec is. This isolation is currently
-  wired in for `renal_adjustment`; the other examples still verify
-  whole-file, with the rollout tracked under *In progress and designed*
-  below. Surviving mutants are enumerated and explained.
+  over-reports how load-bearing a spec is. All three worked Dafny
+  examples (`renal_adjustment`, `dosage_calculator`,
+  `drug_interaction_checker`) now run Gate C5 through this isolation.
+  Surviving mutants are enumerated and explained.
 - **C6 — Confirmation.** `evidence/dafny_nl_summary.py` renders each
   contract clause in plain English for a recorded human review prior to
   sign-off.
@@ -342,20 +342,24 @@ Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 
 ## In progress and designed
 
-Two improvements are named here rather than implied complete — each with
-its solution designed, and one already partly landed:
+Two improvements are named here rather than implied complete — the
+first now fully landed (kept here for continuity, since this section
+tracked it while it was in progress), the second designed but not yet
+committed:
 
-- **Isolated mutation testing — landed for one example, in progress for
-  the rest.** Gate C5 verifies each mutant against the mutated function
-  in isolation (its own callees, never its callers), so a kill reflects
-  that function's own contract rather than a downstream caller that
-  happened to fail. The composition is a single sanctioned entry point,
-  `evidence/gate_c5_runner.py`, which always isolates — there is no
-  whole-file mode to forget; `renal_adjustment`'s runner now calls it and
-  reproduces its committed report byte-for-byte. Extending Gate C5 to
-  `dosage_calculator` and `drug_interaction_checker` (whose runners still
-  verify whole-file) is now a matter of pointing them at that runner —
-  the current work item, not assumed already clean.
+- **Isolated mutation testing — landed for all three worked Dafny
+  examples (2026-07-20).** Gate C5 verifies each mutant against the
+  mutated function in isolation (its own callees, never its callers), so
+  a kill reflects that function's own contract rather than a downstream
+  caller that happened to fail. The composition is a single sanctioned
+  entry point, `evidence/gate_c5_runner.py`, which always isolates —
+  there is no whole-file mode to forget. `renal_adjustment`,
+  `dosage_calculator`, and `drug_interaction_checker` all now run Gate C5
+  through it (the latter two via the runner's `body_function` and
+  `survivor_escalation` extension points); each reproduces its committed
+  report with every mutation outcome unchanged, since none of their
+  mutation targets has an in-file caller for isolation to change — the
+  guarantee is now in place and test-pinned, not merely available.
 
 - **Distinguishing a proven property from a definitional restatement —
   designed.** A `PROVEN` label today means Dafny discharged the spec for

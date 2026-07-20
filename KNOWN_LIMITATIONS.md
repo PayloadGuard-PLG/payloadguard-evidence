@@ -4,7 +4,21 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-20 (`gate_c5_runner` precondition-refusal
+Last updated: 2026-07-20 (later) (dosage and drug_interaction_checker
+Gate C5 moved onto the sanctioned isolated runner. `gate_c5_runner` was
+generalized into a superset — `body_function` for dosage's
+method+companion shape and a `survivor_escalation` hook preserving DDI's
+STP re-verification — and both examples re-derived against real Dafny with
+every outcome unchanged (dosage 56: 41 killed/15 filtered/0 survived; DDI
+1342: 744 killed/522 filtered/44 survived/26 unclassifiable/6
+killed_via_stp_suite; multiset-confirmed). Neither example's mutation
+target has an in-file caller, so the caller-confound never existed there;
+isolation adds the guarantee (test-pinned) without moving a count. All
+three worked Dafny examples now run Gate C5 through the one always-
+isolating entry point — the "still runs whole-file Gate C5" caveat below
+no longer applies to any of them. Full account: `DEVLOG.md`'s 2026-07-20
+entry.)
+Prior header, preserved: Last updated: 2026-07-20 (`gate_c5_runner` precondition-refusal
 robustness + a PayloadGuard false-positive log. The sanctioned Gate C5
 runner now catches the `SystemExit` the Z3 precondition checker raises on
 unmodellable `requires` clause shapes (records `z3_translation_refused`,

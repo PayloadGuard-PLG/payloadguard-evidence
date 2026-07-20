@@ -862,3 +862,28 @@ Updated: `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`
 (Finding 6 fully closed), `sources/README.md`. Matrices regenerated via
 `generate_artifacts.py`/`generate_matrix.py`, all Tier 1 gates passed
 clean. 253 tests pass, unchanged.
+
+## Amendment 2026-07-20 — Gate C5 moved onto the sanctioned isolated runner
+
+`run_mutation_suite.py` no longer carries its own
+generate/classify/verify loop; it now calls
+`evidence/gate_c5_runner.py::mutants_with_outcomes`, the single
+sanctioned Gate C5 entry point, passing `CalculateHourlyDose` as the
+clause target and `ExpectedDose` as `body_function` (the method+companion
+shape). Every mutant that reaches Dafny is now verified in **isolation** —
+`CalculateHourlyDose` plus its `ExpectedDose` callee (so the pinning
+`ensures dose == ExpectedDose(...)` stays in the unit and a mutated body
+is still caught), never a caller.
+
+`CalculateHourlyDose` has no in-file callers, so isolation coincides with
+whole-file verification here: the regenerated `mutation_report.json`
+carries the **same 56 mutants and identical outcome counts** (41 killed,
+15 filtered across the four filter buckets, 0 survived, 0 unclassifiable)
+as before — confirmed by diffing the report record-for-record: the only
+additions are the `function` and `isolation_status: "isolated"` fields on
+each record, with zero outcome or detail drift. The value is the
+guarantee, now recorded and test-pinned
+(`tests/test_mutation_report.py::test_every_verified_mutant_was_isolated`),
+that a future function-with-callers can't silently reintroduce the
+caller-confound. `mutation_report.md` and `run_manifest_mutation.json`
+regenerated to match.

@@ -8,7 +8,22 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 — **`gate_c5_runner` precondition-refusal
+**Last updated:** 2026-07-20 (later) — **dosage and
+drug_interaction_checker Gate C5 moved onto the sanctioned isolated
+runner.** `gate_c5_runner` was generalized into a superset
+(`body_function` for dosage's method+companion shape; a
+`survivor_escalation` hook that preserves DDI's STP re-verification), and
+both examples re-derived against real Dafny with **every outcome
+unchanged** (dosage 56: 41 killed/15 filtered/0 survived; DDI 1342: 744
+killed/522 filtered/44 survived/26 unclassifiable/6 killed_via_stp_suite;
+each confirmed by an identity-plus-outcome multiset diff) — neither
+example's mutation target has an in-file caller, so isolation adds the
+guarantee without moving a count. All three worked Dafny examples now run
+Gate C5 through the one always-isolating entry point. See open thread 1
+below and `DEVLOG.md`'s 2026-07-20 entry. The prior same-day work
+follows.
+
+**Earlier 2026-07-20 — `gate_c5_runner` precondition-refusal
 robustness + a PayloadGuard false-positive log** (follow-ups to the Gate
 C5 runner extraction; see `DEVLOG.md`'s 2026-07-20 entry). A confirmed
 Qodo finding: the extracted runner didn't catch the `SystemExit` the Z3
@@ -43,27 +58,27 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
 
 **Two open threads, both named rather than assumed away:**
 
-1. **Extend isolated mutation testing to the other examples.** The
-   sanctioned runner now exists: `evidence/gate_c5_runner.py`
-   (`mutants_with_outcomes` / `run_gate_c5`) composes generate → static
-   filter → vacuous-precondition filter → isolate → verify → classify,
-   always isolating, with no whole-file mode to forget.
-   `run_mutation_suite_renal.py` calls it and reproduces its committed
-   report byte-for-byte (parity-locked by `test_renal_mutation_report.py`).
-   `dosage_calculator` (`ExpectedDose` is referenced by `CalculateHourlyDose`'s
-   pinning ensures) and `drug_interaction_checker` still run whole-file
-   Gate C5, so any function-with-callers there could carry the same
-   caller-confound. Remaining work is now just pointing those two runners
-   at `gate_c5_runner`, re-deriving their counts, and updating their
-   pinned report tests — no new design. The DDI-reuse blocker Qodo
-   surfaced (the runner aborting on the Z3 precondition checker's
-   `SystemExit` for datatype-vs-datatype `requires` comparisons) is
-   already closed (2026-07-20), so that rollout is now purely mechanical.
-   Not yet done; not assumed clean.
-   (An independent `run_gate_c5` cross-check confirmed the renal
-   findings: ComposedCeiling 0 survivors, RoundHalfUp 4, CockcroftGault 2
-   — the corrected numbers, at generated counts 46/41/121, superseding an
-   earlier session's stale 12/28/95 reference.)
+1. **Extend isolated mutation testing to the other examples — DONE
+   (2026-07-20).** All three worked Dafny examples now run Gate C5
+   through the one sanctioned, always-isolating entry point
+   `evidence/gate_c5_runner.py::mutants_with_outcomes`. To cover the
+   other two, the runner was generalized into a superset: `body_function`
+   (dosage's `method CalculateHourlyDose` clauses + companion `function
+   ExpectedDose` body) and a `survivor_escalation` hook (DDI's STP-suite
+   re-verification of survivors, preserved, not dropped). Both re-derived
+   against real Dafny with **outcomes unchanged** — dosage 56 (41 killed /
+   15 filtered / 0 survived), DDI 1342 (744 killed / 522 filtered / 44
+   survived / 26 unclassifiable / 6 killed_via_stp_suite), each confirmed
+   by an identity-plus-outcome multiset diff — because neither example's
+   mutation target has an in-file caller, so the caller-confound never
+   existed there; isolation adds the guarantee (now test-pinned by each
+   example's `test_every_verified_mutant_was_isolated`) without moving a
+   single count. renal is unchanged and still byte-parity-locked. Nothing
+   left open here.
+   (The independent `run_gate_c5` cross-check of the renal findings still
+   stands: ComposedCeiling 0 survivors, RoundHalfUp 4, CockcroftGault 2,
+   at generated counts 46/41/121, superseding an earlier session's stale
+   12/28/95 reference.)
 
 2. **Definitional-vs-property honesty (`proof_content` qualifier).** A
    separate, larger thread from the mutation-accuracy work above. A

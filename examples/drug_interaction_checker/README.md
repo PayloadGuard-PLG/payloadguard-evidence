@@ -776,3 +776,37 @@ companion function — the design question of "same function vs.
 companion function" resolved in favor of a companion function) are both
 built — see the 2026-07-12 amendment above. No requirement in this
 example remains unbuilt.
+
+## Amendment 2026-07-20 — Gate C5 moved onto the sanctioned isolated runner
+
+`run_mutation_suite_ddi.py` no longer carries its own
+generate/classify/verify loop; it now calls
+`evidence/gate_c5_runner.py::mutants_with_outcomes` for each of its two
+functions, so every mutant that reaches Dafny is verified in
+**isolation** (the mutated function plus its callees and datatypes, never
+a caller). The STP-suite survivor escalation this example depends on
+(re-verifying every bare-spec survivor against
+`drug_interaction_checker_stp_suite.dfy`, Gate C4's real ACCEPT/REJECT
+lemmas) is preserved unchanged, now passed to the shared runner through
+its `survivor_escalation` hook rather than inlined.
+
+Neither `CheckInteraction` nor `DoseReductionTargetMg` is an in-file
+caller of the other, and each isolated unit verifies clean at baseline,
+so isolation coincides with whole-file verification here: the regenerated
+`mutation_report_ddi.json` carries the **same 1342 mutants and identical
+outcome counts** (744 killed, 522 filtered_static, 44 survived, 26
+unclassifiable, 6 killed_via_stp_suite) as before — confirmed by an
+identity-plus-outcome multiset diff against the prior report: every
+mutant's outcome is unchanged. The report's only changes are the added
+`isolation_status: "isolated"` field on each verified record, the six
+STP-escalated records' detail text now reading "isolated spec survived"
+rather than "bare spec survived", and each verified record's
+`N verified` summary count dropping by one (the isolated unit is one
+function, not the whole two-function file — a faithful reflection of the
+smaller unit, not an outcome change). The `killed_via_stp_suite` count is
+unchanged at 6: the STP escalation still catches the same
+`DoseReductionTargetMg` requires-clause indication-guard scope-leak the
+bare spec alone misses. Pinned by
+`tests/test_drug_interaction_checker_mutation_report.py::test_every_verified_mutant_was_isolated`.
+`mutation_report_ddi.md` and `run_manifest_mutation_ddi.json` regenerated
+to match.

@@ -134,6 +134,22 @@ def test_no_mutant_touches_the_calculatehourlydose_method_implementation_body():
         assert r["keyword"] in ("requires", "ensures", "function_body")
 
 
+def test_every_verified_mutant_was_isolated():
+    """Since 2026-07-20 this example runs through the sanctioned
+    evidence/gate_c5_runner.py, so every mutant that reaches real Dafny
+    verification is verified against CalculateHourlyDose in ISOLATION (the
+    method plus its ExpectedDose callee, never a caller). CalculateHourlyDose
+    has no in-file callers, so isolation coincides with whole-file here and
+    the outcome counts are unchanged - but the guarantee is now recorded on
+    every verified record and pinned here so it can't silently regress."""
+    records = _report()
+    verified = [r for r in records if r["outcome"] in ("killed", "survived", "unclassifiable")]
+    assert verified
+    for r in verified:
+        assert r["isolation_status"] == "isolated"
+        assert r["function"] == "CalculateHourlyDose"
+
+
 def test_run_manifest_records_real_dafny_version_and_matching_counts():
     manifest = json.loads((ART_DIR / "run_manifest_mutation.json").read_text())
     assert "4.11.0" in manifest["tool_version"]
