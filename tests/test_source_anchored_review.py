@@ -10,6 +10,8 @@ not review_complete), the committed renal template matches the generator
 
 import pathlib
 
+import pytest
+
 from evidence.source_anchored_review import (
     PENDING,
     build_review,
@@ -19,10 +21,39 @@ from evidence.source_anchored_review import (
 )
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
-RENAL_DIR = REPO_ROOT / "examples" / "renal_adjustment"
+EXAMPLES = REPO_ROOT / "examples"
+RENAL_DIR = EXAMPLES / "renal_adjustment"
 SOURCES = REPO_ROOT / "sources"
 RENAL_MANIFEST = RENAL_DIR / "literal_citations.yaml"
 RENAL_REVIEW = RENAL_DIR / "source_anchored_review_renal.md"
+
+# Every worked example with a committed Component D review artifact. Each
+# entry: (spec_name, example_dir, review_filename). aeb_kernel/renal/ddi carry
+# real source-anchored constants; dosage.dfy is fully parameterized so its
+# review has no source constant to blind-check (only the structural zero,
+# listed as declared) - a deliberately near-empty but honest artifact.
+COMMITTED_REVIEWS = {
+    "renal_adjustment": ("renal_adjustment.dfy", "source_anchored_review_renal.md"),
+    "drug_interaction_checker": ("drug_interaction_checker.dfy", "source_anchored_review_ddi.md"),
+    "aeb_kernel": ("aeb_kernel.dfy", "source_anchored_review_aeb.md"),
+    "dosage_calculator": ("dosage.dfy", "source_anchored_review_dosage.md"),
+}
+
+
+@pytest.mark.parametrize("example", sorted(COMMITTED_REVIEWS))
+def test_committed_review_matches_generator_and_passes_structure(example):
+    """For every example: no drift between the committed PENDING artifact and
+    the generator, structure passes, and it stays PENDING until a human signs
+    off. This is the real per-example gate the renal-specific tests below
+    complement with tamper coverage."""
+    spec_name, review_name = COMMITTED_REVIEWS[example]
+    manifest_path = EXAMPLES / example / "literal_citations.yaml"
+    review_path = EXAMPLES / example / review_name
+    manifest = load_manifest(manifest_path)
+    assert review_path.read_text(encoding="utf-8") == build_review(spec_name, manifest)
+    report = check_example(review_path, manifest_path, SOURCES)
+    assert report["structure_ok"] is True, (example, report)
+    assert report["review_complete"] is False  # PENDING until a human signs off
 
 
 def _manifest():

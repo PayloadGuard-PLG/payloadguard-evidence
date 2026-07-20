@@ -1,0 +1,58 @@
+# Component C (Gate C3, source-fidelity vector): literal-to-source citations
+# for aeb_kernel.dfy. Every numeric literal in the spec's CODE (comments
+# stripped) is accounted for here as exactly one of:
+#   source          - a verbatim quote checked present in the named source
+#                     document by evidence/citation_gate.py
+#   structural      - a mathematical/boundary constant (no source to cite)
+#   design_decision - a value the author chose that the source does NOT state
+# Verified mechanically by tests/test_literal_citation.py via
+# evidence/literal_citation.py. Keys are strings so 0.0 and 145.0 stay
+# verbatim. All quotes are transcribed from the codified regulatory text of
+# 49 CFR 571.127 (S4 Definitions, S5 Requirements), NOT the rulemaking
+# preamble that precedes it in the same document - see aeb_kernel.dfy's
+# header for why that distinction matters.
+literals:
+  # --- S5.1.1 / S5.1.2 lead-vehicle speed envelope (FCW/AEB, REQ-AEB-1/2) ---
+  "10.0":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "greater than 10 km/h (6.2 mph)"
+  "145.0":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "less than 145 km/h (90.1 mph)"
+
+  # --- S5.2.1 / S5.2.2 pedestrian upper speed bound (FCW/AEB, REQ-AEB-3/4) ---
+  "73.0":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "less than 73 km/h (45.3 mph)"
+
+  # --- S4 onset definitions (REQ-AEB-5/6/7) ---
+  "0.15":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "deceleration of 0.15 g due to the automatic control of the service brakes"
+  "0.05":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "0.05 g due to brake application"
+  "11.0":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "11 N of force has been applied to the brake pedal"
+
+  # --- S5.3 false-activation threshold (REQ-AEB-8) ---
+  "0.25":
+    kind: source
+    source: nhtsa-fmvss-127-2024.md
+    quote: "exceeds what manual braking would produce by 0.25 g"
+
+  # --- structural ---
+  "0.0":
+    kind: structural
+    note: >-
+      Non-negativity precondition boundary on IsFalseActivationCompliant
+      (requires peakAdditionalDecelG >= 0.0): a physical-domain boundary
+      (deceleration magnitude cannot be negative), not a threshold the source
+      states. Structural, not source-transcribed.

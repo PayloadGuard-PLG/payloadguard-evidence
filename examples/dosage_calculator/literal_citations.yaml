@@ -1,0 +1,21 @@
+# Component C (Gate C3, source-fidelity vector): literal-to-source citations
+# for dosage.dfy. Every numeric literal in the spec's CODE (comments stripped)
+# is accounted for as source / structural / design_decision - see
+# evidence/literal_citation.py, verified by tests/test_literal_citation.py.
+# dosage.dfy is fully parameterized: concentration, infusion rate and the safe
+# ceiling are all inputs, so the clamp kernel transcribes NO numeric threshold
+# from any source. Its one and only code literal is the structural zero of the
+# reverse-flow / non-negativity boundary. (Every concrete dose figure - 2.0,
+# 5.0, 10.0, ... - lives in the STP suite and differential driver, not in the
+# spec under citation here.)
+literals:
+  # --- structural ---
+  "0.0":
+    kind: structural
+    note: >-
+      Real zero: the reverse-flow floor and non-negativity boundary in
+      ExpectedDose/CalculateHourlyDose (rawDose < 0.0 -> 0.0; the
+      0.0 <= dose bound; the infusionRateMlPerHr > 0.0 || dose == 0.0 clause).
+      A mathematical boundary of the clamp, not a source-transcribed dose
+      threshold - the ceiling itself (maxSafeDoseMgPerHr) is a caller input,
+      never a literal in the spec.

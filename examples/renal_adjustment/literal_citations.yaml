@@ -76,7 +76,7 @@ literals:
   "88.4":
     kind: source
     source: ckd-epi-2021-and-cockcroft-gault-verification.md
-    quote: "conversion factor (88.4)"
+    quote: "(88.4) is standard clinical chemistry"
 
   # --- author-chosen value the source does NOT state ---
   "0.5":

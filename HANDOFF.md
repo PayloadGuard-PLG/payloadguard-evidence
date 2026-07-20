@@ -8,18 +8,22 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (Tier 2 cont.) — **`source_anchored_review`:
-the source-anchored, blind, logged Gate C6 (Component D), renal template.**
-`evidence/source_anchored_review.py` (new) reforms Gate C6 so the reviewer
-checks the spec against the verbatim SOURCE (reusing Component C's confirmed
-quotes) and records the expected value *before* the spec's constant is
-revealed (blind), with reviewer/date/drafter!=checker attestation. It builds
-+ structure-checks the template but never signs off; a fresh template is
-PENDING and the structure gate passes on PENDING
-(`examples/renal_adjustment/source_anchored_review_renal.md`). This is the
-review half of Tier-2 fidelity, on top of Component C (`literal_citation`,
-transcription, on renal + DDI). Extension of both C and D to
-`aeb_kernel`/`dosage_calculator` (PDF sources) remains — see open thread 2. The
+**Last updated:** 2026-07-20 (Tier 2 cont.) — **Component C + D now cover
+all four worked examples; PR #71 Qodo findings fixed.** Tier-2 source
+fidelity is complete across the board: every example carries a
+`literal_citations.yaml` (Component C — every spec numeric literal is a
+CONFIRMED source quote or an honestly declared structural/design value) and
+a `source_anchored_review_*.md` (Component D — the source-anchored, blind,
+logged Gate C6 template, committed PENDING). `aeb_kernel`'s seven safety
+numbers trace to the codified 49 CFR 571.127 text (Steven supplied the
+converted `sources/nhtsa-fmvss-127-2024.md`); `dosage.dfy` is fully
+parameterized so its only literal is the structural zero. Two Qodo findings
+on the merged renal Component D PR were fixed first: `check_structure` now
+does a per-literal block check (a shared quote could previously mask a
+deleted block), and the test helper uses the `_resolve_within` containment
+guard. Tests parametrize C and D over all four examples; full suite green.
+This closes Tier-2 fidelity (transcription + review). Tier 3 (frozen-spec +
+annotation-only LLM + AST diff-checker) remains designed, not built. The
 prior same-day work follows.
 
 **Earlier 2026-07-20 (even later) — `proof_content`: the

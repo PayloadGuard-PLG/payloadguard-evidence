@@ -129,11 +129,14 @@ def test_structural_and_design_decision_need_no_source():
 EXAMPLES_DIR = REPO_ROOT / "examples"
 
 # Every worked example whose numeric constants are now literal-cited. Each
-# entry: (spec .dfy, manifest .yaml). aeb_kernel/dosage_calculator are pending
-# their PDF sources being converted to text.
+# entry: (spec .dfy, manifest .yaml). All four examples are covered:
+# aeb_kernel's constants trace to 49 CFR 571.127 (the FMVSS-127 source text);
+# dosage.dfy is fully parameterized, so its only literal is the structural zero.
 COMMITTED = {
     "renal_adjustment": ("renal_adjustment.dfy", "literal_citations.yaml"),
     "drug_interaction_checker": ("drug_interaction_checker.dfy", "literal_citations.yaml"),
+    "aeb_kernel": ("aeb_kernel.dfy", "literal_citations.yaml"),
+    "dosage_calculator": ("dosage.dfy", "literal_citations.yaml"),
 }
 
 
@@ -155,6 +158,34 @@ def test_committed_example_every_constant_is_cited_or_declared(example):
     assert report["stale"] == [], (example, report["stale"])
     assert report["malformed"] == [], (example, report["malformed"])
     assert report["ok"] is True
+
+
+@pytest.mark.parametrize("example", sorted(COMMITTED))
+def test_committed_source_quotes_are_contiguous_verbatim_substrings(example):
+    """The citation gate normalizes whitespace (deliberately, to survive PDF
+    line-wraps - see citation_gate._normalize), so it CONFIRMS a quote even
+    when the source wraps it across a newline. But every quote is shown to a
+    human as "Source says (verbatim)" in the Component D template, and that
+    promise only holds if the displayed string is literally findable in the
+    source - a reviewer Ctrl-F-ing a quote that spans a line break would fail.
+    This gate enforces the stronger, human-facing property the normalized
+    check can't: each source quote is an exact, contiguous substring of its
+    source text, not merely a normalized match."""
+    _dfy, manifest_name = COMMITTED[example]
+    manifest = _manifest(example, manifest_name)
+    non_contiguous = []
+    for lit, entry in manifest.items():
+        if entry.get("kind") != "source":
+            continue
+        source_text = (SOURCES / entry["source"]).read_text(encoding="utf-8")
+        if entry["quote"] not in source_text:
+            non_contiguous.append((lit, entry["source"], entry["quote"]))
+    assert non_contiguous == [], (
+        f"{example}: these source quotes are not contiguous substrings of "
+        f"their source (they match only after whitespace normalization, so "
+        f"the 'verbatim' promise is broken for a human searching the source): "
+        f"{non_contiguous}"
+    )
 
 
 def _renal_manifest():
@@ -188,6 +219,34 @@ def test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers():
         assert by_lit[cg]["kind"] == "source" and by_lit[cg]["verdict"] == "confirmed"
     assert by_lit["0.5"]["kind"] == "design_decision"
     assert by_lit["0.0"]["kind"] == "structural"
+
+
+def test_aeb_source_constants_trace_to_fmvss_127():
+    """aeb_kernel's speed-envelope, onset, and false-activation numbers all
+    trace to the codified 49 CFR 571.127 text; the non-negativity boundary is
+    structural. This is the first non-medical example to be literal-cited."""
+    report = check_example(
+        EXAMPLES_DIR / "aeb_kernel" / "aeb_kernel.dfy",
+        _manifest("aeb_kernel", "literal_citations.yaml"),
+        SOURCES,
+    )
+    by_lit = {r["literal"]: r for r in report["results"]}
+    for lit in ("10.0", "145.0", "73.0", "0.15", "0.05", "11.0", "0.25"):
+        assert by_lit[lit]["kind"] == "source" and by_lit[lit]["verdict"] == "confirmed"
+    assert by_lit["0.0"]["kind"] == "structural"
+
+
+def test_dosage_only_literal_is_the_structural_zero():
+    """dosage.dfy is fully parameterized - concentration, rate and the safe
+    ceiling are all inputs - so it transcribes no source threshold at all; its
+    single code literal is the reverse-flow/non-negativity zero."""
+    manifest = _manifest("dosage_calculator", "literal_citations.yaml")
+    report = check_example(
+        EXAMPLES_DIR / "dosage_calculator" / "dosage.dfy", manifest, SOURCES
+    )
+    assert [r["literal"] for r in report["results"]] == ["0.0"]
+    assert report["results"][0]["kind"] == "structural"
+    assert report["ok"] is True
 
 
 def test_renal_gate_catches_a_mistyped_constant():
