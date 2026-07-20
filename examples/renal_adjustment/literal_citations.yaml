@@ -1,0 +1,103 @@
+# Component C (Gate C3, source-fidelity vector): literal-to-source citations
+# for renal_adjustment.dfy. Every numeric literal in the spec's CODE (comments
+# stripped) is accounted for here as exactly one of:
+#   source          - a verbatim quote checked present in the named source
+#                     document by evidence/citation_gate.py
+#   structural      - a mathematical/boundary constant (no source to cite)
+#   design_decision - a value the author chose that the source does NOT state
+# Verified mechanically by tests/test_literal_citation.py via
+# evidence/literal_citation.py. Keys are strings so 0.0 and 90 stay verbatim.
+literals:
+  # --- KDIGO GFR-category boundaries (GStage), source p. S126 table ---
+  "90":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G1 | ≥90 | Normal or high"
+  "89":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G2 | 60–89 | Mildly decreased"
+  "60":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G2 | 60–89 | Mildly decreased"
+  "59":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G3a | 45–59 | Mildly to moderately decreased"
+  "45":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G3a | 45–59 | Mildly to moderately decreased"
+  "44":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G3b | 30–44 | Moderately to severely decreased"
+  "30":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G3b | 30–44 | Moderately to severely decreased"
+  "29":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G4 | 15–29 | Severely decreased"
+  "15":
+    kind: source
+    source: kdigo-2024-gfr-staging.md
+    quote: "G4 | 15–29 | Severely decreased"
+
+  # --- MHRA DSU 2019 formula-selection thresholds (SelectFormula) ---
+  "75":
+    kind: source
+    source: mhra-renal-formula-selection-2019.md
+    quote: "patients aged 75 and older"
+  "18.0":
+    kind: source
+    source: mhra-renal-formula-selection-2019.md
+    quote: "patients at extremes of muscle mass (BMI <18 kg/m2 or >40 kg/m2)"
+  "40.0":
+    kind: source
+    source: mhra-renal-formula-selection-2019.md
+    quote: "patients at extremes of muscle mass (BMI <18 kg/m2 or >40 kg/m2)"
+
+  # --- Cockcroft-Gault formula constants (CockcroftGaultCrClMlPerMin) ---
+  "140":
+    kind: source
+    source: ckd-epi-2021-and-cockcroft-gault-verification.md
+    quote: "CrCl (men) = (140 − age) × weight(kg) / (72 × Scr[mg/dL])"
+  "72.0":
+    kind: source
+    source: ckd-epi-2021-and-cockcroft-gault-verification.md
+    quote: "CrCl (men) = (140 − age) × weight(kg) / (72 × Scr[mg/dL])"
+  "0.85":
+    kind: source
+    source: ckd-epi-2021-and-cockcroft-gault-verification.md
+    quote: "CrCl (women) = above × 0.85"
+  "88.4":
+    kind: source
+    source: ckd-epi-2021-and-cockcroft-gault-verification.md
+    quote: "conversion factor (88.4)"
+
+  # --- author-chosen value the source does NOT state ---
+  "0.5":
+    kind: design_decision
+    note: >-
+      Round-half-up tie-break (89.5 -> 90). The rounding-to-whole-number
+      requirement is KDIGO-sourced, but this specific tie-break is NOT a KDIGO
+      rule - KDIGO states no tie-breaking method, and NKF implementation
+      guidance (Miller et al., Clin Chem 2022) defers it to the lab information
+      system. A named, uncited design decision, never presented as source-derived.
+
+  # --- mathematical/boundary constants that transcribe no requirement ---
+  "0.0":
+    kind: structural
+    note: >-
+      Non-negativity / positivity domain boundaries (x >= 0.0, bmi > 0.0,
+      weightKg > 0.0, serumCreatinine > 0.0, ceiling > 0.0, callerSuppliedEgfr
+      >= 0.0). A mathematical domain constant, not a transcribed source value.
+  "0":
+    kind: structural
+    note: >-
+      Integer zero: non-negativity lower bounds (ageYears >= 0, roundedEgfr >= 0)
+      and the RoundHalfUp result-positivity guarantee (RoundHalfUp(x) >= 0).
+      A mathematical constant, not source-transcribed.

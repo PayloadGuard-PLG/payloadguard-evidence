@@ -8,7 +8,21 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (even later) — **`proof_content`: the
+**Last updated:** 2026-07-20 (Tier 2 start) — **`literal_citation`:
+mechanical literal-to-source citation, validated on renal + DDI (Component C).**
+`evidence/literal_citation.py` (new) requires every numeric literal in a
+spec's code to be a `source` quote (checked present in the named source via
+`citation_gate`), a `structural` boundary constant, or a named
+`design_decision` — both-way completeness. Validated on `renal_adjustment`
+(19 constants: 16 source-cited and CONFIRMED against KDIGO/MHRA/Cockcroft-Gault,
+0.5 tie-break a design decision, 0.0/0 structural) and
+`drug_interaction_checker` (110/30 dose figures CONFIRMED against the SPS
+interactions source). This is the transcription half of Tier-2 source
+fidelity; extension to `aeb_kernel`/`dosage_calculator` (PDF sources) and
+Component D (source-anchored blind Gate C6) remain — see open thread 2. The
+prior same-day work follows.
+
+**Earlier 2026-07-20 (even later) — `proof_content`: the
 `PROVEN` label now tells the truth about proof content (Tier 1 landed).**
 `evidence/spec_impl_gap.py` classifies each `ensures` clause definitional
 (restates the body) vs property (strictly weaker); every `PROVEN` matrix
@@ -105,13 +119,23 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
    `drug_interaction_checker` 6) and **6 property** (`dosage_calculator`
    2, `renal_adjustment` 4). `PROVEN`-exclusivity (`assert_no_realized_proven`)
    is untouched; the qualifier only annotates content *within* PROVEN.
-   **Still designed, not built:** Tier 2 (mechanical source-citation of
-   every spec constant + a source-anchored blind Gate C6) — fidelity, so
-   a label also attests the numbers match the source, not only that the
-   proof is internally sound; and Tier 3 (frozen-spec + annotation-only
-   LLM + AST diff-checker). See the plan file. This makes the `PROVEN`
-   label tell the truth about proof *content*, distinct from the
-   mutation-kill *accuracy* work landed 2026-07-19.
+   **Tier 2 IN PROGRESS (2026-07-20): Component C started.**
+   `evidence/literal_citation.py` (new) is the mechanical literal-to-source
+   citation gate: every numeric literal in a spec's code must be a `source`
+   quote (checked present in the named source via `citation_gate`), a
+   `structural` boundary constant, or a named `design_decision` - completeness
+   enforced both ways. Validated on `renal_adjustment` (19 constants: 16
+   source-cited and CONFIRMED against KDIGO/MHRA/Cockcroft-Gault sources, the
+   0.5 tie-break declared a design decision, 0.0/0 structural) and
+   `drug_interaction_checker` (110/30 dose figures CONFIRMED against
+   `sps-doac-interactions-2024.md`, the unreachable-arm 0 structural).
+   **Remaining Tier-2 work:** extend Component C to
+   `aeb_kernel`/`dosage_calculator` (Steven will convert their PDF sources to
+   text); then Component D (source-anchored, blind, logged Gate C6). **Tier 3
+   still designed, not built** (frozen-spec + annotation-only
+   LLM + AST diff-checker). See the plan file. This whole thread makes the
+   `PROVEN` label tell the truth about proof *content* and *fidelity*,
+   distinct from the mutation-kill *accuracy* work landed 2026-07-19.
 **Prior update, preserved below** — 2026-07-18 (even later) — **`README.md` gained a
 system-wide evidence-strength totals table (28 requirements: 20
 `PROVEN`, 1 `BOUNDED_CHECKED`, 7 `GAP`) and the pip-installable CLI

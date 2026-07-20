@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 301 test functions across 40 categories.**
+**Total: 313 test functions across 41 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -362,6 +362,23 @@ for the actual collected-case count.
 | `test_dotted_and_undotted_ids_both_parse` | Dotted and undotted ids both parse. | `tests/test_hazard_id_lint.py:114` |
 | `test_untracked_markdown_is_not_scanned` | The exact case an external review (Qodo, PR #51) flagged: a workspace file that was never `git add`-ed - a local scratch note, or something a tool generated (this repo's own working tree already had pytest's cache READM… | `tests/test_hazard_id_lint.py:125` |
 | `test_test_catalog_md_is_excluded_even_when_tracked` | Real false positive, found 2026-07-15 the first time TEST_CATALOG.md was generated: it quotes test docstrings verbatim, including tests/test_hazard_id_lint.py's own fixture examples ("HAZ-X-2", etc.) - fictional IDs use… | `tests/test_hazard_id_lint.py:142` |
+
+## Literal Citation (`tests/test_literal_citation.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_spec_literals_extracts_code_constants_only` | Spec literals extracts code constants only. | `tests/test_literal_citation.py:40` |
+| `test_unary_signed_literals_keep_their_sign_binary_subtraction_does_not` | A unary +/- adjacent to the digits is part of the literal (a sign transcription error must be catchable), but binary subtraction is not a sign - `>= -0.5` is the negative literal, `x - 0.5` and `x-0.5` are not. | `tests/test_literal_citation.py:52` |
+| `test_block_comment_containing_a_line_comment_is_fully_stripped` | A `//` inside a `/* */` block must not truncate the block's `*/`, leaving comment digits behind as false code literals. | `tests/test_literal_citation.py:63` |
+| `test_source_quote_confirmed_and_not_found` | Source quote confirmed and not found. | `tests/test_literal_citation.py:72` |
+| `test_uncited_literal_breaks_completeness` | A spec constant with no manifest entry is the exact hole this closes. | `tests/test_literal_citation.py:87` |
+| `test_stale_manifest_entry_is_flagged` | Stale manifest entry is flagged. | `tests/test_literal_citation.py:95` |
+| `test_malformed_entries_are_flagged` | Malformed entries are flagged. | `tests/test_literal_citation.py:106` |
+| `test_structural_and_design_decision_need_no_source` | Structural and design decision need no source. | `tests/test_literal_citation.py:116` |
+| `test_committed_example_every_constant_is_cited_or_declared` | The real gate: every numeric literal in the spec is accounted for, and every source-cited constant's quote is CONFIRMED present in its actual source document. | `tests/test_literal_citation.py:145` |
+| `test_ddi_dose_targets_are_source_cited_against_the_sps_document` | drug_interaction_checker's only numeric constants are REQ-DDI-6's dose figures (dabigatran 110 mg, edoxaban 30 mg), both CONFIRMED against the SPS interactions source; the unreachable-arm zero is structural. | `tests/test_literal_citation.py:164` |
+| `test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers` | Pin the classification: the safety-critical numbers trace to a source, the round-half-up tie-break is a declared design decision (not KDIGO), and the domain boundaries are structural. | `tests/test_literal_citation.py:179` |
+| `test_renal_gate_catches_a_mistyped_constant` | Demonstrates the point: mutate a spec constant (90 -> 91) and the gate flags 91 as uncited - the transcription error Dafny itself can't catch. | `tests/test_literal_citation.py:193` |
 
 ## Mutation Report (`tests/test_mutation_report.py`)
 
