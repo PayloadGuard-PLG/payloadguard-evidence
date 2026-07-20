@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 318 test functions across 42 categories.**
+**Total: 321 test functions across 42 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -375,10 +375,12 @@ for the actual collected-case count.
 | `test_stale_manifest_entry_is_flagged` | Stale manifest entry is flagged. | `tests/test_literal_citation.py:95` |
 | `test_malformed_entries_are_flagged` | Malformed entries are flagged. | `tests/test_literal_citation.py:106` |
 | `test_structural_and_design_decision_need_no_source` | Structural and design decision need no source. | `tests/test_literal_citation.py:116` |
-| `test_committed_example_every_constant_is_cited_or_declared` | The real gate: every numeric literal in the spec is accounted for, and every source-cited constant's quote is CONFIRMED present in its actual source document. | `tests/test_literal_citation.py:145` |
-| `test_ddi_dose_targets_are_source_cited_against_the_sps_document` | drug_interaction_checker's only numeric constants are REQ-DDI-6's dose figures (dabigatran 110 mg, edoxaban 30 mg), both CONFIRMED against the SPS interactions source; the unreachable-arm zero is structural. | `tests/test_literal_citation.py:164` |
-| `test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers` | Pin the classification: the safety-critical numbers trace to a source, the round-half-up tie-break is a declared design decision (not KDIGO), and the domain boundaries are structural. | `tests/test_literal_citation.py:179` |
-| `test_renal_gate_catches_a_mistyped_constant` | Demonstrates the point: mutate a spec constant (90 -> 91) and the gate flags 91 as uncited - the transcription error Dafny itself can't catch. | `tests/test_literal_citation.py:193` |
+| `test_committed_example_every_constant_is_cited_or_declared` | The real gate: every numeric literal in the spec is accounted for, and every source-cited constant's quote is CONFIRMED present in its actual source document. | `tests/test_literal_citation.py:148` |
+| `test_ddi_dose_targets_are_source_cited_against_the_sps_document` | drug_interaction_checker's only numeric constants are REQ-DDI-6's dose figures (dabigatran 110 mg, edoxaban 30 mg), both CONFIRMED against the SPS interactions source; the unreachable-arm zero is structural. | `tests/test_literal_citation.py:167` |
+| `test_renal_source_cited_constants_are_the_kdigo_mhra_cg_numbers` | Pin the classification: the safety-critical numbers trace to a source, the round-half-up tie-break is a declared design decision (not KDIGO), and the domain boundaries are structural. | `tests/test_literal_citation.py:182` |
+| `test_aeb_source_constants_trace_to_fmvss_127` | aeb_kernel's speed-envelope, onset, and false-activation numbers all trace to the codified 49 CFR 571.127 text; the non-negativity boundary is structural. | `tests/test_literal_citation.py:196` |
+| `test_dosage_only_literal_is_the_structural_zero` | dosage.dfy is fully parameterized - concentration, rate and the safe ceiling are all inputs - so it transcribes no source threshold at all; its single code literal is the reverse-flow/non-negativity zero. | `tests/test_literal_citation.py:211` |
+| `test_renal_gate_catches_a_mistyped_constant` | Demonstrates the point: mutate a spec constant (90 -> 91) and the gate flags 91 as uncited - the transcription error Dafny itself can't catch. | `tests/test_literal_citation.py:224` |
 
 ## Mutation Report (`tests/test_mutation_report.py`)
 
@@ -498,11 +500,12 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_generated_template_is_structurally_valid_but_pending` | Generated template is structurally valid but pending. | `tests/test_source_anchored_review.py:43` |
-| `test_committed_renal_review_matches_the_generator_and_passes_structure` | No drift between the committed PENDING artifact and the generator, and every source quote in it is CONFIRMED present in its actual source. | `tests/test_source_anchored_review.py:54` |
-| `test_a_completed_review_reads_as_complete` | Replacing every _PENDING_ (what a real reviewer does) flips review_complete, without changing structural validity. | `tests/test_source_anchored_review.py:65` |
-| `test_tampered_template_is_caught` | Tampered template is caught. | `tests/test_source_anchored_review.py:75` |
-| `test_deleting_a_block_whose_quote_is_shared_is_still_caught` | The shared-quote hole: renal's 89 and 60 both cite the same KDIGO row, so deleting 60's whole block leaves that quote present (via 89's block) and a bare quote-presence test would pass. | `tests/test_source_anchored_review.py:92` |
+| `test_committed_review_matches_generator_and_passes_structure` | For every example: no drift between the committed PENDING artifact and the generator, structure passes, and it stays PENDING until a human signs off. | `tests/test_source_anchored_review.py:44` |
+| `test_generated_template_is_structurally_valid_but_pending` | Generated template is structurally valid but pending. | `tests/test_source_anchored_review.py:74` |
+| `test_committed_renal_review_matches_the_generator_and_passes_structure` | No drift between the committed PENDING artifact and the generator, and every source quote in it is CONFIRMED present in its actual source. | `tests/test_source_anchored_review.py:85` |
+| `test_a_completed_review_reads_as_complete` | Replacing every _PENDING_ (what a real reviewer does) flips review_complete, without changing structural validity. | `tests/test_source_anchored_review.py:96` |
+| `test_tampered_template_is_caught` | Tampered template is caught. | `tests/test_source_anchored_review.py:106` |
+| `test_deleting_a_block_whose_quote_is_shared_is_still_caught` | The shared-quote hole: renal's 89 and 60 both cite the same KDIGO row, so deleting 60's whole block leaves that quote present (via 89's block) and a bare quote-presence test would pass. | `tests/test_source_anchored_review.py:123` |
 
 ## Spec Impl Gap (`tests/test_spec_impl_gap.py`)
 
