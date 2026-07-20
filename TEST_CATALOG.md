@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 313 test functions across 41 categories.**
+**Total: 318 test functions across 42 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -493,6 +493,16 @@ for the actual collected-case count.
 | `test_concrete_only_fixture_validates_against_schema_c` | Concrete only fixture validates against schema c. | `tests/test_single_evidence_type.py:91` |
 | `test_symbolic_only_requirement_appears_in_exactly_one_artifact` | Symbolic only requirement appears in exactly one artifact. | `tests/test_single_evidence_type.py:98` |
 | `test_concrete_only_requirement_appears_in_exactly_one_artifact` | The Gate 5 fix itself: a requirement declaring only concrete_test evidence gets no symbolic record, so it must NOT appear in the symbolic artifact at all - previously impossible (every requirement got an unconditional s… | `tests/test_single_evidence_type.py:119` |
+
+## Source Anchored Review (`tests/test_source_anchored_review.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_generated_template_is_structurally_valid_but_pending` | Generated template is structurally valid but pending. | `tests/test_source_anchored_review.py:43` |
+| `test_committed_renal_review_matches_the_generator_and_passes_structure` | No drift between the committed PENDING artifact and the generator, and every source quote in it is CONFIRMED present in its actual source. | `tests/test_source_anchored_review.py:54` |
+| `test_a_completed_review_reads_as_complete` | Replacing every _PENDING_ (what a real reviewer does) flips review_complete, without changing structural validity. | `tests/test_source_anchored_review.py:65` |
+| `test_tampered_template_is_caught` | Tampered template is caught. | `tests/test_source_anchored_review.py:75` |
+| `test_deleting_a_block_whose_quote_is_shared_is_still_caught` | The shared-quote hole: renal's 89 and 60 both cite the same KDIGO row, so deleting 60's whole block leaves that quote present (via 89's block) and a bare quote-presence test would pass. | `tests/test_source_anchored_review.py:92` |
 
 ## Spec Impl Gap (`tests/test_spec_impl_gap.py`)
 
