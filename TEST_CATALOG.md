@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 287 test functions across 38 categories.**
+**Total: 296 test functions across 39 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -467,6 +467,20 @@ for the actual collected-case count.
 | `test_concrete_only_fixture_validates_against_schema_c` | Concrete only fixture validates against schema c. | `tests/test_single_evidence_type.py:91` |
 | `test_symbolic_only_requirement_appears_in_exactly_one_artifact` | Symbolic only requirement appears in exactly one artifact. | `tests/test_single_evidence_type.py:98` |
 | `test_concrete_only_requirement_appears_in_exactly_one_artifact` | The Gate 5 fix itself: a requirement declaring only concrete_test evidence gets no symbolic record, so it must NOT appear in the symbolic artifact at all - previously impossible (every requirement got an unconditional s… | `tests/test_single_evidence_type.py:119` |
+
+## Spec Impl Gap (`tests/test_spec_impl_gap.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_definitional_predicate_is_definitional_and_z3_confirms` | Definitional predicate is definitional and z3 confirms. | `tests/test_spec_impl_gap.py:62` |
+| `test_mixed_method_has_both_a_definitional_pin_and_a_property_bound` | Mixed method has both a definitional pin and a property bound. | `tests/test_spec_impl_gap.py:70` |
+| `test_guarded_match_function_is_definitional_with_guards_recorded` | Guarded match function is definitional with guards recorded. | `tests/test_spec_impl_gap.py:83` |
+| `test_unknown_declaration_is_refused` | Unknown declaration is refused. | `tests/test_spec_impl_gap.py:92` |
+| `test_aeb_kernel_every_function_is_definitional` | Every aeb_kernel function restates its own body (ensures F <==> E, body E) - the motivating definitional case. | `tests/test_spec_impl_gap.py:103` |
+| `test_dosage_calculate_hourly_dose_is_property_with_a_definitional_pin` | dosage's CalculateHourlyDose pins dose == ExpectedDose(...) (definitional) but also bounds 0.0 <= dose <= max and infusionRate > 0 \|\| dose == 0 (property) - so the row carries real content. | `tests/test_spec_impl_gap.py:117` |
+| `test_renal_carries_both_property_and_definitional_functions` | renal_adjustment mixes real-arithmetic property functions (RoundHalfUp's rounding bound and >= 0 floor, ComposedCeiling's > 0.0) with definitional category-lookup functions (GStage) - the classifier separates them. | `tests/test_spec_impl_gap.py:136` |
+| `test_ddi_check_interaction_is_definitional` | drug_interaction_checker's CheckInteraction is a per-case lookup: every ensures pins the result to an InteractionResult(...) constructor under a guard. | `tests/test_spec_impl_gap.py:148` |
+| `test_structure_and_z3_never_disagree_on_the_committed_specs` | The load-bearing correctness invariant: wherever the Z3 pin-uniqueness cross-check can run, it agrees with the structural verdict. | `tests/test_spec_impl_gap.py:159` |
 
 ## Structural Proven Check (`tests/test_structural_proven_check.py`)
 
