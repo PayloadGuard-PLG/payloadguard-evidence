@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 330 test functions across 43 categories.**
+**Total: 333 test functions across 43 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -338,14 +338,17 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_committed_frozen_contract_matches_the_generator` | No drift between the committed frozen_contract.yaml and what the generator extracts from the current dosage.dfy. | `tests/test_frozen_contract.py:43` |
-| `test_case1_real_spec_is_contract_intact` | Case1 real spec is contract intact. | `tests/test_frozen_contract.py:56` |
-| `test_case2_underconstrained_is_violated_while_dafny_verifies_it` | The existing weakened-ensures specimen: Dafny verifies it (it proves almost nothing), the checker rejects it, naming the dropped pinning ensures and the vanished ExpectedDose. | `tests/test_frozen_contract.py:63` |
-| `test_case3_assume_escape_is_violated_on_the_forbidden_assume` | Contract surface pristine, implementation wrong, `assume false` forces Dafny to accept it (verifier reports 0 errors). | `tests/test_frozen_contract.py:74` |
-| `test_case4_legitimate_scaffolding_is_intact` | The true-negative control: same contract, correct implementation, plus a whitelisted `assert` in the (non-frozen) method body. | `tests/test_frozen_contract.py:88` |
-| `test_canonicalization_ignores_formatting_but_catches_token_changes` | AST-grade: reformatting (whitespace, comments) is invisible; a real token change is not. | `tests/test_frozen_contract.py:101` |
-| `test_axiom_attribute_is_a_forbidden_construct` | `{:axiom}` (an unproven-axiom marker) is caught the same way `assume` is - a declaration asserted true without proof. | `tests/test_frozen_contract.py:119` |
-| `test_added_lemma_is_allowed_but_added_function_is_not` | A new lemma is proof scaffolding and allowed; a new spec-bearing function that wasn't in the frozen contract is not. | `tests/test_frozen_contract.py:130` |
+| `test_committed_frozen_contract_matches_the_generator` | No drift between the committed frozen_contract.yaml and what the generator extracts from the current dosage.dfy. | `tests/test_frozen_contract.py:45` |
+| `test_case1_real_spec_is_contract_intact` | Case1 real spec is contract intact. | `tests/test_frozen_contract.py:58` |
+| `test_case2_underconstrained_is_violated_while_dafny_verifies_it` | The existing weakened-ensures specimen: Dafny verifies it (it proves almost nothing), the checker rejects it, naming the dropped pinning ensures and the vanished ExpectedDose. | `tests/test_frozen_contract.py:65` |
+| `test_case3_assume_escape_is_violated_on_the_forbidden_assume` | Contract surface pristine, implementation wrong, `assume false` forces Dafny to accept it (verifier reports 0 errors). | `tests/test_frozen_contract.py:76` |
+| `test_case4_legitimate_scaffolding_is_intact` | The true-negative control: same contract, correct implementation, plus a whitelisted `assert` in the (non-frozen) method body. | `tests/test_frozen_contract.py:90` |
+| `test_canonicalization_ignores_formatting_but_catches_token_changes` | AST-grade: reformatting (whitespace, comments) is invisible; a real token change is not. | `tests/test_frozen_contract.py:103` |
+| `test_axiom_attribute_is_a_forbidden_construct` | `{:axiom}` (an unproven-axiom marker) is caught the same way `assume` is - a declaration asserted true without proof. | `tests/test_frozen_contract.py:121` |
+| `test_added_lemma_is_allowed_but_added_function_is_not` | A new lemma is proof scaffolding and allowed; a new spec-bearing function that wasn't in the frozen contract is not. | `tests/test_frozen_contract.py:132` |
+| `test_lemma_bearing_source_builds_and_lemmas_are_not_frozen` | Regression (Qodo #1): a spec containing a lemma must not crash manifest generation. | `tests/test_frozen_contract.py:145` |
+| `test_unmodeled_datatype_fails_closed_rather_than_passing_silently` | Regression (Qodo #2): this pilot doesn't model type-level declarations (datatype/newtype/...). | `tests/test_frozen_contract.py:155` |
+| `test_build_refuses_a_source_that_already_contains_a_forbidden_construct` | Regression (Qodo #3): forbidden constructs are ALWAYS forbidden, and the frozen baseline is guaranteed clean because build refuses a source that already contains one - which is what makes 'any hit in a candidate is an i… | `tests/test_frozen_contract.py:170` |
 
 ## Gate C5 Runner (`tests/test_gate_c5_runner.py`)
 

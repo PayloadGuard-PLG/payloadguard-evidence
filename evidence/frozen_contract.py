@@ -31,14 +31,26 @@ frozen - they are exactly where legitimate proof scaffolding (`assert`,
 `invariant`, `decreases`) lives - but the whole candidate is scanned for the
 soundness-escape constructs a drafter must never introduce.
 
-`build_frozen_contract` extracts that surface once from the human-authored
-spec (generated, then committed and drift-tested, like Component D's review
-template). `check_contract` re-extracts a candidate's surface and proves it
-matches the frozen manifest exactly, and that no forbidden construct appeared.
-Deliberately mechanical: it interprets nothing, it only canonicalizes and
-diffs. "AST-grade" here means the comparison is on a normalized token stream
-(comments stripped, whitespace and formatting irrelevant), so a real change to
-a clause or body is caught while a reformatting is not.
+**Fail-closed scope (dosage pilot).** This pilot models `function` /
+`predicate` / `method` / `lemma` declarations. It does NOT yet model
+type-level declarations (`datatype`, `newtype`, `type`, `const`, `class`,
+`trait`, ...) - those are part of the deferred extension to the
+datatype-bearing examples (drug_interaction_checker / aeb_kernel). Rather than
+silently ignore a construct it can't diff (which would let a datatype change
+slip through as a false CONTRACT_INTACT), the gate FAILS CLOSED: it refuses to
+build a frozen manifest for a spec containing an unmodeled declaration, and
+flags any unmodeled declaration in a candidate as a violation. Extending the
+model to freeze those kinds is how you lift the refusal, not by weakening it.
+
+`build_frozen_contract` extracts the contract surface once from the
+human-authored spec (generated, then committed and drift-tested, like
+Component D's review template). `check_contract` re-extracts a candidate's
+surface and proves it matches the frozen manifest exactly, and that no
+forbidden construct appeared. Deliberately mechanical: it interprets nothing,
+it only canonicalizes and diffs. "AST-grade" here means the comparison is on a
+normalized token stream (comments stripped, whitespace and formatting
+irrelevant), so a real change to a clause or body is caught while a
+reformatting is not.
 """
 
 import pathlib
@@ -46,28 +58,33 @@ import re
 
 import yaml
 
-from evidence.dafny_spec_lint import (
-    extract_ensures_clauses,
-    extract_requires_clauses,
-)
 from evidence.literal_citation import strip_comments
 
 # Soundness-escape constructs a drafter must never introduce to force
 # verification. `assume` takes a proposition as given (so `assume false`
 # discharges anything); `{:axiom}` marks a declaration an unproven axiom;
-# `{:extern}` links a body to unverified external code. None appear in this
-# repo's honestly-authored specs; any appearance in a candidate that the
-# frozen baseline didn't have is a violation.
+# `{:extern}` links a body to unverified external code. These are ALWAYS
+# forbidden - an honestly-authored spec contains none, and `build_frozen_contract`
+# refuses to freeze a source that already contains one, so any occurrence in a
+# candidate is unambiguously an introduced escape, not a pre-existing one.
 _FORBIDDEN = ("assume", "{:axiom}", "{:extern}")
 
-# Declaration keywords we enumerate. A `function`/`predicate` body is spec and
-# is frozen; a `method`/`lemma` body is not (a lemma is itself proof
-# scaffolding, freely addable).
+# Declaration keywords this pilot models. A `function`/`predicate` body is spec
+# and is frozen; a `method` body is the implementation (not frozen); a `lemma`
+# is itself proof scaffolding, freely addable, so it is not frozen either.
 _DECL_RE = re.compile(r"\b(function|predicate|method|lemma)\b\s+([A-Za-z_][A-Za-z0-9_']*)")
 _BODY_FROZEN_KINDS = ("function", "predicate")
+_FROZEN_KINDS = ("function", "predicate", "method")  # lemma is scaffolding, not frozen
+
+# Type-level / other top-level declaration keywords this pilot does NOT yet
+# model. Their presence triggers the fail-closed refusal described in the
+# module docstring, rather than a silent, false "intact".
+_UNMODELED_DECL_RE = re.compile(
+    r"\b(datatype|codatatype|newtype|type|const|class|trait|iterator)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
+)
 
 _CLAUSE_KEYWORDS = ("requires", "ensures", "decreases", "reads", "modifies")
-_CLAUSE_BOUNDARY_RE = re.compile(r"\b(?:%s)\b" % "|".join(_CLAUSE_KEYWORDS))
+_CLAUSE_SPLIT_RE = re.compile(r"\b(%s)\b" % "|".join(_CLAUSE_KEYWORDS))
 
 # Longest-match tokenizer for canonicalization: multi-char operators first,
 # then identifiers, numbers, and any remaining single non-space char. Joining
@@ -106,12 +123,31 @@ def _balanced_body(source, open_brace_idx):
     raise SystemExit("unbalanced braces: could not find the closing brace of a body")
 
 
+def _split_header(header):
+    """Split a declaration header (comment-stripped, up to but excluding the
+    body) into its canonical signature and its requires/ensures clause lists.
+    Kind-agnostic - works for function/predicate/method/lemma alike, unlike
+    dafny_spec_lint's method/function-only header helper - so a lemma- or
+    predicate-bearing spec is handled, not crashed on."""
+    parts = _CLAUSE_SPLIT_RE.split(header)
+    signature = _canonical(parts[0])
+    requires, ensures = [], []
+    for i in range(1, len(parts), 2):
+        keyword, text = parts[i], parts[i + 1].strip()
+        if not text:
+            continue
+        if keyword == "requires":
+            requires.append(_canonical(text))
+        elif keyword == "ensures":
+            ensures.append(_canonical(text))
+    return signature, requires, ensures
+
+
 def _iter_declarations(source):
-    """Yield {kind, name, signature, body} for each top-level declaration, in
-    source order, over the COMMENT-STRIPPED source (so a keyword inside a
-    comment is never mistaken for a declaration). `signature` is the canonical
-    name+params+return portion (clauses excluded); `body` is the canonical
-    body block, or None for a bodiless declaration."""
+    """Yield {kind, name, signature, requires, ensures, body} for each modeled
+    top-level declaration, in source order, over the COMMENT-STRIPPED source
+    (so a keyword inside a comment is never mistaken for a declaration).
+    `body` is the canonical body block, or None for a bodiless declaration."""
     code = strip_comments(source)
     for m in _DECL_RE.finditer(code):
         kind, name = m.group(1), m.group(2)
@@ -138,48 +174,23 @@ def _iter_declarations(source):
             i += 1
         if header_end is None:
             raise SystemExit(f"could not find the end of declaration {name!r}'s header")
-        header = code[m.start():header_end]
-        boundary = _CLAUSE_BOUNDARY_RE.search(header)
-        signature = header[:boundary.start()] if boundary else header
+        signature, requires, ensures = _split_header(code[m.start():header_end])
         yield {
             "kind": kind,
             "name": name,
-            "signature": _canonical(signature),
+            "signature": signature,
+            "requires": requires,
+            "ensures": ensures,
             "body": _canonical(body) if body is not None else None,
         }
 
 
-def _declaration_record(source, decl):
-    """Full frozen record for one declaration: its canonical signature, its
-    canonical requires/ensures clauses, and (for a spec-bearing function/
-    predicate) its canonical body. A method's body is NOT frozen."""
-    name = decl["name"]
-    record = {
-        "kind": decl["kind"],
-        "name": name,
-        "signature": decl["signature"],
-        "requires": [_canonical(c) for c in extract_requires_clauses(source, name)],
-        "ensures": [_canonical(c) for c in extract_ensures_clauses(source, name)],
-    }
-    if decl["kind"] in _BODY_FROZEN_KINDS:
-        record["body"] = decl["body"]
-    return record
-
-
-def build_frozen_contract(spec_name, source):
-    """Extract and return the frozen-contract manifest (a dict) for `source`
-    (a .dfy file's text), named `spec_name`. One record per declaration, in
-    source order. Generated, not hand-authored - committed and drift-checked
-    against the current spec, exactly like Component D's review template."""
-    declarations = [
-        _declaration_record(source, d)
-        for d in _iter_declarations(source)
-    ]
-    return {
-        "spec": spec_name,
-        "forbidden_constructs": list(_FORBIDDEN),
-        "declarations": declarations,
-    }
+def _unmodeled_declarations(source):
+    """Type-level / other top-level declarations this pilot does not model,
+    as [(keyword, name)] over the comment-stripped source. Non-empty means the
+    gate must fail closed rather than report a (false) clean result."""
+    code = strip_comments(source)
+    return [(m.group(1), m.group(2)) for m in _UNMODELED_DECL_RE.finditer(code)]
 
 
 def _forbidden_in(source):
@@ -189,9 +200,8 @@ def _forbidden_in(source):
     decls = list(_iter_declarations(source))
     found = []
     for construct in _FORBIDDEN:
-        for m in re.finditer(re.escape(construct) if not construct.isalpha()
-                             else r"\b%s\b" % construct, code):
-            # attribute the hit to the enclosing declaration, best-effort
+        pattern = r"\b%s\b" % construct if construct.isalpha() else re.escape(construct)
+        for m in re.finditer(pattern, code):
             where = "<file>"
             for d in decls:
                 di = code.find(d["name"])
@@ -201,18 +211,78 @@ def _forbidden_in(source):
     return found
 
 
+def _declaration_record(decl):
+    """Frozen record for one declaration: its canonical signature and clauses,
+    plus (for a spec-bearing function/predicate) its canonical body. A method's
+    body is NOT frozen (it is the implementation)."""
+    record = {
+        "kind": decl["kind"],
+        "name": decl["name"],
+        "signature": decl["signature"],
+        "requires": decl["requires"],
+        "ensures": decl["ensures"],
+    }
+    if decl["kind"] in _BODY_FROZEN_KINDS:
+        record["body"] = decl["body"]
+    return record
+
+
+def build_frozen_contract(spec_name, source):
+    """Extract and return the frozen-contract manifest (a dict) for `source`
+    (a .dfy file's text), named `spec_name`. One record per FROZEN declaration
+    (function/predicate/method; a lemma is scaffolding, not frozen), in source
+    order. Generated, not hand-authored - committed and drift-checked against
+    the current spec, like Component D's review template.
+
+    Fails closed rather than produce a manifest that would give a false sense
+    of coverage: refuses a source containing an unmodeled type-level
+    declaration (see `_UNMODELED_DECL_RE`) or a forbidden soundness-escape
+    construct (you cannot freeze a spec that already contains one - the whole
+    point is that the frozen baseline is clean)."""
+    unmodeled = _unmodeled_declarations(source)
+    if unmodeled:
+        raise SystemExit(
+            "frozen_contract: refusing to freeze a spec with unmodeled "
+            f"declaration(s) {unmodeled} - this pilot models only "
+            "function/predicate/method/lemma; extend the model to freeze these "
+            "kinds rather than silently omit them"
+        )
+    forbidden = _forbidden_in(source)
+    if forbidden:
+        raise SystemExit(
+            "frozen_contract: refusing to freeze a spec that already contains "
+            f"forbidden soundness-escape construct(s) {forbidden} - the frozen "
+            "baseline must be clean"
+        )
+    declarations = [
+        _declaration_record(d)
+        for d in _iter_declarations(source)
+        if d["kind"] in _FROZEN_KINDS
+    ]
+    return {
+        "spec": spec_name,
+        "forbidden_constructs": list(_FORBIDDEN),
+        "declarations": declarations,
+    }
+
+
 def check_contract(candidate_source, manifest):
     """Prove `candidate_source` (a .dfy file's text) preserves the frozen
     `manifest` exactly and introduced no forbidden construct. Returns a report:
       - missing_declarations:  frozen declarations absent from the candidate
-      - added_spec_declarations: non-lemma declarations the candidate adds that
-                                 the frozen contract didn't have (a new lemma is
-                                 allowed proof scaffolding; a new function/
-                                 method/datatype is not)
+      - added_spec_declarations: non-lemma modeled declarations the candidate
+                                 adds that the frozen contract didn't have (a
+                                 new lemma is allowed proof scaffolding)
+      - unmodeled_declarations:  type-level declarations the gate does not
+                                 model (datatype/newtype/...); their presence
+                                 fails the check closed rather than passing a
+                                 construct that cannot be diffed
       - signature_mismatches / requires_mismatches / ensures_mismatches /
         body_mismatches:  per-declaration (name) where the canonical contract
                           surface differs from the frozen manifest
-      - forbidden_constructs:  (construct, where) newly present in the candidate
+      - forbidden_constructs:  (construct, where) present in the candidate. The
+                               baseline is guaranteed clean (build refuses
+                               otherwise), so any hit is an introduced escape.
       - contract_intact:  True iff all of the above are empty
       - verdict:  "CONTRACT_INTACT" or "CONTRACT_VIOLATED"
       - violations:  human-readable lines naming exactly what changed
@@ -220,12 +290,11 @@ def check_contract(candidate_source, manifest):
     frozen = {d["name"]: d for d in manifest["declarations"]}
     candidate_decls = list(_iter_declarations(candidate_source))
     candidate_by_name = {d["name"]: d for d in candidate_decls}
-    # Only build full records for declarations the frozen contract names: those
+    # Only build records for the declarations the frozen contract names - those
     # are the ones we diff. An added lemma/function isn't in `frozen` and only
-    # needs its kind (below) - and building a record for a `lemma` would fail,
-    # since the clause extractor only recognizes method/function headers.
+    # needs its kind (below).
     candidate = {
-        name: _declaration_record(candidate_source, candidate_by_name[name])
+        name: _declaration_record(candidate_by_name[name])
         for name in frozen
         if name in candidate_by_name
     }
@@ -272,6 +341,13 @@ def check_contract(candidate_source, manifest):
             "frozen contract (only new lemmas are allowed proof scaffolding)"
         )
 
+    unmodeled_declarations = _unmodeled_declarations(candidate_source)
+    for keyword, name in unmodeled_declarations:
+        violations.append(
+            f"candidate contains unmodeled {keyword} declaration {name!r} - the "
+            "gate cannot diff it, so it fails closed rather than pass it"
+        )
+
     frozen_forbidden = set(manifest.get("forbidden_constructs", _FORBIDDEN))
     forbidden_constructs = [
         (c, where) for (c, where) in _forbidden_in(candidate_source)
@@ -286,6 +362,7 @@ def check_contract(candidate_source, manifest):
     intact = not (
         missing_declarations
         or added_spec_declarations
+        or unmodeled_declarations
         or signature_mismatches
         or requires_mismatches
         or ensures_mismatches
@@ -295,6 +372,7 @@ def check_contract(candidate_source, manifest):
     return {
         "missing_declarations": missing_declarations,
         "added_spec_declarations": added_spec_declarations,
+        "unmodeled_declarations": unmodeled_declarations,
         "signature_mismatches": signature_mismatches,
         "requires_mismatches": requires_mismatches,
         "ensures_mismatches": ensures_mismatches,

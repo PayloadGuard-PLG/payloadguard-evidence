@@ -18,6 +18,8 @@ is mechanical: the checker catches what Dafny accepts.
 
 import pathlib
 
+import pytest
+
 from evidence.frozen_contract import (
     build_frozen_contract,
     check_contract,
@@ -138,3 +140,37 @@ def test_added_lemma_is_allowed_but_added_function_is_not():
     r = check_contract(with_function, manifest)
     assert r["verdict"] == "CONTRACT_VIOLATED"
     assert "G" in r["added_spec_declarations"]
+
+
+def test_lemma_bearing_source_builds_and_lemmas_are_not_frozen():
+    """Regression (Qodo #1): a spec containing a lemma must not crash manifest
+    generation. The lemma is proof scaffolding, so it is not frozen - only the
+    function/method contract surface is."""
+    src = "function F(x: int): int requires x > 0 { x + 1 }\nlemma L() ensures 1 + 1 == 2 { }"
+    manifest = build_frozen_contract("f.dfy", src)  # must not raise
+    assert [d["name"] for d in manifest["declarations"]] == ["F"]  # lemma not frozen
+    assert check_contract(src, manifest)["verdict"] == "CONTRACT_INTACT"
+
+
+def test_unmodeled_datatype_fails_closed_rather_than_passing_silently():
+    """Regression (Qodo #2): this pilot doesn't model type-level declarations
+    (datatype/newtype/...). Rather than silently ignore one (a false
+    CONTRACT_INTACT), the gate fails closed - build refuses a datatype-bearing
+    spec, and a candidate that adds a datatype is a violation."""
+    with pytest.raises(SystemExit):
+        build_frozen_contract("d.dfy", "datatype T = A | B\nfunction F(): int { 0 }")
+
+    base = "function F(x: int): int requires x > 0 { x + 1 }"
+    manifest = build_frozen_contract("f.dfy", base)
+    r = check_contract(base + "\ndatatype New = X | Y", manifest)
+    assert r["verdict"] == "CONTRACT_VIOLATED"
+    assert ("datatype", "New") in r["unmodeled_declarations"]
+
+
+def test_build_refuses_a_source_that_already_contains_a_forbidden_construct():
+    """Regression (Qodo #3): forbidden constructs are ALWAYS forbidden, and the
+    frozen baseline is guaranteed clean because build refuses a source that
+    already contains one - which is what makes 'any hit in a candidate is an
+    introduced escape' true rather than a baseline-diff the manifest can't do."""
+    with pytest.raises(SystemExit):
+        build_frozen_contract("a.dfy", "method M() ensures true { assume false; }")
