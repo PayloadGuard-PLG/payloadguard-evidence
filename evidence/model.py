@@ -26,6 +26,31 @@ CAVEAT = {
     Strength.GAP: "Not established. Human input required.",
 }
 
+# Proof-content qualifier on a PROVEN Dafny row (Gate C3 vector 3, derived
+# mechanically by evidence.spec_impl_gap). PROVEN stays literally true - Dafny
+# did discharge the spec - but "Formally proven against the stated
+# specification" reads as "we proved the requirement holds," which overclaims
+# for a spec that merely restates its own implementation. These qualifiers say
+# plainly what the proof does and does not certify. `None` = not applicable
+# (no result-constraining postcondition to classify).
+PROOF_CONTENT_CAVEAT = {
+    "definitional": (
+        "Definitional proof: the postcondition restates the implementation "
+        "(ensures is equivalent to the body), so the proof obligation is a "
+        "tautology discharged by reflexivity. Certified: totality, "
+        "type-safety, match-exhaustiveness, and the literal boundary "
+        "structure of the definition. NOT certified: an independent property "
+        "beyond the definition, or fidelity to the source requirement."
+    ),
+    "property": (
+        "Property proof: the postcondition is strictly weaker than the "
+        "implementation (the body implies it but not conversely), so the "
+        "proof establishes content beyond the definition - a wrong "
+        "implementation could satisfy the body's shape yet violate it. Still "
+        "does not certify fidelity of the numbers/modeling to the source."
+    ),
+}
+
 @dataclass
 class VerificationResult:
     method: str

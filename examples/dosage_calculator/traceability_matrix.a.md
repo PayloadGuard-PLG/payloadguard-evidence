@@ -1,6 +1,6 @@
 # IEC 62304 Traceability Matrix (variant A: evidence array per requirement)
 
-Generated (UTC): 2026-07-16T04:25:25.939707+00:00
+Generated (UTC): 2026-07-20T14:22:53.890764+00:00
 Tool versions: {'crosshair': 'crosshair-tool 0.0.107', 'dafny': '4.11.0+fcb2042d6d043a2634f0854338c08feeaaaf4ae2'}
 Declared bounds (intended envelope): {'per_condition_timeout_s': 30, 'max_iterations': 100000, 'seed': 1}
 Effective bounds (demonstrated by capture): {'per_condition_timeout_s': 30}
@@ -25,6 +25,7 @@ Enforcement note: max_iterations and seed are declared-only in metadata; crossha
 - **EXAMPLE_CHECKED**: Holds for the specific recorded inputs only; no claim of generality beyond them.
 - **PROVEN**: Formally proven against the stated specification.
 - **GAP**: Not established. Human input required.
+- **PROVEN / property**: Property proof: the postcondition is strictly weaker than the implementation (the body implies it but not conversely), so the proof establishes content beyond the definition - a wrong implementation could satisfy the body's shape yet violate it. Still does not certify fidelity of the numbers/modeling to the source.
 
 ## Notes
 

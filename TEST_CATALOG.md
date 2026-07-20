@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 296 test functions across 39 categories.**
+**Total: 299 test functions across 40 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -399,6 +399,14 @@ for the actual collected-case count.
 | `test_system_reference_has_no_narrative_language` | System reference has no narrative language. | `tests/test_polish_lint.py:22` |
 | `test_scanner_actually_detects_narrative_language` | Positive-control test: prove the scanner isn't vacuously passing by feeding it text it must flag. | `tests/test_polish_lint.py:33` |
 | `test_last_updated_header_line_is_exempt_from_the_date_check` | The one legitimate date in the document -- its own header -- must not itself trip the dated-reference check. | `tests/test_polish_lint.py:47` |
+
+## Proof Content (`tests/test_proof_content.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_committed_matrices_carry_expected_proof_content` | Committed matrices carry expected proof content. | `tests/test_proof_content.py:58` |
+| `test_every_proven_dafny_record_has_a_valid_proof_content_and_caveat` | No PROVEN Dafny row may be left unclassified on the real specs, and the caveat text must match the qualifier (the two can't drift apart). | `tests/test_proof_content.py:66` |
+| `test_aeb_and_ddi_are_entirely_definitional_dosage_and_renal_carry_property` | The headline honest finding: the two predicate/lookup specs prove only definitions; the two arithmetic specs prove real properties. | `tests/test_proof_content.py:78` |
 
 ## Proven Exclusivity (`tests/test_proven_exclusivity.py`)
 

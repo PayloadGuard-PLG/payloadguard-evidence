@@ -63,6 +63,22 @@ structurally by `assert_no_realized_proven`
 claims about its own diligence. This is checked at every matrix-build
 call, not assumed from upstream correctness.
 
+A `PROVEN` row additionally carries a `proof_content` qualifier —
+`definitional` or `property` — derived mechanically by
+`evidence/spec_impl_gap.py` (Gate C3 vector 3) and rendered with distinct
+caveat text. A `definitional` row's `ensures` restates its implementation
+(the proof obligation reduces to a tautology), certifying totality,
+type-safety, `match`-exhaustiveness, and literal boundary structure but no
+independent property. A `property` row's `ensures` is strictly weaker than
+the body, so the proof establishes content beyond the definition. Of the
+20 `PROVEN` rows across the four worked examples, 14 are definitional
+(`aeb_kernel`'s 8 and `drug_interaction_checker`'s 6, both predicate or
+per-case-lookup specs) and 6 are property-bearing (`dosage_calculator`'s 2
+and `renal_adjustment`'s 4, whose safety bounds are strictly weaker than
+their arithmetic). The qualifier attests what a proof establishes about
+its own specification; it does not attest fidelity of a specification's
+constants or modeling to its cited source.
+
 ## 3. Architecture
 
 ### 3.1 Engine (`evidence/`)

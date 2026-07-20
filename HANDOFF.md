@@ -8,7 +8,18 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (later) — **dosage and
+**Last updated:** 2026-07-20 (even later) — **`proof_content`: the
+`PROVEN` label now tells the truth about proof content (Tier 1 landed).**
+`evidence/spec_impl_gap.py` classifies each `ensures` clause definitional
+(restates the body) vs property (strictly weaker); every `PROVEN` matrix
+row carries a `proof_content` qualifier + caveat; all four examples'
+matrices and docs are corrected. Of 20 `PROVEN` rows, 14 are definitional
+(aeb 8, DDI 6) and 6 property (dosage 2, renal 4). Tiers 2-3 (source
+fidelity; frozen-spec separation) remain designed. See open thread 2 below
+and `DEVLOG.md`'s 2026-07-20 (even later) entry. The prior same-day work
+follows.
+
+**Earlier 2026-07-20 (later) — dosage and
 drug_interaction_checker Gate C5 moved onto the sanctioned isolated
 runner.** `gate_c5_runner` was generalized into a superset
 (`body_function` for dosage's method+companion shape; a
@@ -80,21 +91,27 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
    at generated counts 46/41/121, superseding an earlier session's stale
    12/28/95 reference.)
 
-2. **Definitional-vs-property honesty (`proof_content` qualifier).** A
-   separate, larger thread from the mutation-accuracy work above. A
-   verified spec/implementation-gap classifier (prototyped this session,
-   scratch only) shows two of the four worked examples are *definitional*
-   — `aeb_kernel` and `drug_interaction_checker` restate their own
-   implementations (`ensures result <==> body`; per-case `== Constructor`
-   pins), so the `PROVEN` label certifies totality/type-safety/boundary
-   structure but no independent property. `dosage_calculator` and
-   `renal_adjustment` carry real property content (safety bounds strictly
-   weaker than the body). Plan (approved, three tiers — honest labeling,
-   source-fidelity citation + real C6, structural spec/proof separation)
-   is in the plan file; Tier 1 Component A is prototyped and verified but
-   nothing is committed. This is the thread that makes the `PROVEN` label
-   tell the truth about proof *content*, distinct from the mutation-kill
-   *accuracy* work landed 2026-07-19.
+2. **Definitional-vs-property honesty (`proof_content` qualifier) —
+   Tier 1 LANDED (2026-07-20); Tiers 2-3 still designed.** A separate,
+   larger thread from the mutation-accuracy work above.
+   `evidence/spec_impl_gap.py` (Component A, Gate C3 vector 3) now
+   classifies each `ensures` clause definitional (restates the body) vs
+   property (strictly weaker) — structural pin-vs-bound analysis with a
+   Z3 pin-uniqueness cross-check (107 clauses, 21 Z3-confirmed, zero
+   disagreements). Every `PROVEN` matrix row carries a `proof_content`
+   qualifier + caveat (Component B, `model.py`/`matrix_variants.py`), and
+   all four examples' matrices + docs are corrected (Component E): of the
+   20 `PROVEN` rows, **14 are definitional** (`aeb_kernel` 8,
+   `drug_interaction_checker` 6) and **6 property** (`dosage_calculator`
+   2, `renal_adjustment` 4). `PROVEN`-exclusivity (`assert_no_realized_proven`)
+   is untouched; the qualifier only annotates content *within* PROVEN.
+   **Still designed, not built:** Tier 2 (mechanical source-citation of
+   every spec constant + a source-anchored blind Gate C6) — fidelity, so
+   a label also attests the numbers match the source, not only that the
+   proof is internally sound; and Tier 3 (frozen-spec + annotation-only
+   LLM + AST diff-checker). See the plan file. This makes the `PROVEN`
+   label tell the truth about proof *content*, distinct from the
+   mutation-kill *accuracy* work landed 2026-07-19.
 **Prior update, preserved below** — 2026-07-18 (even later) — **`README.md` gained a
 system-wide evidence-strength totals table (28 requirements: 20
 `PROVEN`, 1 `BOUNDED_CHECKED`, 7 `GAP`) and the pip-installable CLI
