@@ -41,33 +41,70 @@ import re
 
 from evidence.citation_gate import CitationClaim, verify_citation
 
-_LINE_COMMENT_RE = re.compile(r"//[^\n]*")
-_BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 # A numeric literal not glued to an identifier, a dotted member, or another
 # number: the negative lookbehind keeps the `1`/`3` in `G1`/`G3a` and the
 # minor version in `4.11` (were it in code) from leaking in, and the decimal
-# alternative is tried first so `0.0` matches whole, not as `0` then `0`.
+# alternative is tried first so `0.0` matches whole, not as `0` then `0`. A
+# unary +/- immediately before the digits is folded in afterwards (see
+# spec_literals), not here, so binary subtraction isn't mistaken for a sign.
 _LITERAL_RE = re.compile(r"(?<![A-Za-z0-9_.])(?:[0-9]+\.[0-9]+|[0-9]+)")
+
+# A char that ENDS an operand: a preceding `-`/`+` after one of these is
+# binary arithmetic, not a literal's sign.
+_OPERAND_END = ")]"
 
 _KINDS = ("source", "structural", "design_decision")
 
 
 def strip_comments(source):
-    """Dafny source with line and block comments removed - so a number that
-    appears only in prose (a date, a citation, a PMID) is never mistaken for
-    a spec constant that needs a source."""
-    return _BLOCK_COMMENT_RE.sub("", _LINE_COMMENT_RE.sub("", source))
+    """Dafny source with line (`//`) and block (`/* */`) comments removed -
+    so a number that appears only in prose (a date, a citation, a PMID) is
+    never mistaken for a spec constant that needs a source.
+
+    Single pass, not two regex substitutions: once inside a `//` line comment
+    a `/*` is inert, and once inside a `/* */` block a `//` is inert, so
+    stripping one kind before the other can corrupt the other's delimiters
+    (e.g. a `//` inside a block comment eating that block's closing `*/`)."""
+    out = []
+    i, n = 0, len(source)
+    while i < n:
+        two = source[i:i + 2]
+        if two == "//":
+            nl = source.find("\n", i)
+            i = n if nl == -1 else nl  # keep the newline itself
+        elif two == "/*":
+            end = source.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+        else:
+            out.append(source[i])
+            i += 1
+    return "".join(out)
+
+
+def _with_unary_sign(code, start, literal):
+    """Fold a unary +/- immediately before `literal` (at index `start` in
+    `code`) into it - but only when the sign is not binary arithmetic, i.e.
+    the char before the sign is not an operand-ender (a value, `)`, or `]`).
+    So `>= -0.5` yields `-0.5`, while `x - 0.5` and `x-0.5` keep `0.5`."""
+    if start == 0 or code[start - 1] not in "+-":
+        return literal
+    before = code[start - 2] if start >= 2 else ""
+    if before and (before.isalnum() or before in "_." or before in _OPERAND_END):
+        return literal  # binary arithmetic, not a sign
+    return code[start - 1] + literal
 
 
 def spec_literals(source):
     """Distinct numeric literals in `source`'s CODE (comments stripped), in
     first-appearance order. The literal string is kept verbatim (`0.0` and
-    `0` are distinct, `18.0` is not `18`) - a citation is about the number as
-    written in the spec."""
+    `0` are distinct, `18.0` is not `18`, `-0.5` is not `0.5`) - a citation is
+    about the number exactly as written in the spec, sign included."""
+    code = strip_comments(source)
     seen = []
-    for m in _LITERAL_RE.finditer(strip_comments(source)):
-        if m.group() not in seen:
-            seen.append(m.group())
+    for m in _LITERAL_RE.finditer(code):
+        lit = _with_unary_sign(code, m.start(), m.group())
+        if lit not in seen:
+            seen.append(lit)
     return seen
 
 
@@ -99,9 +136,10 @@ def verify_literal_citations(spec_source, manifest, source_texts):
     Returns a report dict:
       - literals:   the code literals found, in order
       - results:    per-literal {literal, kind, verdict, detail}, where
-                    verdict is "confirmed" (source quote found or a declared
-                    structural/design_decision entry), "not_found" (source
-                    quote absent), "uncited" (no manifest entry), or
+                    verdict is "confirmed" (source quote found in the source
+                    text), "declared" (a structural/design_decision entry -
+                    accepted as stated, no source to check), "not_found"
+                    (source quote absent), "uncited" (no manifest entry), or
                     "malformed" (bad entry shape)
       - uncited:    literals with no manifest entry
       - not_found:  source literals whose quote isn't in the source text
@@ -165,17 +203,32 @@ def verify_literal_citations(spec_source, manifest, source_texts):
     }
 
 
+def _resolve_within(base, name):
+    """Resolve `name` against `base`, refusing to escape `base` - an absolute
+    path, a `..` segment, or a symlink pointing outside is rejected rather
+    than read. The manifest is trusted today, but this wrapper may be reused
+    where it isn't (a gate run on an unmerged branch), and a citation source
+    is always a plain filename inside the sources tree."""
+    if pathlib.PurePath(name).is_absolute() or ".." in pathlib.PurePath(name).parts:
+        raise SystemExit(f"literal_citation: refusing source path outside the tree: {name!r}")
+    base = pathlib.Path(base).resolve()
+    candidate = (base / name).resolve()
+    if base != candidate and base not in candidate.parents:
+        raise SystemExit(f"literal_citation: source path escapes {base}: {name!r}")
+    return candidate
+
+
 def check_example(dfy_path, manifest, sources_dir):
     """Convenience wrapper: read the .dfy at `dfy_path`, read every source
     file a `source`-kind manifest entry names from `sources_dir`, and run
     `verify_literal_citations`. Pure verification lives in that function; this
-    only does the file I/O."""
-    spec_source = pathlib.Path(dfy_path).read_text()
-    sources_dir = pathlib.Path(sources_dir)
+    only does the file I/O. Source filenames are confined to `sources_dir`
+    (see `_resolve_within`)."""
+    spec_source = pathlib.Path(dfy_path).read_text(encoding="utf-8")
     source_texts = {}
     for entry in manifest.values():
         if entry.get("kind") == "source" and entry.get("source"):
             name = entry["source"]
             if name not in source_texts:
-                source_texts[name] = (sources_dir / name).read_text()
+                source_texts[name] = _resolve_within(sources_dir, name).read_text(encoding="utf-8")
     return verify_literal_citations(spec_source, manifest, source_texts)

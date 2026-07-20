@@ -49,6 +49,26 @@ def test_spec_literals_extracts_code_constants_only():
     assert "3" not in lits
 
 
+def test_unary_signed_literals_keep_their_sign_binary_subtraction_does_not():
+    """A unary +/- adjacent to the digits is part of the literal (a sign
+    transcription error must be catchable), but binary subtraction is not a
+    sign - `>= -0.5` is the negative literal, `x - 0.5` and `x-0.5` are not."""
+    assert spec_literals("ensures f(x) >= -0.5") == ["-0.5"]
+    assert spec_literals("ensures f(x) == y - 0.5") == ["0.5"]
+    assert spec_literals("ensures f(x) == y-0.5") == ["0.5"]
+    # a negative literal opening a group, and after a comparison
+    assert set(spec_literals("requires -1 <= x < +2")) == {"-1", "+2"}
+
+
+def test_block_comment_containing_a_line_comment_is_fully_stripped():
+    """A `//` inside a `/* */` block must not truncate the block's `*/`,
+    leaving comment digits behind as false code literals."""
+    src = "function f(x: int): int /* note: threshold 145 // not code */ { 0 }"
+    lits = spec_literals(src)
+    assert "145" not in lits
+    assert lits == ["0"]
+
+
 def test_source_quote_confirmed_and_not_found():
     manifest = {
         "145.0": {"kind": "source", "source": "s.md", "quote": "less than 145 km/h"},
