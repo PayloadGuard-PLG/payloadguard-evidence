@@ -184,12 +184,29 @@ def mutants_with_outcomes(source, function_name, body_arithmetic=False):
             continue
 
         if m.keyword == "requires":
-            verdict, detail = check_precondition_satisfiability(m.mutated_source, function_name)
-            if verdict == "unsat":
-                record["outcome"] = "filtered_vacuous"
-                record["detail"] = detail
-                records.append(record)
-                continue
+            # The Z3 precondition translator refuses (raises SystemExit)
+            # rather than crashes on clause shapes it doesn't model - e.g. a
+            # ROR mutant introducing a comparison between two datatype
+            # operands, which Dafny accepts via its own structural rank
+            # ordering but dafny_spec_lint only models for arithmetic sorts.
+            # This is an expected path for datatype-heavy specs (the DDI
+            # runner has caught it since PR #26); the sanctioned runner must
+            # match that robustness or reuse on such a spec aborts the whole
+            # Gate C5 run on the first untranslatable requires mutant. The
+            # refusal says nothing about whether the mutant survives, so it
+            # is recorded and the mutant still goes to real isolated
+            # verification.
+            try:
+                verdict, detail = check_precondition_satisfiability(m.mutated_source, function_name)
+            except SystemExit as e:
+                record["precondition_check_outcome"] = "z3_translation_refused"
+                record["precondition_check_detail"] = str(e)
+            else:
+                if verdict == "unsat":
+                    record["outcome"] = "filtered_vacuous"
+                    record["detail"] = detail
+                    records.append(record)
+                    continue
 
         isolated_source = isolate_function(m.mutated_source, function_name)
         outcome, detail, exit_code = _real_verify(isolated_source)

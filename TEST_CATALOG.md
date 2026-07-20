@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 281 test functions across 38 categories.**
+**Total: 282 test functions across 38 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -341,8 +341,9 @@ for the actual collected-case count.
 | `test_in_file_callers_refuses_unknown_function` | In file callers refuses unknown function. | `tests/test_gate_c5_runner.py:53` |
 | `test_every_verified_mutant_is_isolated` | The hard constraint: anything that reaches real verification is verified in isolation - there is no whole-file path. | `tests/test_gate_c5_runner.py:58` |
 | `test_filtered_mutants_never_reach_verification` | Statically filtered and vacuous-precondition mutants are tallied without a verify call and carry no isolation_status. | `tests/test_gate_c5_runner.py:81` |
-| `test_run_gate_c5_summary_shape_and_tally` | Run gate c5 summary shape and tally. | `tests/test_gate_c5_runner.py:95` |
-| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:116` |
+| `test_precondition_refusal_is_recorded_and_does_not_abort_the_run` | A SystemExit from the Z3 precondition checker is an expected refusal (clause shapes it can't model, e.g. | `tests/test_gate_c5_runner.py:95` |
+| `test_run_gate_c5_summary_shape_and_tally` | Run gate c5 summary shape and tally. | `tests/test_gate_c5_runner.py:132` |
+| `test_run_gate_c5_reports_no_callers_for_a_leaf` | Run gate c5 reports no callers for a leaf. | `tests/test_gate_c5_runner.py:153` |
 
 ## Hazard ID Lint (`tests/test_hazard_id_lint.py`)
 

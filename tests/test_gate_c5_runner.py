@@ -92,6 +92,43 @@ def test_filtered_mutants_never_reach_verification(monkeypatch):
         assert "isolation_status" not in r
 
 
+def test_precondition_refusal_is_recorded_and_does_not_abort_the_run(monkeypatch):
+    """A SystemExit from the Z3 precondition checker is an expected refusal
+    (clause shapes it can't model, e.g. a datatype-vs-datatype comparison a
+    ROR mutant introduces), not a fatal error. It must be recorded and the
+    mutant sent on to real isolated verification - never allowed to abort
+    the whole run. This mirrors the DDI runner's long-standing behavior;
+    the sanctioned runner has to match it or reuse on a datatype-heavy spec
+    breaks on the first untranslatable requires mutant."""
+
+    def refuse(source, fn):
+        raise SystemExit("unsupported Dafny parameter type - refusing")
+
+    verified = {"n": 0}
+
+    def fake_verify(source):
+        verified["n"] += 1
+        return "survived", "1 verified, 0 errors", 0
+
+    monkeypatch.setattr(gate_c5_runner, "check_precondition_satisfiability", refuse)
+    monkeypatch.setattr(gate_c5_runner, "_real_verify", fake_verify)
+
+    records = mutants_with_outcomes(SYNTHETIC, "Leaf")
+    assert records, "the run must still produce records despite the refusal"
+
+    reached_verify = [
+        r for r in records
+        if r["keyword"] == "requires" and r.get("isolation_status") == "isolated"
+    ]
+    assert reached_verify, "at least one requires mutant should reach verification"
+    for r in reached_verify:
+        # refusal metadata recorded, not vacuous-filtered, and it still ran
+        assert r["precondition_check_outcome"] == "z3_translation_refused"
+        assert r["precondition_check_detail"]
+        assert r["outcome"] != "filtered_vacuous"
+    assert verified["n"] >= len(reached_verify)
+
+
 def test_run_gate_c5_summary_shape_and_tally(monkeypatch, tmp_path):
     monkeypatch.setattr(
         gate_c5_runner, "_real_verify",

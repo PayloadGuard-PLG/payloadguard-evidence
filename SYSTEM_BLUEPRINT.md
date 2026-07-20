@@ -1,6 +1,15 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-19 (Gate C5 accuracy pass: `evidence/dafny_isolate.py`
+Last updated: 2026-07-20 (`evidence/gate_c5_runner.py` now catches the
+`SystemExit` the Z3 precondition checker raises on `requires` clause
+shapes it can't model and falls through to real isolated verification —
+a confirmed Qodo finding, matching the DDI runner's behavior since PR #26
+so the sanctioned runner is safe to reuse on datatype-heavy specs. No
+data-flow change; renal output byte-identical. New root artifact
+`PAYLOADGUARD_MERGE_FINDINGS.md` logs a PayloadGuard Layer-4 false
+positive (a cross-file function move read as a deletion). Full record:
+`DEVLOG.md`'s 2026-07-20 entry.)
+Prior header, preserved: Last updated: 2026-07-19 (Gate C5 accuracy pass: `evidence/dafny_isolate.py`
 added — mutation testing now verifies each mutant against the mutated
 function in isolation (its callees + datatypes, never its callers) so a
 kill is attributed to the function's own contract; two `dafny_mutate.py`

@@ -8,8 +8,22 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-19 — **Gate C5 accuracy pass: automated
-caller-isolation, LVR generator fixes, and two renal spec tightenings —
+**Last updated:** 2026-07-20 — **`gate_c5_runner` precondition-refusal
+robustness + a PayloadGuard false-positive log** (follow-ups to the Gate
+C5 runner extraction; see `DEVLOG.md`'s 2026-07-20 entry). A confirmed
+Qodo finding: the extracted runner didn't catch the `SystemExit` the Z3
+precondition checker raises on clause shapes it can't model (e.g. a
+datatype-vs-datatype comparison a ROR mutant introduces), so reusing it
+on a datatype-heavy spec like DDI would abort the whole run on the first
+such mutant — the DDI runner has caught this since PR #26; now the shared
+runner does too (records `z3_translation_refused`, falls through to real
+isolated verification), renal output unchanged and still byte-identical.
+And `PAYLOADGUARD_MERGE_FINDINGS.md` (new) logs PR #67's PayloadGuard
+`DESTRUCTIVE` false positive — its Layer-4 structural-drift read the five
+helpers *moved* into `gate_c5_runner.py` as deletions, being unable to
+see a cross-file move; kept as evidence to harden that product. The Gate
+C5 accuracy pass this builds on: **automated caller-isolation, LVR
+generator fixes, and two renal spec tightenings —
 an external Claude session's package, re-derived against our own Dafny
 before trust.** New `evidence/dafny_isolate.py` verifies every mutant
 against the mutated function in isolation (its callees + datatypes,
@@ -41,7 +55,11 @@ added; 285 tests pass. Full account: `DEVLOG.md`'s 2026-07-19 entry.
    Gate C5, so any function-with-callers there could carry the same
    caller-confound. Remaining work is now just pointing those two runners
    at `gate_c5_runner`, re-deriving their counts, and updating their
-   pinned report tests — no new design. Not yet done; not assumed clean.
+   pinned report tests — no new design. The DDI-reuse blocker Qodo
+   surfaced (the runner aborting on the Z3 precondition checker's
+   `SystemExit` for datatype-vs-datatype `requires` comparisons) is
+   already closed (2026-07-20), so that rollout is now purely mechanical.
+   Not yet done; not assumed clean.
    (An independent `run_gate_c5` cross-check confirmed the renal
    findings: ComposedCeiling 0 survivors, RoundHalfUp 4, CockcroftGault 2
    — the corrected numbers, at generated counts 46/41/121, superseding an
