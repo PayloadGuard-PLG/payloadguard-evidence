@@ -45,12 +45,21 @@ its constants' source review is still pending.
 import hashlib
 import json
 import pathlib
+import re
 
 from evidence.frozen_contract import load_manifest
 from evidence.source_anchored_review import PENDING
 
 _HEADER_FIELDS = ("Reviewer:", "Date:", "Attestation", "Adoption:", "Status:")
 _PER_DECL_FIELD = "Adopted"
+
+# The artifact's dedicated recorded-hash field, matched strictly (anchored to
+# its own line, exactly 64 hex chars). The checker compares THIS recorded
+# value against the current manifest's hash - never an unanchored "is the
+# current hash somewhere in the file" search, which could be satisfied by
+# pasting the current hash anywhere while the recorded field stays stale (the
+# same global-substring bypass class PR #71 fixed in Component D's checker).
+_HASH_LINE_RE = re.compile(r"^- Contract hash \(sha256\): `([0-9a-f]{64})`$", re.MULTILINE)
 
 _ATTESTATION = (
     "I am a human reviewer, and not the system that drafted this spec "
@@ -142,16 +151,58 @@ def build_attestation(spec_name, manifest, review_name):
     return "\n".join(lines)
 
 
+def _decl_sections(markdown, manifest):
+    """Split `markdown` into per-declaration sections keyed by name: each
+    section runs from a declaration's unique marker to the next present
+    marker (or end of document). Declarations whose marker is absent are
+    simply not in the result - the caller reports them as missing blocks."""
+    found = []
+    for decl in manifest["declarations"]:
+        idx = markdown.find(_decl_marker(decl))
+        if idx != -1:
+            found.append((idx, decl["name"]))
+    found.sort()
+    sections = {}
+    for i, (idx, name) in enumerate(found):
+        end = found[i + 1][0] if i + 1 < len(found) else len(markdown)
+        sections[name] = markdown[idx:end]
+    return sections
+
+
+def _expected_content(decl):
+    """The frozen-contract strings a declaration's section must display for
+    the human to actually be adopting them: the datatype definition, or the
+    signature plus every requires/ensures clause and the spec body."""
+    if "definition" in decl:
+        return [("definition", decl["definition"])]
+    pieces = [("signature", decl["signature"])]
+    for kw in ("requires", "ensures"):
+        pieces += [(kw, clause) for clause in decl.get(kw, [])]
+    if "body" in decl:
+        pieces.append(("body", decl["body"]))
+    return pieces
+
+
 def check_attestation(markdown, manifest, review_markdown):
     """Mechanically check a ratification artifact's STRUCTURE (never its
     human verdicts). Returns a report dict:
-      - hash_current:      the artifact's recorded contract hash matches the
-                           CURRENT frozen manifest - False means the contract
-                           changed after this artifact was generated/signed
-                           (a stale ratification, the tamper case)
+      - recorded_hash:     the hash parsed from the artifact's dedicated
+                           field (None if absent or ambiguous)
+      - hash_current:      that RECORDED hash equals the CURRENT frozen
+                           manifest's hash - parsed and compared, never an
+                           unanchored search, so pasting the current hash
+                           elsewhere cannot mask a stale recorded field.
+                           False means the contract changed after this
+                           artifact was generated/signed (stale ratification)
       - missing_fields:    required sign-off field markers absent
       - missing_blocks:    frozen declarations whose per-declaration block
                            (unique marker) is absent from the artifact
+      - missing_content:   "(name): (piece)" entries where a declaration's
+                           section is present but no longer displays the
+                           frozen content the human is adopting (definition/
+                           signature/each clause/spec body) or its own
+                           Adopted field - a gutted block can't pass on its
+                           heading alone
       - review_complete:   the folded-in Component D review has no _PENDING_
       - structure_ok:      True iff hash_current and nothing missing
                            (PENDING is fine - same posture as Component D)
@@ -159,20 +210,39 @@ def check_attestation(markdown, manifest, review_markdown):
                            AND review_complete (the folded-in requirement) -
                            reported, never asserted by the structure gate
     """
-    hash_current = contract_hash(manifest) in markdown
+    hash_matches = _HASH_LINE_RE.findall(markdown)
+    recorded_hash = hash_matches[0] if len(hash_matches) == 1 else None
+    hash_current = recorded_hash == contract_hash(manifest)
+
     missing_fields = [f for f in _HEADER_FIELDS if f not in markdown]
-    if _PER_DECL_FIELD not in markdown and manifest["declarations"]:
-        missing_fields.append(_PER_DECL_FIELD)
+    if recorded_hash is None:
+        missing_fields.append("Contract hash")
+
     missing_blocks = [
         d["name"] for d in manifest["declarations"] if _decl_marker(d) not in markdown
     ]
+    sections = _decl_sections(markdown, manifest)
+    missing_content = []
+    for decl in manifest["declarations"]:
+        section = sections.get(decl["name"])
+        if section is None:
+            continue  # already reported in missing_blocks
+        for piece, text in _expected_content(decl):
+            if text not in section:
+                missing_content.append(f"{decl['name']}: {piece}")
+        if _PER_DECL_FIELD not in section:
+            missing_content.append(f"{decl['name']}: {_PER_DECL_FIELD} field")
+
     review_complete = PENDING not in review_markdown
     return {
+        "recorded_hash": recorded_hash,
         "hash_current": hash_current,
         "missing_fields": missing_fields,
         "missing_blocks": missing_blocks,
+        "missing_content": missing_content,
         "review_complete": review_complete,
-        "structure_ok": hash_current and not (missing_fields or missing_blocks),
+        "structure_ok": hash_current
+        and not (missing_fields or missing_blocks or missing_content),
         "attestation_complete": (PENDING not in markdown) and review_complete,
     }
 

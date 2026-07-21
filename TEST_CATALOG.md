@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 344 test functions across 44 categories.**
+**Total: 346 test functions across 44 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -116,7 +116,9 @@ for the actual collected-case count.
 | `test_completion_requires_the_folded_in_review_to_be_complete` | Replacing every _PENDING_ in the attestation is NOT enough while the Component D review is itself still pending - the two halves of the human act are mechanically linked. | `tests/test_contract_attestation.py:65` |
 | `test_contract_changed_after_signing_is_a_stale_attestation` | The tamper case the hash binding exists for: sign the artifact, then change the contract (weaken an ensures). | `tests/test_contract_attestation.py:86` |
 | `test_dropped_declaration_block_is_caught` | Removing one declaration's block from the artifact (its unique marker) is a structural failure, even though every field keyword still appears in the other blocks. | `tests/test_contract_attestation.py:109` |
-| `test_contract_hash_is_stable_and_content_sensitive` | Same manifest -> same hash; any contract-surface change -> different hash. | `tests/test_contract_attestation.py:122` |
+| `test_pasting_the_current_hash_elsewhere_cannot_mask_a_stale_recorded_hash` | Regression (Qodo #1): hash_current must come from parsing the artifact's dedicated recorded-hash field and comparing equality - never an unanchored substring search. | `tests/test_contract_attestation.py:122` |
+| `test_gutted_declaration_content_is_caught_even_with_marker_intact` | Regression (Qodo #2): keeping a declaration's heading marker while deleting the frozen content the human is supposed to be adopting (its signature/definition/clauses, or its own Adopted field) must fail the structure ga… | `tests/test_contract_attestation.py:140` |
+| `test_contract_hash_is_stable_and_content_sensitive` | Same manifest -> same hash; any contract-surface change -> different hash. | `tests/test_contract_attestation.py:177` |
 
 ## Dafny Adapter (`tests/test_dafny_adapter.py`)
 
