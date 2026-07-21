@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 339 test functions across 43 categories.**
+**Total: 346 test functions across 44 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -107,6 +107,18 @@ for the actual collected-case count.
 | `test_type2_gate_passes_on_committed_manifests` | All four committed manifests target distinct files, so none share an identity and there is nothing to disagree about - a real, honest zero, not an untested check. | `tests/test_conflict_check.py:187` |
 | `test_positive_type2_outcome_mismatch` | The ratified positive Type 2 case: two manifests agree on tool, target, and enforced timeout (the same verification act) but report different exit codes - a real conflict, not covered by Type 1. | `tests/test_conflict_check.py:206` |
 | `test_type2_different_targets_are_not_compared` | Two manifests for genuinely different targets are not a conflict even if their outcomes differ - Type 2 only compares claims about the SAME verification act. | `tests/test_conflict_check.py:232` |
+
+## Contract Attestation (`tests/test_contract_attestation.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_committed_attestation_matches_generator_and_is_pending` | No drift between the committed artifact and the generator; structure passes; PENDING until the human ratifies (and the folded-in Component D review is complete). | `tests/test_contract_attestation.py:48` |
+| `test_completion_requires_the_folded_in_review_to_be_complete` | Replacing every _PENDING_ in the attestation is NOT enough while the Component D review is itself still pending - the two halves of the human act are mechanically linked. | `tests/test_contract_attestation.py:65` |
+| `test_contract_changed_after_signing_is_a_stale_attestation` | The tamper case the hash binding exists for: sign the artifact, then change the contract (weaken an ensures). | `tests/test_contract_attestation.py:86` |
+| `test_dropped_declaration_block_is_caught` | Removing one declaration's block from the artifact (its unique marker) is a structural failure, even though every field keyword still appears in the other blocks. | `tests/test_contract_attestation.py:109` |
+| `test_pasting_the_current_hash_elsewhere_cannot_mask_a_stale_recorded_hash` | Regression (Qodo #1): hash_current must come from parsing the artifact's dedicated recorded-hash field and comparing equality - never an unanchored substring search. | `tests/test_contract_attestation.py:122` |
+| `test_gutted_declaration_content_is_caught_even_with_marker_intact` | Regression (Qodo #2): keeping a declaration's heading marker while deleting the frozen content the human is supposed to be adopting (its signature/definition/clauses, or its own Adopted field) must fail the structure ga… | `tests/test_contract_attestation.py:140` |
+| `test_contract_hash_is_stable_and_content_sensitive` | Same manifest -> same hash; any contract-surface change -> different hash. | `tests/test_contract_attestation.py:177` |
 
 ## Dafny Adapter (`tests/test_dafny_adapter.py`)
 

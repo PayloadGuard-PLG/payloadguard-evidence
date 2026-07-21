@@ -1,0 +1,258 @@
+"""Tier 3, the authoring migration: contract ratification (the human half of
+Component F, mechanized as far as a machine honestly can).
+
+Component F (`evidence/frozen_contract.py`) freezes each spec's contract
+surface and mechanically proves no automated contributor altered it. But the
+frozen baselines themselves were extracted from LLM-drafted, human-reviewed
+specs - the gate guards the boundary going forward without changing where the
+contracts came from. This module is the migration's mechanism: a per-example
+CONTRACT RATIFICATION artifact through which the human reviewer examines
+every frozen declaration against the sources and formally ADOPTS the contract
+as their own specification of the requirement.
+
+What that act can and cannot claim, stated plainly: ratification earns the
+label **human-ratified**, not "human-authored" - no artifact can rewrite who
+drafted the spec, and this repo does not pretend otherwise. A spec authored
+under the forward workflow (human freezes the contract BEFORE any automated
+drafter touches the file - see OPERATIONS_MANUAL section 6) earns strong
+provenance natively; ratification is the honest upgrade available to the four
+already-built examples.
+
+The mechanism mirrors Component D (`evidence/source_anchored_review.py`)
+exactly, because the same drafter != checker reasoning applies: this module
+builds the template and mechanically checks its STRUCTURE; it never performs
+the ratification - the sign-off is a human act, and a freshly generated
+artifact is PENDING (structurally valid, not yet ratified). The structure
+gate passes on PENDING; whether a *completed* ratification exists is a
+separate signal (`attestation_complete`), reported but never asserted.
+
+What makes ratification durable rather than a one-time signature is the
+HASH BINDING: the artifact records the sha256 of the exact canonical frozen
+contract it ratifies. If the contract later changes in any way, the recorded
+hash no longer matches the current manifest and the structure gate reports the
+attestation stale (`hash_current=False`) - a signed adoption can never
+silently outlive the contract it adopted.
+
+Ratification also FOLDS IN the Component D blind constant review: an
+example's attestation is only `attestation_complete` when its
+`source_anchored_review_*.md` is itself review-complete. The two halves of
+the human act - "the constants transcribe the sources" (blind, per-constant)
+and "the clauses mean what the requirement means" (per-declaration adoption
+below) - are mechanically linked, so a contract cannot read as ratified while
+its constants' source review is still pending.
+"""
+
+import hashlib
+import json
+import pathlib
+import re
+
+from evidence.frozen_contract import load_manifest
+from evidence.source_anchored_review import PENDING
+
+_HEADER_FIELDS = ("Reviewer:", "Date:", "Attestation", "Adoption:", "Status:")
+_PER_DECL_FIELD = "Adopted"
+
+# The artifact's dedicated recorded-hash field, matched strictly (anchored to
+# its own line, exactly 64 hex chars). The checker compares THIS recorded
+# value against the current manifest's hash - never an unanchored "is the
+# current hash somewhere in the file" search, which could be satisfied by
+# pasting the current hash anywhere while the recorded field stays stale (the
+# same global-substring bypass class PR #71 fixed in Component D's checker).
+_HASH_LINE_RE = re.compile(r"^- Contract hash \(sha256\): `([0-9a-f]{64})`$", re.MULTILINE)
+
+_ATTESTATION = (
+    "I am a human reviewer, and not the system that drafted this spec "
+    "(drafter != checker)."
+)
+_ADOPTION = (
+    "Having examined every frozen declaration below against the primary "
+    "sources, I adopt this contract as my own specification of the "
+    "requirement (human-ratified)."
+)
+
+
+def contract_hash(manifest):
+    """Stable sha256 over the canonical frozen-contract manifest. Any change
+    to the contract surface - a clause, a datatype constructor, a signature,
+    even adding a declaration - changes this hash, which is what binds a
+    signed attestation to the exact contract it ratified."""
+    canonical = json.dumps(manifest, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _decl_marker(decl):
+    """The per-declaration heading `build_attestation` emits - unique per
+    declaration (names are unique in a spec), so a dropped block is always
+    caught, mirroring source_anchored_review's per-literal marker fix."""
+    return f"### {decl['kind']} `{decl['name']}`"
+
+
+def build_attestation(spec_name, manifest, review_name):
+    """Render a PENDING contract-ratification artifact for `spec_name` from
+    its frozen-contract `manifest`, folding in the Component D review named
+    `review_name` (the example's source_anchored_review_*.md filename)."""
+    lines = [
+        f"# Contract ratification — `{spec_name}`",
+        "",
+        "Generated by `evidence/contract_attestation.py`. This is the human "
+        "half of Component F (Tier 3, authoring migration): the reviewer "
+        "examines every frozen declaration against the primary sources and "
+        "formally adopts the contract. Completing this earns the label "
+        "**human-ratified** — not \"human-authored\"; see the module "
+        "docstring for exactly what this act can and cannot claim.",
+        "",
+        f"- Frozen contract: `frozen_contract.yaml`",
+        f"- Contract hash (sha256): `{contract_hash(manifest)}`",
+        f"- Blind constant review (folded in): `{review_name}` — this "
+        "ratification is not complete until that review is itself complete "
+        "(no `_PENDING_` left in it).",
+        "",
+        "## Sign-off",
+        "",
+        f"- Reviewer: {PENDING}",
+        f"- Date: {PENDING}",
+        f"- Attestation (drafter != checker): {PENDING} — \"{_ATTESTATION}\"",
+        f"- Adoption: {PENDING} — \"{_ADOPTION}\"",
+        f"- Status: {PENDING} (a freshly generated artifact is PENDING — "
+        "structurally valid, not yet ratified)",
+        "",
+        "## How to complete this ratification",
+        "",
+        f"First complete `{review_name}` (the blind, source-anchored constant "
+        "review). Then, for each declaration below: read its frozen contract "
+        "surface, judge whether it MEANS what the requirement means (the "
+        "modeling-fidelity question the mechanical gates cannot decide), and "
+        "record the judgment in **Adopted?**. Fill the sign-off above and "
+        "replace every `_PENDING_`. If the spec's contract ever changes, the "
+        "hash above goes stale and this ratification must be redone against "
+        "the new contract — the structure gate enforces that mechanically.",
+        "",
+        "## Frozen declarations",
+        "",
+    ]
+    for decl in manifest["declarations"]:
+        lines += [_decl_marker(decl), ""]
+        if "definition" in decl:
+            lines += ["```", decl["definition"], "```", ""]
+        else:
+            lines += ["```", decl["signature"], "```", ""]
+            for kw in ("requires", "ensures"):
+                for clause in decl.get(kw, []):
+                    lines.append(f"- {kw} `{clause}`")
+            if "body" in decl:
+                lines.append(f"- body (spec) `{decl['body']}`")
+            lines.append("")
+        lines += [
+            f"**Adopted?** {PENDING} (yes / no + notes — does this declaration "
+            "mean what the requirement means?)",
+            "",
+        ]
+    return "\n".join(lines)
+
+
+def _decl_sections(markdown, manifest):
+    """Split `markdown` into per-declaration sections keyed by name: each
+    section runs from a declaration's unique marker to the next present
+    marker (or end of document). Declarations whose marker is absent are
+    simply not in the result - the caller reports them as missing blocks."""
+    found = []
+    for decl in manifest["declarations"]:
+        idx = markdown.find(_decl_marker(decl))
+        if idx != -1:
+            found.append((idx, decl["name"]))
+    found.sort()
+    sections = {}
+    for i, (idx, name) in enumerate(found):
+        end = found[i + 1][0] if i + 1 < len(found) else len(markdown)
+        sections[name] = markdown[idx:end]
+    return sections
+
+
+def _expected_content(decl):
+    """The frozen-contract strings a declaration's section must display for
+    the human to actually be adopting them: the datatype definition, or the
+    signature plus every requires/ensures clause and the spec body."""
+    if "definition" in decl:
+        return [("definition", decl["definition"])]
+    pieces = [("signature", decl["signature"])]
+    for kw in ("requires", "ensures"):
+        pieces += [(kw, clause) for clause in decl.get(kw, [])]
+    if "body" in decl:
+        pieces.append(("body", decl["body"]))
+    return pieces
+
+
+def check_attestation(markdown, manifest, review_markdown):
+    """Mechanically check a ratification artifact's STRUCTURE (never its
+    human verdicts). Returns a report dict:
+      - recorded_hash:     the hash parsed from the artifact's dedicated
+                           field (None if absent or ambiguous)
+      - hash_current:      that RECORDED hash equals the CURRENT frozen
+                           manifest's hash - parsed and compared, never an
+                           unanchored search, so pasting the current hash
+                           elsewhere cannot mask a stale recorded field.
+                           False means the contract changed after this
+                           artifact was generated/signed (stale ratification)
+      - missing_fields:    required sign-off field markers absent
+      - missing_blocks:    frozen declarations whose per-declaration block
+                           (unique marker) is absent from the artifact
+      - missing_content:   "(name): (piece)" entries where a declaration's
+                           section is present but no longer displays the
+                           frozen content the human is adopting (definition/
+                           signature/each clause/spec body) or its own
+                           Adopted field - a gutted block can't pass on its
+                           heading alone
+      - review_complete:   the folded-in Component D review has no _PENDING_
+      - structure_ok:      True iff hash_current and nothing missing
+                           (PENDING is fine - same posture as Component D)
+      - attestation_complete: True iff no _PENDING_ remains in the artifact
+                           AND review_complete (the folded-in requirement) -
+                           reported, never asserted by the structure gate
+    """
+    hash_matches = _HASH_LINE_RE.findall(markdown)
+    recorded_hash = hash_matches[0] if len(hash_matches) == 1 else None
+    hash_current = recorded_hash == contract_hash(manifest)
+
+    missing_fields = [f for f in _HEADER_FIELDS if f not in markdown]
+    if recorded_hash is None:
+        missing_fields.append("Contract hash")
+
+    missing_blocks = [
+        d["name"] for d in manifest["declarations"] if _decl_marker(d) not in markdown
+    ]
+    sections = _decl_sections(markdown, manifest)
+    missing_content = []
+    for decl in manifest["declarations"]:
+        section = sections.get(decl["name"])
+        if section is None:
+            continue  # already reported in missing_blocks
+        for piece, text in _expected_content(decl):
+            if text not in section:
+                missing_content.append(f"{decl['name']}: {piece}")
+        if _PER_DECL_FIELD not in section:
+            missing_content.append(f"{decl['name']}: {_PER_DECL_FIELD} field")
+
+    review_complete = PENDING not in review_markdown
+    return {
+        "recorded_hash": recorded_hash,
+        "hash_current": hash_current,
+        "missing_fields": missing_fields,
+        "missing_blocks": missing_blocks,
+        "missing_content": missing_content,
+        "review_complete": review_complete,
+        "structure_ok": hash_current
+        and not (missing_fields or missing_blocks or missing_content),
+        "attestation_complete": (PENDING not in markdown) and review_complete,
+    }
+
+
+def check_example(attestation_path, manifest_path, review_path):
+    """Convenience wrapper: read a committed ratification artifact, its
+    frozen-contract manifest, and its folded-in Component D review, and
+    structure-check the artifact. Pure verification lives in
+    `check_attestation`; this only does file I/O."""
+    markdown = pathlib.Path(attestation_path).read_text(encoding="utf-8")
+    manifest = load_manifest(manifest_path)
+    review_markdown = pathlib.Path(review_path).read_text(encoding="utf-8")
+    return check_attestation(markdown, manifest, review_markdown)

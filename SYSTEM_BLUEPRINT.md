@@ -1,6 +1,19 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-20 (later) (`evidence/gate_c5_runner.py`
+Last updated: 2026-07-21 (`evidence/contract_attestation.py` added — the
+human half of Component F (Tier 3 authoring migration): per-example,
+sha256-hash-bound contract-ratification artifacts
+(`examples/*/contract_attestation_*.md`, committed PENDING, drift-pinned)
+through which a human reviewer adopts each frozen contract
+(`frozen_contract.yaml`) after checking every declaration against the
+sources; the Component D `source_anchored_review_*.md` completion is a
+folded-in prerequisite. Data flow: `frozen_contract.yaml` →
+`build_attestation` → committed PENDING artifact → `check_attestation`
+(structure + hash-currency gate; completion reported, never asserted).
+Completed form earns "human-ratified" — the docs deliberately never claim
+"human-authored" for the four existing examples. Full record: `DEVLOG.md`'s
+2026-07-21 entry.)
+Prior header, preserved: Last updated: 2026-07-20 (later) (`evidence/gate_c5_runner.py`
 generalized into a superset — `body_function` (dosage's method+companion
 mutation shape) and a `survivor_escalation` hook (DDI's STP-suite
 re-verification of survivors) — so all three worked Dafny examples now

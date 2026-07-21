@@ -4,7 +4,22 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-20 (Tier 3 cont.) (**Component F now covers all four
+Last updated: 2026-07-21 (Tier 3, authoring migration) (**Named limitation,
+now with its honest mitigation built: the four specs are LLM-drafted;
+ratification artifacts exist but are PENDING until a human signs.**
+`evidence/contract_attestation.py` + `contract_attestation_*.md` (one per
+example, committed PENDING, hash-bound to each frozen contract) let the
+human reviewer formally adopt each contract after examining every frozen
+declaration against the sources, with the pending Component D constant
+reviews folded in as a completion prerequisite. Until Steven completes them,
+the truthful provenance of all four specs remains **LLM-drafted,
+human-reviewed, frozen-contract-enforced — ratification pending**; on
+signing, each becomes **human-ratified** (never "human-authored" — only the
+§6.2a forward workflow, human-freezes-contract-first, earns that, and no
+existing example was built under it). The hash binding guarantees a signed
+adoption goes mechanically stale if the contract later changes. Full
+account: `DEVLOG.md`'s 2026-07-21 entry. The prior Tier-3 headers follow.)
+Prior header, preserved: Last updated: 2026-07-20 (Tier 3 cont.) (**Component F now covers all four
 worked examples — datatype freezing added.** The frozen-contract gate
 (`evidence/frozen_contract.py`) now freezes `datatype`/`codatatype`
 definitions (the constructors are the spec's meaning) alongside function/

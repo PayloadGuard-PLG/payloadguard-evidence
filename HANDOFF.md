@@ -8,7 +8,29 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-20 (Tier 3 cont.) — **Component F now covers all
+**Last updated:** 2026-07-21 (Tier 3, authoring migration) — **Contract
+ratification built: the Tier-3 build surface is complete.**
+`evidence/contract_attestation.py` (new) is the human half of Component F:
+per-example, hash-bound ratification artifacts
+(`contract_attestation_{dosage,renal,aeb,ddi}.md`, all committed PENDING,
+drift-pinned) through which the human reviewer examines every frozen
+declaration against the sources and formally adopts the contract — earning
+**human-ratified** (never "human-authored"; the distinction is stated in
+code and docs, not blurred). The sha256 hash binding makes ratification
+durable: if a contract changes after signing, the attestation reads stale
+mechanically. The pending Component D blind constant reviews are **folded
+in** — `attestation_complete` requires each example's
+`source_anchored_review_*.md` to be complete first. Forward workflow for
+NEW examples documented in `OPERATIONS_MANUAL.md` §6.2a (human freezes the
+contract before any automated drafter touches the file → human-authored by
+construction). **The next act is Steven's, out-of-band, per example at his
+own pace:** complete the blind constant review + the adoptions + sign-off
+(replace every `_PENDING_`) — nothing in CI blocks until then. With this,
+Tiers 1–3 of the "PROVEN != meaningful" plan are mechanically complete; the
+only open item of the plan is the human ratification itself. The prior
+work follows.
+
+**Earlier 2026-07-20 (Tier 3 cont.) — Component F now covers all
 four worked examples (datatype freezing).** `evidence/frozen_contract.py`
 freezes a spec's human-authored contract surface — every `datatype`
 definition (constructors are the spec), plus per function/method its

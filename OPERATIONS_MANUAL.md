@@ -501,6 +501,30 @@ caught two real design gaps this way (a missing computation step, and a
 type ambiguity that a stronger Dafny type system design later closed
 structurally).
 
+### 6.2a Freeze the contract BEFORE any automated drafter touches the file
+
+The forward workflow established by Tier 3 (Component F + the authoring
+migration), and the step that makes a new example's provenance strong
+*natively* rather than by later ratification: once the specification
+skeleton from §6.1–6.2 is settled, the **human** author writes the
+`.dfy` contract surface (datatypes, signatures, `requires`/`ensures`,
+and function/predicate bodies — the parts that ARE the spec), generates
+and commits its frozen manifest
+(`evidence.frozen_contract.build_frozen_contract` →
+`examples/<name>/frozen_contract.yaml`) **before** any LLM or other
+automated drafter contributes anything. From that point the automated
+contributor may only add proof scaffolding (`assert` / `invariant` /
+`decreases` / new `lemma`s — `method` bodies are implementation and stay
+free), and `check_contract` proves mechanically that the boundary held:
+any contract edit, any `assume`/`{:axiom}`/`{:extern}`, any added
+spec-bearing declaration is a `CONTRACT_VIOLATED`. A spec built this way
+is **human-authored** by construction; the four existing examples,
+built before this workflow existed, instead carry per-example
+`contract_attestation_*.md` ratification artifacts
+(`evidence/contract_attestation.py`) whose completed form earns the
+honest lesser label **human-ratified** — see that module's docstring for
+the distinction, which this repo does not blur.
+
 ### 6.3 Build the Dafny spec, then run all six gates in order
 
 Gate C1 (spec + capture) → Gate C6 (NL confirmation — deliberately moved
