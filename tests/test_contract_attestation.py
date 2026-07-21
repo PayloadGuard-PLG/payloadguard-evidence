@@ -19,8 +19,10 @@ import pathlib
 import pytest
 
 from evidence.contract_attestation import (
+    _RELATED_REQUIREMENT_NOTE,
     _is_definitional,
     _matched_rows,
+    _related_rows,
     build_attestation,
     check_attestation,
     check_example,
@@ -329,6 +331,104 @@ def test_sourced_literals_render_with_quotes_and_dosage_has_none():
 
 
 # ------------------------------------------------------------- hash binding
+
+# ------------------------------------- related requirements (v2.1)
+
+def _all_examples():
+    return {ex: (spec, review) for ex, (spec, review, _att) in COMMITTED.items()}
+
+
+def test_related_requirement_renders_for_implementation_only_row():
+    """dosage's CalculateHourlyDose partially formalizes REQ-DOSE-003 (the
+    'in-range' half is the ensures bound; the 'finite' half is the CrossHair
+    reals-vs-floats gap), whose recorded evidence is implementation-level only.
+    Its section must show the full REQ-DOSE-003 line and the not-proven note."""
+    spec, manifest, review_path, _, matrix, citations = _data("dosage_calculator")
+    md = build_attestation(spec, manifest, review_path.name, matrix, citations)
+    from evidence.contract_attestation import _decl_sections
+    section = _decl_sections(md, manifest)["CalculateHourlyDose"]
+    row = next(r for r in matrix["rows"] if r["requirement_id"] == "REQ-DOSE-003")
+    assert f"> **REQ-DOSE-003** — {row['requirement_text']}" in section
+    assert _RELATED_REQUIREMENT_NOTE in section
+
+
+def test_related_rows_are_exactly_the_known_set():
+    """The regression guard against the matching rule going loose: across all
+    four examples x all declarations, the complete set of related pairings is
+    exactly dosage's CalculateHourlyDose <- REQ-DOSE-003 and nothing else."""
+    found = set()
+    for example, (spec, _review) in _all_examples().items():
+        d = EXAMPLES / example
+        matrix = load_matrix(d / "traceability_matrix.a.json")
+        manifest = load_manifest(d / "frozen_contract.yaml")
+        for decl in manifest["declarations"]:
+            for row in _related_rows(decl, matrix, spec):
+                found.add((example, decl["name"], row["requirement_id"]))
+    assert found == {("dosage_calculator", "CalculateHourlyDose", "REQ-DOSE-003")}
+
+
+def test_prose_only_rows_never_render_as_related():
+    """Prose-only / process-decision rows have no contract surface to ratify
+    and carry no '::' location, so they must appear in no artifact at all."""
+    for example, req_ids in (
+        ("renal_adjustment", ("REQ-RENAL-3", "REQ-RENAL-4", "REQ-RENAL-6", "REQ-RENAL-7", "REQ-RENAL-8")),
+        ("aeb_kernel", ("REQ-AEB-9", "REQ-AEB-10")),
+    ):
+        spec, review, att = COMMITTED[example]
+        md = (EXAMPLES / example / att).read_text(encoding="utf-8")
+        for req_id in req_ids:
+            assert req_id not in md, (example, req_id)
+
+
+def test_related_block_never_duplicates_a_primary_mapped_row():
+    """A requirement is either primary (mapped to a declaration in this spec)
+    or related (mapped nowhere in this spec) - never both, in any declaration."""
+    for example, (spec, _review) in _all_examples().items():
+        d = EXAMPLES / example
+        matrix = load_matrix(d / "traceability_matrix.a.json")
+        manifest = load_manifest(d / "frozen_contract.yaml")
+        for decl in manifest["declarations"]:
+            primary = {r["requirement_id"] for r in _matched_rows(decl, matrix, spec)}
+            related = {r["requirement_id"] for r in _related_rows(decl, matrix, spec)}
+            assert primary.isdisjoint(related), (example, decl["name"], primary & related)
+
+
+def test_deleted_related_requirement_is_caught():
+    """Stripping the related requirement line from a signed artifact fails the
+    gate - Gap-if was answered against it, so it can't be silently removed."""
+    spec, manifest, review_path, _, matrix, citations = _data("dosage_calculator")
+    md = build_attestation(spec, manifest, review_path.name, matrix, citations)
+    review = review_path.read_text(encoding="utf-8")
+    row = next(r for r in matrix["rows"] if r["requirement_id"] == "REQ-DOSE-003")
+    gutted = md.replace(f"> **REQ-DOSE-003** — {row['requirement_text']}\n", "")
+    r = check_attestation(gutted, manifest, review, matrix=matrix)
+    assert "CalculateHourlyDose: related requirement REQ-DOSE-003" in r["missing_content"]
+    assert r["structure_ok"] is False
+
+
+def test_deleted_related_requirement_note_is_caught():
+    """The not-proven note is what stops a related requirement being read as a
+    proof claim; deleting it must fail the gate."""
+    spec, manifest, review_path, _, matrix, citations = _data("dosage_calculator")
+    md = build_attestation(spec, manifest, review_path.name, matrix, citations)
+    review = review_path.read_text(encoding="utf-8")
+    gutted = md.replace(_RELATED_REQUIREMENT_NOTE + "\n", "")
+    r = check_attestation(gutted, manifest, review, matrix=matrix)
+    assert "CalculateHourlyDose: related-requirement note" in r["missing_content"]
+    assert r["structure_ok"] is False
+
+
+def test_declaration_with_no_related_rows_emits_no_block():
+    """A declaration with no related requirement (ExpectedDose; every ddi
+    declaration) renders no related block."""
+    from evidence.contract_attestation import _decl_sections
+    d_spec, d_manifest, d_review, _, d_matrix, d_cit = _data("dosage_calculator")
+    d_md = build_attestation(d_spec, d_manifest, d_review.name, d_matrix, d_cit)
+    assert "Related requirement" not in _decl_sections(d_md, d_manifest)["ExpectedDose"]
+    x_spec, x_manifest, x_review, _, x_matrix, x_cit = _data("drug_interaction_checker")
+    x_md = build_attestation(x_spec, x_manifest, x_review.name, x_matrix, x_cit)
+    assert "Related requirement" not in x_md
+
 
 def test_contract_hash_is_stable_and_content_sensitive():
     """Same manifest -> same hash; any contract-surface change -> different

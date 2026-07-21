@@ -42,10 +42,13 @@ classes are distributed to the layer that already owns each:
 
 The artifact auto-assembles the context the judgment needs (mapped
 requirement text from the traceability matrix, source-cited literals with
-their verbatim quotes, and a warning banner where the recorded Dafny proof is
+their verbatim quotes, a warning banner where the recorded Dafny proof is
 definitional - i.e. where mechanical evidence is weakest and reviewer doubt
-matters most), so the machine does all lookup and the human performs only the
-judgment no machine can. The eliminative ORDER (produce defeaters, eliminate
+matters most, and a RELATED requirement the contract partially formalizes but
+whose recorded evidence is implementation-level only - shown explicitly marked
+unproven so Gap-if is not answered against a target left off the page), so the
+machine does all lookup and the human performs only the judgment no machine
+can. The eliminative ORDER (produce defeaters, eliminate
 or sustain them, only then adopt) is discipline stated in prose; the gate
 checks structure only - mechanical gates never judge the quality of a human
 verdict.
@@ -131,6 +134,15 @@ _DEFINITIONAL_BANNER = (
     "ratification. Weight your Wrong-if / Gap-if accordingly."
 )
 
+_RELATED_REQUIREMENT_NOTE = (
+    "> ⓘ **Not proven here** — the traceability matrix records no Dafny "
+    "evidence for this requirement at this declaration; its recorded "
+    "evidence is implementation-level. It is shown because the clauses above "
+    "bear on it, and Gap-if cannot be answered honestly against a "
+    "requirement left off the page. Its presence is context for your "
+    "judgment, never a proof claim."
+)
+
 
 def contract_hash(manifest):
     """Stable sha256 over the canonical frozen-contract manifest. Any change
@@ -175,6 +187,46 @@ def _matched_rows(decl, matrix, spec_name):
     target = f"{spec_name}::{decl['name']}"
     rows = [r for r in matrix["rows"] if target in _row_locations(r)]
     return sorted(rows, key=lambda r: r["requirement_id"])
+
+
+def _normalize_symbol(name):
+    """Case- and underscore-insensitive symbol key, so an implementation-level
+    location (dosage.py::calculate_hourly_dose) can be recognised as naming
+    the same unit as a Dafny declaration (CalculateHourlyDose). Deliberately
+    crude: it must not invent correspondences, only spot the snake_case /
+    PascalCase spelling of one name."""
+    return name.replace("_", "").lower()
+
+
+def _related_rows(decl, matrix, spec_name):
+    """Rows that bear on `decl` but are NOT mapped to ANY declaration in this
+    spec: no location anywhere in the row starts with '{spec_name}::', and
+    some location's symbol normalizes to this declaration's name.
+
+    Rationale: the contract can partially formalize a requirement whose
+    recorded evidence is implementation-level only (dosage's REQ-DOSE-003 -
+    the Dafny 'ensures 0.0 <= dose <= maxSafeDoseMgPerHr' IS the in-range
+    half of it; the 'finite' half is the CrossHair reals-vs-floats gap). Such
+    a requirement is invisible to _matched_rows, so Gap-if would be answered
+    against a target left off the page.
+
+    The exclusion is what keeps this quiet: a row already mapped anywhere in
+    this spec is already on the page and is not repeated, and rows whose
+    location is prose ('none - prose only, not yet formalized') carry no '::'
+    and never match. Sorted by requirement_id for deterministic rendering."""
+    prefix = f"{spec_name}::"
+    key = _normalize_symbol(decl["name"])
+    out = []
+    for row in matrix["rows"]:
+        locations = _row_locations(row)
+        if any(loc.startswith(prefix) for loc in locations):
+            continue
+        for loc in locations:
+            _, sep, symbol = loc.partition("::")
+            if sep and _normalize_symbol(symbol) == key:
+                out.append(row)
+                break
+    return sorted(out, key=lambda r: r["requirement_id"])
 
 
 def _is_definitional(decl, matrix, spec_name):
@@ -302,6 +354,19 @@ def build_attestation(spec_name, manifest, review_name, matrix, citations):
                 "Gap-if).",
                 "",
             ]
+        # related-requirement block (v2.1): a requirement the contract
+        # partially formalizes but whose recorded evidence is
+        # implementation-level only, so _matched_rows can't see it - shown,
+        # explicitly marked unproven, so Gap-if isn't answered against a target
+        # left off the page. Renders after the primary block, before the
+        # definitional banner (a related row is never definitional-banner input
+        # by construction - it has no Dafny evidence at this declaration).
+        related = _related_rows(decl, matrix, spec_name)
+        if related:
+            lines.append("**Related requirement (no Dafny evidence at this declaration):**")
+            for row in related:
+                lines.append(f"> **{row['requirement_id']}** — {row['requirement_text']}")
+            lines += [_RELATED_REQUIREMENT_NOTE, ""]
         if _is_definitional(decl, matrix, spec_name):
             lines += [_DEFINITIONAL_BANNER, ""]
         # frozen surface - byte-identical rendering to v1
@@ -396,9 +461,13 @@ def check_attestation(markdown, manifest, review_markdown, matrix=None):
                            FULL rendered requirement line of a mapped row
                            ("> **REQ-ID** — text", ID and verbatim text
                            paired, reported "(name): requirement (REQ-ID)")
-                           or a definitional declaration's warning banner
-                           ("(name): definitional banner"). The requirement
-                           check is deliberate: a requirement-text change
+                           the FULL rendered line of a RELATED requirement and
+                           its "not proven here" note ("(name): related
+                           requirement (REQ-ID)" / "(name): related-requirement
+                           note"), or a definitional declaration's warning
+                           banner ("(name): definitional banner"). The
+                           requirement check is deliberate: a requirement-text
+                           change
                            flags the artifact structurally stale even though
                            the contract hash (which binds only the contract
                            surface) still matches - a ratification adopts a
@@ -449,6 +518,18 @@ def check_attestation(markdown, manifest, review_markdown, matrix=None):
                     missing_content.append(
                         f"{decl['name']}: requirement {row['requirement_id']}"
                     )
+            related = _related_rows(decl, matrix, spec_name)
+            for row in related:
+                rendered = f"> **{row['requirement_id']}** — {row['requirement_text']}"
+                if rendered not in section:
+                    missing_content.append(
+                        f"{decl['name']}: related requirement {row['requirement_id']}"
+                    )
+            if related and _RELATED_REQUIREMENT_NOTE not in section:
+                # the note is what stops a related requirement being read as
+                # a proof claim; its deletion from a signed artifact must not
+                # pass the gate
+                missing_content.append(f"{decl['name']}: related-requirement note")
             if _is_definitional(decl, matrix, spec_name) and _DEFINITIONAL_BANNER not in section:
                 # the banner is a safety signal (it directs reviewer doubt
                 # where mechanical evidence is weakest); its deletion from a
