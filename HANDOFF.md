@@ -8,7 +8,28 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-21 (Tier 3, authoring migration) — **Contract
+**Last updated:** 2026-07-21 (later) — **Ratification template v2
+(defeater-based) landed, from Steven's research spec with four verified
+corrections.** The passive per-declaration `Adopted?` is now an eliminative
+production: per declaration, **Wrong-if** (rebutting — could a clause assert
+the wrong thing?) and **Gap-if** (undercutting — could every clause hold and
+the requirement still be violated?) must be produced and eliminated before
+adopting; undermining stays Component D's folded-in blind constant review.
+The artifact auto-assembles mapped requirement text (row-OR-evidence-level
+`code_location` matching — the spec's row-only rule would have falsely
+unmapped dosage's kernel and three renal functions, verified and corrected),
+source-cited literals with verbatim quotes, and per-declaration definitional
+banners (keyed to the declaration's own evidence entry — rows mix
+proof_content, verified and corrected). Requirement text is expected content
+per section, so requirement drift stales the artifact without a second hash.
+The v1 drift-pin trap (byte-pin breaks on first signature) is fixed:
+byte-pin while unsigned, structural invariants always. All four artifacts
+regenerated PENDING under v2; 379 tests pass. **Steven's sitting per example
+is unchanged in shape but now eliminative:** complete the D review, produce
++ eliminate Wrong-if/Gap-if per declaration, adopt, sign. The prior work
+follows.
+
+**Earlier 2026-07-21 (Tier 3, authoring migration) — Contract
 ratification built: the Tier-3 build surface is complete.**
 `evidence/contract_attestation.py` (new) is the human half of Component F:
 per-example, hash-bound ratification artifacts

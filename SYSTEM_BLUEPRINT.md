@@ -1,6 +1,17 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-21 (`evidence/contract_attestation.py` added — the
+Last updated: 2026-07-21 (later) (contract-attestation template v2,
+defeater-based — the data flow gains two inputs: `build_attestation` now
+consumes `traceability_matrix.a.json` (mapped requirement text +
+per-declaration `proof_content` for definitional banners; matching is
+row-OR-evidence-level `code_location`, spec-file-constrained) and
+`literal_citations.yaml` (source-cited literals rendered with verbatim
+quotes) alongside `frozen_contract.yaml`; per declaration the artifact now
+carries Wrong-if/Gap-if production fields plus Adopted, and
+`check_attestation` additionally expects each mapped row's verbatim
+requirement text in its declaration's section (requirement drift stales the
+artifact). Full record: `DEVLOG.md`'s 2026-07-21 (later) entry.)
+Prior header, preserved: Last updated: 2026-07-21 (`evidence/contract_attestation.py` added — the
 human half of Component F (Tier 3 authoring migration): per-example,
 sha256-hash-bound contract-ratification artifacts
 (`examples/*/contract_attestation_*.md`, committed PENDING, drift-pinned)

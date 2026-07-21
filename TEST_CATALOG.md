@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 346 test functions across 44 categories.**
+**Total: 355 test functions across 44 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -112,13 +112,22 @@ for the actual collected-case count.
 
 | Test | Description | Code |
 |---|---|---|
-| `test_committed_attestation_matches_generator_and_is_pending` | No drift between the committed artifact and the generator; structure passes; PENDING until the human ratifies (and the folded-in Component D review is complete). | `tests/test_contract_attestation.py:48` |
-| `test_completion_requires_the_folded_in_review_to_be_complete` | Replacing every _PENDING_ in the attestation is NOT enough while the Component D review is itself still pending - the two halves of the human act are mechanically linked. | `tests/test_contract_attestation.py:65` |
-| `test_contract_changed_after_signing_is_a_stale_attestation` | The tamper case the hash binding exists for: sign the artifact, then change the contract (weaken an ensures). | `tests/test_contract_attestation.py:86` |
-| `test_dropped_declaration_block_is_caught` | Removing one declaration's block from the artifact (its unique marker) is a structural failure, even though every field keyword still appears in the other blocks. | `tests/test_contract_attestation.py:109` |
-| `test_pasting_the_current_hash_elsewhere_cannot_mask_a_stale_recorded_hash` | Regression (Qodo #1): hash_current must come from parsing the artifact's dedicated recorded-hash field and comparing equality - never an unanchored substring search. | `tests/test_contract_attestation.py:122` |
-| `test_gutted_declaration_content_is_caught_even_with_marker_intact` | Regression (Qodo #2): keeping a declaration's heading marker while deleting the frozen content the human is supposed to be adopting (its signature/definition/clauses, or its own Adopted field) must fail the structure ga… | `tests/test_contract_attestation.py:140` |
-| `test_contract_hash_is_stable_and_content_sensitive` | Same manifest -> same hash; any contract-surface change -> different hash. | `tests/test_contract_attestation.py:177` |
+| `test_committed_attestation_drift_pin_and_invariants` | The drift-pin transition (v2 spec section 7): while an artifact is UNSIGNED, it must byte-match the generator; once signed, the byte pin deliberately no longer applies (a signature IS a divergence from the template) and… | `tests/test_contract_attestation.py:78` |
+| `test_all_committed_artifacts_are_currently_pending` | Committed state at build time: all four artifacts are PENDING (no signature exists yet). | `tests/test_contract_attestation.py:100` |
+| `test_completion_requires_the_folded_in_review_to_be_complete` | Replacing every _PENDING_ in the attestation (Wrong-if, Gap-if, Adopted, sign-off) is NOT enough while the Component D review is itself still pending - the two halves of the human act are mechanically linked. | `tests/test_contract_attestation.py:116` |
+| `test_contract_changed_after_signing_is_a_stale_attestation` | The tamper case the hash binding exists for: sign the artifact, then change the contract (weaken an ensures). | `tests/test_contract_attestation.py:142` |
+| `test_pasting_the_current_hash_elsewhere_cannot_mask_a_stale_recorded_hash` | Regression (Qodo, PR #75): hash_current must come from parsing the artifact's dedicated recorded-hash field and comparing equality - never an unanchored substring search. | `tests/test_contract_attestation.py:163` |
+| `test_gutted_declaration_content_is_caught_even_with_marker_intact` | Regression (Qodo, PR #75): keeping a declaration's heading marker while deleting the frozen content the human is supposed to be adopting must fail the structure gate - a heading alone is not a reviewable block. | `tests/test_contract_attestation.py:180` |
+| `test_gutted_production_fields_are_caught_per_section` | v2 tamper case: each declaration section must carry its OWN Wrong-if, Gap-if, and Adopted fields - another section's surviving copy must not mask a deletion. | `tests/test_contract_attestation.py:204` |
+| `test_gutted_requirement_text_is_caught` | v2 tamper case: deleting a mapped requirement's verbatim text from a declaration's section fails the gate - and the same mechanism makes a REQUIREMENT-TEXT CHANGE flag the artifact stale even though the contract hash (w… | `tests/test_contract_attestation.py:222` |
+| `test_altered_requirement_id_is_caught_even_with_text_intact` | Regression (Qodo, this PR): the checker requires the FULL rendered requirement line (ID + verbatim text paired), not the text alone - otherwise the **REQ-...** marker could be removed or swapped while the text survives,… | `tests/test_contract_attestation.py:240` |
+| `test_deleted_definitional_banner_is_caught` | Regression (Qodo, this PR): the definitional-proof banner is a safety signal directing reviewer doubt where mechanical evidence is weakest; deleting it from a declaration's section must fail the gate. | `tests/test_contract_attestation.py:255` |
+| `test_dosage_kernel_is_mapped_via_evidence_level_code_location` | The correction to the v2 design spec's row-only matching rule, verified against the real committed matrix: dosage's ROW code_location names the Python implementation (dosage.py::calculate_hourly_dose), so only evidence-… | `tests/test_contract_attestation.py:275` |
+| `test_renal_evidence_only_functions_are_mapped` | Same correction, renal side: AssessRenalFunction appears at evidence level only (its rows' top-level code_location names other functions) and must still map. | `tests/test_contract_attestation.py:290` |
+| `test_definitional_banner_targets_the_declaration_not_the_row` | The precision correction to the v2 design spec's any-evidence-in-row rule, verified against the real committed matrix: renal rows mix proof_content across declarations (REQ-RENAL-1 carries definitional GStage alongside… | `tests/test_contract_attestation.py:299` |
+| `test_datatypes_render_the_honest_unmapped_line` | Type declarations have no matrix rows; their blocks carry the honest 'none mapped' line (worded for type declarations, not implying a finding), and the reviewer confirms via Gap-if. | `tests/test_contract_attestation.py:313` |
+| `test_sourced_literals_render_with_quotes_and_dosage_has_none` | The sourced-literals block puts each declaration's source-cited constants next to their verbatim quotes; dosage (fully parameterized, structural zero only) correctly renders no such block. | `tests/test_contract_attestation.py:321` |
+| `test_contract_hash_is_stable_and_content_sensitive` | Same manifest -> same hash; any contract-surface change -> different hash. | `tests/test_contract_attestation.py:333` |
 
 ## Dafny Adapter (`tests/test_dafny_adapter.py`)
 
