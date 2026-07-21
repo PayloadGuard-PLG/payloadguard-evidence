@@ -219,8 +219,13 @@ reflexivity — every clause is Z3-confirmed to pin its result uniquely.
 What the 8 `PROVEN` rows therefore certify is real but bounded: **totality,
 type-safety, `match`-exhaustiveness, and the literal boundary structure**
 (`<` vs `<=`, and the exact numbers 10/145/73/0.15/0.05/11/0.25) — the same
-scope Gate C4's STP suite pins. They do **not** certify an independent
-property beyond the definition, nor that those numbers faithfully transcribe
-§571.127 (a separate, still-open fidelity question — see the root
-`README.md`'s "In progress and designed" note). The `traceability_matrix.a.json`
-rows now carry `proof_content: "definitional"` with the matching caveat.
+scope Gate C4's STP suite pins. They do **not**, by themselves, certify an
+independent property beyond the definition, nor that those numbers faithfully
+transcribe §571.127. That fidelity is now separately established:
+`literal_citations.yaml` binds each of 10/145/73/0.15/0.05/11/0.25 to a
+verbatim §571.127 quote confirmed present in `sources/nhtsa-fmvss-127-2024.md`,
+and this example's contract is frozen (`frozen_contract.yaml`) with a
+source-anchored ratification artifact (`contract_attestation_aeb.md`, committed
+PENDING until a human signs) — see the root `README.md`'s "Keeping `PROVEN`
+honest" note. The `traceability_matrix.a.json` rows now carry
+`proof_content: "definitional"` with the matching caveat.

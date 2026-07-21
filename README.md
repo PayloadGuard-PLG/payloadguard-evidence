@@ -391,6 +391,10 @@ building on the raw label, separates them and labels each honestly. All have
   report with every mutation outcome unchanged, since none of their
   mutation targets has an in-file caller for isolation to change — the
   guarantee is now in place and test-pinned, not merely available.
+  (`aeb_kernel`, the fourth Dafny example, runs Gate C5 through its own
+  `run_mutation_suite_aeb.py` — built before the shared runner and not
+  migrated onto it; like the three above, none of its predicate targets has
+  an in-file caller, so isolation would change nothing there either.)
 
 - **Distinguishing a proven property from a definitional restatement —
   landed (classification + labelling), 2026-07-20.** A `PROVEN` label
