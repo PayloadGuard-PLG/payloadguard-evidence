@@ -393,8 +393,11 @@ def check_attestation(markdown, manifest, review_markdown, matrix=None):
                            signature/each clause/spec body), one of its own
                            production/verdict fields (Adopted/Wrong-if/
                            Gap-if), or - when `matrix` is provided - the
-                           verbatim requirement_text of a mapped row
-                           ("(name): requirement (REQ-ID)"). The requirement
+                           FULL rendered requirement line of a mapped row
+                           ("> **REQ-ID** — text", ID and verbatim text
+                           paired, reported "(name): requirement (REQ-ID)")
+                           or a definitional declaration's warning banner
+                           ("(name): definitional banner"). The requirement
                            check is deliberate: a requirement-text change
                            flags the artifact structurally stale even though
                            the contract hash (which binds only the contract
@@ -437,10 +440,20 @@ def check_attestation(markdown, manifest, review_markdown, matrix=None):
                 missing_content.append(f"{decl['name']}: {label} field")
         if matrix is not None:
             for row in _matched_rows(decl, matrix, spec_name):
-                if row["requirement_text"] not in section:
+                # require the FULL rendered line (ID + verbatim text paired),
+                # not the text alone - otherwise the requirement ID marker
+                # could be removed or altered while the text survives,
+                # degrading the clause<->requirement binding unnoticed
+                rendered = f"> **{row['requirement_id']}** — {row['requirement_text']}"
+                if rendered not in section:
                     missing_content.append(
                         f"{decl['name']}: requirement {row['requirement_id']}"
                     )
+            if _is_definitional(decl, matrix, spec_name) and _DEFINITIONAL_BANNER not in section:
+                # the banner is a safety signal (it directs reviewer doubt
+                # where mechanical evidence is weakest); its deletion from a
+                # signed artifact must not pass the gate
+                missing_content.append(f"{decl['name']}: definitional banner")
 
     review_complete = PENDING not in review_markdown
     return {

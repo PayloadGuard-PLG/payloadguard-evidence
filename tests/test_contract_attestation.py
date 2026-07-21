@@ -237,6 +237,39 @@ def test_gutted_requirement_text_is_caught():
     assert r["structure_ok"] is False
 
 
+def test_altered_requirement_id_is_caught_even_with_text_intact():
+    """Regression (Qodo, this PR): the checker requires the FULL rendered
+    requirement line (ID + verbatim text paired), not the text alone -
+    otherwise the **REQ-...** marker could be removed or swapped while the
+    text survives, degrading the clause<->requirement binding unnoticed."""
+    spec, manifest, review_path, _, matrix, citations = _data("renal_adjustment")
+    md = build_attestation(spec, manifest, review_path.name, matrix, citations)
+    review = review_path.read_text(encoding="utf-8")
+    tampered = md.replace("> **REQ-RENAL-1** —", "> **REQ-RENAL-999** —", 1)
+    assert tampered != md
+    r = check_attestation(tampered, manifest, review, matrix=matrix)
+    assert "GStage: requirement REQ-RENAL-1" in r["missing_content"]
+    assert r["structure_ok"] is False
+
+
+def test_deleted_definitional_banner_is_caught():
+    """Regression (Qodo, this PR): the definitional-proof banner is a safety
+    signal directing reviewer doubt where mechanical evidence is weakest;
+    deleting it from a declaration's section must fail the gate. Uses renal's
+    GStage, definitional in the committed matrix."""
+    from evidence.contract_attestation import _DEFINITIONAL_BANNER
+
+    spec, manifest, review_path, _, matrix, citations = _data("renal_adjustment")
+    md = build_attestation(spec, manifest, review_path.name, matrix, citations)
+    review = review_path.read_text(encoding="utf-8")
+    # remove the first banner occurrence - GStage's, the first definitional decl
+    gutted = md.replace(_DEFINITIONAL_BANNER + "\n\n", "", 1)
+    assert gutted != md
+    r = check_attestation(gutted, manifest, review, matrix=matrix)
+    assert "GStage: definitional banner" in r["missing_content"]
+    assert r["structure_ok"] is False
+
+
 # ------------------------------------- auto-assembly (the verified corrections)
 
 def test_dosage_kernel_is_mapped_via_evidence_level_code_location():

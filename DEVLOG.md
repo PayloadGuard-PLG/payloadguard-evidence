@@ -14,6 +14,8 @@ Steven supplied an implementation spec (`contract_attestation_v2_spec.md`, desig
 
 All four artifacts regenerated PENDING under v2 (renal: 3 definitional banners, 9 KDIGO/CG literal quotes inline under `GStage` alone; ddi: 6 honestly-unmapped datatypes; dosage: kernel correctly mapped to REQ-GIP-1-4-12/1-8-1 via evidence-level linkage, no sourced literals — all matching the pre-build predictions exactly). `check_example` now takes the matrix path; checker takes `matrix=None` for pure unit forms. `tests/test_contract_attestation.py` rewritten (17): drift-pin transition, completion gating incl. simulated post-signature invariants, five tamper cases (stale hash, spoofed hash, gutted content, gutted production fields, gutted requirement text), and the corrections pinned against the real committed matrices. CoDefeater-style LLM-proposed defeaters and ratifier-calibration mode stay out of scope, documented in the spec. Full suite: 379 passed.
 
+*Qodo review on the PR, two checker-hardening findings fixed (generator emitted content the checker didn't require, so a signed artifact could shed it):* (1) requirement binding now requires the **full rendered line** (`> **REQ-ID** — verbatim text`, ID and text paired) per mapped row, not the text alone — an altered/removed `**REQ-...**` marker with intact text is caught; (2) a definitional declaration's warning banner is now expected content in its section — deleting the safety signal fails the gate (`"(name): definitional banner"`). Two regression tests (swapped requirement ID on `GStage`; deleted first banner). Artifacts unchanged. Full suite: 381 passed.
+
 ---
 
 ## 2026-07-21 (Tier 3, authoring migration) — Contract ratification: hash-bound attestation artifacts for all four examples
