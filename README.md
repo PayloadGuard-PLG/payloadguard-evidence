@@ -77,8 +77,11 @@ an honest statement of *which* `PROVEN` rows prove a non-trivial property and
 which restate a definition. `aeb_kernel` and `drug_interaction_checker` are
 predicate/lookup specs (`ensures` equivalent to the body); `dosage_calculator`
 and `renal_adjustment` do real arithmetic, so their safety bounds are genuine
-content. Neither the qualifier nor this table certifies fidelity of the
-numbers to the source — that is a separate, named limitation.
+content. The qualifier speaks only to what the proof *establishes* — not to
+whether the spec's numbers faithfully transcribe the source, nor to whether
+the contract itself was shaped to be provable. Those two concerns are the
+subject of the source-fidelity and frozen-contract mechanisms described under
+**Keeping `PROVEN` honest** below, which have since landed.
 
 The single `BOUNDED_CHECKED` requirement is `dosage_calculator`'s
 overflow-safety check — a permanent Dafny/Z3 limit (no IEEE-754
@@ -365,15 +368,18 @@ extending the system to a new example, see
 Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
 [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
 
-## In progress and designed
+## Keeping `PROVEN` honest
 
-Two improvements are named here rather than implied complete. Both have
-landed in substance and are kept here for continuity (this section tracked
-each while it was in progress); each still names the piece that remains
-designed-but-unbuilt:
+`PROVEN` means Dafny discharged the spec — no more. On its own that conflates
+three different things: whether the proof carries *independent content*,
+whether the spec's numbers *faithfully transcribe the source*, and whether the
+contract itself was *shaped to be provable*. A sequence of mechanisms,
+building on the raw label, separates them and labels each honestly. All have
+**landed in substance**; the one piece that genuinely remains is a human act
+(contract ratification), named explicitly at the end.
 
-- **Isolated mutation testing — landed for all three worked Dafny
-  examples (2026-07-20).** Gate C5 verifies each mutant against the
+- **Isolated mutation testing — landed for the three examples on the shared
+  Gate C5 runner (2026-07-20).** Gate C5 verifies each mutant against the
   mutated function in isolation (its own callees, never its callers), so
   a kill reflects that function's own contract rather than a downstream
   caller that happened to fail. The composition is a single sanctioned
@@ -385,6 +391,10 @@ designed-but-unbuilt:
   report with every mutation outcome unchanged, since none of their
   mutation targets has an in-file caller for isolation to change — the
   guarantee is now in place and test-pinned, not merely available.
+  (`aeb_kernel`, the fourth Dafny example, runs Gate C5 through its own
+  `run_mutation_suite_aeb.py` — built before the shared runner and not
+  migrated onto it; like the three above, none of its predicate targets has
+  an in-file caller, so isolation would change nothing there either.)
 
 - **Distinguishing a proven property from a definitional restatement —
   landed (classification + labelling), 2026-07-20.** A `PROVEN` label
@@ -400,10 +410,47 @@ designed-but-unbuilt:
   pin-vs-bound analysis with a Z3 pin-uniqueness cross-check), and every
   `PROVEN` matrix row carries a `proof_content: definitional | property`
   qualifier with distinct caveat text (see the breakdown table above: 14
-  definitional, 6 property). Still designed but **not** yet built: the
-  Tier-2 fidelity work — mechanical source-citation of every spec constant
-  and a source-anchored, blind human review — so a label also attests the
-  numbers match the source, not only that the proof is internally sound.
+  definitional, 6 property).
+
+- **Source fidelity — landed for all four examples (2026-07-20).** A proof
+  is internally sound but says nothing about whether the spec's numbers match
+  the source; a mistyped digit that Dafny happily proves around is a silent,
+  unprovable defect. Two mechanisms close that. Every numeric constant in a
+  spec carries a verbatim source quote, checked present in the archived
+  primary document by a mechanical citation gate (`evidence/literal_citation.py`
+  over `evidence/citation_gate.py`) — every example commits a
+  `literal_citations.yaml` in which each constant is a confirmed source quote
+  or an honestly-declared structural/design value. And the Gate C6 human
+  review is reformed to be source-anchored and **blind**
+  (`evidence/source_anchored_review.py`): the reviewer records the value they
+  expect *from the source* before the spec's constant is revealed, so
+  agreement means the source and spec independently point to the same number,
+  not that the reviewer read the spec's answer and nodded.
+
+- **Frozen-contract integrity and ratification — landed for all four
+  examples (2026-07-21).** A `PROVEN` label is only trustworthy if the
+  contract that was proven wasn't itself gamed to be provable — by weakening
+  the `ensures` until a wrong implementation satisfies it, or by adding a
+  soundness escape (`assume false` discharges any postcondition; Dafny accepts
+  it). `evidence/frozen_contract.py` freezes each spec's contract surface —
+  signatures, `requires`/`ensures`, function bodies, and datatype definitions —
+  as a committed, drift-checked manifest, and mechanically proves any candidate
+  spec preserves it exactly and introduces no soundness-escape construct.
+  On top of that, `evidence/contract_attestation.py` produces a per-example,
+  hash-bound **ratification** artifact through which a human reviewer works
+  eliminatively — producing and eliminating candidate defeaters against each
+  declaration's mapped requirement and source quotes — and formally adopts the
+  contract; the sha256 binding means a signed adoption goes mechanically stale
+  the moment the contract changes.
+
+**The one genuinely-remaining act is human, not code.** The ratification
+artifacts are committed `PENDING`, one per example: until a reviewer completes
+the folded-in blind constant review and signs each adoption, the honest
+provenance of all four specs is *LLM-drafted, human-reviewed, gate-enforced —
+ratification pending*. On signing, each earns *human-ratified* — never
+"human-authored", which only a spec whose contract a human freezes **before**
+any automated drafter touches the file can earn (the forward workflow now
+documented in [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) §6.2a).
 
 ## Scope
 
