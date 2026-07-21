@@ -45,6 +45,10 @@ function ExpectedDose ( concentrationMgPerMl : real , infusionRateMlPerHr : real
 > **REQ-GIP-1-4-12** — [kernel_scope] [VERIFIED AT THIS PHASE - ALARM CONDITION per IEC 60601-1-8] The kernel shall detect when a bolus request would cause the computed hourly dose to exceed max_safe_dose_mg_per_hr, and shall return that condition to the calling layer via a clamped output value. This is the ALARM CONDITION half of IEC 60601-1-8's alarm-system definition ("parts of equipment that detect alarm conditions and, as appropriate, generate alarm signals") - detection only, no signal generation. The GIP source table itself treats "Alarm()" as an abstract response function attached to hazards, not a mandate that every hazard-adjacent component emit the physical signal.
 > **REQ-GIP-1-8-1** — During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible. Modelled at this kernel as a fault input: a negative infusion rate (hardware reverse-flow fault) shall yield exactly zero delivered dose. (GIP v1.0 Safety Requirement 1.8.1, citing IEC 601-2-24; fault modelling added in the 2026-07-04 Option A amendment; wording corrected 2026-07-15 to match the primary PDF verbatim, see sources/README.md; underlying IEC 60601-2-24:1998 clause 51.102 independently confirmed 2026-07-15, near-verbatim match, see sources/README.md)
 
+**Related requirement (no Dafny evidence at this declaration):**
+> **REQ-DOSE-003** — Calculation shall yield a finite, in-range result for all inputs meeting preconditions. DECLARED - not sourced from GIP v1.0, which does not address floating-point overflow at the implementation level.
+> ⓘ **Not proven here** — the traceability matrix records no Dafny evidence for this requirement at this declaration; its recorded evidence is implementation-level. It is shown because the clauses above bear on it, and Gap-if cannot be answered honestly against a requirement left off the page. Its presence is context for your judgment, never a proof claim.
+
 ```
 method CalculateHourlyDose ( concentrationMgPerMl : real , infusionRateMlPerHr : real , maxSafeDoseMgPerHr : real ) returns ( dose : real )
 ```
