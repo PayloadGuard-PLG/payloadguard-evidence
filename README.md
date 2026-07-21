@@ -378,8 +378,8 @@ building on the raw label, separates them and labels each honestly. All have
 **landed in substance**; the one piece that genuinely remains is a human act
 (contract ratification), named explicitly at the end.
 
-- **Isolated mutation testing — landed for all three worked Dafny
-  examples (2026-07-20).** Gate C5 verifies each mutant against the
+- **Isolated mutation testing — landed for the three examples on the shared
+  Gate C5 runner (2026-07-20).** Gate C5 verifies each mutant against the
   mutated function in isolation (its own callees, never its callers), so
   a kill reflects that function's own contract rather than a downstream
   caller that happened to fail. The composition is a single sanctioned
