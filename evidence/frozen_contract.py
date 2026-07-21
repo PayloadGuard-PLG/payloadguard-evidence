@@ -69,12 +69,23 @@ from evidence.literal_citation import strip_comments
 # candidate is unambiguously an introduced escape, not a pre-existing one.
 _FORBIDDEN = ("assume", "{:axiom}", "{:extern}")
 
+# Dafny allows attribute blocks between a declaration keyword and its name
+# (`function {:opaque} F(...)`, `lemma {:axiom} L(...)` - the latter form is
+# live in this repo's own dafny_pow_axiom_trap_probe.dfy). The enumeration
+# regexes must see through them, or an attribute-bearing declaration would be
+# invisible to the gate entirely - addable without ever appearing in
+# added_spec_declarations/unmodeled_declarations (a real bypass, caught by
+# review on the datatype extension).
+_ATTRS = r"(?:\s+\{:[^}]*\})*"
+
 # Declaration keywords this gate models. A `datatype`/`codatatype` definition
 # and a `function`/`predicate` body are spec and are frozen; a `method` body is
 # the implementation (not frozen); a `lemma` is itself proof scaffolding,
 # freely addable, so it is not frozen either.
 _DECL_RE = re.compile(
-    r"\b(datatype|codatatype|function|predicate|method|lemma)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
+    r"\b(datatype|codatatype|function|predicate|method|lemma)\b"
+    + _ATTRS
+    + r"\s+([A-Za-z_][A-Za-z0-9_']*)"
 )
 _DATATYPE_KINDS = ("datatype", "codatatype")
 _BODY_FROZEN_KINDS = ("function", "predicate")
@@ -95,7 +106,9 @@ _NEXT_DECL_RE = re.compile(
 # "intact". `\btype\b` does not match inside `newtype` (no word boundary), so
 # both are listed to catch each on its own.
 _UNMODELED_DECL_RE = re.compile(
-    r"\b(newtype|type|const|class|trait|iterator)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
+    r"\b(newtype|type|const|class|trait|iterator)\b"
+    + _ATTRS
+    + r"\s+([A-Za-z_][A-Za-z0-9_']*)"
 )
 
 _CLAUSE_KEYWORDS = ("requires", "ensures", "decreases", "reads", "modifies")
@@ -300,9 +313,10 @@ def check_contract(candidate_source, manifest):
                                  adds that the frozen contract didn't have (a
                                  new lemma is allowed proof scaffolding)
       - unmodeled_declarations:  type-level declarations the gate does not
-                                 model (datatype/newtype/...); their presence
-                                 fails the check closed rather than passing a
-                                 construct that cannot be diffed
+                                 model (newtype/type/const/class/trait/
+                                 iterator - datatypes ARE modeled and diffed);
+                                 their presence fails the check closed rather
+                                 than passing a construct that cannot be diffed
       - signature_mismatches / requires_mismatches / ensures_mismatches /
         body_mismatches / definition_mismatches:  per-declaration (name) where
                           the canonical contract surface differs from the

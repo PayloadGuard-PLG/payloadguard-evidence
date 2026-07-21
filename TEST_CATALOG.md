@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 338 test functions across 43 categories.**
+**Total: 339 test functions across 43 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -351,9 +351,10 @@ for the actual collected-case count.
 | `test_datatypes_are_frozen_including_parameterized_constructors` | The datatype definitions (the constructors ARE the spec's meaning) are part of the frozen surface - enums and the parameterized InteractionResult alike. | `tests/test_frozen_contract.py:190` |
 | `test_dropping_a_datatype_constructor_is_caught` | Silently narrowing a datatype (dropping a constructor) changes the spec and must be a violation - Dafny would happily re-verify a spec built on the narrower type. | `tests/test_frozen_contract.py:200` |
 | `test_changing_a_parameterized_field_type_is_caught` | A field-type change inside a parameterized constructor (RiskDirection -> Outcome) is a real spec change and must be caught. | `tests/test_frozen_contract.py:214` |
-| `test_reformatting_a_datatype_stays_intact` | AST-grade: adding whitespace and a comment inside a datatype is not a spec change. | `tests/test_frozen_contract.py:227` |
-| `test_committed_frozen_contract_matches_generator_and_self_checks_intact` | For every worked example: no drift between the committed frozen_contract.yaml and the generator, and the real spec checks INTACT against its own frozen contract. | `tests/test_frozen_contract.py:239` |
-| `test_build_refuses_a_source_that_already_contains_a_forbidden_construct` | Regression (Qodo #3): forbidden constructs are ALWAYS forbidden, and the frozen baseline is guaranteed clean because build refuses a source that already contains one - which is what makes 'any hit in a candidate is an i… | `tests/test_frozen_contract.py:252` |
+| `test_attribute_bearing_declarations_cannot_bypass_the_gate` | Regression (Qodo, datatype-extension review): Dafny allows attribute blocks between keyword and name (`function {:opaque} F` - `lemma {:axiom}` is live in this repo's own pow-axiom probe). | `tests/test_frozen_contract.py:227` |
+| `test_reformatting_a_datatype_stays_intact` | AST-grade: adding whitespace and a comment inside a datatype is not a spec change. | `tests/test_frozen_contract.py:245` |
+| `test_committed_frozen_contract_matches_generator_and_self_checks_intact` | For every worked example: no drift between the committed frozen_contract.yaml and the generator, and the real spec checks INTACT against its own frozen contract. | `tests/test_frozen_contract.py:257` |
+| `test_build_refuses_a_source_that_already_contains_a_forbidden_construct` | Regression (Qodo #3): forbidden constructs are ALWAYS forbidden, and the frozen baseline is guaranteed clean because build refuses a source that already contains one - which is what makes 'any hit in a candidate is an i… | `tests/test_frozen_contract.py:270` |
 
 ## Gate C5 Runner (`tests/test_gate_c5_runner.py`)
 

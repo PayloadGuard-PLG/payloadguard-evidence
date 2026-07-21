@@ -224,6 +224,24 @@ def test_changing_a_parameterized_field_type_is_caught():
     assert "InteractionResult" in r["definition_mismatches"]
 
 
+def test_attribute_bearing_declarations_cannot_bypass_the_gate():
+    """Regression (Qodo, datatype-extension review): Dafny allows attribute
+    blocks between keyword and name (`function {:opaque} F` - `lemma {:axiom}`
+    is live in this repo's own pow-axiom probe). The enumeration must see
+    through them, or an added attribute-bearing declaration would be invisible
+    - a false CONTRACT_INTACT."""
+    base = "function F(x: int): int requires x > 0 { x + 1 }"
+    manifest = build_frozen_contract("f.dfy", base)
+    # an added spec-bearing function hiding behind an attribute is caught
+    r1 = check_contract(base + "\nfunction {:opaque} G(y: int): int { y }", manifest)
+    assert r1["verdict"] == "CONTRACT_VIOLATED"
+    assert "G" in r1["added_spec_declarations"]
+    # an added unmodeled kind hiding behind an attribute still fails closed
+    r2 = check_contract(base + "\nclass {:opaque} C { }", manifest)
+    assert r2["verdict"] == "CONTRACT_VIOLATED"
+    assert ("class", "C") in r2["unmodeled_declarations"]
+
+
 def test_reformatting_a_datatype_stays_intact():
     """AST-grade: adding whitespace and a comment inside a datatype is not a
     spec change."""
