@@ -4,7 +4,24 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-20 (Tier 3) (**Component F: the frozen-contract
+Last updated: 2026-07-20 (Tier 3 cont.) (**Component F now covers all four
+worked examples — datatype freezing added.** The frozen-contract gate
+(`evidence/frozen_contract.py`) now freezes `datatype`/`codatatype`
+definitions (the constructors are the spec's meaning) alongside function/
+method contract surfaces — enums and parameterized constructors alike
+(ddi's `InteractionResult(outcome, direction)`, renal's `RenalAssessment`).
+Committed `frozen_contract.yaml` manifests for renal/aeb/ddi (dosage's
+unchanged); each self-checks `CONTRACT_INTACT` and is drift-pinned. Verified
+against real datatype tampering: dropping a constructor, changing a
+parameterized field type, or adding a datatype all read as `CONTRACT_VIOLATED`
+while a reformat stays INTACT. The gate still **fails closed** on the
+type-level kinds it doesn't model yet (`newtype`/`type`/`const`/`class`/
+`trait`/`iterator` — none present in the four specs). Full account:
+`DEVLOG.md`'s 2026-07-20 (Tier 3 cont.) entry. Remaining Tier-3 work: the
+frozen-spec authoring migration (specs re-derived under the
+human-freezes-contract discipline), still deferred. The prior Tier-3 pilot
+header follows.)
+Prior header, preserved: Last updated: 2026-07-20 (Tier 3) (**Component F: the frozen-contract
 integrity gate (dosage pilot).** `evidence/frozen_contract.py` freezes a
 spec's human-authored contract surface (per-declaration signature +
 `requires` + `ensures` + function bodies, AST-normalized) as a committed,

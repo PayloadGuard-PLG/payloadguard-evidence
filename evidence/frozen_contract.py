@@ -24,20 +24,20 @@ human Gate C6 review). This is the drafter != checker principle
 the specification itself.
 
 The frozen contract is the canonical, AST-normalized *contract surface* of a
-spec: for every declaration, its signature + `requires` + `ensures`, plus
-`function`/`predicate` bodies (which, for a predicate spec, ARE the spec).
-`method` bodies are the implementation, not the contract, so they are NOT
-frozen - they are exactly where legitimate proof scaffolding (`assert`,
-`invariant`, `decreases`) lives - but the whole candidate is scanned for the
-soundness-escape constructs a drafter must never introduce.
+spec: every `datatype`/`codatatype` definition (the constructors are the
+spec's meaning), and for every function/method its signature + `requires` +
+`ensures`, plus `function`/`predicate` bodies (which, for a predicate spec,
+ARE the spec). `method` bodies are the implementation, not the contract, so
+they are NOT frozen - they are exactly where legitimate proof scaffolding
+(`assert`, `invariant`, `decreases`) lives - but the whole candidate is
+scanned for the soundness-escape constructs a drafter must never introduce.
 
-**Fail-closed scope (dosage pilot).** This pilot models `function` /
-`predicate` / `method` / `lemma` declarations. It does NOT yet model
-type-level declarations (`datatype`, `newtype`, `type`, `const`, `class`,
-`trait`, ...) - those are part of the deferred extension to the
-datatype-bearing examples (drug_interaction_checker / aeb_kernel). Rather than
-silently ignore a construct it can't diff (which would let a datatype change
-slip through as a false CONTRACT_INTACT), the gate FAILS CLOSED: it refuses to
+**Fail-closed scope.** The gate models `datatype` / `codatatype` / `function`
+/ `predicate` / `method` / `lemma`. It does NOT yet model the remaining
+type-level declarations (`newtype`, `type`, `const`, `class`, `trait`,
+`iterator`) - none appear in this repo's four worked specs. Rather than
+silently ignore a construct it can't diff (which would let such a change slip
+through as a false CONTRACT_INTACT), the gate FAILS CLOSED: it refuses to
 build a frozen manifest for a spec containing an unmodeled declaration, and
 flags any unmodeled declaration in a candidate as a violation. Extending the
 model to freeze those kinds is how you lift the refusal, not by weakening it.
@@ -69,18 +69,33 @@ from evidence.literal_citation import strip_comments
 # candidate is unambiguously an introduced escape, not a pre-existing one.
 _FORBIDDEN = ("assume", "{:axiom}", "{:extern}")
 
-# Declaration keywords this pilot models. A `function`/`predicate` body is spec
-# and is frozen; a `method` body is the implementation (not frozen); a `lemma`
-# is itself proof scaffolding, freely addable, so it is not frozen either.
-_DECL_RE = re.compile(r"\b(function|predicate|method|lemma)\b\s+([A-Za-z_][A-Za-z0-9_']*)")
+# Declaration keywords this gate models. A `datatype`/`codatatype` definition
+# and a `function`/`predicate` body are spec and are frozen; a `method` body is
+# the implementation (not frozen); a `lemma` is itself proof scaffolding,
+# freely addable, so it is not frozen either.
+_DECL_RE = re.compile(
+    r"\b(datatype|codatatype|function|predicate|method|lemma)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
+)
+_DATATYPE_KINDS = ("datatype", "codatatype")
 _BODY_FROZEN_KINDS = ("function", "predicate")
-_FROZEN_KINDS = ("function", "predicate", "method")  # lemma is scaffolding, not frozen
+# Frozen: the contract surface. `lemma` is scaffolding, not frozen.
+_FROZEN_KINDS = ("datatype", "codatatype", "function", "predicate", "method")
 
-# Type-level / other top-level declaration keywords this pilot does NOT yet
-# model. Their presence triggers the fail-closed refusal described in the
-# module docstring, rather than a silent, false "intact".
+# Any top-level declaration keyword - used to find where a datatype definition
+# (which has no `{...}`/`;` terminator) ends: at the start of the next
+# declaration, or end of file.
+_NEXT_DECL_RE = re.compile(
+    r"\b(datatype|codatatype|newtype|type|const|class|trait|iterator|"
+    r"function|predicate|method|lemma)\b"
+)
+
+# Type-level / other top-level declaration keywords this gate still does NOT
+# model (datatypes ARE modeled now). Their presence triggers the fail-closed
+# refusal described in the module docstring, rather than a silent, false
+# "intact". `\btype\b` does not match inside `newtype` (no word boundary), so
+# both are listed to catch each on its own.
 _UNMODELED_DECL_RE = re.compile(
-    r"\b(datatype|codatatype|newtype|type|const|class|trait|iterator)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
+    r"\b(newtype|type|const|class|trait|iterator)\b\s+([A-Za-z_][A-Za-z0-9_']*)"
 )
 
 _CLAUSE_KEYWORDS = ("requires", "ensures", "decreases", "reads", "modifies")
@@ -151,6 +166,14 @@ def _iter_declarations(source):
     code = strip_comments(source)
     for m in _DECL_RE.finditer(code):
         kind, name = m.group(1), m.group(2)
+        if kind in _DATATYPE_KINDS:
+            # A datatype has no `{...}`/`;` terminator - its definition (the
+            # `= C1 | C2(field: T) | ...` constructors, which ARE part of the
+            # spec's meaning) runs to the start of the next declaration.
+            nxt = _NEXT_DECL_RE.search(code, m.end())
+            end = nxt.start() if nxt else len(code)
+            yield {"kind": kind, "name": name, "definition": _canonical(code[m.start():end])}
+            continue
         # Find where the header ends: the first top-level `{` (body) or `;`
         # (bodiless), tracking (),[] nesting so a `{` inside a type/set stays
         # inert (none in this repo's specs, but correct regardless).
@@ -212,9 +235,12 @@ def _forbidden_in(source):
 
 
 def _declaration_record(decl):
-    """Frozen record for one declaration: its canonical signature and clauses,
-    plus (for a spec-bearing function/predicate) its canonical body. A method's
-    body is NOT frozen (it is the implementation)."""
+    """Frozen record for one declaration. A datatype freezes its whole
+    canonical `definition` (the constructors are the spec). A function/method
+    freezes its signature + requires + ensures; a function/predicate also
+    freezes its body (spec). A method's body is NOT frozen (implementation)."""
+    if decl["kind"] in _DATATYPE_KINDS:
+        return {"kind": decl["kind"], "name": decl["name"], "definition": decl["definition"]}
     record = {
         "kind": decl["kind"],
         "name": decl["name"],
@@ -278,8 +304,10 @@ def check_contract(candidate_source, manifest):
                                  fails the check closed rather than passing a
                                  construct that cannot be diffed
       - signature_mismatches / requires_mismatches / ensures_mismatches /
-        body_mismatches:  per-declaration (name) where the canonical contract
-                          surface differs from the frozen manifest
+        body_mismatches / definition_mismatches:  per-declaration (name) where
+                          the canonical contract surface differs from the
+                          frozen manifest (definition_mismatches is a datatype
+                          whose constructors changed)
       - forbidden_constructs:  (construct, where) present in the candidate. The
                                baseline is guaranteed clean (build refuses
                                otherwise), so any hit is an introduced escape.
@@ -304,6 +332,7 @@ def check_contract(candidate_source, manifest):
     requires_mismatches = []
     ensures_mismatches = []
     body_mismatches = []
+    definition_mismatches = []
     violations = []
 
     for name, frec in frozen.items():
@@ -312,24 +341,32 @@ def check_contract(candidate_source, manifest):
             missing_declarations.append(name)
             violations.append(f"declaration {name!r} is missing from the candidate")
             continue
-        if crec["signature"] != frec["signature"]:
-            signature_mismatches.append(name)
-            violations.append(f"{name}: signature changed")
-        if crec["requires"] != frec["requires"]:
-            requires_mismatches.append(name)
-            violations.append(
-                f"{name}: requires changed (frozen {frec['requires']} -> "
-                f"candidate {crec['requires']})"
-            )
-        if crec["ensures"] != frec["ensures"]:
-            ensures_mismatches.append(name)
-            violations.append(
-                f"{name}: ensures changed (frozen {frec['ensures']} -> "
-                f"candidate {crec['ensures']})"
-            )
-        if "body" in frec and crec.get("body") != frec["body"]:
-            body_mismatches.append(name)
-            violations.append(f"{name}: {frec['kind']} body (spec) changed")
+        # A datatype freezes its whole definition; a function/method freezes its
+        # signature + clauses (+ body for a function/predicate). Compare by which
+        # fields the frozen record actually carries, so a kind change (e.g. a
+        # datatype turned into a function of the same name) shows as a mismatch.
+        if "definition" in frec and crec.get("definition") != frec["definition"]:
+            definition_mismatches.append(name)
+            violations.append(f"{name}: {frec['kind']} definition changed")
+        if "signature" in frec:
+            if crec.get("signature") != frec["signature"]:
+                signature_mismatches.append(name)
+                violations.append(f"{name}: signature changed")
+            if crec.get("requires") != frec["requires"]:
+                requires_mismatches.append(name)
+                violations.append(
+                    f"{name}: requires changed (frozen {frec['requires']} -> "
+                    f"candidate {crec.get('requires')})"
+                )
+            if crec.get("ensures") != frec["ensures"]:
+                ensures_mismatches.append(name)
+                violations.append(
+                    f"{name}: ensures changed (frozen {frec['ensures']} -> "
+                    f"candidate {crec.get('ensures')})"
+                )
+            if "body" in frec and crec.get("body") != frec["body"]:
+                body_mismatches.append(name)
+                violations.append(f"{name}: {frec['kind']} body (spec) changed")
 
     added_spec_declarations = [
         d["name"] for d in candidate_decls
@@ -367,6 +404,7 @@ def check_contract(candidate_source, manifest):
         or requires_mismatches
         or ensures_mismatches
         or body_mismatches
+        or definition_mismatches
         or forbidden_constructs
     )
     return {
@@ -377,6 +415,7 @@ def check_contract(candidate_source, manifest):
         "requires_mismatches": requires_mismatches,
         "ensures_mismatches": ensures_mismatches,
         "body_mismatches": body_mismatches,
+        "definition_mismatches": definition_mismatches,
         "forbidden_constructs": forbidden_constructs,
         "contract_intact": intact,
         "verdict": "CONTRACT_INTACT" if intact else "CONTRACT_VIOLATED",

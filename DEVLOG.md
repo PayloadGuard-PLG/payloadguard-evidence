@@ -6,6 +6,20 @@ and run manifests, not reconstructed from memory.
 
 ---
 
+## 2026-07-20 (Tier 3 cont.) — Component F extended to all four examples (datatype freezing)
+
+The frozen-contract gate now covers every worked example. The pilot (previous entry) modeled `function`/`predicate`/`method`/`lemma` and **failed closed** on any type-level declaration; renal, aeb, and ddi all define `datatype`s, so extending the gate meant teaching it to freeze datatypes — the lift that was deferred at pilot time.
+
+**Datatype freezing (`evidence/frozen_contract.py`).** A `datatype`/`codatatype` is now a modeled, frozen declaration: its whole canonical *definition* (the `= C1 | C2(field: T) | ...` constructors, which ARE the spec's meaning) is captured and diffed. A datatype has no `{...}`/`;` terminator, so its definition is bounded by the start of the next top-level declaration (`_NEXT_DECL_RE`). Enums (single- and multi-line, leading-`|` form) and **parameterized** constructors (renal's `RenalAssessment(stage: GStageCategory)`, ddi's `InteractionResult(outcome: Outcome, direction: RiskDirection)`) are all handled. The fail-closed set narrows to the kinds still unmodeled and absent from this repo's specs — `newtype`/`type`/`const`/`class`/`trait`/`iterator` — which still refuse rather than pass silently.
+
+**Committed frozen manifests** for `renal_adjustment` (10 declarations: 3 datatypes + 7 functions), `aeb_kernel` (7: 1 datatype + 6 functions), and `drug_interaction_checker` (8: 6 datatypes + 2 functions); dosage's manifest is unchanged (byte-identical — it has no datatype). Each real spec self-checks `CONTRACT_INTACT`, drift-pinned against its generator.
+
+**Verified against real datatype tampering (ddi):** dropping an `Outcome` constructor → `CONTRACT_VIOLATED` (`definition_mismatches`); changing `InteractionResult`'s `direction` field type `RiskDirection`→`Outcome` → VIOLATED; adding a whole new datatype → VIOLATED (`added_spec_declarations`); reformatting a datatype (whitespace + comment) → INTACT (AST-grade). `tests/test_frozen_contract.py` grew to 19 (datatype freezing incl. parameterized, the three tamper cases, reformat-invariance, and a per-example drift+self-check parametrized over all four). The earlier Qodo-driven fail-closed test was retargeted to a still-unmodeled kind (`newtype`/`class`). Full suite: 361 passed.
+
+**Still deferred:** the frozen-spec *authoring migration* (human freezes the contract first, LLM confined to proof annotations) — Component F now guards that boundary for all four specs, but the specs were not re-derived under that discipline.
+
+---
+
 ## 2026-07-20 (Tier 3) — Component F: the frozen-contract integrity gate (dosage pilot)
 
 Tier 3 (structural separation) begins. Tiers 1–2 made the pipeline honest about what a proof *establishes* and whether the numbers *transcribe* the source; but a `PROVEN` label is only trustworthy if the contract that was proven wasn't itself gamed to be provable. Two classic evasions: weaken the `ensures` until a wrong implementation passes (this repo already owns `dosage_underconstrained.dfy`), or add `assume`/`{:axiom}`/`{:extern}` to force verification. Component F closes this by structurally separating the human-owned safety contract from machine/LLM-authored proof scaffolding and mechanically proving the separation held — the drafter!=checker principle (`citation_gate`) finally applied to the load-bearing artifact, the spec itself. It is an *integrity* guarantee, not a correctness one.
