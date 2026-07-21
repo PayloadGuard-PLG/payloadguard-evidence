@@ -28,9 +28,20 @@ from evidence.frozen_contract import (
 )
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
-DOSAGE = REPO_ROOT / "examples" / "dosage_calculator"
+EXAMPLES = REPO_ROOT / "examples"
+DOSAGE = EXAMPLES / "dosage_calculator"
 SPEC = DOSAGE / "dosage.dfy"
 MANIFEST = DOSAGE / "frozen_contract.yaml"
+
+# Every worked example now under the frozen-contract gate: (spec .dfy, manifest).
+# dosage is function/method only; renal/aeb/ddi also carry datatypes (ddi has a
+# parameterized constructor, InteractionResult) - all frozen.
+COMMITTED = {
+    "dosage_calculator": ("dosage.dfy", "frozen_contract.yaml"),
+    "renal_adjustment": ("renal_adjustment.dfy", "frozen_contract.yaml"),
+    "aeb_kernel": ("aeb_kernel.dfy", "frozen_contract.yaml"),
+    "drug_interaction_checker": ("drug_interaction_checker.dfy", "frozen_contract.yaml"),
+}
 
 
 def _dafny_verified(capture_name):
@@ -152,19 +163,108 @@ def test_lemma_bearing_source_builds_and_lemmas_are_not_frozen():
     assert check_contract(src, manifest)["verdict"] == "CONTRACT_INTACT"
 
 
-def test_unmodeled_datatype_fails_closed_rather_than_passing_silently():
-    """Regression (Qodo #2): this pilot doesn't model type-level declarations
-    (datatype/newtype/...). Rather than silently ignore one (a false
-    CONTRACT_INTACT), the gate fails closed - build refuses a datatype-bearing
-    spec, and a candidate that adds a datatype is a violation."""
+def test_still_unmodeled_kinds_fail_closed():
+    """A kind the gate doesn't model yet (e.g. `newtype`/`class`) must fail
+    closed - build refuses it, and a candidate that adds one is a violation -
+    rather than silently pass a construct it can't diff. (datatypes ARE modeled
+    now; see the datatype tests below.)"""
     with pytest.raises(SystemExit):
-        build_frozen_contract("d.dfy", "datatype T = A | B\nfunction F(): int { 0 }")
+        build_frozen_contract("n.dfy", "newtype Small = x: int | 0 <= x < 10\nfunction F(): int { 0 }")
 
     base = "function F(x: int): int requires x > 0 { x + 1 }"
     manifest = build_frozen_contract("f.dfy", base)
-    r = check_contract(base + "\ndatatype New = X | Y", manifest)
+    r = check_contract(base + "\nclass C { }", manifest)
     assert r["verdict"] == "CONTRACT_VIOLATED"
-    assert ("datatype", "New") in r["unmodeled_declarations"]
+    assert ("class", "C") in r["unmodeled_declarations"]
+
+
+# --------------------------------------------------- datatype freezing (extension)
+
+DDI = EXAMPLES / "drug_interaction_checker" / "drug_interaction_checker.dfy"
+
+
+def _ddi_manifest():
+    return build_frozen_contract("drug_interaction_checker.dfy", DDI.read_text(encoding="utf-8"))
+
+
+def test_datatypes_are_frozen_including_parameterized_constructors():
+    """The datatype definitions (the constructors ARE the spec's meaning) are
+    part of the frozen surface - enums and the parameterized InteractionResult
+    alike."""
+    manifest = _ddi_manifest()
+    frozen = {d["name"]: d for d in manifest["declarations"] if d["kind"] == "datatype"}
+    assert "Outcome" in frozen and "InteractionResult" in frozen
+    assert "outcome : Outcome , direction : RiskDirection" in frozen["InteractionResult"]["definition"]
+
+
+def test_dropping_a_datatype_constructor_is_caught():
+    """Silently narrowing a datatype (dropping a constructor) changes the spec
+    and must be a violation - Dafny would happily re-verify a spec built on the
+    narrower type."""
+    manifest = _ddi_manifest()
+    tampered = DDI.read_text(encoding="utf-8").replace(
+        "| Contraindicated | DoseReductionAdvised | NotCovered",
+        "| Contraindicated | NotCovered",
+    )
+    r = check_contract(tampered, manifest)
+    assert r["verdict"] == "CONTRACT_VIOLATED"
+    assert "Outcome" in r["definition_mismatches"]
+
+
+def test_changing_a_parameterized_field_type_is_caught():
+    """A field-type change inside a parameterized constructor
+    (RiskDirection -> Outcome) is a real spec change and must be caught."""
+    manifest = _ddi_manifest()
+    tampered = DDI.read_text(encoding="utf-8").replace(
+        "InteractionResult(outcome: Outcome, direction: RiskDirection)",
+        "InteractionResult(outcome: Outcome, direction: Outcome)",
+    )
+    r = check_contract(tampered, manifest)
+    assert r["verdict"] == "CONTRACT_VIOLATED"
+    assert "InteractionResult" in r["definition_mismatches"]
+
+
+def test_attribute_bearing_declarations_cannot_bypass_the_gate():
+    """Regression (Qodo, datatype-extension review): Dafny allows attribute
+    blocks between keyword and name (`function {:opaque} F` - `lemma {:axiom}`
+    is live in this repo's own pow-axiom probe). The enumeration must see
+    through them, or an added attribute-bearing declaration would be invisible
+    - a false CONTRACT_INTACT."""
+    base = "function F(x: int): int requires x > 0 { x + 1 }"
+    manifest = build_frozen_contract("f.dfy", base)
+    # an added spec-bearing function hiding behind an attribute is caught
+    r1 = check_contract(base + "\nfunction {:opaque} G(y: int): int { y }", manifest)
+    assert r1["verdict"] == "CONTRACT_VIOLATED"
+    assert "G" in r1["added_spec_declarations"]
+    # an added unmodeled kind hiding behind an attribute still fails closed
+    r2 = check_contract(base + "\nclass {:opaque} C { }", manifest)
+    assert r2["verdict"] == "CONTRACT_VIOLATED"
+    assert ("class", "C") in r2["unmodeled_declarations"]
+
+
+def test_reformatting_a_datatype_stays_intact():
+    """AST-grade: adding whitespace and a comment inside a datatype is not a
+    spec change."""
+    manifest = _ddi_manifest()
+    reformatted = DDI.read_text(encoding="utf-8").replace(
+        "datatype DOAC = Apixaban | Dabigatran | Edoxaban | Rivaroxaban",
+        "datatype DOAC =\n    Apixaban   // the first\n  | Dabigatran | Edoxaban | Rivaroxaban",
+    )
+    assert check_contract(reformatted, manifest)["verdict"] == "CONTRACT_INTACT"
+
+
+@pytest.mark.parametrize("example", sorted(COMMITTED))
+def test_committed_frozen_contract_matches_generator_and_self_checks_intact(example):
+    """For every worked example: no drift between the committed
+    frozen_contract.yaml and the generator, and the real spec checks INTACT
+    against its own frozen contract."""
+    spec_name, manifest_name = COMMITTED[example]
+    spec = EXAMPLES / example / spec_name
+    manifest_path = EXAMPLES / example / manifest_name
+    committed = load_manifest(manifest_path)
+    generated = build_frozen_contract(spec_name, spec.read_text(encoding="utf-8"))
+    assert committed == generated, example
+    assert check_example(spec, manifest_path)["verdict"] == "CONTRACT_INTACT"
 
 
 def test_build_refuses_a_source_that_already_contains_a_forbidden_construct():
