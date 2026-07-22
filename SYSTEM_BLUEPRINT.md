@@ -1,6 +1,22 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
-Last updated: 2026-07-21 (later) (contract-attestation template v2,
+Last updated: 2026-07-22 (`HAZ-GIP-1.14b` (S4) risk sync + a runnable
+TR 24971/IEC 62304 citation-verification manifest — no architecture,
+gate, evidence-engine, or data-flow change. `dosage_calculator`'s
+hazard register goes from five hazards to six: `HAZ-GIP-1.14` narrowed
+to its kernel-proven delivered-dose question, its clinician-notification
+residual split out as `HAZ-GIP-1.14b`, scored `S4 — Critical` by Steven
+(this register's first non-`S3`; Probability `GAP` per Finding 5).
+Evaluation is now four `Unacceptable` + two `GAP`; device-level residual
+risk unchanged (`Unacceptable`). New `evidence/verify_tr24971_iec62304_citations.py`
+is a standalone re-checkable citation manifest — it reads the committed
+TR 24971 `.docx` directly and the two standard PDFs via PyMuPDF, and
+asserts all 10 prose citations are verbatim substrings via
+`citation_gate.py`; not wired into any gate, a manually-runnable audit
+artifact (`pymupdf` pinned in requirements; source typo
+`ISO-14691`→`ISO-14971` fixed). `ALARP_DETERMINATION.md` added (PENDING
+template). This supersedes the "5-hazard / every hazard S3" state in the
+prior header below. 391 tests pass.) Prior header, preserved: Last updated: 2026-07-21 (later) (contract-attestation template v2,
 defeater-based — the data flow gains two inputs: `build_attestation` now
 consumes `traceability_matrix.a.json` (mapped requirement text +
 per-declaration `proof_content` for definitional banners; matching is

@@ -40,6 +40,15 @@ row's own documented `Potential harm` text — **every hazard: `S3 —
 Serious`.** Not proposed, not defaulted, not inferred by this repo's
 assistant from any evidence-strength reasoning (the exact mistake
 Finding 3 found and fixed) — a real clinical determination, recorded
+
+**Superseded 2026-07-21, not corrected in place** (same discipline as
+every other superseded claim in this file): the "every hazard: S3"
+result above described this register's state before `HAZ-GIP-1.14b`
+existed. Steven's severity scoring for that new row, recorded the same
+way (`AskUserQuestion`, consequence-only per §4.1), landed at **`S4 —
+Critical`** — the first hazard in this register not scored `S3`. This
+register's real current state is five hazards at `S3`, one (`HAZ-GIP-
+1.14b`) at `S4`.
 with attribution below each hazard entry. `Risk evaluation` is now
 computed **mechanically** from `RISK_MANAGEMENT_PLAN.md` §4.3's
 existing matrix (a real lookup, not a new judgment call): four hazards
@@ -134,17 +143,47 @@ told it happened.
 
 ### HAZ-GIP-1.14 — Improper flow (bleed back / reflux within device)
 
+**Narrowed 2026-07-21**: this row's `Known, named residual` field
+previously hedged ("worth confirming, not assuming, if this register is
+extended") on whether REQ-GIP-1-8-1 has a system-scope split. Confirmed
+now, against `metadata.a.yaml` directly: it does not (unlike
+REQ-GIP-1-4-12, which has both `kernel_scope` and `system_scope`
+fields). The real residual — clinician notification of a reverse-flow
+fault clamp — is split out below as `HAZ-GIP-1.14b`, parallel in
+structure to `HAZ-GIP-1.2b`.
+
 | Field | Value |
 |---|---|
 | GIP v1.0 source | HID 1.14, §2.4.1. Verbatim: Hazard "Improper flow", Type "FRN", Cause "Bleed back; reflux within device", mitigation "Flow sensor", Safety Req "1.8". `FRN` = FDA Product Code for "Infusion Pump" (21 CFR 880.5725) — within the GIP taxonomy, general-purpose volumetric infusion pumps, distinct from the `All` tag used elsewhere — resolved 2026-07-05, `sources/README.md` and `README.md`'s own "`FRN` pump-type tag: RESOLVED" section. **Confidence caveat resolved, 2026-07-15**: the §2.4.1 HID 1.14 table row above and Safety Requirement 1.8.1 (next row) are now independently re-verified against `sources/gip-v1.0-full-2009.pdf`, the actual GIP v1.0 PDF obtained directly from the University of Pennsylvania — the table row matches exactly; 1.8.1's wording did not (fixed, see next row) |
 | Cross-reference | `THR-GIP-1-14` (`metadata.a.yaml`) |
 | Hazardous situation at this kernel's scope | Modelled as a fault input per GIP Safety Requirement 1.8.1 ("During normal use and/or single fault condition of the equipment, continuous reverse delivery shall not be possible," IEC 601-2-24 — wording corrected 2026-07-15 against `sources/gip-v1.0-full-2009.pdf`): a negative `infusion_rate_ml_per_hr` (hardware reverse-flow fault). **The underlying IEC citation itself independently confirmed, 2026-07-15 (later)**: `sources/iec-60601-2-24-1998.pdf` (Edition 1, the correct edition — GIP predates Edition 2's 2012 publication), clause **51.102 "Reverse delivery"** (p.36): "During NORMAL USE and/or SINGLE FAULT CONDITION of the EQUIPMENT, continuous reverse delivery, which may cause a SAFETY HAZARD, shall not be possible." GIP's own transcription is near-verbatim, omitting only "which may cause a SAFETY HAZARD" — this repo's first direct read of the standard itself, not GIP as a secondary source. See `RISK_MANAGEMENT_FINDINGS.md` Finding 6 for the full account |
 | Risk control measure | REQ-GIP-1-8-1: any negative rate yields exactly zero delivered dose — proven for both the ordinary and float-overflow-magnitude negative-rate cases (`ordinary_negative_rate_clamps_to_zero`, `overflow_negative_rate_clamps_to_zero`), plus CrossHair and Dafny `CalculateHourlyDose`. The docstring itself notes the negative check deliberately runs *before* the finiteness check, so an overflowing negative product clamps to zero rather than being misread as a positive overflow — `dosage_naive_widening.py` preserves the wrong-order variant this guards against, as a named negative example, not a hypothetical |
-| Known, named residual | None currently identified beyond the general `system_scope` alarm-signal gap — REQ-GIP-1-8-1 has no separate system-scope split in `metadata.a.yaml`, unlike REQ-GIP-1-4-12; worth confirming, not assuming, if this register is extended |
+| Known, named residual | None at kernel scope for the delivered-dose question itself — the fault-input clamp is proven for both ordinary and overflow-magnitude negative rates. The `system_scope` question (whether a clinician is ever alerted that reverse delivery was caught and zeroed) is a different hazard mechanism, moved to `HAZ-GIP-1.14b` |
 | Potential harm (qualitative, not scored) | Reverse delivery of drug is a materially different failure mode from over/under-dose — GIP's own Type tag ("FRN," resolved to general-purpose volumetric pumps, see above) suggests it may not apply to every pump subtype this kernel could underlie; harm severity is left to clinical judgment, same as the others, not assumed comparable to HAZ-GIP-1.2/1.3. **Confirmed 2026-07-15, directly against the primary PDF**: GIP v1.0's hazard tables (all eight categories, §2.4.1–2.4.8) carry no severity column at all — for any hazard, not just this one. This wasn't a gap in this repo's search; GIP itself never scores severity, source-confirmed now rather than inferred from `metadata.a.yaml`'s `classification_rationale` alone |
 | Severity | **S3 — Serious.** Steven's determination, 2026-07-15 (`AskUserQuestion`): if reverse drug delivery did reach a patient, independent of how strongly this kernel proves it doesn't, it would require clinical intervention to prevent lasting injury. This row's proof — the strongest evidence artifact in this register — does not justify `S1` by itself: Finding 3 found that reasoning invalid (a proof of unreachability is a probability claim, not a severity one) |
 | Probability | **P5 — worst-case default**, per §4.2's standing policy, though this hazard has the strongest probability-side evidence in the register: Dafny-**proven** exactly zero delivered dose on any negative-rate fault, both ordinary and overflow-magnitude. Whether evidence this strong should ever override the conservative default remains a separate, unresolved question (§4.2) |
 | Risk evaluation (acceptable?) | **Unacceptable** — mechanical lookup, `RISK_MANAGEMENT_PLAN.md` §4.3's matrix: P5 × S3 = Unacceptable, despite this row carrying this register's strongest probability-side evidence. Not `Acceptable`: the strength of the proof affects Probability, not Severity, and the conservative P5 default is still applied per §4.2's standing pre-market policy, unchanged by how strong the underlying proof is |
+
+### HAZ-GIP-1.14b — Reverse-delivery clamp fires with no proven clinician notification
+
+**New 2026-07-21**: the real, still-open residual split out of
+`HAZ-GIP-1.14` above — this kernel proves a reverse-flow fault yields
+exactly zero delivered dose, not that anyone is ever told it happened.
+Structurally identical split to `HAZ-GIP-1.2b`, same underlying gap
+(no evidence artifact of any kind addresses signalling, not merely a
+weak one).
+
+| Field | Value |
+|---|---|
+| GIP v1.0 source | Same underlying hazard as HID 1.14 (`sources/gip-v1.0-hazard-analysis.md` §2.4.1) — this row is not a new GIP-sourced hazard, it is the `system_scope` half of Safety Requirement 1.8.1 that this kernel's proof does not reach |
+| Cross-reference | `HAZ-GIP-1.14` (the row this splits from). `HAZ-GIP-1.2b` is the structurally parallel split for REQ-GIP-1-4-12 — same mechanism, different requirement |
+| Hazardous situation at this kernel's scope | REQ-GIP-1-8-1's system-scope component — the full pump alerting a clinician once the kernel forces dose to zero on a reverse-flow fault — is not addressed by `metadata.a.yaml`, which (confirmed 2026-07-21, unlike REQ-GIP-1-4-12) carries no `system_scope` field for this requirement at all, only a flat `text` field. This kernel's fault-detection and zeroing is proven; nothing in this repo proves a clinician is ever alerted that it fired |
+| Risk control measure | **None at kernel scope.** No Dafny, CrossHair, or concrete-test artifact in `examples/dosage_calculator/` addresses clinician notification — it requires an integrated pump system (hardware, firmware, alarm hardware, UI layer) this POC was never scoped to build, per `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section |
+| Known, named residual | The complete residual *is* this row — no partial evidence exists to describe as "known but incomplete"; this is a full evidence gap, not a weak proof |
+| Potential harm (qualitative, not scored) | A clinician never alerted that reverse delivery occurred and was caught may not investigate the underlying cause (line fault, connector failure, hardware defect), potentially allowing the fault condition to recur or go unaddressed — qualitative only, not scored |
+| Severity | **S4 — Critical.** Steven's determination, 2026-07-21 (`AskUserQuestion`, consequence-only per §4.1): if a reverse-flow fault clamps to zero but the clinician is never alerted, the fault condition can recur or go unaddressed |
+| Probability | **GAP — deliberately not defaulted to P5**, same basis as `HAZ-GIP-1.2b` (Finding 5, unresolved): zero evidence of any kind for the notification pathway, not merely unmeasured evidence. Whether TR 24971 §5.5.3 applies here is the same open Option A/B/C question, not a new one |
+| Risk evaluation (acceptable?) | **GAP — cannot be evaluated.** Blocked on Probability (Finding 5's open question, same as `HAZ-GIP-1.2b`). Note: unlike the S3 hazards, even a favorable Finding 5 resolution cannot yield `Acceptable` for this row — §4.3's matrix caps S4 at `ALARP`, and only at P1 |
 
 ### HAZ-DOSE-003 — Non-finite or out-of-range calculation result
 
@@ -166,9 +205,10 @@ told it happened.
 The GIP v1.0 hazard table (§2.4, all eight categories: Operational,
 Environmental, Electrical, Hardware, Software, Mechanical, Biological/
 Chemical, Use) enumerates roughly 85 hazards. This kernel addresses
-exactly the five rows above (**corrected 2026-07-15**: said "four" until
-this fix — stale since `HAZ-GIP-1.2b` split out, Finding 4; caught
-while resolving Finding 3/R3, not separately reported). Representative
+exactly the six rows above (**corrected 2026-07-21**: said "five" until
+this fix — stale since `HAZ-GIP-1.14b` split out; corrected 2026-07-15
+from "four" to "five" for the same reason, `HAZ-GIP-1.2b` split out,
+Finding 4). Representative
 examples of what is **not**
 addressed here, and why — not an exhaustive list, but enough to show
 the exclusion is a real scope boundary, not a gap in this register's
@@ -203,6 +243,7 @@ diligence:
 | 2026-07-15 (yet later) | Finding 3/R3 resolved: every hazard's `Severity` and `Risk evaluation` updated to explicit `GAP`; `Probability` reverted to the §4.2 default policy for every hazard except `HAZ-GIP-1.2b` (Finding 5, unaffected either way) | Direct instruction: "work through R3's severity model." Steven chose Option 3 (hybrid, `AskUserQuestion`) after Option 2 was eliminated on textual grounds (TR 24971 §5.5.4). The prior `DRAFT: S1`/`S2` values (including `HAZ-GIP-1.14`'s `Acceptable` evaluation) were withdrawn, not revised — they measured evidence strength, not real-world consequence, so no valid severity value existed for any hazard before this fix either. `RISK_MANAGEMENT_PLAN.md` §4.1 now carries the consequence-only band definitions and an explicit evidence-artifact citation per hazard |
 | 2026-07-15 (later still) | **Correction**: fixed an overgeneralized "every hazard reverts to P5" claim (this file's intro, this change log's row above, `DEVLOG.md`) that didn't carve out `HAZ-GIP-1.2b`'s deliberate exception; split the §4.1 evidence-artifact table's merged `HAZ-GIP-1.2`/`HAZ-GIP-1.3` row into two; fixed a second, separate "four hazards"/"four rows" staleness instance in this file's own Section 3 (missed by the same-day R3 fix, which only caught the two instances in `RISK_MANAGEMENT_PLAN.md`) | Three real findings from an automated PR review (Qodo) on PR #53, not self-caught — confirmed directly against the files before fixing, same discipline as every other review response this session |
 | 2026-07-15 (yet later) | Real severity scoring recorded for all 5 hazards: **`S3 — Serious`** for every one, from Steven as the named Clinical SME. `Risk evaluation` computed mechanically from `RISK_MANAGEMENT_PLAN.md` §4.3's matrix: `HAZ-GIP-1.14`/`1.2`/`1.3`/`HAZ-DOSE-003` → `Unacceptable` (P5 × S3); `HAZ-GIP-1.2b` stays `GAP` at evaluation, since its Probability is separately blocked by Finding 5, not its now-known Severity | Direct instruction: "start on the severity values for the 5 hazards." Recorded via `AskUserQuestion`, one hazard at a time, against the real consequence-only bands and each row's own documented harm text — not proposed, defaulted, or inferred by this repo's assistant. See `RISK_MANAGEMENT_PLAN.md` Section 5 and its "Path to sign-off" section for the device-level consequence of this result |
+| 2026-07-21 | `HAZ-GIP-1.14` narrowed; new `HAZ-GIP-1.14b` row split out for the real, still-open clinician-notification residual; Section 3's hazard count corrected 5→6 | Contract ratification of `CalculateHourlyDose` (`contract_attestation_dosage.md`) required a Gap-if answer for REQ-GIP-1-8-1 that could not honestly be "eliminated" — no field data exists to argue notification isn't needed. Split, same structural pattern as `HAZ-GIP-1.2b` (Finding 4), same Probability treatment as `HAZ-GIP-1.2b` (Finding 5, GAP not P5). Severity scored by Steven via `AskUserQuestion`: **`S4 — Critical`**, not `S3` — the first hazard in this register to diverge from the other five, and confirmed (not assumed) to be a genuinely consequence-only judgment, not an inevitability claim, per direct follow-up discussion |
 
 ---
 
