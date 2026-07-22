@@ -17,6 +17,13 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest==9.1.1"]
+# PyMuPDF is needed only by evidence/verify_tr24971_iec62304_citations.py
+# (a standalone standards-citation audit script), not by the engine core
+# or the plg-evidence CLI - so it is an optional extra, the same reason
+# pytest is above ("an installed CLI tool doesn't need it to run"). It is
+# pinned in requirements.txt for CI, and the audit script imports it
+# lazily and raises a clean error if it is absent.
+citations = ["pymupdf==1.28.0"]
 
 [project.scripts]
 plg-evidence = "evidence.cli:main"
