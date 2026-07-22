@@ -4,7 +4,27 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
-Last updated: 2026-07-21 (Tier 3, authoring migration) (**Named limitation,
+Last updated: 2026-07-22 (**`HAZ-GIP-1.14b` (S4) added to
+`dosage_calculator`'s hazard register — supersedes the "5 hazards /
+every hazard S3" state recorded in the prior header below.** `HAZ-GIP-1.14`
+narrowed to its kernel-proven delivered-dose question; its
+clinician-notification residual split out as `HAZ-GIP-1.14b`, scored
+`S4 — Critical` by Steven (this register's first non-`S3`; Probability
+left `GAP` per Finding 5, same as `HAZ-GIP-1.2b`). Register now has six
+hazards: four `Unacceptable`, **two** evaluation-`GAP`
+(`HAZ-GIP-1.2b`, `HAZ-GIP-1.14b`). Device-level residual risk is
+unchanged (`Unacceptable`), but `HAZ-GIP-1.14b` cannot reach
+`Acceptable` even if Finding 5 resolves — §4.3's matrix has no
+`Acceptable` cell for S4. `ALARP_DETERMINATION.md` (new, PENDING) is the
+template for the recorded ALARP path, with its TR 24971 citations
+corrected against the primary `.docx` (no acronym "ALARP" in the
+standard; no case-law "gross disproportion" test — Annex C.4
+*practicability* instead). New `evidence/verify_tr24971_iec62304_citations.py`
+re-checks all 10 standard-citation quotes mechanically (runs without
+LibreOffice, all CONFIRMED); source typo `ISO-14691`→`ISO-14971` fixed;
+`pymupdf` pinned; 391 tests pass. The ALARP determination and the
+dosage ratification sitting both remain PENDING — Steven's judgments to
+author.) Prior header, preserved: Last updated: 2026-07-21 (Tier 3, authoring migration) (**Named limitation,
 now with its honest mitigation built: the four specs are LLM-drafted;
 ratification artifacts exist but are PENDING until a human signs.**
 `evidence/contract_attestation.py` + `contract_attestation_*.md` (one per

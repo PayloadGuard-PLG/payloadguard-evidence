@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 362 test functions across 44 categories.**
+**Total: 365 test functions across 45 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -594,6 +594,14 @@ for the actual collected-case count.
 | `test_non_test_functions_are_excluded` | Non test functions are excluded. | `tests/test_test_catalog.py:110` |
 | `test_a_file_with_no_test_functions_produces_no_category` | A file with no test functions produces no category. | `tests/test_test_catalog.py:130` |
 | `test_rendered_markdown_escapes_pipe_characters_in_descriptions` | Rendered markdown escapes pipe characters in descriptions. | `tests/test_test_catalog.py:136` |
+
+## Tr24971 Iec62304 Citations (`tests/test_tr24971_iec62304_citations.py`)
+
+| Test | Description | Code |
+|---|---|---|
+| `test_iso14971_preview_filename_is_correct` | The renamed source must exist and the misnamed one must not. | `tests/test_tr24971_iec62304_citations.py:36` |
+| `test_all_citations_confirmed` | Every claim must still be a verbatim substring of its source. | `tests/test_tr24971_iec62304_citations.py:47` |
+| `test_script_main_exits_zero` | The script itself runs green end to end. | `tests/test_tr24971_iec62304_citations.py:57` |
 
 ## Tracked Files (`tests/test_tracked_files.py`)
 

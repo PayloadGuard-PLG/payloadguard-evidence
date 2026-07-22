@@ -8,7 +8,31 @@ Updated at the end of a work session, not continuously — check its own
 newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
-**Last updated:** 2026-07-21 (later) — **Ratification template v2
+**Last updated:** 2026-07-22 — **`HAZ-GIP-1.14b` (S4) risk sync +
+TR 24971 citation corrections + a runnable citation-verification
+manifest landed.** `HAZ-GIP-1.14` narrowed to its kernel-proven
+delivered-dose question; its clinician-notification residual split out
+as `HAZ-GIP-1.14b`, scored **`S4 — Critical`** by Steven (this
+register's first non-`S3`, Probability `GAP` per Finding 5) — verified
+against `metadata.a.yaml` (`REQ-GIP-1-8-1` has no `system_scope`, so the
+gap isn't named at requirement level). Register/RMP "all five: S3"
+claims superseded in place, count 5→6; device residual risk unchanged
+(`Unacceptable`). `ALARP_DETERMINATION.md` (new, PENDING template for
+`HAZ-GIP-1.14b`) carries the primary-source fixes from directly reading
+`sources/CEN-ISO-TR-24971-2020-E.docx`: the standard never uses "ALARP"
+and has no case-law "gross disproportion" test — §2 rebuilt on Annex
+C.4 *practicability* (technical + economic + the unnecessary-risk guard
+clause); §0 forces the Finding 5 question before §§1–4.
+`evidence/verify_tr24971_iec62304_citations.py` (10 prose claims
+re-checked via `citation_gate.py`) reworked to read the docx directly
+(dropped a LibreOffice dependency that made it uncrashable-into-runnable
+here) — all 10 CONFIRMED. Source typo `ISO-14691`→`ISO-14971` renamed;
+`pymupdf` pinned in requirements; 3 new tests; TEST_CATALOG 365; full
+suite **391 passed**. **The ALARP determination and the dosage
+ratification sitting both remain PENDING — Steven authors those
+judgments; the assistant only facilitates.** The prior work follows.
+
+**Earlier 2026-07-21 (later) — Ratification template v2
 (defeater-based) landed, from Steven's research spec with four verified
 corrections.** The passive per-declaration `Adopted?` is now an eliminative
 production: per declaration, **Wrong-if** (rebutting — could a clause assert
