@@ -194,6 +194,38 @@ requirements documents, standards excerpts) that ground the claims in
   plan's matrix structure is modelled on, though the plan's own region
   *labels* have not yet been reconciled to this source's wording — open
   item, `RISK_MANAGEMENT_FINDINGS.md`'s "matrix region naming" entry.
+- `CEN-ISO-TR-24971-2020-E.docx` — added 2026-07-22, obtained and
+  committed directly by Steven (GitHub web upload). The **published
+  CEN-ISO/TR 24971:2020(E)** — the authoritative edition, superseding
+  `ISO-24971-2020.pdf` above (which is stamped "PROOF/ÉPREUVE",
+  pre-publication) for any verbatim citation. Read directly this session
+  (unzip → `word/document.xml`) to confirm, against the primary text,
+  the risk-management/ALARP citations: §5.5.3 severity-alone ("software
+  failure" as the first inestimable-probability example), Annex §C.2
+  policy (→ ISO 14971:2019 §4.2 NOTE 1), §C.3 criteria (severity-alone),
+  §C.4 practicability (technical + economic + the unnecessary-risk
+  guard). Two corrections it forced: the standard **never uses the
+  acronym "ALARP"** (spells out "as low as reasonably practicable") and
+  contains **no case-law "gross disproportion"/Edwards test** — see
+  `examples/dosage_calculator/ALARP_DETERMINATION.md`. All seven TR-24971
+  claims are re-checkable via
+  `evidence/verify_tr24971_iec62304_citations.py`.
+- `IEC 62304.pdf` — added 2026-07-22, obtained and committed directly by
+  Steven (GitHub web upload). IEC 62304:2006+AMD1:2015, medical-device
+  software life-cycle. Cited for §4.3's software-safety-class definitions
+  — specifically "Class B: Non-SERIOUS INJURY is possible," the boundary
+  underlying the `dosage_calculator` hazard register's S3 determinations.
+  Two IEC-62304 claims re-checkable via the verifier script above.
+- `ISO-14971-2019-E.pdf` — added 2026-07-22, obtained and committed
+  directly by Steven (GitHub web upload). A **7-page publisher preview**
+  of ISO 14971:2019 (Contents, Foreword, Introduction, and the start of
+  Clause 1 only — it does NOT cover Clauses 4–10 or the annexes), so it
+  grounds exactly one claim (the scope statement that the standard
+  requires objective risk-acceptability criteria but specifies no
+  acceptable risk levels). Renamed 2026-07-22 from a committed
+  transposed-digit typo (`ISO-14691-…`) to the correct
+  `ISO-14971-…`; the verifier script and its regression test both pin
+  the corrected name.
 - `ISO-26262-3-2018.pdf` — added 2026-07-16, obtained and committed
   directly by Steven (pushed straight to `main` via GitHub's web
   upload), not via this repo's assistant. ISO 26262-3:2018(E), second

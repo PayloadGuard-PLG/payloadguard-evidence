@@ -26,6 +26,7 @@ Source text extraction method (reproducible, no external binaries):
 Run: python3 evidence/verify_tr24971_iec62304_citations.py
 """
 
+import functools
 import pathlib
 import sys
 
@@ -34,15 +35,24 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from evidence.citation_gate import CitationClaim, verify_citations  # noqa: E402
 
-try:
-    import fitz  # PyMuPDF
-except ImportError:
-    print("PyMuPDF is required to extract source text: pip install pymupdf --break-system-packages")
-    sys.exit(1)
 
-
+@functools.lru_cache(maxsize=None)
 def _extract_pdf_text(pdf_path: pathlib.Path) -> str:
-    """Concatenate get_text() across every page via PyMuPDF."""
+    """Concatenate get_text() across every page via PyMuPDF.
+
+    fitz is imported lazily and its absence raised as a normal
+    exception (main() turns it into a non-zero exit) - importing this
+    module must never abort the importer, so pytest collection and any
+    other consumer stay safe (cf. PR #67's SystemExit stance).
+    Memoized: extraction is the dominant cost and the same source is
+    read by both main() and the tests."""
+    try:
+        import fitz  # PyMuPDF
+    except ImportError as exc:  # pragma: no cover - env-dependent
+        raise RuntimeError(
+            "PyMuPDF is required to extract PDF source text: "
+            "pip install pymupdf (it is pinned in requirements.txt)"
+        ) from exc
     doc = fitz.open(str(pdf_path))
     try:
         return "\n".join(page.get_text() for page in doc)
@@ -50,19 +60,23 @@ def _extract_pdf_text(pdf_path: pathlib.Path) -> str:
         doc.close()
 
 
+@functools.lru_cache(maxsize=None)
 def _extract_docx_text(docx_path: pathlib.Path) -> str:
     """Concatenate every text run in a .docx's word/document.xml.
 
     No external binary (no LibreOffice): a .docx is a zip, and the body
     text lives in <w:t> elements. This is sufficient for verbatim prose
     phrases - the only kind of claim this manifest checks - and it runs
-    anywhere Python does."""
+    anywhere Python does. The XML bytes are parsed directly (ElementTree
+    honours the document's own encoding declaration); no lossy manual
+    decode, so a corrupt source raises loudly rather than silently
+    dropping bytes. Memoized for the same reason as the PDF reader."""
     import zipfile
     import xml.etree.ElementTree as ET
 
     ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
     with zipfile.ZipFile(docx_path) as zf:
-        root = ET.fromstring(zf.read("word/document.xml").decode("utf-8", "ignore"))
+        root = ET.fromstring(zf.read("word/document.xml"))
     paragraphs = (
         "".join(t.text or "" for t in para.iter(ns + "t"))
         for para in root.iter(ns + "p")
@@ -183,7 +197,11 @@ def build_claims() -> list:
 
 
 def main() -> int:
-    claims = build_claims()
+    try:
+        claims = build_claims()
+    except RuntimeError as exc:
+        print(exc)
+        return 1
     verdicts = verify_citations(claims)
 
     not_found = [v for v in verdicts if v.verdict == "NOT_FOUND"]
