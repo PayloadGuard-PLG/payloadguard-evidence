@@ -78,25 +78,34 @@ regardless of likelihood," would be exactly Option A adopted by
 omission rather than recorded as a real Finding 5 closure — the
 failure mode this repo's change-log discipline exists to prevent.
 
-_PENDING_ — state one of the following, explicitly, before writing
-sections 1–4:
+**Resolved 2026-07-22 — path (a): Finding 5 is closed first, via Option
+C.** Recorded in `RISK_MANAGEMENT_FINDINGS.md` as a dated Finding 5
+closure (not inferred from this document's prose), per the requirement
+above. Steven's decision, in his framing: **two-track — severity-alone
+for the zero-evidence hazards, the full P×S matrix retained for hazards
+with genuinely estimable probability.**
 
-**(a)** This determination requires resolving Finding 5 first. State
-which option (A/B/C) and why, then record that resolution in
-`RISK_MANAGEMENT_FINDINGS.md` itself, as a real Finding 5 closure with
-its own dated entry — not inferred from this document's prose. Only
-after that closure exists does `HAZ-GIP-1.14b` have an actual
-Probability value (or an explicit severity-alone evaluation basis) for
-§4.3's matrix to act on, and this document's sections 1–4 can proceed
-against a resolved evaluation.
+Why (a) and not (b): path (b) asked for a mechanism by which a hazard
+whose §4.3 evaluation is `GAP` reaches device-level `Tolerable` under
+Section 5's method as written. There is none — Section 5 defines
+outcomes for `Acceptable` / `ALARP` / `Unacceptable` hazards and is
+silent on `GAP`. So (b) was never actually available, and (a) is the
+honest path, as this section anticipated.
 
-**(b)** This determination does not require resolving Finding 5 — name
-the actual mechanism, if one exists, by which a hazard whose §4.3
-evaluation remains `GAP` can still be accepted as device-level
-`Tolerable` under Section 5's method as currently written. If no such
-mechanism exists, this option is not actually available, and (a) is
-the only honest path — say so rather than writing sections 1–4 against
-an evaluation label the matrix hasn't produced.
+What Option C changes for this hazard, concretely: `HAZ-GIP-1.14b` is a
+zero-evidence hazard (no Dafny/CrossHair/concrete-test artifact bears on
+clinician notification), so it leaves the P×S matrix and is evaluated
+**on its `S4 — Critical` severity alone**, per TR 24971 §5.5.3 ("When
+the probability of occurrence of harm cannot be estimated, it is
+necessary to evaluate the risk on the basis of the severity of harm
+alone"). Its `Probability` is no longer a `GAP` the matrix waits on; it
+is deliberately not scored, because under this track it does not need to
+be. **Sections 1–4 below _are_ that severity-alone acceptability
+determination** — they are what decides whether this `S4` residual risk
+is a legitimate resting point at this development stage, with the
+practicability reasoning (§2) recorded rather than asserted by
+omission. This section does not pre-judge that outcome; it only
+establishes that the determination may now honestly be written.
 
 ---
 

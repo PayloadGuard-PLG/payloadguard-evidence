@@ -286,6 +286,20 @@ above:
 | `HAZ-GIP-1.2b` | S3 | `GAP` (Finding 5) | **`GAP`** — blocked only because its Probability, not its Severity, is unscored |
 | `HAZ-GIP-1.14b` | S4 | `GAP` (Finding 5) | **`GAP`** — blocked by Probability, same as `HAZ-GIP-1.2b`; would remain at best `ALARP` even if resolved, never `Acceptable`, since S4 has no `Acceptable` cell in the matrix above at any probability band |
 
+**Superseded 2026-07-22 — the two `GAP` rows above are no longer
+matrix-evaluated.** Finding 5 is resolved (Option C, two-track;
+`RISK_MANAGEMENT_FINDINGS.md`): the two zero-evidence hazards
+(`HAZ-GIP-1.2b`, `HAZ-GIP-1.14b`) leave this matrix and are evaluated on
+**severity alone** (TR 24971 §5.5.3). Their `Risk evaluation` is no
+longer a matrix-`GAP` waiting on a probability band — it is determined
+by a per-hazard severity-alone acceptability determination
+(`HAZ-GIP-1.14b`: `ALARP_DETERMINATION.md`, Sections 1–4, in progress;
+`HAZ-GIP-1.2b`: pending). The four matrix-evaluated `Unacceptable` rows
+are unchanged. Rows left in place, superseded-not-corrected. The
+`HAZ-GIP-1.14b` note above still holds under the severity-alone track:
+`S4` alone can, at best, be argued `ALARP` at this stage — never
+`Acceptable`.
+
 **Four of six hazards evaluate `Unacceptable`.** This is a real,
 mechanical output of Steven's own S3 scoring combined with §4.2's
 standing worst-case P5 default — not a new judgment call, and not this

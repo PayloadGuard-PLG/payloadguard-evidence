@@ -59,6 +59,22 @@ Finding 5, not because its severity is unknown. See
 `RISK_MANAGEMENT_PLAN.md` Section 5 and its "Path to sign-off" section
 for what this means at the device level.
 
+**Superseded 2026-07-22 — Finding 5 is now RESOLVED (Option C,
+two-track), Steven's decision.** Wherever a hazard entry below describes
+Finding 5 as "open," "unresolved," or the blocker on a `GAP`
+evaluation (the `Probability` and `Risk evaluation` cells of
+`HAZ-GIP-1.2b` and `HAZ-GIP-1.14b`), read it as resolved:
+`RISK_MANAGEMENT_FINDINGS.md` Finding 5. Under Option C the two
+zero-evidence hazards leave the P×S matrix and are evaluated on
+**severity alone** (TR 24971 §5.5.3). Their evaluation is therefore no
+longer "matrix-`GAP` waiting on a probability band"; it is "severity-
+alone track, per-hazard acceptability determination" — `HAZ-GIP-1.14b`'s
+is `ALARP_DETERMINATION.md` (Sections 1–4, in progress);
+`HAZ-GIP-1.2b`'s is a separate determination not yet authored. No final
+acceptability verdict for either row is asserted by this note — only the
+change of evaluation *procedure*. Cells left in place, per this file's
+superseded-not-corrected discipline.
+
 ---
 
 ## 1. Scope of this register
