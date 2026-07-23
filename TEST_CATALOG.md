@@ -14,7 +14,7 @@ the generator actually produces against the committed test suite —
 the same discipline `evidence/cli.py`'s own tests already apply to
 the traceability matrices.
 
-**Total: 365 test functions across 45 categories.**
+**Total: 366 test functions across 45 categories.**
 Counts test *functions*, not pytest's collected test-case count -
 a `@pytest.mark.parametrize`-decorated function is one row here
 (one description, one code location) even though pytest runs it as
@@ -459,8 +459,9 @@ for the actual collected-case count.
 |---|---|---|
 | `test_pyproject_is_valid_toml_with_expected_shape` | Pyproject is valid toml with expected shape. | `tests/test_packaging.py:60` |
 | `test_runtime_dependencies_match_requirements_txt_pins` | Every runtime dep in pyproject.toml must match requirements.txt's pin exactly - not "compatible", not "close enough". | `tests/test_packaging.py:66` |
-| `test_console_script_points_at_a_real_callable_main` | Console script points at a real callable main. | `tests/test_packaging.py:100` |
-| `test_schema_json_files_are_declared_as_package_data` | Schema json files are declared as package data. | `tests/test_packaging.py:118` |
+| `test_optional_extra_dependencies_match_requirements_txt_pins` | Optional-extra pins must also match requirements.txt exactly. | `tests/test_packaging.py:100` |
+| `test_console_script_points_at_a_real_callable_main` | Console script points at a real callable main. | `tests/test_packaging.py:136` |
+| `test_schema_json_files_are_declared_as_package_data` | Schema json files are declared as package data. | `tests/test_packaging.py:154` |
 
 ## Polish Lint (`tests/test_polish_lint.py`)
 

@@ -24,7 +24,7 @@ left open).
 | 3 | Severity bands conflate risk control with risk estimation | Confirmed | **Fully resolved, 2026-07-15 — model rebuilt (Option 3), then real severity values recorded from Steven the same day: `S3 — Serious`, all 5 hazards. Device overall residual risk now `Unacceptable`, computed, not `GAP`** | `RISK_MANAGEMENT_PLAN.md` §4.1, §4.3, Section 5, Path-to-sign-off; `HAZARD_REGISTER.md` (all 5 hazards) |
 | 4 | `HAZ-GIP-1.2`/`1.3` name a proven-closed pathway while describing an open one | Confirmed | **Remediated (structurally), 2026-07-15 (verified applied, not just claimed)** — `HAZ-GIP-1.2b` split out; `HAZ-GIP-1.2`/`1.3`'s own Severity/Probability marked stale/pending re-derivation rather than silently carried over; `HAZ-GIP-1.2b`'s Probability left `GAP`, not defaulted to P5, per Finding 5 below | `HAZARD_REGISTER.md` |
 | — | No checked equivalence claim between `dosage.py`/`dosage.dfy` | Confirmed, then resolved | **Resolved, 2026-07-15 — Option 2 (differential-testing harness) built; 9/9 vectors matched; postcondition drift found and fixed in the same pass** | `dosage_differential_vectors.py`, `dosage_differential_driver.dfy`, `differential_test_results.json` |
-| 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Open — options below, Steven's decision** | `HAZ-GIP-1.2b` is the live case |
+| 5 | Inestimable-probability hazards should be evaluated on severity alone (TR §5.5.3), not the full matrix | New, from direct TR 24971 read | **Resolved 2026-07-22 — Steven chose Option C (two-track): severity-alone for the zero-evidence hazards, full matrix retained for hazards with estimable probability.** The two zero-evidence hazards (`HAZ-GIP-1.2b`, `HAZ-GIP-1.14b`) move onto the severity-alone track; each still needs its own severity-alone acceptability determination (`HAZ-GIP-1.14b`'s is `ALARP_DETERMINATION.md`, in progress; `HAZ-GIP-1.2b`'s is pending) | `HAZ-GIP-1.2b`, `HAZ-GIP-1.14b`; `ALARP_DETERMINATION.md` §0 |
 | — | TR 24971's real three-region matrix uses different region names than "ALARP" | New, from direct TR 24971 read | **Open — naming reconciliation, Steven's call** | `RISK_MANAGEMENT_PLAN.md` §4.3 |
 | 6 | `HAZ-GIP-1.14`'s GIP Safety Requirement 1.8.1 citation, quoted as "verbatim" in this repo, was never checked against the primary IEC-cited text | Confirmed — real wording drift found, then the underlying IEC clause itself independently confirmed | **Fully closed, 2026-07-15.** GIP-transcription wording corrected in `sources/gip-v1.0-hazard-analysis.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml`, `HAZARD_REGISTER.md`; traceability matrices regenerated (no hand-editing). Two primary sources now archived, both obtained directly by Steven, not third-party mirrors: `sources/gip-v1.0-full-2009.pdf` (GIP v1.0 itself) and `sources/iec-60601-2-24-1998.pdf` (the actual IEC standard, Edition 1). **Clause 51.102 "Reverse delivery" read directly — GIP's citation confirmed near-verbatim.** Byproduct, also confirmed directly: GIP v1.0 assigns no severity rating to any hazard in any of its 8 hazard-table categories | `sources/gip-v1.0-hazard-analysis.md`, `sources/gip-v1.0-full-2009.pdf`, `sources/iec-60601-2-24-1998.pdf`, `sources/README.md`, `HAZARD_REGISTER.md`, `metadata.yaml`/`.a`/`.b`/`.c.yaml` |
 
@@ -311,7 +311,38 @@ sign-off" section, all updated 2026-07-15 (later) alongside this entry.
 
 ---
 
-## Open — Finding 5: inestimable-probability hazards and the matrix
+## Resolved — Finding 5: inestimable-probability hazards and the matrix
+
+**Resolved 2026-07-22 — Steven chose Option C (two-track).** Recorded
+via direct decision during the `HAZ-GIP-1.14b` ALARP-determination
+sitting (`ALARP_DETERMINATION.md` §0 required this closure before its
+Sections 1–4 could be written). In Steven's framing: **severity-alone
+for the zero-evidence hazards; the full P×S matrix stays for hazards
+with genuinely estimable probability.** The two zero-evidence hazards
+in this register — `HAZ-GIP-1.2b` and `HAZ-GIP-1.14b` (neither has any
+Dafny/CrossHair/concrete-test evidence bearing on clinician
+notification) — are the ones this moves onto the severity-alone track;
+the proof-driven and matrix-evaluated hazards (`HAZ-GIP-1.14`, `1.2`,
+`1.3`, `HAZ-DOSE-003`) are untouched.
+
+**What this does and does not settle.** It settles the *procedure*: a
+zero-evidence hazard is no longer parked at evaluation-`GAP` waiting on
+a probability band it can never get; it is evaluated on severity alone,
+via a recorded severity-alone acceptability determination. It does
+**not** by itself produce an acceptability verdict for either hazard —
+that determination is per-hazard and is where the real judgment lives.
+`HAZ-GIP-1.14b`'s is `ALARP_DETERMINATION.md` (Sections 1–4, in
+progress); `HAZ-GIP-1.2b`'s is a separate determination not yet
+authored (its evaluation cell now reads "severity-alone track,
+determination pending," replacing "blocked by Finding 5's open
+question"). Option C's cost, accepted with the choice: a second
+acceptability procedure now exists alongside the matrix, and both must
+be documented — the severity-alone track is not a shortcut around the
+matrix, it is a parallel, source-grounded (TR §5.5.3) route for the
+specific class of hazard the matrix cannot honestly evaluate.
+
+Prior write-up, preserved (the options as they stood before the
+decision):
 
 **Full write-up:** see the standalone finding document (same content,
 reproduced in summary here for a single-file reference).
@@ -354,10 +385,13 @@ is arguably a stronger probability basis than most of TR's own
 "estimable" examples. Closest fit to the source; costs a second
 acceptability procedure to maintain and document.
 
-**Not decided.** Finding 3/R3 is now resolved (Option 3, 2026-07-15) —
-this procedural question (matrix lookup vs. severity-alone) is
-unaffected by that and still needs its own answer, genuinely separate
-from the severity-model question.
+**Decided 2026-07-22 — Option C** (see the resolution note at the top of
+this section). The interpretive question above (genuinely *inestimable*
+vs. merely *unmeasured*) is answered implicitly by that choice: the
+zero-evidence notification hazards are treated as inestimable and
+routed to severity-alone evaluation, not as merely-unmeasured §7 cases.
+Finding 3/R3 (the severity *model*) remains resolved and separate; this
+was the last-open procedural question of the two.
 
 ---
 
@@ -457,15 +491,20 @@ capture's new content.
   risk** (computed 2026-07-15, from Steven's own real severity scoring
   — see Finding 3 above): either real field/usage probability data
   (doesn't exist for a pre-market POC), or a genuine ALARP
-  determination from Steven as the named Clinical SME, per
+  determination from a qualified clinical/regulatory SME (Steven /
+  PayloadGuard Research *prepares* it — `ALARP_DETERMINATION.md`, SME
+  sign-off `_PENDING_` — but is not the SME; Section 2, corrected
+  2026-07-22), per
   `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section. This is now
   the concrete blocking item, replacing the severity-scoring item this
   list previously led with.
-- Finding 5: which evaluation procedure for inestimable-probability
-  hazards (Options A/B/C), and the interpretive call underneath it
-  (inestimable vs. unmeasured) — live specifically for `HAZ-GIP-1.2b`,
-  whose `Severity` is now known (`S3`) but whose `Probability`, and
-  therefore `Risk evaluation`, still is not
+- ~~Finding 5: which evaluation procedure for inestimable-probability
+  hazards~~ — **resolved 2026-07-22, Option C (two-track)**; the
+  zero-evidence hazards go to severity-alone. What this leaves open is
+  downstream, not Finding 5 itself: each zero-evidence hazard now needs
+  its own severity-alone acceptability determination — `HAZ-GIP-1.14b`'s
+  is `ALARP_DETERMINATION.md` (in progress), `HAZ-GIP-1.2b`'s is not yet
+  authored
 - Matrix region naming: reconcile to TR's wording or keep ALARP as a
   stated departure
 - `HAZ-DOSE-003`: fold into `HAZ-GIP-1.2b` or keep separate

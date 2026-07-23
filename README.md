@@ -1,31 +1,33 @@
 # PayloadGuard Evidence
 
-PayloadGuard Evidence generates IEC 62304 / FDA §524B traceability
-artifacts for medical device software. For each requirement it binds a
-claim to captured verification-tool output and labels the result with an
-honestly-scoped evidence strength, so a traceability matrix never states
-more than the underlying evidence supports.
+PayloadGuard Evidence is a domain-agnostic compliance-evidence engine. It
+generates traceability artifacts (IEC 62304 / FDA §524B style) for software
+requirements: for each requirement it binds a claim to captured
+verification-tool output and labels the result with an honestly-scoped
+evidence strength, so a traceability matrix never states more than the
+underlying evidence supports.
 
-The system is built around a single constraint: a strength label is
-derived only from what a verification tool actually reported in a real,
-recorded run. It is never inferred from a requirement's intent, and the
-strongest label — `PROVEN` — is admitted only when a completed Dafny/Z3
-proof produced it.
+The system is built around a single constraint: a strength label is derived
+only from what a verification tool actually reported in a real, recorded run.
+It is never inferred from a requirement's intent, and the strongest label —
+`PROVEN` — is admitted only when a completed Dafny/Z3 proof produced it. The
+matrix is machine-generated from these inputs; it is never hand-edited, and
+generation fails rather than emit a `PROVEN` label not backed by a real,
+completed proof.
 
 ## What it produces
 
-Every requirement is expected to answer three questions, and the
-generated traceability matrix records all three:
+Every requirement answers three questions, and the generated traceability
+matrix records all three:
 
-1. **What must the software do (or never do)?** Traced to a primary
-   source document — a hazard analysis, a safety standard, or a clinical
-   guideline.
+1. **What must the software do (or never do)?** Traced to a primary source
+   document — a hazard analysis, a safety standard, or a clinical guideline,
+   archived verbatim in `sources/`.
 2. **How is that established?** Traced to a specific run of a specific
-   verification tool, with the tool's verbatim output committed
-   alongside the claim.
-3. **How strong is the evidence?** Labelled with one of the strengths
-   below, so the confidence level is always explicit rather than
-   inferred.
+   verification tool, with the tool's verbatim output committed alongside the
+   claim.
+3. **How strong is the evidence?** Labelled with one of the strengths below,
+   so the confidence level is always explicit rather than inferred.
 
 ## Evidence strengths
 
@@ -37,17 +39,10 @@ generated traceability matrix records all three:
 | `DECLARED` | Asserted by a human; not established by any tool. |
 | `GAP` | Not yet established. Rendered explicitly, never omitted. |
 
-Each label is legitimate evidence at its own level; the design goal is
-that the level is always explicit. The traceability matrix is
-machine-generated from these inputs — it is never hand-edited, and
-generation fails rather than emit a `PROVEN` label that is not backed by
-a real, completed proof.
-
-### What this has actually produced
-
-Across the four worked examples, every one of 28 formalized
-requirements carries a real evidence status — counted directly from
-the committed traceability matrices, not estimated:
+Each label is legitimate evidence at its own level; the design goal is that
+the level is always explicit. Across the four worked examples the committed
+matrices record 28 formalized requirements, each carrying a real evidence
+status:
 
 | Strength | Requirements |
 |---|---|
@@ -55,15 +50,25 @@ the committed traceability matrices, not estimated:
 | `BOUNDED_CHECKED` | 1 |
 | `GAP` (explicit, named) | 7 |
 
-Each `PROVEN` row now also carries a mechanically-derived **proof-content
-qualifier** (`evidence/spec_impl_gap.py`, Gate C3 vector 3) distinguishing
-what the proof actually establishes — because `PROVEN` alone conflates two
-very different things. Of the 20 `PROVEN` requirements, **14 are
-definitional** (the postcondition restates the implementation, so the proof
-certifies totality/type-safety/exhaustiveness/boundary structure but not an
-*independent* property) and **6 are property-bearing** (the postcondition is
-strictly weaker than the body, so the proof carries content beyond the
-definition):
+Every `GAP` is reasoned in [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md),
+never dropped silently.
+
+### The proof-content qualifier
+
+`PROVEN` alone conflates two different things, so every `PROVEN` row also
+carries a mechanically-derived qualifier (`evidence/spec_impl_gap.py`,
+Gate C3 vector 3) stating what the proof actually establishes:
+
+- **`definitional`** — the postcondition restates the implementation, so the
+  proof certifies totality, type-safety, match-exhaustiveness, and boundary
+  structure, but not an *independent* property.
+- **`property`** — the postcondition is strictly weaker than the body, so the
+  proof carries content beyond the definition (a wrong implementation could
+  violate it).
+
+Both are real and machine-checked; they differ in how much independent
+content the proof carries. Of the 20 `PROVEN` requirements, 14 are
+definitional and 6 are property-bearing:
 
 | Example | definitional | property |
 |---|---|---|
@@ -72,236 +77,181 @@ definition):
 | `dosage_calculator` | 0 | 2 |
 | `renal_adjustment` | 0 | 4 |
 
-This is not a downgrade of the label — Dafny did discharge every spec — but
-an honest statement of *which* `PROVEN` rows prove a non-trivial property and
-which restate a definition. `aeb_kernel` and `drug_interaction_checker` are
-predicate/lookup specs (`ensures` equivalent to the body); `dosage_calculator`
-and `renal_adjustment` do real arithmetic, so their safety bounds are genuine
-content. The qualifier speaks only to what the proof *establishes* — not to
-whether the spec's numbers faithfully transcribe the source, nor to whether
-the contract itself was shaped to be provable. Those two concerns are the
-subject of the source-fidelity and frozen-contract mechanisms described under
-**Keeping `PROVEN` honest** below, which have since landed.
-
-The single `BOUNDED_CHECKED` requirement is `dosage_calculator`'s
-overflow-safety check — a permanent Dafny/Z3 limit (no IEEE-754
-overflow semantics for `real`), not an unbuilt item. Every `GAP` is
-named and reasoned in [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md),
-never dropped silently.
+`aeb_kernel` and `drug_interaction_checker` are predicate/lookup specs
+(`ensures` equivalent to the body); `dosage_calculator` and `renal_adjustment`
+do real arithmetic, so their safety bounds are genuine content. The single
+`BOUNDED_CHECKED` requirement is `dosage_calculator`'s overflow-safety check —
+a permanent Dafny/Z3 limit (no IEEE-754 overflow semantics for `real`), not an
+unbuilt item.
 
 ## The verification pipeline (Gates C1–C6)
 
-Requirements backed by a formal (Dafny) specification pass through six
-gates. Each captures or checks a distinct property, and every real tool
-run is committed verbatim with a manifest recording the command, exit
-code, tool version, and timestamp.
+Requirements backed by a formal (Dafny) specification pass through six gates.
+Each captures or checks a distinct property, and every real tool run is
+committed verbatim with a manifest recording the command, exit code, tool
+version, and timestamp.
 
-- **C1 — Capture.** The proof is run and its raw output committed. The
-  adapter (`evidence/dafny_adapter.py`) distinguishes a real proof
-  (`N verified, 0 errors`, N > 0) from a vacuous `0 verified, 0 errors`
-  before any `PROVEN` label is assigned.
+- **C1 — Capture.** The proof is run and its raw output committed. The adapter
+  (`evidence/dafny_adapter.py`) distinguishes a real proof (`N verified, 0
+  errors`, N > 0) from a vacuous `0 verified, 0 errors` before any `PROVEN`
+  label is assigned.
 - **C2 — Exclusivity.** `PROVEN` is attached only by
-  `evidence/render/matrix_variants.py::dafny_record()`, re-derived from
-  the raw capture. `assert_no_realized_proven` (ruling R3) rejects any
-  record whose method is not `dafny` or whose
-  `verifier_completion_status` is not `completed`.
+  `evidence/render/matrix_variants.py::dafny_record()`, re-derived from the raw
+  capture. `assert_no_realized_proven` (ruling R3) rejects any record whose
+  method is not `dafny` or whose `verifier_completion_status` is not
+  `completed`.
 - **C3 — Spec lint.** `evidence/dafny_spec_lint.py` checks precondition
-  satisfiability via Z3, flags one-directional postconditions, and
-  refuses captures masked by resource or timeout limits.
-- **C4 — Spec-testing proofs (STPs).** Specification-only ACCEPT/REJECT
-  lemmas confirm the spec pins the intended value and excludes plausible
-  weaker ones, independent of the implementation.
-- **C5 — Mutation testing.** `evidence/dafny_mutate.py` perturbs the
-  spec's operators and re-runs the verifier, confirming a wrong spec
-  fails to verify. A mutant can be verified against the mutated function
-  in isolation (`evidence/dafny_isolate.py` — the function with its own
-  callees, never its callers), so a kill is attributed to that
-  function's own contract rather than to a downstream caller that
-  happened to fail; without this, whole-file verification silently
-  over-reports how load-bearing a spec is. All three worked Dafny
-  examples (`renal_adjustment`, `dosage_calculator`,
-  `drug_interaction_checker`) now run Gate C5 through this isolation.
-  Surviving mutants are enumerated and explained.
-- **C6 — Confirmation.** `evidence/dafny_nl_summary.py` renders each
-  contract clause in plain English for a recorded human review prior to
-  sign-off.
+  satisfiability via Z3, flags one-directional postconditions, refuses captures
+  masked by resource or timeout limits, and classifies each `ensures` clause as
+  definitional or property-bearing (the qualifier above).
+- **C4 — Spec-testing proofs (STPs).** Specification-only ACCEPT/REJECT lemmas
+  confirm the spec pins the intended value and excludes plausible weaker ones,
+  independent of the implementation.
+- **C5 — Mutation testing.** `evidence/dafny_mutate.py` perturbs the spec's
+  operators and re-runs the verifier, confirming a wrong spec fails to verify.
+  Each mutant is verified against the mutated function in isolation
+  (`evidence/dafny_isolate.py` — the function with its own callees, never its
+  callers), so a kill is attributed to that function's own contract rather than
+  a downstream caller. The shared entry point `evidence/gate_c5_runner.py`
+  always isolates; surviving mutants are enumerated and explained.
+- **C6 — Confirmation.** `evidence/dafny_nl_summary.py` renders each contract
+  clause in plain English for a recorded human review prior to sign-off.
 
-A worked instance of one requirement carried through all six gates, with
-the verbatim captured output at each step, is committed under
-`examples/drug_interaction_checker/`; the gates are described in full in
+The gates are described in full in
 [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) §4.
 
-### Timed example: primary source to formal proof
+## Keeping `PROVEN` honest
 
-`examples/aeb_kernel/` (built 2026-07-16) is a concrete, timed instance
-of the pipeline above run end to end against a domain it wasn't built
-for, using only a public source document — no clinical, patient, or
-otherwise proprietary data. Source: NHTSA/DOT's public Final Rule
-"Automatic Emergency Braking Systems for Light Vehicles" (49 CFR
-571.127), a 317-page federal regulation.
+`PROVEN` means Dafny discharged the spec — no more. On its own that conflates
+whether the proof carries independent content, whether the spec's numbers
+faithfully transcribe the source, and whether the contract itself was shaped to
+be provable. A sequence of mechanisms separates and labels each:
 
-Every number below is taken from committed git history and Dafny run
-manifests, not reconstructed from memory:
+- **Proof content** — the `definitional` / `property` qualifier above
+  (`evidence/spec_impl_gap.py`), a structural pin-vs-bound analysis with a Z3
+  pin-uniqueness cross-check.
+- **Source fidelity** — every numeric constant in a spec carries a verbatim
+  source quote, checked present in the archived primary document by a
+  mechanical citation gate (`evidence/literal_citation.py` over
+  `evidence/citation_gate.py`; each example commits a `literal_citations.yaml`).
+  The Gate C6 review is source-anchored and **blind**
+  (`evidence/source_anchored_review.py`): the reviewer records the value
+  expected *from the source* before the spec's constant is revealed.
+- **Frozen contract** — `evidence/frozen_contract.py` freezes each spec's
+  contract surface (signatures, `requires`/`ensures`, function bodies, datatype
+  definitions) as a committed, drift-checked manifest, and mechanically proves a
+  candidate spec preserves it exactly and introduces no soundness-escape
+  construct (e.g. `assume false`).
+- **Ratification** — `evidence/contract_attestation.py` produces a per-example,
+  hash-bound ratification artifact through which a human reviewer works
+  eliminatively (producing and eliminating candidate defeaters against each
+  declaration's mapped requirement and source quotes) and formally adopts the
+  contract. The sha256 binding makes a signed adoption go stale the moment the
+  contract changes.
 
-- **Under 9 minutes** from the source document landing in the
-  repository to a from-scratch formal specification — 6 Dafny
-  functions, covering 8 distinct regulatory requirement clauses —
-  verifying clean on its first real capture. This includes locating
-  the actual operative clauses inside the document: ~300 of the 317
-  pages are rulemaking preamble, not the codified regulatory text.
-- **Under 8 minutes more** to run the remaining five independent
-  verification gates for real: plain-English contract confirmation
-  against the source text, 31 boundary-value proof lemmas, a
-  precondition-satisfiability and postcondition-strength lint (zero
-  weak-postcondition warnings — the tightest result this pipeline has
-  produced across any example so far), a 63-mutant adversarial stress
-  test of the proofs themselves, and a machine-generated regulatory
-  traceability matrix.
-- **Result:** 8 regulatory requirements with machine-checked (`PROVEN`)
-  evidence status, and 2 requirements left as explicit, named open
-  gaps rather than glossed over — the same discipline this system
-  applies to every example, including the three medical-device ones.
-- **No change to the underlying pipeline was needed.** The same code
-  that verifies infusion-pump dosing logic against a clinical hazard
-  analysis ran, unmodified, against a federal vehicle-safety
-  regulation it had never been built or tuned for.
+The ratification artifacts are committed `PENDING`, one per example. Until a
+reviewer completes each adoption, the provenance of the four specs is
+*LLM-drafted, human-reviewed, gate-enforced — ratification pending*. On
+signing, each earns *human-ratified*.
 
-We haven't found a comparable automated, six-gate,
-document-to-formal-proof pipeline elsewhere, and are treating that as
-a real, differentiated capability until shown otherwise — research
-still in progress. Accordingly, *how* each gate works stays described
-here only at the level already used above; the implementation itself
-is proprietary (see [`LICENSE`](LICENSE)). What's shown in this
-example is the outcome, timed and reproducible from a public source
-document — not the method.
+## Domain-agnostic engine
+
+The engine (`evidence/`) is not medical-device-specific. Three worked examples
+are medical, and one — `examples/aeb_kernel/` — applies the same Gate C1–C6
+pipeline to a different regulatory domain entirely (NHTSA FMVSS No. 127,
+automotive automatic emergency braking), sourced from public regulation, with
+no shared-code changes. The same code that verifies infusion-pump dosing logic
+against a clinical hazard analysis runs unmodified against a federal
+vehicle-safety regulation.
+
+The traceability-matrix engine is open to read here; the verification method
+itself is proprietary (see [`LICENSE`](LICENSE)).
 
 ## Risk management (ISO 14971)
 
-Each of the three examples also carries a **risk management plan** and
-**hazard register**, built against ISO 14971:2019, that consume this
-system's own evidence as risk-control input — a `PROVEN` Dafny result,
-a `BOUNDED_CHECKED` CrossHair result, or an explicit `GAP` each feeds
-directly into a hazard's evidence citations, so the risk analysis can't
-silently claim stronger grounding than the traceability matrix itself
-supports.
+Each medical-device example carries an ISO 14971:2019 risk management plan and
+hazard register (both `DRAFT`) that consume the engine's own evidence as
+risk-control input: a `PROVEN`, `BOUNDED_CHECKED`, or `GAP` status feeds
+directly into a hazard's evidence citations, so the risk analysis cannot claim
+stronger grounding than the traceability matrix supports.
 
-- `examples/<name>/RISK_MANAGEMENT_PLAN.md` — scope, risk-acceptance
-  criteria, and a severity/probability/acceptance matrix, per clause
-  4.4.
-- `examples/<name>/HAZARD_REGISTER.md` — per-hazard entries citing the
-  device's primary hazard-analysis or clinical source, this repo's own
-  proof/test evidence as the risk-control measure, and an explicit
-  `Known, named residual`.
+- `examples/<name>/RISK_MANAGEMENT_PLAN.md` — scope, risk-acceptance criteria,
+  and a severity/probability/acceptance matrix (clause 4.4).
+- `examples/<name>/HAZARD_REGISTER.md` — per-hazard entries citing the device's
+  primary hazard-analysis or clinical source, this repo's own proof/test
+  evidence as the risk-control measure, and an explicit `Known, named residual`.
 
-**All three are `DRAFT`, not signed off, and at meaningfully different
-stages — stated plainly rather than implied uniform.**
-`dosage_calculator`'s is by far the most developed: hazard
-identification is complete, its severity **model** was rebuilt
-consequence-only (2026-07-15, replacing an earlier model that measured
-evidence strength instead of real-world consequence — see
-`RISK_MANAGEMENT_FINDINGS.md` Finding 3), its equivalence with the
-Python implementation is now differentially tested rather than merely
-asserted (Finding 5/R5, also resolved 2026-07-15), its citations were
-extended to ISO/TR 24971:2020 during an earlier audit, and a findings
-ledger (`RISK_MANAGEMENT_FINDINGS.md`) tracks corrections already
-applied and what's still open. **`dosage_calculator` now has real,
-Steven-scored severity values for all 5 hazards** (`S3 — Serious`,
-recorded 2026-07-15 via `AskUserQuestion` — a real clinical
-determination, not inferred or defaulted by this repo's assistant),
-which mechanically produce this device's current overall residual risk:
-**`Unacceptable`** (4 of 5 hazards; the fifth, `HAZ-GIP-1.2b`, stays an
-explicit evaluation `GAP`, blocked by a separate open question about
-which procedure applies to a hazard with zero probability-side
-evidence — see `RISK_MANAGEMENT_FINDINGS.md` Finding 5). This is not a
-claim the device is newly unsafe — it is the honest output of a
-real severity input meeting this plan's already-specified, conservative
-worst-case-probability policy for a pre-market POC with no field data;
-resolving it needs either real field data or a recorded ALARP
-determination from Steven, both still open. `renal_adjustment`'s and
-`drug_interaction_checker`'s hazard registers still leave every
-severity value an explicit `GAP` — they complete identification only,
-and their plans cite ISO 14971:2019 alone; extending them to
-`dosage_calculator`'s TR-24971-informed model and real scoring is
-future work, not started. Assigning a severity score, accepting a
-residual risk, or closing a hazard as `Acceptable` is, for all three, a
-human decision this repo's assistant has declined to make on a
-reviewer's behalf, even where no further evidence is buildable.
+Severity assessments and risk-acceptability determinations (including ALARP
+determinations) are produced as decision-ready **prepared packages** —
+evidence assembled, reasoning structured, open questions surfaced — for a
+qualified clinical/regulatory subject-matter expert to ratify. The SME role is
+**unfilled**; SME ratification is an explicit, recorded prerequisite, never
+self-signed by the preparer. This mirrors the drafter≠checker boundary the
+engine enforces throughout.
 
-**A real citation-integrity gap was also found and closed, 2026-07-15**
-(`RISK_MANAGEMENT_FINDINGS.md` Finding 6): `dosage_calculator`'s
-`HAZ-GIP-1.14` row had quoted its GIP source as "verbatim" without that
-claim ever being checked against GIP v1.0's own PDF — a wording drift
-this repo's own transcription had introduced, caught only when Steven
-independently sourced and supplied the real document. Fixed against the
-primary text, then taken one step further: Steven also obtained the
-actual IEC 60601-2-24:1998 standard GIP's citation traces to, and its
-clause 51.102 confirms GIP's citation is near-verbatim. Both primary
-sources are now archived (`sources/gip-v1.0-full-2009.pdf`,
-`sources/iec-60601-2-24-1998.pdf`) — this repo's first direct read of
-the actual IEC 60601-2-24 standard text for any requirement, not a
-secondary source taken on trust.
+`dosage_calculator` is the most developed: hazard identification is complete,
+its severity model is consequence-only (ISO 14971 §3.27 / ISO TR 24971
+§5.5.4), and each hazard carries a prepared severity assessment. Its current
+overall residual risk evaluates `Unacceptable` — the mechanical result of
+prepared severity values under a conservative worst-case-probability policy for
+a pre-market POC with no field data. Two hazards sit on a severity-alone
+evaluation track (per ISO TR 24971 §5.5.3) with per-hazard determinations
+prepared and SME sign-off pending. `renal_adjustment` and
+`drug_interaction_checker` complete hazard identification only, with severity
+left as explicit `GAP`.
 
 Two repo-wide self-consistency lints (`evidence/hazard_id_lint.py`,
-`evidence/citation_registry.py`) guard against exactly the kind of
-cross-file drift this discipline is exposed to: a hazard ID referenced
-in one document but renamed or dropped in the register it comes from,
-or a standards citation re-typed incorrectly in one file without the
-others being checked. Both scan the real, git-tracked repository as
-part of the regular test suite.
+`evidence/citation_registry.py`) guard against cross-file drift — a hazard ID
+referenced in one document but renamed or dropped in its register, or a
+standards citation re-typed incorrectly in one file. Both scan the real,
+git-tracked repository as part of the test suite.
 
 ## Repository layout
 
-- **`evidence/`** — the domain-agnostic engine: schema validation,
-  evidence binding, traceability-matrix generation, Dafny toolchain
-  integration (capture, spec lint, mutation testing, NL confirmation),
-  mechanical citation verification against a primary source
-  (`citation_gate.py`), and repo self-consistency lints against this
-  repo's own committed content (`hazard_id_lint.py`,
-  `citation_registry.py`).
-- **`examples/dosage_calculator/`** — IV infusion-pump dose-clamping
-  logic; requirements from a published infusion-pump hazard analysis.
-  Carried through proof and mutation testing; the most developed risk
-  management plan and hazard register of the three examples.
+- **`evidence/`** — the domain-agnostic engine: schema validation, evidence
+  binding, traceability-matrix generation, Dafny toolchain integration
+  (capture, spec lint, mutation testing, NL confirmation), mechanical citation
+  verification against a primary source (`citation_gate.py`), the `PROVEN`
+  honesty mechanisms (`spec_impl_gap.py`, `literal_citation.py`,
+  `frozen_contract.py`, `contract_attestation.py`, `source_anchored_review.py`),
+  and repo self-consistency lints (`hazard_id_lint.py`, `citation_registry.py`).
+- **`examples/dosage_calculator/`** — IV infusion-pump dose-clamping logic;
+  requirements from a published infusion-pump hazard analysis. The most
+  developed risk management plan and hazard register of the examples.
 - **`examples/renal_adjustment/`** — renal-function dose adjustment;
-  requirements from UK clinical guidelines (MHRA, KDIGO, NICE).
-  Exercises lookup-table and conditional-branching logic.
-- **`examples/drug_interaction_checker/`** — DOAC drug-interaction
-  checking; requirements from NHS Specialist Pharmacy Service guidance.
-  Exercises set/membership logic.
-- **`examples/aeb_kernel/`** — a generic (non-manufacturer-specific)
-  Autonomous Emergency Braking kernel; requirements from NHTSA FMVSS No.
-  127 (49 CFR 571.127). The first example outside the medical-device
-  domain, built to test whether the Gate C1–C6 architecture generalizes
-  to a different regulatory domain entirely — it does, with no
-  shared-code changes required. Exercises speed-envelope and
+  requirements from UK clinical guidelines (MHRA, KDIGO, NICE). Lookup-table and
+  conditional-branching logic.
+- **`examples/drug_interaction_checker/`** — DOAC drug-interaction checking;
+  requirements from NHS Specialist Pharmacy Service guidance. Set/membership
+  logic.
+- **`examples/aeb_kernel/`** — a generic Autonomous Emergency Braking kernel;
+  requirements from NHTSA FMVSS No. 127 (49 CFR 571.127). The non-medical
+  example demonstrating the pipeline is domain-agnostic. Speed-envelope and
   deceleration-threshold logic.
-- **`sources/`** — primary source documents, archived verbatim so every
-  sourced requirement can be checked against the original.
-- **`tests/`** — regression suite. Run `python -m pytest tests/ -q` for
-  the current collected-case count, or see
-  [`TEST_CATALOG.md`](TEST_CATALOG.md) for a categorized per-test index
-  (counts test *functions*, a different and smaller number than
-  pytest's case count wherever `@pytest.mark.parametrize` is used —
-  neither number is restated here, to avoid the same staleness this
-  file has already needed fixing for twice).
+- **`sources/`** — primary source documents, archived verbatim so every sourced
+  requirement can be checked against the original.
+- **`tests/`** — regression suite. Run `python -m pytest tests/ -q` for the
+  current count, or see [`TEST_CATALOG.md`](TEST_CATALOG.md) for a categorized
+  per-test index.
 
 ## Quick start
 
 ```bash
-pip install crosshair-tool jsonschema pyyaml pytest
-# Dafny 4.11.0 and Z3 are required for the formal-proof examples;
-# see OPERATIONS_MANUAL.md for install notes.
+# Engine + test dependencies
+pip install -r requirements.txt
+# The formal-proof examples additionally require Dafny 4.11.0, Z3, and
+# crosshair-tool; see OPERATIONS_MANUAL.md for install notes.
 
 # Run the test suite
-python -m pytest tests/ -v
+python -m pytest tests/ -q
 
 # Regenerate the infusion-pump example's traceability matrices
 cd examples/dosage_calculator
 python generate_artifacts.py
 ```
 
-The traceability-matrix builder is also installable standalone, via
-`pyproject.toml`:
+The matrix builder is also installable standalone via `pyproject.toml`, which
+exposes `evidence.cli` as a `plg-evidence` console script:
 
 ```bash
 pip install .
@@ -313,169 +263,36 @@ plg-evidence build --variant a \
   --out-json matrix.json --out-md matrix.md
 ```
 
-This installs `evidence.cli` as a `plg-evidence` console script,
-runnable from any directory — useful for building a matrix from
-already-captured evidence without a full clone. It does not install
-the verification toolchain: regenerating an example's underlying
-Dafny/CrossHair evidence still needs the clone-based setup above.
-
-For re-running the verification tools, adding a requirement, or
-extending the system to a new example, see
-[`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md).
-
-## Status
-
-- **Infusion-pump dose calculator** — complete: source citation, formal
-  specification, proof, mutation testing, and recorded human
-  confirmation.
-- **Drug-drug interaction checker** — complete: all six verification
-  gates built and confirmed.
-- **Renal-function dose adjustment** — complete: all six gates built and
-  confirmed, including a proven Cockcroft-Gault CrCl computation from raw
-  patient inputs. CKD-EPI eGFR is caller-supplied — a Dafny/Z3
-  expressiveness limit, confirmed empirically. Several requirements
-  (`REQ-RENAL-3/4/6/7`, and `REQ-RENAL-8`'s classification-flag
-  provenance) are deliberately unbuilt and tracked as open items; none
-  blocks the pipeline.
-- **Generic AEB kernel** — complete: all six gates built and confirmed,
-  sourced directly from NHTSA FMVSS No. 127. The first example outside
-  the medical-device domain — proves the pipeline is domain-agnostic,
-  not medical-device-specific; every shared tool (`evidence.cli`,
-  spec lint, NL confirmation, mutation testing) ran unmodified. Two
-  requirements (`REQ-AEB-9` vehicle-class eligibility, `REQ-AEB-10`
-  malfunction detection/mode controls) are deliberately unbuilt,
-  tracked as open `GAP` rows; no ISO 26262 risk-management artifacts
-  exist for this example yet.
-- **Risk management artifacts (the three medical-device examples)** — `DRAFT`, not
-  signed off. `dosage_calculator`'s is the most developed: hazard
-  identification is real and complete, its severity model was rebuilt
-  2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR 24971
-  §5.5.4), and Steven, the named Clinical SME, has since scored all 5
-  hazards (`S3 — Serious`, every one). The device's overall residual
-  risk is now **`Unacceptable`** — a real, computed result (four of
-  five hazards; the fifth, `HAZ-GIP-1.2b`, stays an evaluation `GAP`,
-  blocked by a separate open question about which procedure applies to
-  a hazard with zero probability-side evidence), not the `GAP`
-  placeholder the model-only fix left standing. This isn't a claim the
-  device got less safe — it's the honest output of a real severity
-  input meeting an already-conservative worst-case-probability policy
-  for a pre-market POC with no field data. Resolving it needs either
-  real field/usage data or a recorded ALARP determination from Steven —
-  both still open. See
-  [`RISK_MANAGEMENT_FINDINGS.md`](examples/dosage_calculator/RISK_MANAGEMENT_FINDINGS.md)
-  for the live list of what's still undecided.
-
-Full build history: [`DEVLOG.md`](DEVLOG.md). Open items and known gaps:
-[`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
-
-## Keeping `PROVEN` honest
-
-`PROVEN` means Dafny discharged the spec — no more. On its own that conflates
-three different things: whether the proof carries *independent content*,
-whether the spec's numbers *faithfully transcribe the source*, and whether the
-contract itself was *shaped to be provable*. A sequence of mechanisms,
-building on the raw label, separates them and labels each honestly. All have
-**landed in substance**; the one piece that genuinely remains is a human act
-(contract ratification), named explicitly at the end.
-
-- **Isolated mutation testing — landed for the three examples on the shared
-  Gate C5 runner (2026-07-20).** Gate C5 verifies each mutant against the
-  mutated function in isolation (its own callees, never its callers), so
-  a kill reflects that function's own contract rather than a downstream
-  caller that happened to fail. The composition is a single sanctioned
-  entry point, `evidence/gate_c5_runner.py`, which always isolates —
-  there is no whole-file mode to forget. `renal_adjustment`,
-  `dosage_calculator`, and `drug_interaction_checker` all now run Gate C5
-  through it (the latter two via the runner's `body_function` and
-  `survivor_escalation` extension points); each reproduces its committed
-  report with every mutation outcome unchanged, since none of their
-  mutation targets has an in-file caller for isolation to change — the
-  guarantee is now in place and test-pinned, not merely available.
-  (`aeb_kernel`, the fourth Dafny example, runs Gate C5 through its own
-  `run_mutation_suite_aeb.py` — built before the shared runner and not
-  migrated onto it; like the three above, none of its predicate targets has
-  an in-file caller, so isolation would change nothing there either.)
-
-- **Distinguishing a proven property from a definitional restatement —
-  landed (classification + labelling), 2026-07-20.** A `PROVEN` label
-  means Dafny discharged the spec, but it conflates a proof of an
-  *independent property* (e.g. `dosage_calculator`'s output-stays-within-
-  safe-bounds — strictly weaker than the computation that produces it, so
-  a wrong implementation could violate it) with a *definitional* spec that
-  restates its own implementation (`aeb_kernel`'s threshold predicates and
-  `drug_interaction_checker`'s per-case lookup, where the `ensures` clause
-  is the function body). Both are real and machine-checked; they differ in
-  how much *independent* content the proof carries. `evidence/spec_impl_gap.py`
-  now classifies each `ensures` clause mechanically (structural
-  pin-vs-bound analysis with a Z3 pin-uniqueness cross-check), and every
-  `PROVEN` matrix row carries a `proof_content: definitional | property`
-  qualifier with distinct caveat text (see the breakdown table above: 14
-  definitional, 6 property).
-
-- **Source fidelity — landed for all four examples (2026-07-20).** A proof
-  is internally sound but says nothing about whether the spec's numbers match
-  the source; a mistyped digit that Dafny happily proves around is a silent,
-  unprovable defect. Two mechanisms close that. Every numeric constant in a
-  spec carries a verbatim source quote, checked present in the archived
-  primary document by a mechanical citation gate (`evidence/literal_citation.py`
-  over `evidence/citation_gate.py`) — every example commits a
-  `literal_citations.yaml` in which each constant is a confirmed source quote
-  or an honestly-declared structural/design value. And the Gate C6 human
-  review is reformed to be source-anchored and **blind**
-  (`evidence/source_anchored_review.py`): the reviewer records the value they
-  expect *from the source* before the spec's constant is revealed, so
-  agreement means the source and spec independently point to the same number,
-  not that the reviewer read the spec's answer and nodded.
-
-- **Frozen-contract integrity and ratification — landed for all four
-  examples (2026-07-21).** A `PROVEN` label is only trustworthy if the
-  contract that was proven wasn't itself gamed to be provable — by weakening
-  the `ensures` until a wrong implementation satisfies it, or by adding a
-  soundness escape (`assume false` discharges any postcondition; Dafny accepts
-  it). `evidence/frozen_contract.py` freezes each spec's contract surface —
-  signatures, `requires`/`ensures`, function bodies, and datatype definitions —
-  as a committed, drift-checked manifest, and mechanically proves any candidate
-  spec preserves it exactly and introduces no soundness-escape construct.
-  On top of that, `evidence/contract_attestation.py` produces a per-example,
-  hash-bound **ratification** artifact through which a human reviewer works
-  eliminatively — producing and eliminating candidate defeaters against each
-  declaration's mapped requirement and source quotes — and formally adopts the
-  contract; the sha256 binding means a signed adoption goes mechanically stale
-  the moment the contract changes.
-
-**The one genuinely-remaining act is human, not code.** The ratification
-artifacts are committed `PENDING`, one per example: until a reviewer completes
-the folded-in blind constant review and signs each adoption, the honest
-provenance of all four specs is *LLM-drafted, human-reviewed, gate-enforced —
-ratification pending*. On signing, each earns *human-ratified* — never
-"human-authored", which only a spec whose contract a human freezes **before**
-any automated drafter touches the file can earn (the forward workflow now
-documented in [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) §6.2a).
+This builds a matrix from already-captured evidence without a full clone. It
+does not install the verification toolchain; regenerating an example's
+underlying Dafny/CrossHair evidence still needs the clone-based setup above.
+For re-running the verification tools, adding a requirement, or extending the
+system to a new example, see [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md).
 
 ## Scope
 
 - **Not a PR-gate or merge-blocking CI tool.** A separate repository,
-  `PayloadGuard-PLG/payload-consequence-analyser`, is that product; it
-  shares no code with this one.
-- **Not a replacement for human regulatory sign-off.** Every generated
-  claim is reviewed by a person before use in a submission — see
+  `PayloadGuard-PLG/payload-consequence-analyser`, is that product; it shares no
+  code with this one.
+- **Not a replacement for human regulatory sign-off.** Every generated claim is
+  reviewed by a person before use in a submission — see
   [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md).
-- **Not a tool that infers evidence strength.** Strength labels come
-  only from a verification tool's recorded output, never from a
-  requirement's intended or hoped-for outcome.
+- **Not a tool that infers evidence strength.** Strength labels come only from a
+  verification tool's recorded output, never from a requirement's intended or
+  hoped-for outcome.
 
 ## Further reading
 
 | Document | Contents |
 |---|---|
-| [`HANDOFF.md`](HANDOFF.md) | Current status and next steps for picking up the repository. |
 | [`SYSTEM_REFERENCE.md`](SYSTEM_REFERENCE.md) | Pure current-state technical reference — no build history, regenerated in substance (not appended to) whenever the system's facts change. |
 | [`OPERATIONS_MANUAL.md`](OPERATIONS_MANUAL.md) | Technical reference: architecture, each gate, command reference, adding an example. |
-| [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference (build-history document, not current-state). |
-| [`dashboards/`](dashboards/) | Dated HTML status snapshots (not auto-regenerated; see its README). |
-| [`DEVLOG.md`](DEVLOG.md) | Dated, append-only build log. |
+| [`HANDOFF.md`](HANDOFF.md) | Current status and next steps for picking up the repository. |
+| [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Component map and data-flow reference (build-history document). |
 | [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) | Ledger of open items and known gaps. |
 | [`REVIEW_PROTOCOL.md`](REVIEW_PROTOCOL.md) | How generated artifacts are reviewed before use. |
+| [`DEVLOG.md`](DEVLOG.md) | Dated, append-only build log — the full development history. |
 | [`sources/README.md`](sources/README.md) | Discipline for adding and citing a primary source. |
-| [`TEST_CATALOG.md`](TEST_CATALOG.md) | Generated, categorized index of every test in the suite — description and file:line pointer per test. Regenerate with `python -m evidence.test_catalog --out TEST_CATALOG.md`. |
+| [`TEST_CATALOG.md`](TEST_CATALOG.md) | Generated, categorized index of every test. Regenerate with `python -m evidence.test_catalog --out TEST_CATALOG.md`. |
+| [`dashboards/`](dashboards/) | Dated HTML status snapshots (not auto-regenerated; see its README). |
 | [`LICENSE`](LICENSE) | Proprietary — all rights reserved. Not open source. |

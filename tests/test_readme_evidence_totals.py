@@ -57,11 +57,11 @@ def test_readme_total_requirement_count_matches_committed_matrices():
     real_total = sum(_real_totals().values())
     readme_text = README_PATH.read_text()
 
-    match = re.search(r"every one of (\d+) formalized\s*\nrequirements", readme_text)
+    match = re.search(r"(\d+) formalized\s+requirements", readme_text)
     assert match, (
-        "README.md's evidence-totals intro sentence ('every one of N "
-        "formalized requirements...') was not found or has been reworded - "
-        "update this test's pattern to match, don't just skip the check."
+        "README.md's evidence-totals intro sentence ('...N formalized "
+        "requirements...') was not found or has been reworded - update this "
+        "test's pattern to match, don't just skip the check."
     )
     assert int(match.group(1)) == real_total, (
         f"README.md claims {match.group(1)} total formalized requirements, "

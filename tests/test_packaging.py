@@ -97,6 +97,42 @@ def test_runtime_dependencies_match_requirements_txt_pins():
         )
 
 
+def test_optional_extra_dependencies_match_requirements_txt_pins():
+    """Optional-extra pins must also match requirements.txt exactly.
+
+    requirements.txt is the single source of truth for versions. An
+    extra's pin drifting from it (e.g. citations = ["pymupdf==X"] bumped
+    in only one place) would give `pip install .[extra]` a different
+    version than CI's `pip install -r requirements.txt` without anything
+    failing - the same drift class test_runtime_dependencies... guards
+    for [project].dependencies, extended here to the extras.
+    """
+    extras = _load_pyproject()["project"].get("optional-dependencies", {})
+    requirements_pins = _requirements_pins()
+
+    assert extras, "pyproject.toml declares no [project.optional-dependencies]"
+
+    for extra_name, deps in extras.items():
+        for dep in deps:
+            assert "==" in dep, (
+                f"optional extra {extra_name!r} dependency {dep!r} is not an "
+                f"exact pin - this repo pins everything exactly."
+            )
+            name, version = dep.split("==", 1)
+            name = name.strip().lower()
+            version = version.strip()
+            assert name in requirements_pins, (
+                f"pyproject.toml extra {extra_name!r} declares {name!r}, which "
+                f"does not appear in requirements.txt at all - add it there so "
+                f"the pin has a single source of truth."
+            )
+            assert requirements_pins[name] == version, (
+                f"pyproject.toml extra {extra_name!r} pins {name!r} to "
+                f"{version!r} but requirements.txt pins it to "
+                f"{requirements_pins[name]!r} - these must not silently drift."
+            )
+
+
 def test_console_script_points_at_a_real_callable_main():
     data = _load_pyproject()
     scripts = data["project"]["scripts"]

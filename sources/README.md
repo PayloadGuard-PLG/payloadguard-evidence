@@ -226,6 +226,26 @@ requirements documents, standards excerpts) that ground the claims in
   transposed-digit typo (`ISO-14691-…`) to the correct
   `ISO-14971-…`; the verifier script and its regression test both pin
   the corrected name.
+- `ISA-18.2-2016.PDF` — added 2026-07-22, obtained and committed
+  directly by Steven (GitHub web upload). **ANSI/ISA-18.2-2016,
+  "Management of Alarm Systems for the Process Industries"** (also
+  published as IEC 62682) — a *domain-agnostic* alarm-management
+  standard, read directly this session (82 pages, via PyMuPDF). Its
+  purpose here is as the non-medical anchor for the notification-
+  verification architecture generalization the `HAZ-GIP-1.14b` ALARP
+  determination points to: its alarm/annunciation split maps one-to-one
+  onto IEC 60601-1-8's ALARM CONDITION → ALARM SIGNAL, but with no
+  patient and no medical-device regulatory load. Verified verbatim from
+  the primary text (correcting a secondary-source paraphrase that had
+  dropped a word): **§3.1.7 alarm** = "audible and/or visible means of
+  indicating to the operator an equipment malfunction, process
+  deviation, or abnormal condition requiring a *timely* response";
+  **§3.1.8 (alarm) annunciation** = "function of the alarm system to
+  call the attention of the operator to an alarm." Relevant requirement
+  surface for a POC: §11.10 (Alarm annunciator integration), §11.11
+  (Safety alarm HMI), §1.1–1.2 (scope). Not yet cited by any
+  requirement — recorded to ground the architecture-generalization
+  roadmap item, not (yet) a formalized spec.
 - `ISO-26262-3-2018.pdf` — added 2026-07-16, obtained and committed
   directly by Steven (pushed straight to `main` via GitHub's web
   upload), not via this repo's assistant. ISO 26262-3:2018(E), second

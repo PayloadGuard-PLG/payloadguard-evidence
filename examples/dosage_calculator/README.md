@@ -1,5 +1,15 @@
 # Dosage Calculator Example — Audit-Trail Record
 
+> **Role correction, 2026-07-22 — governs every "Clinical SME" mention
+> below.** Where this file names a "Clinical SME," it is superseded: the
+> determination preparer / risk-evidence owner is **PayloadGuard Research,
+> not a credentialed clinical SME**; the Clinical SME
+> role is **unfilled**; the severity values are *prepared* assessments
+> awaiting qualified-SME ratification, and the `HAZ-GIP-1.14b` ALARP
+> determination is a *prepared package* whose SME sign-off is `_PENDING_`
+> (`ALARP_DETERMINATION.md`). Authoritative: `RISK_MANAGEMENT_PLAN.md`
+> Section 2.
+
 Proof-of-concept kernel for the PayloadGuard evidence layer: a pure
 dose-clamping function, verified by CrossHair within recorded bounds, bound
 to safety requirements extracted from a published hazard analysis, and
