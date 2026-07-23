@@ -50,9 +50,10 @@ def _extract_pdf_text(pdf_path: pathlib.Path) -> str:
         import fitz  # PyMuPDF
     except ImportError as exc:  # pragma: no cover - env-dependent
         raise RuntimeError(
-            "PyMuPDF is required to extract PDF source text: "
-            "pip install 'payloadguard-evidence[citations]' (or, for a "
-            "checkout, pip install pymupdf - it is pinned in requirements.txt)"
+            "PyMuPDF is required to extract PDF source text. This audit "
+            "script runs from a repository checkout (it reads sources/), so "
+            "install from the checkout: pip install '.[citations]' (or "
+            "pip install pymupdf - it is pinned in requirements.txt)."
         ) from exc
     doc = fitz.open(str(pdf_path))
     try:
