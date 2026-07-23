@@ -462,7 +462,7 @@ off.
 cross-checked against IEC 60601-2-24:1998 clause 51.102 directly),
 and `HAZ-DOSE-003` (no GIP source, weaker `BOUNDED_CHECKED` evidence,
 stated plainly). Severity model is consequence-only (ISO 14971
-§3.27 / TR 24971 §5.5.4). Steven (PayloadGuard Research, determination
+§3.27 / TR 24971 §5.5.4). PayloadGuard Research (the determination
 preparer — not a credentialed clinical SME) has recorded a prepared
 assessment of all five hazards at `S3 — Serious`, awaiting qualified-SME
 ratification; the Clinical SME role is unfilled. Overall residual risk is
@@ -471,7 +471,7 @@ ratification; the Clinical SME role is unfilled. Overall residual risk is
 `HAZ-GIP-1.2b`, stays an evaluation `GAP`, blocked on a still-open
 probability-side question. Resolving the `Unacceptable` result
 requires either real field/usage data (does not exist, pre-market) or
-a recorded ALARP determination from Steven — both open.
+a recorded ALARP determination from a qualified SME — both open.
 
 `renal_adjustment` and `drug_interaction_checker` have complete
 hazard identification (8 and 6 entries respectively) but severity,

@@ -1,9 +1,9 @@
 # Dosage Calculator Example — Audit-Trail Record
 
 > **Role correction, 2026-07-22 — governs every "Clinical SME" mention
-> below.** Where this file calls Steven "the named Clinical SME," it is
-> superseded: Steven is PayloadGuard Research's **determination preparer /
-> risk-evidence owner, not a credentialed clinical SME**; the Clinical SME
+> below.** Where this file names a "Clinical SME," it is superseded: the
+> determination preparer / risk-evidence owner is **PayloadGuard Research,
+> not a credentialed clinical SME**; the Clinical SME
 > role is **unfilled**; the severity values are *prepared* assessments
 > awaiting qualified-SME ratification, and the `HAZ-GIP-1.14b` ALARP
 > determination is a *prepared package* whose SME sign-off is `_PENDING_`

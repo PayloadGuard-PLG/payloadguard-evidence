@@ -75,15 +75,15 @@ below still needs, not treating one as a substitute for the other.
 |---|---|---|
 | Risk Manager | *(not yet assigned)* | Owns this plan; approves hazard entries |
 | Technical/Verification Lead | *(not yet assigned)* | Owns the mechanical evidence (CrossHair bounds, Dafny proofs, concrete tests, gate closures) that risk control claims cite |
-| Determination preparer / risk-evidence owner | **PayloadGuard Research — Steven (DarkVader-PLG)** (2026-07-14; role corrected 2026-07-22, see below) | Assembles the evidence and structures the hazard analysis, severity inputs, and determinations so a qualified SME's judgment is easy and well-grounded. **Not a credentialed clinical SME**; does not make and cannot self-record the SME determination |
+| Determination preparer / risk-evidence owner | **PayloadGuard Research** (role recorded 2026-07-14; corrected 2026-07-22, see below) | Assembles the evidence and structures the hazard analysis, severity inputs, and determinations so a qualified SME's judgment is easy and well-grounded. **Not a credentialed clinical SME**; does not make and cannot self-record the SME determination |
 | Clinical/Subject Matter Expert | *(not yet assigned — pending qualified clinical/regulatory review)* | Reviews clinical plausibility of hazards and harms; makes the severity/acceptability determinations. Informal guidance from practising clinical contacts *informs* the preparer's work but does not fill this role |
 
 **Role correction, 2026-07-22 — superseded in place, not silently
-edited.** The row above previously read "Clinical/Subject Matter Expert:
-**Steven**." That was an overclaim, corrected at Steven's own
-instruction: his role was never to *make* an SME's judgment but to *make
-it easier for an SME* — assemble evidence, structure the reasoning,
-surface where the ground is weak. The Clinical SME role is therefore
+edited.** The row above previously named an individual as the
+"Clinical/Subject Matter Expert." That was an overclaim, corrected: the
+role was never to *make* an SME's judgment but to *make it easier for
+one* — assemble evidence, structure the reasoning, surface where the
+ground is weak. The Clinical SME role is therefore
 **unfilled** (alongside Risk Manager and Technical/Verification Lead),
 not filled by a non-SME; a qualified SME's sign-off is a genuinely open
 prerequisite, recorded as such rather than papered over with a title.

@@ -89,7 +89,7 @@ failure mode this repo's change-log discipline exists to prevent.
 **Resolved 2026-07-22 — path (a): Finding 5 is closed first, via Option
 C.** Recorded in `RISK_MANAGEMENT_FINDINGS.md` as a dated Finding 5
 closure (not inferred from this document's prose), per the requirement
-above. Steven's decision, in his framing: **two-track — severity-alone
+above. PayloadGuard Research's decision: **two-track — severity-alone
 for the zero-evidence hazards, the full P×S matrix retained for hazards
 with genuinely estimable probability.**
 
@@ -290,9 +290,8 @@ explicitly not `Acceptable`.
 
 ## Sign-off
 
-- **Prepared by:** PayloadGuard Research — Steven (DarkVader-PLG),
-  2026-07-22. Evidence assembly and the §§1–4 reasoning, structured for
-  SME review. The §3 clinical-mechanism reasoning (how a
+- **Prepared by:** PayloadGuard Research, 2026-07-22. Evidence assembly
+  and the §§1–4 reasoning, structured for SME review. The §3 clinical-mechanism reasoning (how a
   delivery-cessation fault presents versus a dose-magnitude error) was
   informed by **informal guidance from practising clinical contacts** —
   advisory input to this preparation, not a sign-off; they advise on the

@@ -1,10 +1,10 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
 **Role correction, 2026-07-22 — governs every "Clinical SME" mention
-below.** Where this file (including preserved prior headers) calls Steven
-"the named Clinical SME," read it as superseded: he is PayloadGuard
-Research's **determination preparer / risk-evidence owner, not a
-credentialed clinical SME**; the Clinical SME role is **unfilled**; the
+below.** Where this file (including preserved prior headers) names a
+"Clinical SME," read it as superseded: the determination preparer /
+risk-evidence owner is **PayloadGuard Research, not a credentialed
+clinical SME**; the Clinical SME role is **unfilled**; the
 severity values are *prepared* assessments awaiting qualified-SME
 ratification. Authoritative: `RISK_MANAGEMENT_PLAN.md` Section 2.
 

@@ -5,10 +5,10 @@ the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
 **Role correction, 2026-07-22 — governs every "Clinical SME" mention
-below.** Where this file (including the preserved prior entries) calls
-Steven "the named Clinical SME," that is superseded: Steven is
-PayloadGuard Research's **determination preparer / risk-evidence owner,
-not a credentialed clinical SME**; the Clinical SME role is **unfilled**;
+below.** Where this file (including the preserved prior entries) names a
+"Clinical SME," that is superseded: the determination preparer /
+risk-evidence owner is **PayloadGuard Research, not a credentialed
+clinical SME**; the Clinical SME role is **unfilled**;
 the recorded severity values are *prepared* assessments (informed by
 informal clinical guidance) awaiting qualified-SME ratification.
 Authoritative: `RISK_MANAGEMENT_PLAN.md` Section 2; applied to risk

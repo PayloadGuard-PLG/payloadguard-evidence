@@ -9,10 +9,10 @@ newer entries this file doesn't reflect, trust `DEVLOG.md` and update
 this file to match before relying on it further.
 
 **Role correction, 2026-07-22 — governs every "Clinical SME" mention
-below.** Where this file (including preserved prior entries) calls Steven
-"the named Clinical SME," it is superseded: Steven is PayloadGuard
-Research's **determination preparer / risk-evidence owner, not a
-credentialed clinical SME**; the Clinical SME role is **unfilled**; the
+below.** Where this file (including preserved prior entries) names a
+"Clinical SME," it is superseded: the determination preparer /
+risk-evidence owner is **PayloadGuard Research, not a credentialed
+clinical SME**; the Clinical SME role is **unfilled**; the
 severity values are *prepared* assessments awaiting qualified-SME
 ratification. Authoritative: `RISK_MANAGEMENT_PLAN.md` Section 2; applied
 in `examples/dosage_calculator/ALARP_DETERMINATION.md`'s two-role
