@@ -350,8 +350,10 @@ extending the system to a new example, see
   signed off. `dosage_calculator`'s is the most developed: hazard
   identification is real and complete, its severity model was rebuilt
   2026-07-15 to be consequence-only (ISO 14971 §3.27 / TR 24971
-  §5.5.4), and Steven, the named Clinical SME, has since scored all 5
-  hazards (`S3 — Serious`, every one). The device's overall residual
+  §5.5.4), and Steven (PayloadGuard Research, determination preparer —
+  not a credentialed SME; corrected 2026-07-22) has since recorded a
+  prepared severity assessment for all 5 hazards (`S3 — Serious`, every
+  one), awaiting qualified-SME ratification. The device's overall residual
   risk is now **`Unacceptable`** — a real, computed result (four of
   five hazards; the fifth, `HAZ-GIP-1.2b`, stays an evaluation `GAP`,
   blocked by a separate open question about which procedure applies to

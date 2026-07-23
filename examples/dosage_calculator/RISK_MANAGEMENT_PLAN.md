@@ -75,11 +75,30 @@ below still needs, not treating one as a substitute for the other.
 |---|---|---|
 | Risk Manager | *(not yet assigned)* | Owns this plan; approves hazard entries |
 | Technical/Verification Lead | *(not yet assigned)* | Owns the mechanical evidence (CrossHair bounds, Dafny proofs, concrete tests, gate closures) that risk control claims cite |
-| Clinical/Subject Matter Expert | **Steven** (assigned 2026-07-14) | Reviews clinical plausibility of hazards and harms; confirms or overrides the severity/probability proposal in Section 4 below |
+| Determination preparer / risk-evidence owner | **PayloadGuard Research — Steven (DarkVader-PLG)** (2026-07-14; role corrected 2026-07-22, see below) | Assembles the evidence and structures the hazard analysis, severity inputs, and determinations so a qualified SME's judgment is easy and well-grounded. **Not a credentialed clinical SME**; does not make and cannot self-record the SME determination |
+| Clinical/Subject Matter Expert | *(not yet assigned — pending qualified clinical/regulatory review)* | Reviews clinical plausibility of hazards and harms; makes the severity/acceptability determinations. Informal guidance from practising clinical contacts *informs* the preparer's work but does not fill this role |
 
-**Partial GAP, updated 2026-07-14 — not fully closed.** The Clinical/
-SME role is now filled by a named, real person (Steven), assigned by
-his own explicit instruction, not inferred or assumed. Risk Manager and
+**Role correction, 2026-07-22 — superseded in place, not silently
+edited.** The row above previously read "Clinical/Subject Matter Expert:
+**Steven**." That was an overclaim, corrected at Steven's own
+instruction: his role was never to *make* an SME's judgment but to *make
+it easier for an SME* — assemble evidence, structure the reasoning,
+surface where the ground is weak. The Clinical SME role is therefore
+**unfilled** (alongside Risk Manager and Technical/Verification Lead),
+not filled by a non-SME; a qualified SME's sign-off is a genuinely open
+prerequisite, recorded as such rather than papered over with a title.
+This is the same drafter≠checker boundary the rest of this repo holds
+(no Gate C6 spec sign-off is self-recorded); `ALARP_DETERMINATION.md`'s
+two-role sign-off (Prepared by / SME determination `_PENDING_`) applies
+it to risk acceptance. Downstream consequence, stated not hidden: every
+2026-07-15 record that reads "Steven, the named Clinical SME, scored…"
+(the S3×5 and S4 severity values) is, under this correction, a
+**prepared** severity assessment awaiting SME confirmation, not a
+completed SME determination — the values and reasoning stand as
+preparation; the ratification does not yet exist.
+
+**Prior framing, updated 2026-07-14 (now itself superseded by the
+2026-07-22 correction above).** Risk Manager and
 Technical/Verification Lead remain unassigned — narrower than before,
 not glossed over. Section 4 below now contains a **draft severity/
 probability proposal**, written by this repo's assistant as a starting
@@ -187,9 +206,13 @@ probability claim:
 **What this section does and does not do.** It replaced an invalid
 severity model with a valid one, mechanically — every definition above
 is consequence-only, sourced, and buildable without clinical input —
-and then (2026-07-15, later) Steven, as the named Clinical SME, scored
-every hazard against it: **`S3 — Serious`, all five.** This repo's
-assistant did not invent, propose, or infer any of these five values;
+and then (2026-07-15, later) Steven — PayloadGuard Research, the
+determination preparer, **not a credentialed clinical SME** (Section 2,
+role corrected 2026-07-22) — recorded a severity assessment for every
+hazard: **`S3 — Serious`, all five**, a *prepared* assessment awaiting
+qualified-SME ratification, not a completed SME determination. This
+repo's assistant did not invent, propose, or infer any of these five
+values;
 each was recorded via `AskUserQuestion` against the real consequence
 bands above and each hazard's own documented harm text, matching the
 same discipline every Gate C6 sign-off in this repo has held to.
@@ -344,7 +367,9 @@ the abstract.
 ## 5. Method for evaluating overall residual risk (ISO 14971:2019 clause 4.4e)
 
 **DRAFT PROPOSAL, 2026-07-14 — same status as Section 4: assistant-
-authored, pending Steven's confirmation as Clinical SME.** A hazard
+authored, pending qualified-SME confirmation** (prepared for review by
+Steven / PayloadGuard Research, who is not himself a credentialed SME —
+Section 2, corrected 2026-07-22). A hazard
 register now exists (`HAZARD_REGISTER.md`), so there is something real
 to combine. Proposed method, deliberately simple and conservative
 rather than a weighted/statistical combination this device's evidence
@@ -546,8 +571,9 @@ register can currently rule out as clinically less than critical,
 independent of whether it's likely. This is not a stronger evidence
 gap than `HAZ-GIP-1.2b`'s — the *evidence* side is identical (`GAP`,
 Finding 5, same open question) — it is a stronger *consequence*
-judgment, made by Steven as the named Clinical SME, the same authority
-and the same discipline as every other severity value in this register.
+judgment, prepared by Steven (PayloadGuard Research, determination
+preparer — not a credentialed SME), awaiting qualified-SME ratification
+like every other severity value in this register.
 
 ### The honest conclusion: the prerequisite is done — two paths remain, and one of them is now the live blocking question
 
@@ -576,8 +602,12 @@ them, it made choosing between them the actual next decision:
    deployment or a real, structured field study — neither exists, and
    neither can be simulated honestly.
 
-2. **A real ALARP determination from Steven, as the named Clinical
-   SME — a policy judgment, not more evidence.** Basis: clause 4.2
+2. **A real ALARP determination from a qualified clinical/regulatory
+   SME — a policy judgment, not more evidence.** (Steven / PayloadGuard
+   Research *prepares* this determination — see `ALARP_DETERMINATION.md`,
+   whose two-role sign-off leaves the SME call `_PENDING_` — but is not
+   himself the SME who makes it; Section 2, corrected 2026-07-22.)
+   Basis: clause 4.2
    NOTE 1, which names ALARP as one policy a manufacturer's
    risk-acceptability criteria can adopt, pointing to ISO/TR 24971 for
    guidance on defining it — TR 24971 §C.2 is where that guidance
@@ -716,6 +746,8 @@ severity/probability/acceptance-matrix content, added 2026-07-14, is a
 **draft proposal reasoned from that same real evidence**, authored by
 this repo's assistant at Steven's explicit request — not fabricated
 clinical data, and not presented as a completed SME determination
-either. It carries no authority until Steven, as the named Clinical
-SME (Section 2), reviews and confirms it — exactly the distinction
-this repo has held to for every Gate C6 sign-off.*
+either. It carries no authority until a qualified clinical/regulatory
+SME reviews and confirms it — Steven / PayloadGuard Research prepares
+the material but is not that SME (Section 2, corrected 2026-07-22) —
+exactly the distinction this repo has held to for every Gate C6
+sign-off.*

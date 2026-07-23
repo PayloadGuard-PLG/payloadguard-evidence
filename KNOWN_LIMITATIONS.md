@@ -4,6 +4,17 @@ Standing rule (Phase B working principle): open questions are resolved at
 the gate where they are hit, documented inline; anything not resolvable in
 a session is named here with a reason — never silently dropped.
 
+**Role correction, 2026-07-22 — governs every "Clinical SME" mention
+below.** Where this file (including the preserved prior entries) calls
+Steven "the named Clinical SME," that is superseded: Steven is
+PayloadGuard Research's **determination preparer / risk-evidence owner,
+not a credentialed clinical SME**; the Clinical SME role is **unfilled**;
+the recorded severity values are *prepared* assessments (informed by
+informal clinical guidance) awaiting qualified-SME ratification.
+Authoritative: `RISK_MANAGEMENT_PLAN.md` Section 2; applied to risk
+acceptance in `examples/dosage_calculator/ALARP_DETERMINATION.md`'s
+two-role sign-off.
+
 Last updated: 2026-07-22 (**`HAZ-GIP-1.14b` (S4) added to
 `dosage_calculator`'s hazard register — supersedes the "5 hazards /
 every hazard S3" state recorded in the prior header below.** `HAZ-GIP-1.14`

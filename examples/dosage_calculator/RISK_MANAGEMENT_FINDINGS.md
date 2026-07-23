@@ -491,7 +491,10 @@ capture's new content.
   risk** (computed 2026-07-15, from Steven's own real severity scoring
   — see Finding 3 above): either real field/usage probability data
   (doesn't exist for a pre-market POC), or a genuine ALARP
-  determination from Steven as the named Clinical SME, per
+  determination from a qualified clinical/regulatory SME (Steven /
+  PayloadGuard Research *prepares* it — `ALARP_DETERMINATION.md`, SME
+  sign-off `_PENDING_` — but is not the SME; Section 2, corrected
+  2026-07-22), per
   `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section. This is now
   the concrete blocking item, replacing the severity-scoring item this
   list previously led with.

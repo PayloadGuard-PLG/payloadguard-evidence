@@ -20,8 +20,10 @@ three, consistent with how the practicability approach is actually
 argued below (Section 2) — not as a claim that the standard names or
 defines an "ALARP determination" as such.
 
-**Status:** _PENDING_ | Created: 2026-07-21 | Citations verified against
-primary source: 2026-07-21
+**Status:** `PREPARED FOR SME REVIEW` (§§1–4 complete and
+evidence-grounded, 2026-07-22; the SME ALARP determination itself
+remains `_PENDING_` — see Sign-off) | Created: 2026-07-21 | Citations
+verified against primary source: 2026-07-21
 
 ## What this document does and does not do
 
@@ -30,11 +32,17 @@ This is **structure only** — the same discipline
 ratification: a script (if one is ever built for this file) could
 verify every section below is present and non-`_PENDING_`, but it can
 never judge whether the *content* of a section is a defensible clinical
-and engineering judgment. That judgment belongs to Steven alone, as the
-named Clinical SME (`RISK_MANAGEMENT_PLAN.md` Section 2) — this repo's
-assistant does not draft ALARP justification prose pretending to be
-Steven's words, for the same reason no Gate C6 sign-off has ever been
-self-recorded in this repo's history.
+and engineering judgment. That judgment — the ALARP determination
+itself — belongs to a qualified clinical/regulatory **subject-matter
+expert**, and remains `_PENDING_` in the sign-off below. What
+PayloadGuard Research (`RISK_MANAGEMENT_PLAN.md` Section 2) provides is
+the *preparation*: assembling the evidence and structuring §§1–4 so an
+SME's determination is easy and well-grounded — never the determination
+itself. This repo's assistant does not draft ALARP justification prose
+pretending to be anyone's words, and no more than a non-SME preparer may
+self-record the SME sign-off — the same drafter≠checker boundary for
+which no Gate C6 spec sign-off has ever been self-recorded in this
+repo's history.
 
 ## Scope of this determination
 
@@ -111,87 +119,196 @@ establishes that the determination may now honestly be written.
 
 ## 1. Risk control measures already exhausted within this kernel's stated scope
 
-_PENDING_ — name, specifically, what has actually been proven or
-bounded-checked at kernel scope (the fault-detection and zeroing
-behavior — `REQ-GIP-1-8-1`, `PROVEN`), and state plainly that no
-further Dafny/CrossHair/concrete-test work inside
-`examples/dosage_calculator/` can close the notification gap, because
-notification is not a property of this kernel's inputs and outputs at
-all — it requires components (alarm hardware, UI layer, integrated
-firmware) this artifact does not contain. This section should read as
-a genuine exhaustion argument, not a restatement of the hazard.
+`REQ-GIP-1-8-1` is `PROVEN`: `CalculateHourlyDose` yields exactly zero
+delivered dose on any negative-rate (reverse-flow) fault — ordinary and
+overflow-magnitude alike — via the Dafny proof, CrossHair bounded
+search, and the concrete tests `ordinary_negative_rate_clamps_to_zero` /
+`overflow_negative_rate_clamps_to_zero`. That is the whole of the fault
+*response* this kernel can carry: detect the condition, zero the
+delivered dose.
+
+What it cannot carry is clinician *notification*. The kernel is a pure
+numeric function; a signal to a human operator is not among its inputs
+or outputs, and `metadata.a.yaml` confirms `REQ-GIP-1-8-1` has **no
+`system_scope` field at all** (unlike `REQ-GIP-1-4-12`) — the
+alarm-signal half is not even nameable at the requirement level here. No
+further Dafny/CrossHair/concrete-test work over
+`examples/dosage_calculator/` can produce evidence about whether a
+clinician is alerted, because there is no output on which such evidence
+could bear.
+
+This is a genuine exhaustion of *this kernel's* risk-control surface —
+**not** a claim that the notification gap is unsolvable. The distinction
+is carried deliberately into §2: closing it is buildable; it simply
+cannot be built inside this artifact, and building it here *now* is not
+the proportionate step at this stage.
 
 ## 2. Practicability: why further reduction is not undertaken at this development stage
 
-**Basis, corrected 2026-07-21 against the primary text:** not a
-cost-benefit legal test — Annex C.4 ("Risk control") names two
-distinct components instead, and both should be addressed separately,
-not blended into one "disproportionality" argument:
+Per ISO/TR 24971 Annex C.4, practicability has two components,
+addressed separately rather than blended into one "disproportionality"
+claim. (§C.4 is *practicability*, technical and economic — not the
+"gross disproportion" cost-benefit legal test, which is UK case law and
+appears nowhere in the standard; verified against the primary text,
+`sources/CEN-ISO-TR-24971-2020-E.docx`.)
 
-- **Technical practicability** — the ability to reduce the risk
-  *regardless of cost*. For `HAZ-GIP-1.14b`, this is close to a
-  factual question: can clinician notification be built at all inside
-  this repo's current scope? The honest answer is no — it requires an
-  integrated pump system (hardware, firmware, alarm hardware, UI layer
-  per IEC 60601-1-8's alarm-system requirements — already named in
-  `RISK_MANAGEMENT_PLAN.md`'s "Path to sign-off" section), not
-  additional Dafny/CrossHair/test work inside
-  `examples/dosage_calculator/`.
-- **Economic practicability** — the ability to reduce the risk
-  *without making the device an unsound economic proposition*. The
-  primary text is explicit that this cannot be argued as "too
-  expensive for a POC, so it's accepted" — it carries its own guard
-  clause: economic practicability "should not be used as a rationale
-  for the acceptance of unnecessary risk." If this section leans on
-  economic practicability at all, it must state why building a minimal
-  notification path is genuinely disproportionate to what a pre-market
-  POC needs to demonstrate, not merely costly or inconvenient.
+**Technical practicability** (the ability to reduce the risk *regardless
+of cost*) is **satisfied — not claimed impracticable.**
+Clinician-notification hardware and firmware are commercially available
+and could be obtained and tested; the fault-detection the kernel already
+performs is a real, buildable input to such a path. This determination
+does not rest on "it cannot be built" — it can.
 
-_PENDING_ — write both components separately. If technical
-practicability is the real answer (this literally cannot be built
-inside this repo's stated scope, independent of cost), say so plainly
-and the economic-practicability paragraph may be short or unnecessary.
-If economic practicability is doing real work in the argument, it must
-survive the guard clause above, explicitly, not by omission. If
-neither holds — if a minimal notification path actually is
-technically and economically practicable even at this stage — that is
-itself a finding this section should surface, not suppress.
+**Why it is nonetheless not built here, at this stage.** This is a
+pre-market proof-of-concept whose stated purpose is *architecture
+generalization* — testing whether this verification method holds across
+domains — not a shipped medical device (cf. `aeb_kernel`, deliberately a
+test environment, not a submission). The proportionate next engineering
+step is to demonstrate the notification-verification architecture on a
+**cheaper, lower-classification, domain-agnostic device**, where the
+output is simpler and more defensible precisely because it sheds the
+medical-device regulatory load — not to stand up an integrated
+infusion-pump alarm-and-UI path with its full validation burden. The
+regulatory gap is real: a US infusion pump is a **Class II** device
+(special controls + 510(k) premarket notification); a domain-agnostic
+non-medical device carries none of that. And the property is the *same*
+property — ANSI/ISA-18.2-2016 / IEC 62682 (a domain-agnostic
+alarm-management standard, `sources/ISA-18.2-2016.PDF`, read directly)
+defines an **alarm** (§3.1.7) as an "audible and/or visible means of
+indicating to the operator … requiring a timely response" and
+**annunciation** (§3.1.8) as the "function of the alarm system to call
+the attention of the operator to an alarm": the identical detect →
+signal split as IEC 60601-1-8's ALARM CONDITION → ALARM SIGNAL, with no
+patient and no medical regulation. The architecture-generalization step
+is not a detour from this hazard; it is the same notification-integrity
+question on a proportionate vehicle.
+
+**Surviving the guard clause.** §C.4 forbids economic practicability
+being "used as a rationale for the acceptance of unnecessary risk." This
+determination does not lean on cost, and it accepts no unnecessary risk:
+**this is a pre-market POC with no deployment — no patient is exposed to
+`HAZ-GIP-1.14b` at all.** The residual is notional at this stage; nobody
+is running it. Deferring the pump-specific notification path to a real
+submission phase, while advancing the method on a low-stakes device, is
+proportionate *precisely because there is no patient exposure to weigh
+against the deferral*. Were this a shipped device with patients, the
+same deferral would fail this clause; at POC stage with no deployment,
+it does not.
 
 ## 3. Compensating controls already in place
 
-_PENDING_ — what stands between this residual risk and a patient right
-now, independent of any signal this kernel could emit. `RISK_MANAGEMENT_PLAN.md`
-and `metadata.a.yaml`'s `classification_rationale` already name
-clinician oversight as a real compensating control for related
-hazards — state whether, and how, that same compensating control
-applies here, and be specific about its limits (an unaddressed line
-fault has no signal *prompting* that oversight to look in the right
-place — state whether that materially weakens the compensating-control
-argument compared to the other hazards it's cited for).
+`metadata.a.yaml`'s `classification_rationale` names *clinician
+oversight* as a compensating control — but it was written for a specific
+mechanism that does not transfer to this hazard. **The rationale's
+mechanism:** a dose-*magnitude* error (over- or under-dose by degree)
+produces a directional physiological deviation in the patient; the
+patient's own clinical state is the sensor, and no device signal is
+required for a clinician on routine monitoring to notice it.
+
+**`HAZ-GIP-1.14b` is not a magnitude error.** Reverse-flow triggers
+*complete cessation* of delivery, and the resulting clinical signal is
+the **absence of an expected therapeutic effect** — a slower, less
+specific signal than a directional deviation, and one far more easily
+attributed to disease course, patient variability, or normal delay
+before drug effect than an acute over-/under-dose reaction is. Over an
+8–12 hour round, that ambiguity has a long window to go unresolved. This
+is not a tension introduced here: `HAZARD_REGISTER.md`'s row for
+`HAZ-GIP-1.14` (the parent this split from) already states that "reverse
+delivery of drug is a materially different failure mode from
+over/under-dose" and declines to assume comparability to the
+magnitude-error hazards. And GIP v1.0's own hazard analysis lists this
+hazard's designed response as **`Alarm();Log()`** — an active signal —
+meaning the source analysis treated active notification as the intended
+control here; passive clinical vigilance was never it.
+
+**The compensating-control claim splits into two, and they do not hold
+equally:**
+
+1. *Oversight protects the immediate patient from prolonged, undetected
+   under-delivery* — **weakly plausible.** A clinician on rounds who
+   notices non-response can intervene — but the signal is ambiguous and
+   delayed relative to the magnitude-error case the rationale was
+   written for, for the structural reasons above.
+2. *Oversight protects against the underlying fault (line/connector
+   defect) recurring or going unaddressed* — **not materially
+   supported.** A clinician who correctly infers "this patient isn't
+   responding" and resets or replaces the pump has no cue, absent
+   notification, to root-cause a reverse-flow event *specifically*; the
+   fault can survive the incident that revealed it. `metadata.a.yaml`'s
+   rationale was written for dose titration, not fault diagnosis, and
+   was never built to support this claim — which is also precisely what
+   this hazard's `S4` severity is about (`HAZARD_REGISTER.md`: "the
+   fault condition can recur or go unaddressed").
+
+**Conclusion:** clinician oversight is a real, if weak, compensating
+control for claim 1, and **not** a real compensating control for claim
+2. If §4's residual-risk statement or the sign-off leans on "clinician
+oversight" as a single, undifferentiated control the way
+`metadata.a.yaml` states it for the delivered-dose hazards, that would
+be citing a control for a claim there is no evidence for.
 
 ## 4. The residual risk, stated without minimization
 
-_PENDING_ — what remains true and unresolved after sections 1–3, in
-plain terms: a clinician may never learn that a reverse-flow fault
-occurred, the underlying hardware defect can recur or go unaddressed,
-and this repo has zero evidence — not weak evidence, zero — bearing on
-how often that would actually happen. This section exists specifically
-so the determination cannot read as resolving the risk; it should read
-as a clear-eyed acceptance of what is *not* being claimed.
+After §§1–3, what remains true and unresolved:
+
+- The reverse-flow fault is detected and the delivered dose is proven
+  zero (§1) — but **no clinician is notified**, and per §3 there is no
+  compensating control for the fault itself. A clinician may never learn
+  that a reverse-flow event occurred; and even where routine oversight
+  catches the resulting under-delivery (§3, claim 1 — weakly), it
+  provides no cue to root-cause the fault, so **the underlying
+  line/connector/hardware defect can recur or go unaddressed** (§3, claim
+  2 — uncovered). The fault can survive the incident that revealed it.
+- This repo has **zero evidence — not weak evidence, zero** — bearing on
+  how often a reverse-flow fault would occur, or how often it would go
+  unaddressed. There is no Dafny, CrossHair, concrete-test, or field
+  data on frequency; that absence is exactly why this hazard is on the
+  severity-alone track (Finding 5, Option C), not the probability
+  matrix.
+- Evaluated on severity alone, `HAZ-GIP-1.14b` is `S4 — Critical`.
+  §4.3's matrix has no `Acceptable` cell for `S4` at any band; the
+  highest resting point this residual can reach, even granting
+  everything in §§1–3, is **`ALARP` — and only at this development
+  stage.** It is not `Acceptable`, and this determination does not claim
+  it to be.
+
+What is therefore **not** being claimed: that the hazard is closed; that
+a notification path exists; that clinician oversight covers the
+fault-recurrence dimension (§3 is explicit it does not); or that a
+shipped device with real patients could rest here. The acceptance is
+narrow and conditional: at a **pre-market POC with no deployment and no
+patient exposure** (§2), with kernel-scope risk control exhausted (§1)
+and further reduction here not the proportionate stage-appropriate step
+(§2), the `S4` residual is recorded as `ALARP` *for this stage only*. A
+real deployment must build and validate the notification path — the
+domain-agnostic architecture-generalization work §2 points to, then its
+medical-device instantiation — before this hazard could be reduced
+further; until then the residual stands, explicitly not minimized and
+explicitly not `Acceptable`.
 
 ---
 
 ## Sign-off
 
-- Clinical SME: _PENDING_
-- Date: _PENDING_
-- Determination: _PENDING_ — "Having examined sections 1–4 above, I
-  determine that the residual risk represented by `HAZ-GIP-1.14b` is
-  ALARP at this development stage, and record this as a policy
-  judgment I stand behind, not a technical conclusion the evidence
-  compelled."
-- Status: _PENDING_ (a freshly created template is `_PENDING_` —
-  structurally present, not yet a real determination)
+- **Prepared by:** PayloadGuard Research — Steven (DarkVader-PLG),
+  2026-07-22. Evidence assembly and the §§1–4 reasoning, structured for
+  SME review. The §3 clinical-mechanism reasoning (how a
+  delivery-cessation fault presents versus a dose-magnitude error) was
+  informed by **informal guidance from practising clinical contacts** —
+  advisory input to this preparation, not a sign-off; they advise on the
+  POC and cannot ratify it during development. This is a **prepared
+  determination package, not a clinical-SME determination.**
+- **SME determination:** _PENDING_ — the ALARP call itself awaits a
+  qualified clinical/regulatory subject-matter expert. It is
+  deliberately left open: a POC preparing the ground does not also sign
+  the ground off. The template's determination sentence is retained
+  below for the SME to affirm, edit, or replace, not as a recorded
+  determination: *"Having examined sections 1–4 above, I determine that
+  the residual risk represented by `HAZ-GIP-1.14b` is ALARP at this
+  development stage, and record this as a policy judgment I stand behind,
+  not a technical conclusion the evidence compelled."*
+- **Status:** `PREPARED FOR SME REVIEW` — §§1–4 complete and
+  evidence-grounded; the ALARP determination is not yet made.
 
 **If sections 1–4 cannot honestly be completed as written** — for
 example, if further risk control genuinely is proportionate at this

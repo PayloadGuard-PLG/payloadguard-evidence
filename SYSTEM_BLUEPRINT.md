@@ -1,5 +1,13 @@
 # SYSTEM_BLUEPRINT — payloadguard-evidence
 
+**Role correction, 2026-07-22 — governs every "Clinical SME" mention
+below.** Where this file (including preserved prior headers) calls Steven
+"the named Clinical SME," read it as superseded: he is PayloadGuard
+Research's **determination preparer / risk-evidence owner, not a
+credentialed clinical SME**; the Clinical SME role is **unfilled**; the
+severity values are *prepared* assessments awaiting qualified-SME
+ratification. Authoritative: `RISK_MANAGEMENT_PLAN.md` Section 2.
+
 Last updated: 2026-07-22 (`HAZ-GIP-1.14b` (S4) risk sync + a runnable
 TR 24971/IEC 62304 citation-verification manifest — no architecture,
 gate, evidence-engine, or data-flow change. `dosage_calculator`'s

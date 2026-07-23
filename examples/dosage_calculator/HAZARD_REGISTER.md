@@ -17,8 +17,14 @@ clause 5.4 (identification of hazards and hazardous situations) and
 part of clause 5.5 (the qualitative consequence description) are real
 here — every hazard row below is a real GIP v1.0 hazard, cited by its
 own `HID`, cross-referenced against this kernel's actual scope, not
-invented. **Updated 2026-07-14:** Steven is now the named Clinical SME
-(`RISK_MANAGEMENT_PLAN.md` Section 2). **Updated 2026-07-15
+invented. **Updated 2026-07-14** (role corrected 2026-07-22, below):
+Steven was recorded as filling the Clinical SME role — corrected since
+to **determination preparer / risk-evidence owner, PayloadGuard Research,
+not a credentialed SME** (`RISK_MANAGEMENT_PLAN.md` Section 2); the
+Clinical SME role is unfilled, and the severity values are *prepared*
+assessments awaiting qualified-SME ratification. **This correction
+governs every "Clinical SME" reference below, including the change log.**
+**Updated 2026-07-15
 (`RISK_MANAGEMENT_FINDINGS.md` Finding 3/R3 resolved, Option 3):**
 severity is now defined by consequence alone, not evidence strength —
 the 2026-07-14 severity values below were invalidated by that finding,
@@ -32,14 +38,18 @@ carries an explicit "evidence artifact" citation per hazard — the real
 proof/bound/test that grounds each hazard's probability side, kept
 separate from the severity question rather than folded into it.
 
-**Updated 2026-07-15 (later): Steven's real severity scoring recorded.**
-As the named Clinical SME (`RISK_MANAGEMENT_PLAN.md` Section 2), Steven
-scored all five hazards below via `AskUserQuestion`, one hazard at a
-time, against the real consequence-only bands §4.1 defines and each
+**Updated 2026-07-15 (later): Steven's severity assessment recorded**
+(attribution corrected 2026-07-22). As PayloadGuard Research's
+determination preparer — **not a credentialed SME**
+(`RISK_MANAGEMENT_PLAN.md` Section 2) — Steven recorded a severity
+assessment for all five hazards below via `AskUserQuestion`, one hazard
+at a time, against the real consequence-only bands §4.1 defines and each
 row's own documented `Potential harm` text — **every hazard: `S3 —
 Serious`.** Not proposed, not defaulted, not inferred by this repo's
 assistant from any evidence-strength reasoning (the exact mistake
-Finding 3 found and fixed) — a real clinical determination, recorded
+Finding 3 found and fixed) — a **prepared** assessment (informed by
+informal clinical guidance) awaiting qualified-SME ratification, not a
+completed clinical determination, recorded
 
 **Superseded 2026-07-21, not corrected in place** (same discipline as
 every other superseded claim in this file): the "every hazard: S3"
@@ -271,9 +281,11 @@ committed evidence (`metadata.a.yaml`, `traceability_matrix.a.md`,
 (clause 5.5) is real and consequence-only, per
 `RISK_MANAGEMENT_FINDINGS.md` Finding 3/R3's resolution, and (updated
 2026-07-15, later) the severity **values** are now real too — every
-hazard scored `S3 — Serious` by Steven, the named Clinical SME
-(`RISK_MANAGEMENT_PLAN.md` Section 2), recorded above with attribution,
-not a "draft proposal" in the sense the 2026-07-14 values were. `Risk
+hazard given a prepared `S3 — Serious` assessment by Steven
+(PayloadGuard Research, determination preparer — not a credentialed SME;
+`RISK_MANAGEMENT_PLAN.md` Section 2, corrected 2026-07-22), recorded
+above with attribution and awaiting qualified-SME ratification, not a
+"draft proposal" in the sense the 2026-07-14 values were. `Risk
 evaluation` above is computed mechanically from those real values
 against §4.3's matrix, carrying real authority for the four rows it
 resolves to `Unacceptable`; `HAZ-GIP-1.2b` remains `GAP` at evaluation
